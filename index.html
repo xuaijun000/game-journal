@@ -90,7 +90,7 @@
     .sbox input{width:100%;background:var(--bg3);border:1px solid var(--b2);border-radius:8px;padding:9px 14px 9px 36px;color:var(--t);font-family:inherit;font-size:.9rem;outline:none;transition:border .15s}
     .sbox input:focus{border-color:var(--acc)}
     .sico{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--t3);font-size:14px;pointer-events:none}
-    .sr{background:var(--bg3);border:1px solid var(--b2);border-radius:8px;margin-top:6px;max-height:220px;overflow-y:auto}
+    .sr{background:var(--bg3);border:1px solid var(--b2);border-radius:8px;margin-top:6px;max-height:380px;overflow-y:auto}
     .sri{display:flex;align-items:center;gap:10px;padding:8px 12px;cursor:pointer;transition:background .12s;border-bottom:1px solid var(--b)}
     .sri:last-child{border-bottom:none}.sri:hover{background:var(--bg2)}
     .sri-cv{width:32px;height:42px;object-fit:cover;border-radius:4px;background:var(--bg2);flex-shrink:0}
@@ -479,11 +479,12 @@ async function doSrch(q){
   if(!IGDB_PROXY){sr.style.display='block';sr.innerHTML=`<div class="sr-msg" style="color:var(--warn)">⚠ 请先配置 IGDB Proxy</div>`;return;}
   sr.style.display='block';sr.innerHTML=`<div class="sr-msg">搜索中…</div>`;
   try{
-    const res=await fetch(IGDB_PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q})});
+    // 修改点：在请求体中加入了 limit: 50，尝试获取更多结果
+    const res=await fetch(IGDB_PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q, limit:50})});
     const data=await res.json();
     if(!data.length){sr.innerHTML=`<div class="sr-msg">未找到相关游戏</div>`;return;}
     sr.innerHTML=data.map(g=>`<div class="sri" onclick='fillG(${JSON.stringify(g).replace(/'/g,"&#39;")})'>
-      ${g.cover?`<img class="sri-cv" src="${g.cover}" alt="">`:``}<div class="sri-info"><div class="sri-name">${esc(g.name)}</div><div class="sri-meta">${[g.year,g.platforms?.join(' / ')].filter(Boolean).join(' · ')}</div></div>
+      ${g.cover?`<img class="sri-cv" src="${g.cover}" alt="">`:``}<div class="sri-info"><div class="sri-name" title="${esc(g.name)}">${esc(g.name)}</div><div class="sri-meta">${[g.year,g.platforms?.join(' / ')].filter(Boolean).join(' · ')}</div></div>
     </div>`).join('');
   }catch{sr.innerHTML=`<div class="sr-msg" style="color:var(--danger)">搜索失败</div>`;}
 }
