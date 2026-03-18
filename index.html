@@ -61,15 +61,15 @@
     /* ✨ 新版卡片动效 */
     .gc{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);overflow:hidden;cursor:pointer;transition:all .3s cubic-bezier(0.25, 0.46, 0.45, 0.94);animation:fu .25s ease both; position: relative;}
     .gc:hover{border-color:var(--acc);transform:translateY(-5px);box-shadow: 0 12px 24px rgba(0,0,0,0.4);}
-    .gc-cover{width:100%;height:130px;object-fit:cover;display:block;background:var(--bg3); transition: transform .4s ease;}
-    .gc:hover .gc-cover { transform: scale(1.08) rotate(2.5deg); }
     
-    .gc-ph{width:100%;height:130px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:2.5rem;opacity:.25}
-    .gc-body{padding:.95rem 1rem 1rem; position: relative; z-index: 2; background: var(--bg2);}
-    .gc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px}
-    .gc-name{font-family:'Noto Serif SC',serif;font-size:.95rem;font-weight:600;line-height:1.35;flex:1}
-    .pdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:5px}
-    .gc-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+    .gc-cover-wrap {position: relative; width: 100%; height: 150px; overflow: hidden; background: var(--bg3);}
+    .gc-cover-bg {position: absolute; inset: -20px; background-size: cover; background-position: center; filter: blur(15px); opacity: 0.35; transition: all .4s ease;}
+    .gc-cover{position: relative; z-index: 2; width:100%;height:100%;object-fit:contain;display:block; transition: transform .4s ease;}
+    
+    .gc:hover .gc-cover { transform: scale(1.08) rotate(2.5deg); }
+    .gc:hover .gc-cover-bg { transform: scale(1.1); opacity: 0.6; }
+    
+    .gc-ph{width:100%;height:150px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:2.5rem;opacity:.25}
     .tag{font-size:.7rem;padding:2px 7px;border-radius:99px;font-family:'DM Mono',monospace;border:1px solid var(--b);color:var(--t3);background:var(--bg3)}
     .tx{border-color:rgba(16,124,16,.5);color:#4ec44e;background:rgba(16,124,16,.12)}
     .tp{border-color:rgba(0,55,145,.6);color:#6ea8fe;background:rgba(0,55,145,.15)}
