@@ -337,7 +337,7 @@
 <script>
 const SB_URL='https://qbzxfwnosacwbdumkvoz.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFienhmd25vc2Fjd2JkdW1rdm96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NjQyMTEsImV4cCI6MjA4OTQ0MDIxMX0.cvREkp0ZmiUuSpMj9TZB0ZGUXv1WMor0jN3yd4HEBwY';
-const IGDB_PROXY='https://qbzxfwnosacwbdumkvoz.supabase.co/functions/v1/dynamic-worker'; // 配置后填入
+const IGDB_PROXY='https://qbzxfwnosacwbdumkvoz.supabase.co/functions/v1/dynamic-worker'; 
 
 const {createClient}=supabase;
 const db=createClient(SB_URL,SB_KEY);
@@ -355,18 +355,27 @@ async function init(){
   db.auth.onAuthStateChange((_,s)=>setUser(s?.user||null));
   await load();
 }
+
 function setUser(u){
   const av=document.getElementById('av'),ab=document.getElementById('abtn');
   if(u){av.textContent=u.email.slice(0,2).toUpperCase();ab.textContent='登出';ab.onclick=()=>db.auth.signOut().then(()=>{games=[];render();});}
   else{av.textContent='?';ab.textContent='登录';ab.onclick=()=>go('auth',null);}
 }
+
 async function load(){
-  const {data:{user}}=await db.auth.getUser();
-  if(user){const{data}=await db.from('games').select('*').eq('user_id',user.id).order('created_at',{ascending:false});games=data||[];}
-  else{try{games=JSON.parse(localStorage.getItem('gj')||'[]');}catch{games=[];}}
+  const {data:{session}}=await db.auth.getSession();
+  const user = session?.user;
+  if(user){
+    const{data}=await db.from('games').select('*').eq('user_id',user.id).order('created_at',{ascending:false});
+    games=data||[];
+  } else {
+    try{games=JSON.parse(localStorage.getItem('gj')||'[]');}catch{games=[];}
+  }
   render();
 }
+
 function setPF(p,el){pff=p;document.querySelectorAll('.pfchip').forEach(c=>c.classList.remove('on'));el.classList.add('on');render();}
+
 function render(){
   const q=document.getElementById('q').value.toLowerCase();
   const fs=document.getElementById('fst').value;
@@ -381,12 +390,14 @@ function render(){
   else if(so==='hours')list.sort((a,b)=>(b.hours||0)-(a.hours||0));
   else if(so==='name')list.sort((a,b)=>a.name.localeCompare(b.name,'zh'));
   else list.sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
+  
   document.getElementById('s-total').textContent=games.length;
   document.getElementById('s-pl').textContent=games.filter(g=>g.status==='playing').length;
   document.getElementById('s-dn').textContent=games.filter(g=>g.status==='done').length;
   document.getElementById('s-hr').textContent=games.reduce((s,g)=>s+(g.hours||0),0);
   const rated=games.filter(g=>g.rating>0);
   document.getElementById('s-av').textContent=rated.length?(rated.reduce((s,g)=>s+g.rating,0)/rated.length).toFixed(1):'—';
+  
   const gg=document.getElementById('gg');
   if(!list.length){gg.innerHTML=`<div class="empty"><div class="empty-i">🎮</div>${q||fs||pff!=='all'?'没有符合条件的游戏':'还没有记录，点击「添加游戏」开始吧！'}</div>`;return;}
   gg.innerHTML=list.map((g,i)=>{
@@ -408,6 +419,7 @@ function render(){
     </div>`;
   }).join('');
 }
+
 function openAdd(){
   editId=null;star=0;
   document.getElementById('m-title').textContent='添加游戏';
@@ -420,6 +432,7 @@ function openAdd(){
   document.getElementById('sr').style.display='none';
   document.getElementById('ov').classList.add('on');
 }
+
 function openEdit(id){
   const g=games.find(x=>(x.id||x._id)==id);if(!g)return;
   editId=id;star=g.rating||0;
@@ -440,6 +453,7 @@ function openEdit(id){
   setStar(g.rating||0);
   document.getElementById('ov').classList.add('on');
 }
+
 function closeOv(){document.getElementById('ov').classList.remove('on');}
 function rcl(id){document.querySelectorAll(`#${id} .chip`).forEach(c=>{c.className='chip';});}
 function tc(el,pfx){
@@ -449,9 +463,10 @@ function tc(el,pfx){
 }
 function setStar(n){star=n;document.querySelectorAll('.sb').forEach((b,i)=>b.classList.toggle('on',i<n));document.getElementById('shint').textContent=HINT[n]||'未评分';}
 function onSrch(v){clearTimeout(srT);const sr=document.getElementById('sr');if(!v.trim()){sr.style.display='none';return;}srT=setTimeout(()=>doSrch(v),400);}
+
 async function doSrch(q){
   const sr=document.getElementById('sr');
-  if(!IGDB_PROXY){sr.style.display='block';sr.innerHTML=`<div class="sr-msg" style="color:var(--warn)">⚠ 请先配置 IGDB Proxy（见说明）</div>`;return;}
+  if(!IGDB_PROXY){sr.style.display='block';sr.innerHTML=`<div class="sr-msg" style="color:var(--warn)">⚠ 请先配置 IGDB Proxy</div>`;return;}
   sr.style.display='block';sr.innerHTML=`<div class="sr-msg">搜索中…</div>`;
   try{
     const res=await fetch(IGDB_PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q})});
@@ -462,6 +477,7 @@ async function doSrch(q){
     </div>`).join('');
   }catch{sr.innerHTML=`<div class="sr-msg" style="color:var(--danger)">搜索失败</div>`;}
 }
+
 function fillG(g){
   document.getElementById('fn').value=g.name||'';
   document.getElementById('fdev').value=g.developer||'';
@@ -476,21 +492,26 @@ function fillG(g){
   (g.genres||[]).forEach(gn=>{const c=document.querySelector(`#gc [data-v="${gn}"]`);if(c)c.classList.add('on');});
   document.getElementById('sr').style.display='none';document.getElementById('gs').value='';
 }
+
 async function saveGame(){
   const name=document.getElementById('fn').value.trim();if(!name){document.getElementById('fn').focus();return;}
   const pls=[...document.querySelectorAll('#pc .chip')].filter(c=>c.className!=='chip').map(c=>c.dataset.v).filter(Boolean);
   const gns=[...document.querySelectorAll('#gc .chip')].filter(c=>c.className!=='chip').map(c=>c.dataset.v).filter(Boolean);
   const sts=[...document.querySelectorAll('#sc .chip')].filter(c=>c.className!=='chip').map(c=>c.dataset.v).filter(Boolean);
   const p={name,platforms:pls,genres:gns,styles:sts,developer:document.getElementById('fdev').value.trim(),year:parseInt(document.getElementById('fyr').value)||null,status:document.getElementById('fst2').value,hours:parseInt(document.getElementById('fhr').value)||0,completion:document.getElementById('fcp').value,rating:star,review:document.getElementById('frev').value.trim(),cover:document.getElementById('fcv').value.trim()};
-  const {data:{user}}=await db.auth.getUser();
+  
+  // 强制拉取最新状态，防止假登录
+  const { data: { session } } = await db.auth.getSession();
+  const user = session?.user;
+
   if(user){
     if(editId){
       const{error}=await db.from('games').update(p).eq('id',editId).eq('user_id',user.id);
-      if(error){alert('保存失败：'+error.message);return;}
+      if(error){alert('更新云端失败：'+error.message);return;}
       const i=games.findIndex(g=>g.id==editId);if(i>-1)games[i]={...games[i],...p};
     }else{
-      const{data,error}=await db.from('games').insert({...p,user_id:user.id}).select().single();
-      if(error){alert('保存失败：'+error.message);return;}
+      const{data,error}=await db.from('games').insert({...p, user_id: user.id}).select().single();
+      if(error){alert('添加云端失败：'+error.message);return;}
       if(data)games.unshift(data);
     }
   }else{
@@ -500,14 +521,20 @@ async function saveGame(){
   }
   closeOv();render();
 }
+
 async function delGame(){
   if(!editId||!confirm('确认删除？'))return;
-  const {data:{user}}=await db.auth.getUser();
-  if(user)await db.from('games').delete().eq('id',editId).eq('user_id',user.id);
+  const { data: { session } } = await db.auth.getSession();
+  const user = session?.user;
+  
+  if(user){
+    await db.from('games').delete().eq('id',editId).eq('user_id',user.id);
+  }
   games=games.filter(g=>(g.id||g._id)!=editId);
-  if(!(await db.auth.getUser()).data.user)localStorage.setItem('gj',JSON.stringify(games));
+  if(!user) localStorage.setItem('gj',JSON.stringify(games));
   closeOv();render();
 }
+
 function go(pg,btn){
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('nav button').forEach(b=>b.classList.remove('on'));
@@ -515,6 +542,7 @@ function go(pg,btn){
   if(btn)btn.classList.add('on');
   if(pg==='stats')drawCharts();
 }
+
 function drawCharts(){
   const stC={playing:0,done:0,wishlist:0,dropped:0},gnC={},pfC={},rtC=[0,0,0,0,0],styC={};
   games.forEach(g=>{
@@ -534,17 +562,47 @@ function drawCharts(){
   br('ch-rt',['1★','2★','3★','4★','5★'],rtC,['#444','#666','#999','#d4f04a','#40e8c4']);
   const tSty=Object.entries(styC).sort((a,b)=>b[1]-a[1]).slice(0,10);br('ch-sty',tSty.map(x=>x[0]),tSty.map(x=>x[1]));
 }
+
 let amd='login';
 function am(m){amd=m;document.getElementById('t-in').classList.toggle('on',m==='login');document.getElementById('t-up').classList.toggle('on',m==='signup');document.getElementById('asub').textContent=m==='login'?'登录':'注册';document.getElementById('amsg').textContent='';}
+
 async function doAuth(){
   const e=document.getElementById('ae').value.trim(),p=document.getElementById('ap').value;
   const msg=document.getElementById('amsg');
   if(!e||!p){msg.textContent='请填写邮箱和密码';msg.className='amsg err';return;}
   msg.textContent=amd==='login'?'登录中…':'注册中…';msg.className='amsg';
   const{error}=amd==='login'?await db.auth.signInWithPassword({email:e,password:p}):await db.auth.signUp({email:e,password:p});
-  if(error){msg.textContent=error.message;msg.className='amsg err';}
-  else{msg.textContent=amd==='login'?'登录成功！':'注册成功，请查收验证邮件';msg.className='amsg ok';if(amd==='login')setTimeout(()=>{go('list',document.querySelector('nav button'));load();},700);}
+  
+  if(error){
+    msg.textContent=error.message;
+    msg.className='amsg err';
+  } else {
+    msg.textContent=amd==='login'?'登录成功！':'注册成功，请查收验证邮件';
+    msg.className='amsg ok';
+    if(amd==='login'){
+      // 核心新功能：登录成功后，检测本地是否有未同步的游戏，自动推送到云端！
+      setTimeout(async ()=>{
+        let localG = [];
+        try{ localG = JSON.parse(localStorage.getItem('gj')||'[]'); }catch{}
+        
+        const {data:{user}} = await db.auth.getUser();
+        if(user && localG.length > 0) {
+           const toInsert = localG.map(g => {
+              const copy = {...g, user_id: user.id};
+              delete copy.id;
+              delete copy._id;
+              return copy;
+           });
+           await db.from('games').insert(toInsert);
+           localStorage.removeItem('gj'); // 合并完成后清空本地
+        }
+        go('list',document.querySelector('nav button'));
+        load();
+      }, 700);
+    }
+  }
 }
+
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 init();
 </script>
