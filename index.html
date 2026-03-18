@@ -489,9 +489,9 @@ function render(){
     const pftags=(g.platforms||[]).map(p=>`<span class="tag ${PTAG[p]||''}">${PFMAP[p]||p}</span>`).join('');
     const gntags=(g.genres||[]).slice(0,2).map(gn=>`<span class="tag">${gn}</span>`).join('');
     const dc={playing:'var(--acc)',done:'var(--acc2)',wishlist:'var(--warn)',dropped:'var(--t3)'}[g.status]||'var(--t3)';
-    // ✨ 修改：点击卡片不再是 openEdit，而是打开炫酷的 openDetail
+    // ✨ 修改：加入包含模糊背景的封套结构
     return`<div class="gc" style="animation-delay:${Math.min(i*.03,.2)}s" onclick="openDetail('${g.id||g._id}')">
-      ${g.cover?`<img class="gc-cover" src="${esc(g.cover)}" alt="" loading="lazy" onerror="this.style.display='none'">`:``}
+      ${g.cover?`<div class="gc-cover-wrap"><div class="gc-cover-bg" style="background-image:url('${esc(g.cover)}')"></div><img class="gc-cover" src="${esc(g.cover)}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'"></div>`:``}
       <div class="gc-ph" style="${g.cover?'display:none':''}">🎮</div>
       <div class="gc-body">
         <div class="gc-top"><div class="gc-name">${esc(g.name)}</div><div class="pdot" style="background:${dc}"></div></div>
