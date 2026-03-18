@@ -39,7 +39,6 @@
     .tb{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:1.1rem}
     .tb input,.tb select{background:var(--bg2);border:1px solid var(--b);border-radius:8px;padding:7px 12px;color:var(--t);font-family:inherit;font-size:.85rem;outline:none;transition:border .15s}
     .tb input{flex:1;min-width:150px}.tb input:focus,.tb select:focus{border-color:var(--b2)}
-    /* 防止 readonly 时的鼠标样式变成禁止符号 */
     input[readonly] { cursor: text; }
     .btn{padding:7px 16px;border-radius:8px;font-family:inherit;font-size:.85rem;cursor:pointer;border:1px solid var(--b2);background:transparent;color:var(--t);transition:all .15s;white-space:nowrap}
     .btn:hover{background:var(--bg3)}
@@ -56,12 +55,17 @@
     .pfchip[data-p="switch"].on{border-color:#ff6e6e;color:#ff6e6e;background:rgba(228,0,15,.1)}
     .pfchip[data-p="steam"].on{border-color:#66c0f4;color:#66c0f4;background:rgba(102,192,244,.08)}
     .gg{display:grid;grid-template-columns:repeat(auto-fill,minmax(265px,1fr));gap:12px}
+    
     @keyframes fu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-    .gc{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);overflow:hidden;cursor:pointer;transition:border .15s,transform .15s;animation:fu .25s ease both}
-    .gc:hover{border-color:var(--b2);transform:translateY(-2px)}
-    .gc-cover{width:100%;height:130px;object-fit:cover;display:block;background:var(--bg3)}
+    
+    /* ✨ 新版卡片动效 */
+    .gc{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);overflow:hidden;cursor:pointer;transition:all .3s cubic-bezier(0.25, 0.46, 0.45, 0.94);animation:fu .25s ease both; position: relative;}
+    .gc:hover{border-color:var(--acc);transform:translateY(-5px);box-shadow: 0 12px 24px rgba(0,0,0,0.4);}
+    .gc-cover{width:100%;height:130px;object-fit:cover;display:block;background:var(--bg3); transition: transform .4s ease;}
+    .gc:hover .gc-cover { transform: scale(1.08) rotate(2.5deg); }
+    
     .gc-ph{width:100%;height:130px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:2.5rem;opacity:.25}
-    .gc-body{padding:.95rem 1rem 1rem}
+    .gc-body{padding:.95rem 1rem 1rem; position: relative; z-index: 2; background: var(--bg2);}
     .gc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px}
     .gc-name{font-family:'Noto Serif SC',serif;font-size:.95rem;font-weight:600;line-height:1.35;flex:1}
     .pdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:5px}
@@ -79,18 +83,40 @@
     .htxt{font-size:.72rem;color:var(--t3);font-family:'DM Mono',monospace}
     .empty{grid-column:1/-1;text-align:center;padding:4rem 1rem;color:var(--t3)}
     .empty-i{font-size:3rem;opacity:.3;margin-bottom:.8rem}
-    .ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:300;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto}
+    .ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(5px);z-index:300;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto}
     .ov.on{display:flex}
-    .modal{background:var(--bg2);border:1px solid var(--b2);border-radius:var(--rl);width:100%;max-width:600px;margin:auto}
+    .modal{background:var(--bg2);border:1px solid var(--b2);border-radius:var(--rl);width:100%;max-width:600px;margin:auto;box-shadow:0 25px 50px rgba(0,0,0,0.5);}
+    
+    /* ✨ 详情馆专属 CSS */
+    .d-modal { overflow: hidden; padding: 0; }
+    .d-hero { height: 160px; position: relative; overflow: hidden; background: var(--bg3); }
+    .d-hero-bg { position: absolute; inset: -20px; filter: blur(20px); opacity: 0.35; background-size: cover; background-position: center; transition: all 0.3s ease; }
+    .d-body { padding: 0 1.5rem 1.5rem; position: relative; z-index: 2; }
+    .d-top { display: flex; gap: 18px; margin-top: -65px; margin-bottom: 1.5rem; align-items: flex-end; }
+    .d-cover-img { width: 110px; height: 155px; object-fit: cover; border-radius: 8px; border: 3px solid var(--bg2); box-shadow: 0 10px 20px rgba(0,0,0,0.6); background: var(--bg3); flex-shrink: 0; }
+    .d-info { padding-bottom: 5px; flex: 1; }
+    .d-name { font-family: 'Noto Serif SC', serif; font-size: 1.45rem; font-weight: 600; line-height: 1.25; text-shadow: 0 2px 6px rgba(0,0,0,0.9); margin-bottom: 6px; }
+    .d-meta { font-size: .82rem; color: var(--t2); font-family: 'DM Mono', monospace; margin-bottom: 10px; }
+    .d-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .d-stats { display: flex; background: rgba(255,255,255,0.03); border-radius: 12px; padding: 14px 0; margin-bottom: 1.5rem; border: 1px solid var(--b); box-shadow: inset 0 2px 10px rgba(0,0,0,0.2); }
+    .d-stat { flex: 1; text-align: center; border-right: 1px solid var(--b); }
+    .d-stat:last-child { border-right: none; }
+    .d-val { display: block; font-size: 1.15rem; font-family: 'DM Mono', monospace; font-weight: 500; color: var(--t); margin-bottom: 3px; }
+    .d-lbl { font-size: .7rem; color: var(--t3); letter-spacing: 1px; text-transform: uppercase; }
+    .d-rev-box { background: rgba(212,240,74,0.03); border: 1px dashed rgba(212,240,74,0.15); border-radius: 12px; padding: 1.3rem; position: relative; }
+    .d-rev-box::before { content: '"'; position: absolute; top: 10px; left: 12px; font-size: 3rem; color: var(--acc); opacity: 0.15; font-family: serif; line-height: 1; }
+    .d-rev-lbl { font-size: .75rem; color: var(--acc); margin-bottom: 8px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
+    .d-rev-val { font-size: .95rem; color: var(--t); line-height: 1.6; white-space: pre-wrap; position: relative; z-index: 1; }
+
     .mh{padding:1.3rem 1.5rem 0;display:flex;align-items:center;justify-content:space-between}
     .mh h2{font-family:'Noto Serif SC',serif;font-size:1.05rem;font-weight:600}
     .mc{padding:1.2rem 1.5rem}
-    .mfoot{padding:1rem 1.5rem;border-top:1px solid var(--b);display:flex;gap:8px;justify-content:flex-end}
+    .mfoot{padding:1rem 1.5rem;border-top:1px solid var(--b);display:flex;gap:8px;justify-content:flex-end; background: var(--bg2); border-radius: 0 0 var(--rl) var(--rl);}
     .sbox{position:relative;margin-bottom:1.2rem}
     .sbox input{width:100%;background:var(--bg3);border:1px solid var(--b2);border-radius:8px;padding:9px 14px 9px 36px;color:var(--t);font-family:inherit;font-size:.9rem;outline:none;transition:border .15s}
     .sbox input:focus{border-color:var(--acc)}
     .sico{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--t3);font-size:14px;pointer-events:none}
-    .sr{background:var(--bg3);border:1px solid var(--b2);border-radius:8px;margin-top:6px;max-height:380px;overflow-y:auto}
+    .sr{background:var(--bg3);border:1px solid var(--b2);border-radius:8px;margin-top:6px;max-height:300px;overflow-y:auto}
     .sri{display:flex;align-items:center;gap:10px;padding:8px 12px;cursor:pointer;transition:background .12s;border-bottom:1px solid var(--b)}
     .sri:last-child{border-bottom:none}.sri:hover{background:var(--bg2)}
     .sri-cv{width:32px;height:42px;object-fit:cover;border-radius:4px;background:var(--bg2);flex-shrink:0}
@@ -159,7 +185,6 @@
       <div class="sc" style="--c:var(--acc2)"><div class="sn" id="s-av">—</div><div class="sl">平均评分</div></div>
     </div>
     <div class="tb">
-      <!-- 重点防填充修改点：通过 readonly 拦截自动输入 -->
       <input type="text" id="q" placeholder="搜索游戏名称…" oninput="render()" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')" onblur="this.setAttribute('readonly', 'readonly')" spellcheck="false">
       <select id="fst" onchange="render()">
         <option value="">全部状态</option>
@@ -214,26 +239,51 @@
   </div>
 </main>
 
-<!-- 弹窗 -->
-<div class="ov" id="ov" onclick="if(event.target===this)closeOv()">
+<!-- ✨ 沉浸式详情弹窗馆 -->
+<div class="ov" id="ov-detail" onclick="if(event.target===this)closeOv('ov-detail')">
+  <div class="modal d-modal">
+    <div class="d-hero"><div class="d-hero-bg" id="dh-bg"></div></div>
+    <div class="d-body">
+      <div class="d-top">
+        <img id="d-cover" src="" alt="" class="d-cover-img">
+        <div class="d-info">
+          <h2 id="d-name">游戏名称</h2>
+          <div class="d-meta" id="d-meta">开发商 · 年份</div>
+          <div class="d-tags" id="d-tags"></div>
+        </div>
+      </div>
+      <div class="d-stats">
+        <div class="d-stat"><span id="d-st-val" class="d-val"></span><span class="d-lbl">状态</span></div>
+        <div class="d-stat"><span id="d-hr-val" class="d-val"></span><span class="d-lbl">时长</span></div>
+        <div class="d-stat"><span id="d-rt-val" class="d-val stars"></span><span class="d-lbl">评分</span></div>
+        <div class="d-stat"><span id="d-cp-val" class="d-val"></span><span class="d-lbl">进度</span></div>
+      </div>
+      <div class="d-review-box" id="d-rev-box">
+        <div class="d-rev-lbl">评测与高光</div>
+        <div id="d-rev-val" class="d-rev-val"></div>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn btn-d" id="d-del" onclick="delGame()">删除</button>
+      <button class="btn" onclick="closeOv('ov-detail')">关闭</button>
+      <button class="btn btn-a" onclick="openEditFromDetail()">编辑记录</button>
+    </div>
+  </div>
+</div>
+
+<!-- 传统的编辑/添加弹窗 -->
+<div class="ov" id="ov-edit" onclick="if(event.target===this)closeOv('ov-edit')">
   <div class="modal">
-    <div class="mh"><h2 id="m-title">添加游戏</h2><button class="btn btn-sm" onclick="closeOv()">✕</button></div>
+    <div class="mh"><h2 id="m-title">添加游戏</h2><button class="btn btn-sm" onclick="closeOv('ov-edit')">✕</button></div>
     <div class="mc" onsubmit="return false">
       <div class="sbox">
         <span class="sico">🔍</span>
-        <!-- 防填充 -->
-        <input type="text" id="gs" placeholder="搜索游戏名称自动填入（需配置 IGDB）…" oninput="onSrch(this.value)" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')" onblur="this.setAttribute('readonly', 'readonly')">
+        <input type="text" id="gs" placeholder="搜索游戏名称自动填入…" oninput="onSrch(this.value)" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')" onblur="this.setAttribute('readonly', 'readonly')">
         <div class="sr" id="sr" style="display:none"></div>
       </div>
       <div class="row2">
-        <div class="field"><label>游戏名称 *</label>
-           <!-- 防填充 -->
-           <input type="text" id="fn" placeholder="例：《黑神话：悟空》" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')" onblur="this.setAttribute('readonly', 'readonly')">
-        </div>
-        <div class="field"><label>开发商 / 发行商</label>
-           <!-- 防填充 -->
-           <input type="text" id="fdev" placeholder="例：Game Science" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')" onblur="this.setAttribute('readonly', 'readonly')">
-        </div>
+        <div class="field"><label>游戏名称 *</label><input type="text" id="fn" placeholder="例：《黑神话：悟空》" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')" onblur="this.setAttribute('readonly', 'readonly')"></div>
+        <div class="field"><label>开发商 / 发行商</label><input type="text" id="fdev" placeholder="例：Game Science" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')" onblur="this.setAttribute('readonly', 'readonly')"></div>
       </div>
       <div class="field">
         <label>游玩平台（可多选）</label>
@@ -338,7 +388,7 @@
     </div>
     <div class="mfoot">
       <button class="btn btn-d" id="bdel" style="display:none" onclick="delGame()">删除</button>
-      <button class="btn" onclick="closeOv()">取消</button>
+      <button class="btn" onclick="closeOv('ov-edit')">取消</button>
       <button class="btn btn-a" onclick="saveGame()">保存记录</button>
     </div>
   </div>
@@ -358,8 +408,8 @@ const PFMAP={xbox:'Xbox',xbox360:'Xbox 360/One',ps5:'PS5',ps4:'PS4',switch:'Swit
 const HINT=['','差强人意','一般般','还不错','值得推荐','神作！'];
 const PFG={xbox:'xbox',xbox360:'xbox',ps5:'ps',ps4:'ps',switch:'switch',switch2:'switch',steam:'steam',mobile:'other',other:'other'};
 const PTAG={xbox:'tx',xbox360:'tx',ps5:'tp',ps4:'tp',switch:'tsw',switch2:'tsw',steam:'tst'};
+const CPMAP = {main: '主线通关', side: '主线+支线', full: '全收集/铂金', partial: '部分完成', dropped: '中途放弃'};
 
-// ✨ 无限滚动所需的状态变量
 let currentQuery = '';
 let currentOffset = 0;
 let isFetching = false;
@@ -420,7 +470,8 @@ function render(){
     const pftags=(g.platforms||[]).map(p=>`<span class="tag ${PTAG[p]||''}">${PFMAP[p]||p}</span>`).join('');
     const gntags=(g.genres||[]).slice(0,2).map(gn=>`<span class="tag">${gn}</span>`).join('');
     const dc={playing:'var(--acc)',done:'var(--acc2)',wishlist:'var(--warn)',dropped:'var(--t3)'}[g.status]||'var(--t3)';
-    return`<div class="gc" style="animation-delay:${Math.min(i*.03,.2)}s" onclick="openEdit('${g.id||g._id}')">
+    // ✨ 修改：点击卡片不再是 openEdit，而是打开炫酷的 openDetail
+    return`<div class="gc" style="animation-delay:${Math.min(i*.03,.2)}s" onclick="openDetail('${g.id||g._id}')">
       ${g.cover?`<img class="gc-cover" src="${esc(g.cover)}" alt="" loading="lazy" onerror="this.style.display='none'">`:``}
       <div class="gc-ph" style="${g.cover?'display:none':''}">🎮</div>
       <div class="gc-body">
@@ -436,6 +487,44 @@ function render(){
   }).join('');
 }
 
+// ✨ 沉浸式详情馆逻辑
+function openDetail(id) {
+  const g = games.find(x=>(x.id||x._id)==id); if(!g) return;
+  editId = id; // 为删除和编辑功能提供 ID
+  
+  document.getElementById('dh-bg').style.backgroundImage = g.cover ? `url(${g.cover})` : 'none';
+  document.getElementById('d-cover').src = g.cover || '';
+  document.getElementById('d-cover').style.display = g.cover ? 'block' : 'none';
+  
+  document.getElementById('d-name').textContent = g.name || '未知游戏';
+  document.getElementById('d-meta').textContent = [g.developer, g.year].filter(Boolean).join(' · ');
+  
+  const pftags = (g.platforms||[]).map(p=>`<span class="tag ${PTAG[p]||''}">${PFMAP[p]||p}</span>`).join('');
+  const gntags = (g.genres||[]).slice(0,4).map(gn=>`<span class="tag">${gn}</span>`).join('');
+  document.getElementById('d-tags').innerHTML = pftags + gntags;
+  
+  const dc={playing:'var(--acc)',done:'var(--acc2)',wishlist:'var(--warn)',dropped:'var(--t3)'}[g.status]||'var(--t3)';
+  document.getElementById('d-st-val').innerHTML = `<span style="color:${dc}">${STMAP[g.status]||'—'}</span>`;
+  document.getElementById('d-hr-val').textContent = g.hours ? g.hours + 'h' : '0h';
+  document.getElementById('d-rt-val').innerHTML = g.rating ? '★'.repeat(g.rating) + `<span style="color:var(--t3)">${'★'.repeat(5-g.rating)}</span>` : `<span style="color:var(--t3)">暂无</span>`;
+  document.getElementById('d-cp-val').textContent = CPMAP[g.completion] || '—';
+  
+  const revBox = document.getElementById('d-rev-box');
+  if(g.review) {
+    revBox.style.display = 'block';
+    document.getElementById('d-rev-val').textContent = g.review;
+  } else {
+    revBox.style.display = 'none';
+  }
+  
+  document.getElementById('ov-detail').classList.add('on');
+}
+
+function openEditFromDetail() {
+  closeOv('ov-detail');
+  openEdit(editId);
+}
+
 function openAdd(){
   editId=null;star=0;
   document.getElementById('m-title').textContent='添加游戏';
@@ -446,14 +535,14 @@ function openAdd(){
   document.getElementById('fcp').value='';
   rcl('pc');rcl('gc');rcl('sc');setStar(0);
   document.getElementById('sr').style.display='none';
-  document.getElementById('ov').classList.add('on');
+  document.getElementById('ov-edit').classList.add('on');
 }
 
 function openEdit(id){
   const g=games.find(x=>(x.id||x._id)==id);if(!g)return;
   editId=id;star=g.rating||0;
-  document.getElementById('m-title').textContent='编辑游戏';
-  document.getElementById('bdel').style.display='inline-flex';
+  document.getElementById('m-title').textContent='编辑记录';
+  document.getElementById('bdel').style.display='none'; // 在编辑表单隐藏删除，挪到详情馆了
   document.getElementById('fn').value=g.name||'';
   document.getElementById('fdev').value=g.developer||'';
   document.getElementById('fyr').value=g.year||'';
@@ -467,10 +556,10 @@ function openEdit(id){
   rcl('gc');(g.genres||[]).forEach(gn=>{const c=document.querySelector(`#gc [data-v="${gn}"]`);if(c)c.classList.add('on');});
   rcl('sc');(g.styles||[]).forEach(s=>{const c=document.querySelector(`#sc [data-v="${s}"]`);if(c)c.classList.add('on');});
   setStar(g.rating||0);
-  document.getElementById('ov').classList.add('on');
+  document.getElementById('ov-edit').classList.add('on');
 }
 
-function closeOv(){document.getElementById('ov').classList.remove('on');}
+function closeOv(id){document.getElementById(id).classList.remove('on');}
 function rcl(id){document.querySelectorAll(`#${id} .chip`).forEach(c=>{c.className='chip';});}
 function tc(el,pfx){
   const cls=pfx?{'x':'onx','p':'onp','sw':'onsw','st':'onst'}[pfx]||'on':'on';
@@ -479,7 +568,6 @@ function tc(el,pfx){
 }
 function setStar(n){star=n;document.querySelectorAll('.sb').forEach((b,i)=>b.classList.toggle('on',i<n));document.getElementById('shint').textContent=HINT[n]||'未评分';}
 
-// ✨ 修改后的搜索入口，重置分页状态
 function onSrch(v){
   clearTimeout(srT);
   const sr=document.getElementById('sr');
@@ -492,7 +580,6 @@ function onSrch(v){
   },400);
 }
 
-// ✨ 支持分页加载的核心搜索函数
 async function doSrch(isNewSearch = false){
   const sr=document.getElementById('sr');
   if(!IGDB_PROXY){sr.style.display='block';sr.innerHTML=`<div class="sr-msg" style="color:var(--warn)">⚠ 请先配置 IGDB Proxy</div>`;return;}
@@ -500,7 +587,7 @@ async function doSrch(isNewSearch = false){
   if(isNewSearch) {
     sr.style.display='block';
     sr.innerHTML=`<div class="sr-msg">搜索中…</div>`;
-    sr.scrollTop = 0; // 新搜索时回到顶部
+    sr.scrollTop = 0;
   } else {
     sr.insertAdjacentHTML('beforeend', `<div class="sr-msg load-more" style="padding:10px">加载更多中…</div>`);
   }
@@ -508,7 +595,6 @@ async function doSrch(isNewSearch = false){
   isFetching = true;
 
   try{
-    // 请求时携带 offset
     const res=await fetch(IGDB_PROXY,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
@@ -536,10 +622,10 @@ async function doSrch(isNewSearch = false){
     if(isNewSearch) {
       sr.innerHTML = htmlStr;
     } else {
-      sr.insertAdjacentHTML('beforeend', htmlStr); // 追加到末尾
+      sr.insertAdjacentHTML('beforeend', htmlStr);
     }
 
-    currentOffset += 50; // 偏移量增加
+    currentOffset += 50;
     isFetching = false;
   }catch{
     const loader = sr.querySelector('.load-more');
@@ -549,10 +635,8 @@ async function doSrch(isNewSearch = false){
   }
 }
 
-// ✨ 监听下拉框的滚动事件，触底自动加载
 document.getElementById('sr').addEventListener('scroll', function() {
   if(isFetching || !hasMore) return;
-  // 当距离底部不足 30 像素时触发
   if (this.scrollHeight - this.scrollTop - this.clientHeight < 30) {
     doSrch(false);
   }
@@ -598,11 +682,11 @@ async function saveGame(){
     else{games.unshift({_id:Date.now().toString(36)+Math.random().toString(36).slice(2),created_at:new Date().toISOString(),...p});}
     localStorage.setItem('gj',JSON.stringify(games));
   }
-  closeOv();render();
+  closeOv('ov-edit');render();
 }
 
 async function delGame(){
-  if(!editId||!confirm('确认删除？'))return;
+  if(!editId||!confirm('确认删除这款游戏？'))return;
   const { data: { session } } = await db.auth.getSession();
   const user = session?.user;
   
@@ -611,7 +695,10 @@ async function delGame(){
   }
   games=games.filter(g=>(g.id||g._id)!=editId);
   if(!user) localStorage.setItem('gj',JSON.stringify(games));
-  closeOv();render();
+  
+  // 清理所有弹窗
+  document.querySelectorAll('.ov').forEach(o=>o.classList.remove('on'));
+  render();
 }
 
 function go(pg,btn){
