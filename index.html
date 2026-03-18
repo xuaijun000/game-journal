@@ -359,6 +359,12 @@ const HINT=['','差强人意','一般般','还不错','值得推荐','神作！'
 const PFG={xbox:'xbox',xbox360:'xbox',ps5:'ps',ps4:'ps',switch:'switch',switch2:'switch',steam:'steam',mobile:'other',other:'other'};
 const PTAG={xbox:'tx',xbox360:'tx',ps5:'tp',ps4:'tp',switch:'tsw',switch2:'tsw',steam:'tst'};
 
+// ✨ 无限滚动所需的状态变量
+let currentQuery = '';
+let currentOffset = 0;
+let isFetching = false;
+let hasMore = true;
+
 async function init(){
   const {data:{session}}=await db.auth.getSession();
   if(session?.user)setUser(session.user);
@@ -472,22 +478,85 @@ function tc(el,pfx){
   else{el.classList.add(cls);}
 }
 function setStar(n){star=n;document.querySelectorAll('.sb').forEach((b,i)=>b.classList.toggle('on',i<n));document.getElementById('shint').textContent=HINT[n]||'未评分';}
-function onSrch(v){clearTimeout(srT);const sr=document.getElementById('sr');if(!v.trim()){sr.style.display='none';return;}srT=setTimeout(()=>doSrch(v),400);}
 
-async function doSrch(q){
+// ✨ 修改后的搜索入口，重置分页状态
+function onSrch(v){
+  clearTimeout(srT);
+  const sr=document.getElementById('sr');
+  if(!v.trim()){sr.style.display='none';return;}
+  srT=setTimeout(()=>{
+    currentQuery = v.trim();
+    currentOffset = 0;
+    hasMore = true;
+    doSrch(true);
+  },400);
+}
+
+// ✨ 支持分页加载的核心搜索函数
+async function doSrch(isNewSearch = false){
   const sr=document.getElementById('sr');
   if(!IGDB_PROXY){sr.style.display='block';sr.innerHTML=`<div class="sr-msg" style="color:var(--warn)">⚠ 请先配置 IGDB Proxy</div>`;return;}
-  sr.style.display='block';sr.innerHTML=`<div class="sr-msg">搜索中…</div>`;
+  
+  if(isNewSearch) {
+    sr.style.display='block';
+    sr.innerHTML=`<div class="sr-msg">搜索中…</div>`;
+    sr.scrollTop = 0; // 新搜索时回到顶部
+  } else {
+    sr.insertAdjacentHTML('beforeend', `<div class="sr-msg load-more" style="padding:10px">加载更多中…</div>`);
+  }
+
+  isFetching = true;
+
   try{
-    // 修改点：在请求体中加入了 limit: 50，尝试获取更多结果
-    const res=await fetch(IGDB_PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q, limit:50})});
+    // 请求时携带 offset
+    const res=await fetch(IGDB_PROXY,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({query: currentQuery, offset: currentOffset})
+    });
     const data=await res.json();
-    if(!data.length){sr.innerHTML=`<div class="sr-msg">未找到相关游戏</div>`;return;}
-    sr.innerHTML=data.map(g=>`<div class="sri" onclick='fillG(${JSON.stringify(g).replace(/'/g,"&#39;")})'>
+    
+    const loader = sr.querySelector('.load-more');
+    if(loader) loader.remove();
+
+    if(!data || !data.length){
+      if(isNewSearch) sr.innerHTML=`<div class="sr-msg">未找到相关游戏</div>`;
+      else if(hasMore) sr.insertAdjacentHTML('beforeend', `<div class="sr-msg">没有更多结果了</div>`);
+      hasMore = false;
+      isFetching = false;
+      return;
+    }
+
+    if(data.length < 50) hasMore = false;
+
+    const htmlStr = data.map(g=>`<div class="sri" onclick='fillG(${JSON.stringify(g).replace(/'/g,"&#39;")})'>
       ${g.cover?`<img class="sri-cv" src="${g.cover}" alt="">`:``}<div class="sri-info"><div class="sri-name" title="${esc(g.name)}">${esc(g.name)}</div><div class="sri-meta">${[g.year,g.platforms?.join(' / ')].filter(Boolean).join(' · ')}</div></div>
     </div>`).join('');
-  }catch{sr.innerHTML=`<div class="sr-msg" style="color:var(--danger)">搜索失败</div>`;}
+
+    if(isNewSearch) {
+      sr.innerHTML = htmlStr;
+    } else {
+      sr.insertAdjacentHTML('beforeend', htmlStr); // 追加到末尾
+    }
+
+    currentOffset += 50; // 偏移量增加
+    isFetching = false;
+  }catch{
+    const loader = sr.querySelector('.load-more');
+    if(loader) loader.remove();
+    if(isNewSearch) sr.innerHTML=`<div class="sr-msg" style="color:var(--danger)">搜索失败</div>`;
+    isFetching = false;
+  }
 }
+
+// ✨ 监听下拉框的滚动事件，触底自动加载
+document.getElementById('sr').addEventListener('scroll', function() {
+  if(isFetching || !hasMore) return;
+  // 当距离底部不足 30 像素时触发
+  if (this.scrollHeight - this.scrollTop - this.clientHeight < 30) {
+    doSrch(false);
+  }
+});
 
 function fillG(g){
   document.getElementById('fn').value=g.name||'';
@@ -511,7 +580,6 @@ async function saveGame(){
   const sts=[...document.querySelectorAll('#sc .chip')].filter(c=>c.className!=='chip').map(c=>c.dataset.v).filter(Boolean);
   const p={name,platforms:pls,genres:gns,styles:sts,developer:document.getElementById('fdev').value.trim(),year:parseInt(document.getElementById('fyr').value)||null,status:document.getElementById('fst2').value,hours:parseInt(document.getElementById('fhr').value)||0,completion:document.getElementById('fcp').value,rating:star,review:document.getElementById('frev').value.trim(),cover:document.getElementById('fcv').value.trim()};
   
-  // 强制拉取最新状态，防止假登录
   const { data: { session } } = await db.auth.getSession();
   const user = session?.user;
 
@@ -591,7 +659,6 @@ async function doAuth(){
     msg.textContent=amd==='login'?'登录成功！':'注册成功，请查收验证邮件';
     msg.className='amsg ok';
     if(amd==='login'){
-      // 登录成功后，检测本地是否有未同步的游戏，自动推送到云端！
       setTimeout(async ()=>{
         let localG = [];
         try{ localG = JSON.parse(localStorage.getItem('gj')||'[]'); }catch{}
@@ -605,7 +672,7 @@ async function doAuth(){
               return copy;
            });
            await db.from('games').insert(toInsert);
-           localStorage.removeItem('gj'); // 合并完成后清空本地
+           localStorage.removeItem('gj'); 
         }
         go('list',document.querySelector('nav button'));
         load();
