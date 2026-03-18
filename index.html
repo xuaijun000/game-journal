@@ -580,7 +580,7 @@ async function doAuth(){
     msg.textContent=amd==='login'?'登录成功！':'注册成功，请查收验证邮件';
     msg.className='amsg ok';
     if(amd==='login'){
-      // 核心新功能：登录成功后，检测本地是否有未同步的游戏，自动推送到云端！
+      // 登录成功后，检测本地是否有未同步的游戏，自动推送到云端！
       setTimeout(async ()=>{
         let localG = [];
         try{ localG = JSON.parse(localStorage.getItem('gj')||'[]'); }catch{}
