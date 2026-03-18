@@ -940,9 +940,9 @@ async function sendAIMsg() {
 回答要求：用中文，简洁有力，每次控制在 250 字以内。避免使用 Markdown 格式符号（如 **、##、- 列表符号等），纯文字输出。`;
 
   try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`, {
+    const res = await fetch(`https://qbzxfwnosacwbdumkvoz.supabase.co/functions/v1/gemini-proxy`, {
       method: 'POST',
-      headers: {'Content-Type':'application/json'},
+      headers: {'Content-Type': 'application/json', 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFienhmd25vc2Fjd2JkdW1rdm96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NjQyMTEsImV4cCI6MjA4OTQ0MDIxMX0.cvREkp0ZmiUuSpMj9TZB0ZGUXv1WMor0jN3yd4HEBwY'},
       body: JSON.stringify({
         system_instruction: {parts:[{text:systemCtx}]},
         contents: aiChatHistory,
