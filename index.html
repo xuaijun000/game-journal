@@ -39,7 +39,7 @@
     .tb{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:1.1rem}
     .tb input,.tb select{background:var(--bg2);border:1px solid var(--b);border-radius:8px;padding:7px 12px;color:var(--t);font-family:inherit;font-size:.85rem;outline:none;transition:border .15s}
     .tb input{flex:1;min-width:150px}.tb input:focus,.tb select:focus{border-color:var(--b2)}
-    input[readonly] { cursor: text; }
+    input[readonly]{cursor:text}
     .btn{padding:7px 16px;border-radius:8px;font-family:inherit;font-size:.85rem;cursor:pointer;border:1px solid var(--b2);background:transparent;color:var(--t);transition:all .15s;white-space:nowrap}
     .btn:hover{background:var(--bg3)}
     .btn-a{background:var(--acc);color:#111;border-color:transparent;font-weight:500}
@@ -55,20 +55,14 @@
     .pfchip[data-p="switch"].on{border-color:#ff6e6e;color:#ff6e6e;background:rgba(228,0,15,.1)}
     .pfchip[data-p="steam"].on{border-color:#66c0f4;color:#66c0f4;background:rgba(102,192,244,.08)}
     .gg{display:grid;grid-template-columns:repeat(auto-fill,minmax(265px,1fr));gap:12px}
-    
     @keyframes fu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-    
-    /* ✨ 新版卡片动效 */
-    .gc{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);overflow:hidden;cursor:pointer;transition:all .3s cubic-bezier(0.25, 0.46, 0.45, 0.94);animation:fu .25s ease both; position: relative;}
-    .gc:hover{border-color:var(--acc);transform:translateY(-5px);box-shadow: 0 12px 24px rgba(0,0,0,0.4);}
-    
-    .gc-cover-wrap {position: relative; width: 100%; height: 150px; overflow: hidden; background: var(--bg3);}
-    .gc-cover-bg {position: absolute; inset: -20px; background-size: cover; background-position: center; filter: blur(15px); opacity: 0.35; transition: all .4s ease;}
-    .gc-cover{position: relative; z-index: 2; width:100%;height:100%;object-fit:contain;display:block; transition: transform .4s ease;}
-    
-    .gc:hover .gc-cover { transform: scale(1.08) rotate(2.5deg); }
-    .gc:hover .gc-cover-bg { transform: scale(1.1); opacity: 0.6; }
-    
+    .gc{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);overflow:hidden;cursor:pointer;transition:all .3s cubic-bezier(0.25,0.46,0.45,0.94);animation:fu .25s ease both;position:relative}
+    .gc:hover{border-color:var(--acc);transform:translateY(-5px);box-shadow:0 12px 24px rgba(0,0,0,0.4)}
+    .gc-cover-wrap{position:relative;width:100%;height:150px;overflow:hidden;background:var(--bg3)}
+    .gc-cover-bg{position:absolute;inset:-20px;background-size:cover;background-position:center;filter:blur(15px);opacity:.35;transition:all .4s ease}
+    .gc-cover{position:relative;z-index:2;width:100%;height:100%;object-fit:contain;display:block;transition:transform .4s ease}
+    .gc:hover .gc-cover{transform:scale(1.08) rotate(2.5deg)}
+    .gc:hover .gc-cover-bg{transform:scale(1.1);opacity:.6}
     .gc-ph{width:100%;height:150px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:2.5rem;opacity:.25}
     .tag{font-size:.7rem;padding:2px 7px;border-radius:99px;font-family:'DM Mono',monospace;border:1px solid var(--b);color:var(--t3);background:var(--bg3)}
     .tx{border-color:rgba(16,124,16,.5);color:#4ec44e;background:rgba(16,124,16,.12)}
@@ -84,53 +78,36 @@
     .empty{grid-column:1/-1;text-align:center;padding:4rem 1rem;color:var(--t3)}
     .empty-i{font-size:3rem;opacity:.3;margin-bottom:.8rem}
     .ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(5px);z-index:300;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto}
-    
-    /* ✨ 弹窗背景渐显 */
-    @keyframes ovFade { from { opacity: 0; } to { opacity: 1; } }
-    .ov.on{display:flex; animation: ovFade 0.3s ease-out forwards;}
-    
-    .modal{background:var(--bg2);border:1px solid var(--b2);border-radius:var(--rl);width:100%;max-width:600px;margin:auto;box-shadow:0 25px 50px rgba(0,0,0,0.5);}
-    
-    /* ✨ 详情馆旋转弹出动效 */
-    @keyframes modalSpin {
-      0% { opacity: 0; transform: scale(0.5) translateY(50px) rotate(-8deg); }
-      60% { transform: scale(1.02) translateY(-5px) rotate(2deg); opacity: 1; }
-      100% { transform: scale(1) translateY(0) rotate(0); opacity: 1; }
-    }
-    .ov.on .d-modal { animation: modalSpin 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
-    
-    /* ✨ 封面图夸张飞旋入场动效 */
-    @keyframes coverSpin {
-      0% { opacity: 0; transform: scale(0.3) rotate(-35deg) translateY(40px); }
-      100% { opacity: 1; transform: scale(1) rotate(0) translateY(0); }
-    }
-    .ov.on .d-cover-img { animation: coverSpin 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s both; }
-
-    /* ✨ 详情馆专属 CSS */
-    .d-modal { overflow: hidden; padding: 0; }
-    .d-hero { height: 160px; position: relative; overflow: hidden; background: var(--bg3); }
-    .d-hero-bg { position: absolute; inset: -20px; filter: blur(20px); opacity: 0.35; background-size: cover; background-position: center; transition: all 0.3s ease; }
-    .d-body { padding: 0 1.5rem 1.5rem; position: relative; z-index: 2; }
-    .d-top { display: flex; gap: 18px; margin-top: -65px; margin-bottom: 1.5rem; align-items: flex-end; }
-    .d-cover-img { width: 110px; height: 155px; object-fit: cover; border-radius: 8px; border: 3px solid var(--bg2); box-shadow: 0 10px 20px rgba(0,0,0,0.6); background: var(--bg3); flex-shrink: 0; }
-    .d-info { padding-bottom: 5px; flex: 1; }
-    .d-name { font-family: 'Noto Serif SC', serif; font-size: 1.45rem; font-weight: 600; line-height: 1.25; text-shadow: 0 2px 6px rgba(0,0,0,0.9); margin-bottom: 6px; }
-    .d-meta { font-size: .82rem; color: var(--t2); font-family: 'DM Mono', monospace; margin-bottom: 10px; }
-    .d-tags { display: flex; gap: 6px; flex-wrap: wrap; }
-    .d-stats { display: flex; background: rgba(255,255,255,0.03); border-radius: 12px; padding: 14px 0; margin-bottom: 1.5rem; border: 1px solid var(--b); box-shadow: inset 0 2px 10px rgba(0,0,0,0.2); }
-    .d-stat { flex: 1; text-align: center; border-right: 1px solid var(--b); }
-    .d-stat:last-child { border-right: none; }
-    .d-val { display: block; font-size: 1.15rem; font-family: 'DM Mono', monospace; font-weight: 500; color: var(--t); margin-bottom: 3px; }
-    .d-lbl { font-size: .7rem; color: var(--t3); letter-spacing: 1px; text-transform: uppercase; }
-    .d-rev-box { background: rgba(212,240,74,0.03); border: 1px dashed rgba(212,240,74,0.15); border-radius: 12px; padding: 1.3rem; position: relative; }
-    .d-rev-box::before { content: '"'; position: absolute; top: 10px; left: 12px; font-size: 3rem; color: var(--acc); opacity: 0.15; font-family: serif; line-height: 1; }
-    .d-rev-lbl { font-size: .75rem; color: var(--acc); margin-bottom: 8px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
-    .d-rev-val { font-size: .95rem; color: var(--t); line-height: 1.6; white-space: pre-wrap; position: relative; z-index: 1; }
-
+    @keyframes ovFade{from{opacity:0}to{opacity:1}}
+    .ov.on{display:flex;animation:ovFade 0.3s ease-out forwards}
+    .modal{background:var(--bg2);border:1px solid var(--b2);border-radius:var(--rl);width:100%;max-width:600px;margin:auto;box-shadow:0 25px 50px rgba(0,0,0,0.5)}
+    @keyframes modalSpin{0%{opacity:0;transform:scale(0.5) translateY(50px) rotate(-8deg)}60%{transform:scale(1.02) translateY(-5px) rotate(2deg);opacity:1}100%{transform:scale(1) translateY(0) rotate(0);opacity:1}}
+    .ov.on .d-modal{animation:modalSpin 0.5s cubic-bezier(0.25,0.46,0.45,0.94) both}
+    @keyframes coverSpin{0%{opacity:0;transform:scale(0.3) rotate(-35deg) translateY(40px)}100%{opacity:1;transform:scale(1) rotate(0) translateY(0)}}
+    .ov.on .d-cover-img{animation:coverSpin 0.7s cubic-bezier(0.34,1.56,0.64,1) 0.15s both}
+    .d-modal{overflow:hidden;padding:0}
+    .d-hero{height:160px;position:relative;overflow:hidden;background:var(--bg3)}
+    .d-hero-bg{position:absolute;inset:-20px;filter:blur(20px);opacity:.35;background-size:cover;background-position:center;transition:all 0.3s ease}
+    .d-body{padding:0 1.5rem 1.5rem;position:relative;z-index:2}
+    .d-top{display:flex;gap:18px;margin-top:-65px;margin-bottom:1.5rem;align-items:flex-end}
+    .d-cover-img{width:110px;height:155px;object-fit:cover;border-radius:8px;border:3px solid var(--bg2);box-shadow:0 10px 20px rgba(0,0,0,0.6);background:var(--bg3);flex-shrink:0}
+    .d-info{padding-bottom:5px;flex:1}
+    .d-name{font-family:'Noto Serif SC',serif;font-size:1.45rem;font-weight:600;line-height:1.25;text-shadow:0 2px 6px rgba(0,0,0,0.9);margin-bottom:6px}
+    .d-meta{font-size:.82rem;color:var(--t2);font-family:'DM Mono',monospace;margin-bottom:10px}
+    .d-tags{display:flex;gap:6px;flex-wrap:wrap}
+    .d-stats{display:flex;background:rgba(255,255,255,0.03);border-radius:12px;padding:14px 0;margin-bottom:1.2rem;border:1px solid var(--b);box-shadow:inset 0 2px 10px rgba(0,0,0,0.2)}
+    .d-stat{flex:1;text-align:center;border-right:1px solid var(--b)}
+    .d-stat:last-child{border-right:none}
+    .d-val{display:block;font-size:1.15rem;font-family:'DM Mono',monospace;font-weight:500;color:var(--t);margin-bottom:3px}
+    .d-lbl{font-size:.7rem;color:var(--t3);letter-spacing:1px;text-transform:uppercase}
+    .d-rev-box{background:rgba(212,240,74,0.03);border:1px dashed rgba(212,240,74,0.15);border-radius:12px;padding:1.3rem;position:relative;margin-bottom:12px}
+    .d-rev-box::before{content:'"';position:absolute;top:10px;left:12px;font-size:3rem;color:var(--acc);opacity:.15;font-family:serif;line-height:1}
+    .d-rev-lbl{font-size:.75rem;color:var(--acc);margin-bottom:8px;font-weight:500;text-transform:uppercase;letter-spacing:1px}
+    .d-rev-val{font-size:.95rem;color:var(--t);line-height:1.6;white-space:pre-wrap;position:relative;z-index:1}
     .mh{padding:1.3rem 1.5rem 0;display:flex;align-items:center;justify-content:space-between}
     .mh h2{font-family:'Noto Serif SC',serif;font-size:1.05rem;font-weight:600}
     .mc{padding:1.2rem 1.5rem}
-    .mfoot{padding:1rem 1.5rem;border-top:1px solid var(--b);display:flex;gap:8px;justify-content:flex-end; background: var(--bg2); border-radius: 0 0 var(--rl) var(--rl);}
+    .mfoot{padding:1rem 1.5rem;border-top:1px solid var(--b);display:flex;gap:8px;justify-content:flex-end;background:var(--bg2);border-radius:0 0 var(--rl) var(--rl)}
     .sbox{position:relative;margin-bottom:1.2rem}
     .sbox input{width:100%;background:var(--bg3);border:1px solid var(--b2);border-radius:8px;padding:9px 14px 9px 36px;color:var(--t);font-family:inherit;font-size:.9rem;outline:none;transition:border .15s}
     .sbox input:focus{border-color:var(--acc)}
@@ -179,6 +156,42 @@
     .atab button.on{background:var(--bg3);border-color:var(--b2);color:var(--t)}
     .amsg{font-size:.8rem;margin-top:8px;min-height:18px}
     .amsg.err{color:var(--danger)}.amsg.ok{color:var(--acc2)}
+
+    /* ===== AI 游戏聊天室 ===== */
+    .d-ai-btn{width:100%;margin-top:12px;padding:10px 16px;border-radius:8px;border:1px dashed rgba(212,240,74,.35);background:rgba(212,240,74,.04);color:var(--acc);font-size:.85rem;cursor:pointer;font-family:'DM Mono',monospace;letter-spacing:.05em;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+    .d-ai-btn:hover{background:rgba(212,240,74,.1);border-color:rgba(212,240,74,.6)}
+    .chat-panel{background:var(--bg);border-top:1px solid var(--b);display:none;flex-direction:column;max-height:360px}
+    .chat-panel.open{display:flex}
+    .chat-hdr{padding:8px 14px;background:var(--bg2);border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+    .chat-hdr-l{display:flex;align-items:center;gap:8px}
+    .ai-pulse{width:7px;height:7px;border-radius:50%;background:var(--acc);animation:aipulse 1.5s infinite}
+    @keyframes aipulse{0%,100%{opacity:1}50%{opacity:.25}}
+    .chat-htitle{font-size:.75rem;color:var(--t2);font-family:'DM Mono',monospace}
+    .chat-htitle em{color:var(--acc);font-style:normal}
+    .chat-msgs{flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px;min-height:120px}
+    .cmsg{display:flex;gap:8px;align-items:flex-start;max-width:92%}
+    .cmsg.user-msg{align-self:flex-end;flex-direction:row-reverse}
+    .cmsg-av{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-family:'DM Mono',monospace}
+    .cmsg-av.ai-av{background:rgba(212,240,74,.12);color:var(--acc);border:1px solid rgba(212,240,74,.2)}
+    .cmsg-av.usr-av{background:rgba(64,232,196,.08);color:var(--acc2);border:1px solid rgba(64,232,196,.15)}
+    .cmsg-bbl{padding:7px 11px;border-radius:10px;font-size:.82rem;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+    .cmsg.ai-msg .cmsg-bbl{background:rgba(255,255,255,.04);border:1px solid var(--b);color:var(--t);border-radius:2px 10px 10px 10px}
+    .cmsg.user-msg .cmsg-bbl{background:rgba(212,240,74,.09);border:1px solid rgba(212,240,74,.18);color:var(--acc);border-radius:10px 2px 10px 10px}
+    .quick-qs{display:flex;gap:6px;padding:0 14px 8px;flex-wrap:wrap;flex-shrink:0}
+    .qq{padding:4px 10px;border-radius:99px;border:1px solid var(--b);background:none;color:var(--t3);font-size:.71rem;cursor:pointer;font-family:'DM Mono',monospace;transition:all .15s;white-space:nowrap}
+    .qq:hover{border-color:rgba(212,240,74,.4);color:var(--acc)}
+    .chat-inp-row{display:flex;gap:8px;padding:8px 14px 14px;border-top:1px solid var(--b);flex-shrink:0}
+    .chat-inp{flex:1;background:rgba(255,255,255,.05);border:1px solid var(--b);border-radius:8px;padding:7px 12px;color:var(--t);font-size:.82rem;outline:none;font-family:inherit;transition:border .15s}
+    .chat-inp:focus{border-color:rgba(212,240,74,.4)}
+    .chat-snd{padding:7px 14px;border-radius:8px;background:rgba(212,240,74,.12);border:1px solid rgba(212,240,74,.3);color:var(--acc);font-size:.8rem;cursor:pointer;font-family:'DM Mono',monospace;transition:all .15s;white-space:nowrap}
+    .chat-snd:hover{background:rgba(212,240,74,.22)}
+    .chat-snd:disabled{opacity:.4;cursor:not-allowed}
+    .typing-dots{display:flex;gap:3px;align-items:center;padding:2px 0}
+    .typing-dots span{width:5px;height:5px;border-radius:50%;background:var(--acc);opacity:.35;animation:tdot 1s infinite}
+    .typing-dots span:nth-child(2){animation-delay:.2s}
+    .typing-dots span:nth-child(3){animation-delay:.4s}
+    @keyframes tdot{0%,100%{opacity:.35}50%{opacity:1}}
+
     @media(max-width:640px){.stats{grid-template-columns:repeat(3,1fr)}.cg{grid-template-columns:1fr}.row2{grid-template-columns:1fr}}
   </style>
 </head>
@@ -204,7 +217,7 @@
       <div class="sc" style="--c:var(--acc2)"><div class="sn" id="s-av">—</div><div class="sl">平均评分</div></div>
     </div>
     <div class="tb">
-      <input type="text" id="q" placeholder="搜索游戏名称…" oninput="render()" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')" onblur="this.setAttribute('readonly', 'readonly')" spellcheck="false">
+      <input type="text" id="q" placeholder="搜索游戏名称…" oninput="render()" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')" onblur="this.setAttribute('readonly','readonly')" spellcheck="false">
       <select id="fst" onchange="render()">
         <option value="">全部状态</option>
         <option value="playing">游玩中</option>
@@ -258,7 +271,7 @@
   </div>
 </main>
 
-<!-- ✨ 沉浸式详情弹窗馆 -->
+<!-- 沉浸式详情弹窗馆 -->
 <div class="ov" id="ov-detail" onclick="if(event.target===this)closeOv('ov-detail')">
   <div class="modal d-modal">
     <div class="d-hero"><div class="d-hero-bg" id="dh-bg"></div></div>
@@ -266,7 +279,7 @@
       <div class="d-top">
         <img id="d-cover" src="" alt="" class="d-cover-img">
         <div class="d-info">
-          <h2 id="d-name">游戏名称</h2>
+          <h2 id="d-name" class="d-name">游戏名称</h2>
           <div class="d-meta" id="d-meta">开发商 · 年份</div>
           <div class="d-tags" id="d-tags"></div>
         </div>
@@ -277,11 +290,34 @@
         <div class="d-stat"><span id="d-rt-val" class="d-val stars"></span><span class="d-lbl">评分</span></div>
         <div class="d-stat"><span id="d-cp-val" class="d-val"></span><span class="d-lbl">进度</span></div>
       </div>
-      <div class="d-review-box" id="d-rev-box">
+      <div class="d-rev-box" id="d-rev-box">
         <div class="d-rev-lbl">评测与高光</div>
         <div id="d-rev-val" class="d-rev-val"></div>
       </div>
+
+      <!-- AI 游戏聊天室入口 -->
+      <button class="d-ai-btn" id="d-ai-btn" onclick="toggleAIChat()">
+        <span>⬡</span><span id="d-ai-btn-txt">和 AI 聊聊这款游戏</span>
+      </button>
     </div>
+
+    <!-- AI 聊天面板 -->
+    <div class="chat-panel" id="chat-panel">
+      <div class="chat-hdr">
+        <div class="chat-hdr-l">
+          <div class="ai-pulse"></div>
+          <div class="chat-htitle">AI 情报员 · <em id="chat-game-name">游戏名</em></div>
+        </div>
+        <button class="btn btn-sm" onclick="toggleAIChat()">✕</button>
+      </div>
+      <div class="chat-msgs" id="chat-msgs"></div>
+      <div class="quick-qs" id="chat-quick"></div>
+      <div class="chat-inp-row">
+        <input class="chat-inp" id="chat-inp" placeholder="问 AI 任何关于这款游戏的问题…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAIMsg();}">
+        <button class="chat-snd" id="chat-snd" onclick="sendAIMsg()">发送</button>
+      </div>
+    </div>
+
     <div class="mfoot">
       <button class="btn btn-d" id="d-del" onclick="delGame()">删除</button>
       <button class="btn" onclick="closeOv('ov-detail')">关闭</button>
@@ -290,19 +326,19 @@
   </div>
 </div>
 
-<!-- 传统的编辑/添加弹窗 -->
+<!-- 编辑/添加弹窗 -->
 <div class="ov" id="ov-edit" onclick="if(event.target===this)closeOv('ov-edit')">
   <div class="modal">
     <div class="mh"><h2 id="m-title">添加游戏</h2><button class="btn btn-sm" onclick="closeOv('ov-edit')">✕</button></div>
     <div class="mc" onsubmit="return false">
       <div class="sbox">
         <span class="sico">🔍</span>
-        <input type="text" id="gs" placeholder="搜索游戏名称自动填入…" oninput="onSrch(this.value)" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')" onblur="this.setAttribute('readonly', 'readonly')">
+        <input type="text" id="gs" placeholder="搜索游戏名称自动填入…" oninput="onSrch(this.value)" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')" onblur="this.setAttribute('readonly','readonly')">
         <div class="sr" id="sr" style="display:none"></div>
       </div>
       <div class="row2">
-        <div class="field"><label>游戏名称 *</label><input type="text" id="fn" placeholder="例：《黑神话：悟空》" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')" onblur="this.setAttribute('readonly', 'readonly')"></div>
-        <div class="field"><label>开发商 / 发行商</label><input type="text" id="fdev" placeholder="例：Game Science" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')" onblur="this.setAttribute('readonly', 'readonly')"></div>
+        <div class="field"><label>游戏名称 *</label><input type="text" id="fn" placeholder="例：《黑神话：悟空》" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')" onblur="this.setAttribute('readonly','readonly')"></div>
+        <div class="field"><label>开发商 / 发行商</label><input type="text" id="fdev" placeholder="例：Game Science" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')" onblur="this.setAttribute('readonly','readonly')"></div>
       </div>
       <div class="field">
         <label>游玩平台（可多选）</label>
@@ -346,21 +382,21 @@
       <div class="field">
         <label>风格 / 氛围（可多选）</label>
         <div class="chips" id="sc">
-          <div class="chip" data-v="dark"       onclick="tc(this)">黑暗沉重</div>
+          <div class="chip" data-v="dark"         onclick="tc(this)">黑暗沉重</div>
           <div class="chip" data-v="lighthearted" onclick="tc(this)">轻松愉快</div>
-          <div class="chip" data-v="fantasy"    onclick="tc(this)">奇幻</div>
-          <div class="chip" data-v="scifi"      onclick="tc(this)">科幻</div>
-          <div class="chip" data-v="historical" onclick="tc(this)">历史</div>
-          <div class="chip" data-v="modern"     onclick="tc(this)">现代都市</div>
-          <div class="chip" data-v="postapoc"   onclick="tc(this)">末日废土</div>
-          <div class="chip" data-v="cyberpunk"  onclick="tc(this)">赛博朋克</div>
-          <div class="chip" data-v="pixel"      onclick="tc(this)">像素风</div>
-          <div class="chip" data-v="anime"      onclick="tc(this)">二次元</div>
-          <div class="chip" data-v="realistic"  onclick="tc(this)">写实风格</div>
-          <div class="chip" data-v="cartoon"    onclick="tc(this)">卡通风格</div>
-          <div class="chip" data-v="narrative"  onclick="tc(this)">剧情驱动</div>
-          <div class="chip" data-v="casual"     onclick="tc(this)">休闲向</div>
-          <div class="chip" data-v="hard"       onclick="tc(this)">高难度挑战</div>
+          <div class="chip" data-v="fantasy"      onclick="tc(this)">奇幻</div>
+          <div class="chip" data-v="scifi"        onclick="tc(this)">科幻</div>
+          <div class="chip" data-v="historical"   onclick="tc(this)">历史</div>
+          <div class="chip" data-v="modern"       onclick="tc(this)">现代都市</div>
+          <div class="chip" data-v="postapoc"     onclick="tc(this)">末日废土</div>
+          <div class="chip" data-v="cyberpunk"    onclick="tc(this)">赛博朋克</div>
+          <div class="chip" data-v="pixel"        onclick="tc(this)">像素风</div>
+          <div class="chip" data-v="anime"        onclick="tc(this)">二次元</div>
+          <div class="chip" data-v="realistic"    onclick="tc(this)">写实风格</div>
+          <div class="chip" data-v="cartoon"      onclick="tc(this)">卡通风格</div>
+          <div class="chip" data-v="narrative"    onclick="tc(this)">剧情驱动</div>
+          <div class="chip" data-v="casual"       onclick="tc(this)">休闲向</div>
+          <div class="chip" data-v="hard"         onclick="tc(this)">高难度挑战</div>
         </div>
       </div>
       <div class="row2">
@@ -414,87 +450,104 @@
 </div>
 
 <script>
-const SB_URL='https://qbzxfwnosacwbdumkvoz.supabase.co';
-const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFienhmd25vc2Fjd2JkdW1rdm96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NjQyMTEsImV4cCI6MjA4OTQ0MDIxMX0.cvREkp0ZmiUuSpMj9TZB0ZGUXv1WMor0jN3yd4HEBwY';
-const IGDB_PROXY='https://qbzxfwnosacwbdumkvoz.supabase.co/functions/v1/dynamic-worker'; 
+// ===== 配置区 =====
+const GEMINI_KEY = '在这里粘贴你的Gemini API Key';  // 👈 替换这里
+const SB_URL = 'https://qbzxfwnosacwbdumkvoz.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFienhmd25vc2Fjd2JkdW1rdm96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NjQyMTEsImV4cCI6MjA4OTQ0MDIxMX0.cvREkp0ZmiUuSpMj9TZB0ZGUXv1WMor0jN3yd4HEBwY';
+const IGDB_PROXY = 'https://qbzxfwnosacwbdumkvoz.supabase.co/functions/v1/dynamic-worker';
 
-const {createClient}=supabase;
-const db=createClient(SB_URL,SB_KEY);
-let games=[],editId=null,star=0,pff='all',charts={},srT=null;
-const STMAP={playing:'游玩中',done:'已通关',wishlist:'想玩',dropped:'放弃'};
-const STCLS={playing:'s-playing',done:'s-done',wishlist:'s-wishlist',dropped:'s-dropped'};
-const PFMAP={xbox:'Xbox',xbox360:'Xbox 360/One',ps5:'PS5',ps4:'PS4',switch:'Switch',switch2:'Switch 2',steam:'Steam/PC',mobile:'手机',other:'其他'};
-const HINT=['','差强人意','一般般','还不错','值得推荐','神作！'];
-const PFG={xbox:'xbox',xbox360:'xbox',ps5:'ps',ps4:'ps',switch:'switch',switch2:'switch',steam:'steam',mobile:'other',other:'other'};
-const PTAG={xbox:'tx',xbox360:'tx',ps5:'tp',ps4:'tp',switch:'tsw',switch2:'tsw',steam:'tst'};
-const CPMAP = {main: '主线通关', side: '主线+支线', full: '全收集/铂金', partial: '部分完成', dropped: '中途放弃'};
+const {createClient} = supabase;
+const db = createClient(SB_URL, SB_KEY);
+let games = [], editId = null, star = 0, pff = 'all', charts = {}, srT = null;
+const STMAP = {playing:'游玩中', done:'已通关', wishlist:'想玩', dropped:'放弃'};
+const STCLS = {playing:'s-playing', done:'s-done', wishlist:'s-wishlist', dropped:'s-dropped'};
+const PFMAP = {xbox:'Xbox', xbox360:'Xbox 360/One', ps5:'PS5', ps4:'PS4', switch:'Switch', switch2:'Switch 2', steam:'Steam/PC', mobile:'手机', other:'其他'};
+const HINT = ['','差强人意','一般般','还不错','值得推荐','神作！'];
+const PFG = {xbox:'xbox', xbox360:'xbox', ps5:'ps', ps4:'ps', switch:'switch', switch2:'switch', steam:'steam', mobile:'other', other:'other'};
+const PTAG = {xbox:'tx', xbox360:'tx', ps5:'tp', ps4:'tp', switch:'tsw', switch2:'tsw', steam:'tst'};
+const CPMAP = {main:'主线通关', side:'主线+支线', full:'全收集/铂金', partial:'部分完成', dropped:'中途放弃'};
 
-let currentQuery = '';
-let currentOffset = 0;
-let isFetching = false;
-let hasMore = true;
+let currentQuery = '', currentOffset = 0, isFetching = false, hasMore = true;
 
-async function init(){
-  const {data:{session}}=await db.auth.getSession();
-  if(session?.user)setUser(session.user);
-  db.auth.onAuthStateChange((_,s)=>setUser(s?.user||null));
+async function init() {
+  const {data:{session}} = await db.auth.getSession();
+  if (session?.user) setUser(session.user);
+  db.auth.onAuthStateChange((_, s) => setUser(s?.user || null));
   await load();
 }
 
-function setUser(u){
-  const av=document.getElementById('av'),ab=document.getElementById('abtn');
-  if(u){av.textContent=u.email.slice(0,2).toUpperCase();ab.textContent='登出';ab.onclick=()=>db.auth.signOut().then(()=>{games=[];render();});}
-  else{av.textContent='?';ab.textContent='登录';ab.onclick=()=>go('auth',null);}
+function setUser(u) {
+  const av = document.getElementById('av'), ab = document.getElementById('abtn');
+  if (u) {
+    av.textContent = u.email.slice(0,2).toUpperCase();
+    ab.textContent = '登出';
+    ab.onclick = () => db.auth.signOut().then(() => {games = []; render();});
+  } else {
+    av.textContent = '?';
+    ab.textContent = '登录';
+    ab.onclick = () => go('auth', null);
+  }
 }
 
-async function load(){
-  const {data:{session}}=await db.auth.getSession();
+async function load() {
+  const {data:{session}} = await db.auth.getSession();
   const user = session?.user;
-  if(user){
-    const{data}=await db.from('games').select('*').eq('user_id',user.id).order('created_at',{ascending:false});
-    games=data||[];
+  if (user) {
+    const {data} = await db.from('games').select('*').eq('user_id', user.id).order('created_at', {ascending:false});
+    games = data || [];
   } else {
-    try{games=JSON.parse(localStorage.getItem('gj')||'[]');}catch{games=[];}
+    try { games = JSON.parse(localStorage.getItem('gj') || '[]'); } catch { games = []; }
   }
   render();
 }
 
-function setPF(p,el){pff=p;document.querySelectorAll('.pfchip').forEach(c=>c.classList.remove('on'));el.classList.add('on');render();}
+function setPF(p, el) {
+  pff = p;
+  document.querySelectorAll('.pfchip').forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+  render();
+}
 
-function render(){
-  const q=document.getElementById('q').value.toLowerCase();
-  const fs=document.getElementById('fst').value;
-  const so=document.getElementById('fso').value;
-  let list=games.filter(g=>{
-    if(q&&!g.name.toLowerCase().includes(q))return false;
-    if(fs&&g.status!==fs)return false;
-    if(pff!=='all'){const gps=g.platforms||[];if(!gps.some(p=>PFG[p]===pff))return false;}
+function render() {
+  const q = document.getElementById('q').value.toLowerCase();
+  const fs = document.getElementById('fst').value;
+  const so = document.getElementById('fso').value;
+  let list = games.filter(g => {
+    if (q && !g.name.toLowerCase().includes(q)) return false;
+    if (fs && g.status !== fs) return false;
+    if (pff !== 'all') { const gps = g.platforms || []; if (!gps.some(p => PFG[p] === pff)) return false; }
     return true;
   });
-  if(so==='rating')list.sort((a,b)=>(b.rating||0)-(a.rating||0));
-  else if(so==='hours')list.sort((a,b)=>(b.hours||0)-(a.hours||0));
-  else if(so==='name')list.sort((a,b)=>a.name.localeCompare(b.name,'zh'));
-  else list.sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
-  
-  document.getElementById('s-total').textContent=games.length;
-  document.getElementById('s-pl').textContent=games.filter(g=>g.status==='playing').length;
-  document.getElementById('s-dn').textContent=games.filter(g=>g.status==='done').length;
-  document.getElementById('s-hr').textContent=games.reduce((s,g)=>s+(g.hours||0),0);
-  const rated=games.filter(g=>g.rating>0);
-  document.getElementById('s-av').textContent=rated.length?(rated.reduce((s,g)=>s+g.rating,0)/rated.length).toFixed(1):'—';
-  
-  const gg=document.getElementById('gg');
-  if(!list.length){gg.innerHTML=`<div class="empty"><div class="empty-i">🎮</div>${q||fs||pff!=='all'?'没有符合条件的游戏':'还没有记录，点击「添加游戏」开始吧！'}</div>`;return;}
-  gg.innerHTML=list.map((g,i)=>{
-    const pftags=(g.platforms||[]).map(p=>`<span class="tag ${PTAG[p]||''}">${PFMAP[p]||p}</span>`).join('');
-    const gntags=(g.genres||[]).slice(0,2).map(gn=>`<span class="tag">${gn}</span>`).join('');
-    const dc={playing:'var(--acc)',done:'var(--acc2)',wishlist:'var(--warn)',dropped:'var(--t3)'}[g.status]||'var(--t3)';
-    return`<div class="gc" style="animation-delay:${Math.min(i*.03,.2)}s" onclick="openDetail('${g.id||g._id}')">
+  if (so === 'rating') list.sort((a,b) => (b.rating||0)-(a.rating||0));
+  else if (so === 'hours') list.sort((a,b) => (b.hours||0)-(a.hours||0));
+  else if (so === 'name') list.sort((a,b) => a.name.localeCompare(b.name,'zh'));
+  else list.sort((a,b) => new Date(b.created_at||0)-new Date(a.created_at||0));
+
+  document.getElementById('s-total').textContent = games.length;
+  document.getElementById('s-pl').textContent = games.filter(g => g.status==='playing').length;
+  document.getElementById('s-dn').textContent = games.filter(g => g.status==='done').length;
+  document.getElementById('s-hr').textContent = games.reduce((s,g) => s+(g.hours||0), 0);
+  const rated = games.filter(g => g.rating > 0);
+  document.getElementById('s-av').textContent = rated.length ? (rated.reduce((s,g) => s+g.rating,0)/rated.length).toFixed(1) : '—';
+
+  const gg = document.getElementById('gg');
+  if (!list.length) {
+    gg.innerHTML = `<div class="empty"><div class="empty-i">🎮</div>${q||fs||pff!=='all'?'没有符合条件的游戏':'还没有记录，点击「添加游戏」开始吧！'}</div>`;
+    return;
+  }
+  gg.innerHTML = list.map((g,i) => {
+    const pftags = (g.platforms||[]).map(p => `<span class="tag ${PTAG[p]||''}">${PFMAP[p]||p}</span>`).join('');
+    const gntags = (g.genres||[]).slice(0,2).map(gn => `<span class="tag">${gn}</span>`).join('');
+    const dc = {playing:'var(--acc)',done:'var(--acc2)',wishlist:'var(--warn)',dropped:'var(--t3)'}[g.status]||'var(--t3)';
+    return `<div class="gc" style="animation-delay:${Math.min(i*.03,.2)}s" onclick="openDetail('${g.id||g._id}')">
       ${g.cover?`<div class="gc-cover-wrap"><div class="gc-cover-bg" style="background-image:url('${esc(g.cover)}')"></div><img class="gc-cover" src="${esc(g.cover)}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'"></div>`:``}
       <div class="gc-ph" style="${g.cover?'display:none':''}">🎮</div>
-      <div class="gc-body">
-        <div class="gc-top"><div class="gc-name">${esc(g.name)}</div><div class="pdot" style="background:${dc}"></div></div>
-        <div class="gc-tags">${pftags}${gntags}</div>
+      <div class="gc-body" style="padding:.9rem">
+        <div class="gc-top" style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px">
+          <div class="gc-name" style="font-size:.92rem;font-weight:500;line-height:1.3;flex:1">${esc(g.name)}</div>
+          <div class="pdot" style="width:7px;height:7px;border-radius:50%;background:${dc};margin-top:5px;flex-shrink:0;margin-left:8px"></div>
+        </div>
+        <div class="gc-tags" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">${pftags}${gntags}</div>
         ${g.review?`<div class="gc-rev">${esc(g.review)}</div>`:''}
         <div class="gc-foot">
           <div class="stars">${'★'.repeat(g.rating||0)}${'☆'.repeat(5-(g.rating||0))}</div>
@@ -505,36 +558,43 @@ function render(){
   }).join('');
 }
 
-// ✨ 沉浸式详情馆逻辑
 function openDetail(id) {
-  const g = games.find(x=>(x.id||x._id)==id); if(!g) return;
-  editId = id; // 为删除和编辑功能提供 ID
-  
+  const g = games.find(x => (x.id||x._id) == id); if (!g) return;
+  editId = id;
+
   document.getElementById('dh-bg').style.backgroundImage = g.cover ? `url(${g.cover})` : 'none';
   document.getElementById('d-cover').src = g.cover || '';
   document.getElementById('d-cover').style.display = g.cover ? 'block' : 'none';
-  
   document.getElementById('d-name').textContent = g.name || '未知游戏';
   document.getElementById('d-meta').textContent = [g.developer, g.year].filter(Boolean).join(' · ');
-  
-  const pftags = (g.platforms||[]).map(p=>`<span class="tag ${PTAG[p]||''}">${PFMAP[p]||p}</span>`).join('');
-  const gntags = (g.genres||[]).slice(0,4).map(gn=>`<span class="tag">${gn}</span>`).join('');
+
+  const pftags = (g.platforms||[]).map(p => `<span class="tag ${PTAG[p]||''}">${PFMAP[p]||p}</span>`).join('');
+  const gntags = (g.genres||[]).slice(0,4).map(gn => `<span class="tag">${gn}</span>`).join('');
   document.getElementById('d-tags').innerHTML = pftags + gntags;
-  
-  const dc={playing:'var(--acc)',done:'var(--acc2)',wishlist:'var(--warn)',dropped:'var(--t3)'}[g.status]||'var(--t3)';
+
+  const dc = {playing:'var(--acc)',done:'var(--acc2)',wishlist:'var(--warn)',dropped:'var(--t3)'}[g.status]||'var(--t3)';
   document.getElementById('d-st-val').innerHTML = `<span style="color:${dc}">${STMAP[g.status]||'—'}</span>`;
   document.getElementById('d-hr-val').textContent = g.hours ? g.hours + 'h' : '0h';
-  document.getElementById('d-rt-val').innerHTML = g.rating ? '★'.repeat(g.rating) + `<span style="color:var(--t3)">${'★'.repeat(5-g.rating)}</span>` : `<span style="color:var(--t3)">暂无</span>`;
+  document.getElementById('d-rt-val').innerHTML = g.rating ? '★'.repeat(g.rating)+`<span style="color:var(--t3)">${'★'.repeat(5-g.rating)}</span>` : `<span style="color:var(--t3)">暂无</span>`;
   document.getElementById('d-cp-val').textContent = CPMAP[g.completion] || '—';
-  
+
   const revBox = document.getElementById('d-rev-box');
-  if(g.review) {
+  if (g.review) {
     revBox.style.display = 'block';
     document.getElementById('d-rev-val').textContent = g.review;
   } else {
     revBox.style.display = 'none';
   }
-  
+
+  // 重置 AI 聊天状态
+  aiCurrentGame = g;
+  aiChatOpen = false;
+  aiChatHistory = [];
+  document.getElementById('chat-panel').classList.remove('open');
+  document.getElementById('d-ai-btn-txt').textContent = '和 AI 聊聊这款游戏';
+  document.getElementById('chat-msgs').innerHTML = '';
+  document.getElementById('chat-quick').innerHTML = '';
+
   document.getElementById('ov-detail').classList.add('on');
 }
 
@@ -543,198 +603,188 @@ function openEditFromDetail() {
   openEdit(editId);
 }
 
-function openAdd(){
-  editId=null;star=0;
-  document.getElementById('m-title').textContent='添加游戏';
-  document.getElementById('bdel').style.display='none';
-  ['fn','fdev','fyr','frev','fcv','gs'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
-  document.getElementById('fst2').value='playing';
-  document.getElementById('fhr').value=0;document.getElementById('fhrv').textContent='0h';
-  document.getElementById('fcp').value='';
-  rcl('pc');rcl('gc');rcl('sc');setStar(0);
-  document.getElementById('sr').style.display='none';
+function openAdd() {
+  editId = null; star = 0;
+  document.getElementById('m-title').textContent = '添加游戏';
+  document.getElementById('bdel').style.display = 'none';
+  ['fn','fdev','fyr','frev','fcv','gs'].forEach(id => { const e = document.getElementById(id); if(e) e.value=''; });
+  document.getElementById('fst2').value = 'playing';
+  document.getElementById('fhr').value = 0;
+  document.getElementById('fhrv').textContent = '0h';
+  document.getElementById('fcp').value = '';
+  rcl('pc'); rcl('gc'); rcl('sc'); setStar(0);
+  document.getElementById('sr').style.display = 'none';
   document.getElementById('ov-edit').classList.add('on');
 }
 
-function openEdit(id){
-  const g=games.find(x=>(x.id||x._id)==id);if(!g)return;
-  editId=id;star=g.rating||0;
-  document.getElementById('m-title').textContent='编辑记录';
-  document.getElementById('bdel').style.display='none'; // 在编辑表单隐藏删除，挪到详情馆了
-  document.getElementById('fn').value=g.name||'';
-  document.getElementById('fdev').value=g.developer||'';
-  document.getElementById('fyr').value=g.year||'';
-  document.getElementById('fst2').value=g.status||'playing';
-  document.getElementById('fhr').value=g.hours||0;document.getElementById('fhrv').textContent=(g.hours||0)+'h';
-  document.getElementById('fcp').value=g.completion||'';
-  document.getElementById('frev').value=g.review||'';
-  document.getElementById('fcv').value=g.cover||'';
-  document.getElementById('gs').value='';document.getElementById('sr').style.display='none';
-  rcl('pc');(g.platforms||[]).forEach(p=>{const c=document.querySelector(`#pc [data-v="${p}"]`);if(c){const m={x:'onx',p:'onp',sw:'onsw',st:'onst'};const pmap={xbox:'x',xbox360:'x',ps5:'p',ps4:'p',switch:'sw',switch2:'sw',steam:'st'};c.classList.add(m[pmap[p]]||'on');}});
-  rcl('gc');(g.genres||[]).forEach(gn=>{const c=document.querySelector(`#gc [data-v="${gn}"]`);if(c)c.classList.add('on');});
-  rcl('sc');(g.styles||[]).forEach(s=>{const c=document.querySelector(`#sc [data-v="${s}"]`);if(c)c.classList.add('on');});
-  setStar(g.rating||0);
+function openEdit(id) {
+  const g = games.find(x => (x.id||x._id) == id); if (!g) return;
+  editId = id; star = g.rating || 0;
+  document.getElementById('m-title').textContent = '编辑记录';
+  document.getElementById('bdel').style.display = 'none';
+  document.getElementById('fn').value = g.name || '';
+  document.getElementById('fdev').value = g.developer || '';
+  document.getElementById('fyr').value = g.year || '';
+  document.getElementById('fst2').value = g.status || 'playing';
+  document.getElementById('fhr').value = g.hours || 0;
+  document.getElementById('fhrv').textContent = (g.hours||0) + 'h';
+  document.getElementById('fcp').value = g.completion || '';
+  document.getElementById('frev').value = g.review || '';
+  document.getElementById('fcv').value = g.cover || '';
+  document.getElementById('gs').value = '';
+  document.getElementById('sr').style.display = 'none';
+  rcl('pc');
+  (g.platforms||[]).forEach(p => {
+    const c = document.querySelector(`#pc [data-v="${p}"]`);
+    if (c) { const m={x:'onx',p:'onp',sw:'onsw',st:'onst'}; const pmap={xbox:'x',xbox360:'x',ps5:'p',ps4:'p',switch:'sw',switch2:'sw',steam:'st'}; c.classList.add(m[pmap[p]]||'on'); }
+  });
+  rcl('gc');
+  (g.genres||[]).forEach(gn => { const c = document.querySelector(`#gc [data-v="${gn}"]`); if(c) c.classList.add('on'); });
+  rcl('sc');
+  (g.styles||[]).forEach(s => { const c = document.querySelector(`#sc [data-v="${s}"]`); if(c) c.classList.add('on'); });
+  setStar(g.rating || 0);
   document.getElementById('ov-edit').classList.add('on');
 }
 
-function closeOv(id){document.getElementById(id).classList.remove('on');}
-function rcl(id){document.querySelectorAll(`#${id} .chip`).forEach(c=>{c.className='chip';});}
-function tc(el,pfx){
-  const cls=pfx?{'x':'onx','p':'onp','sw':'onsw','st':'onst'}[pfx]||'on':'on';
-  if([...el.classList].some(c=>c.startsWith('on'))){el.className='chip';}
-  else{el.classList.add(cls);}
+function closeOv(id) { document.getElementById(id).classList.remove('on'); }
+function rcl(id) { document.querySelectorAll(`#${id} .chip`).forEach(c => { c.className = 'chip'; }); }
+function tc(el, pfx) {
+  const cls = pfx ? {'x':'onx','p':'onp','sw':'onsw','st':'onst'}[pfx]||'on' : 'on';
+  if ([...el.classList].some(c => c.startsWith('on'))) { el.className = 'chip'; }
+  else { el.classList.add(cls); }
 }
-function setStar(n){star=n;document.querySelectorAll('.sb').forEach((b,i)=>b.classList.toggle('on',i<n));document.getElementById('shint').textContent=HINT[n]||'未评分';}
+function setStar(n) {
+  star = n;
+  document.querySelectorAll('.sb').forEach((b,i) => b.classList.toggle('on', i < n));
+  document.getElementById('shint').textContent = HINT[n] || '未评分';
+}
 
-function onSrch(v){
+function onSrch(v) {
   clearTimeout(srT);
-  const sr=document.getElementById('sr');
-  if(!v.trim()){sr.style.display='none';return;}
-  srT=setTimeout(()=>{
+  const sr = document.getElementById('sr');
+  if (!v.trim()) { sr.style.display = 'none'; return; }
+  srT = setTimeout(() => {
     currentQuery = v.trim();
     currentOffset = 0;
     hasMore = true;
     doSrch(true);
-  },400);
+  }, 400);
 }
 
-async function doSrch(isNewSearch = false){
-  const sr=document.getElementById('sr');
-  if(!IGDB_PROXY){sr.style.display='block';sr.innerHTML=`<div class="sr-msg" style="color:var(--warn)">⚠ 请先配置 IGDB Proxy</div>`;return;}
-  
-  if(isNewSearch) {
-    sr.style.display='block';
-    sr.innerHTML=`<div class="sr-msg">搜索中…</div>`;
+async function doSrch(isNewSearch = false) {
+  const sr = document.getElementById('sr');
+  if (!IGDB_PROXY) { sr.style.display='block'; sr.innerHTML=`<div class="sr-msg" style="color:var(--warn)">⚠ 请先配置 IGDB Proxy</div>`; return; }
+  if (isNewSearch) {
+    sr.style.display = 'block';
+    sr.innerHTML = `<div class="sr-msg">搜索中…</div>`;
     sr.scrollTop = 0;
   } else {
     sr.insertAdjacentHTML('beforeend', `<div class="sr-msg load-more" style="padding:10px">加载更多中…</div>`);
   }
-
   isFetching = true;
-
-  try{
-    const res=await fetch(IGDB_PROXY,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({query: currentQuery, offset: currentOffset})
+  try {
+    const res = await fetch(IGDB_PROXY, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({query: currentQuery, offset: currentOffset})
     });
-    const data=await res.json();
-    
+    const data = await res.json();
     const loader = sr.querySelector('.load-more');
-    if(loader) loader.remove();
-
-    if(!data || !data.length){
-      if(isNewSearch) sr.innerHTML=`<div class="sr-msg">未找到相关游戏</div>`;
-      else if(hasMore) sr.insertAdjacentHTML('beforeend', `<div class="sr-msg">没有更多结果了</div>`);
-      hasMore = false;
-      isFetching = false;
-      return;
+    if (loader) loader.remove();
+    if (!data || !data.length) {
+      if (isNewSearch) sr.innerHTML = `<div class="sr-msg">未找到相关游戏</div>`;
+      else if (hasMore) sr.insertAdjacentHTML('beforeend', `<div class="sr-msg">没有更多结果了</div>`);
+      hasMore = false; isFetching = false; return;
     }
-
-    if(data.length < 50) hasMore = false;
-
-    const htmlStr = data.map(g=>`<div class="sri" onclick='fillG(${JSON.stringify(g).replace(/'/g,"&#39;")})'>
+    if (data.length < 50) hasMore = false;
+    const htmlStr = data.map(g => `<div class="sri" onclick='fillG(${JSON.stringify(g).replace(/'/g,"&#39;")})'>
       ${g.cover?`<img class="sri-cv" src="${g.cover}" alt="">`:``}<div class="sri-info"><div class="sri-name" title="${esc(g.name)}">${esc(g.name)}</div><div class="sri-meta">${[g.year,g.platforms?.join(' / ')].filter(Boolean).join(' · ')}</div></div>
     </div>`).join('');
-
-    if(isNewSearch) {
-      sr.innerHTML = htmlStr;
-    } else {
-      sr.insertAdjacentHTML('beforeend', htmlStr);
-    }
-
-    currentOffset += 50;
-    isFetching = false;
-  }catch{
+    if (isNewSearch) sr.innerHTML = htmlStr;
+    else sr.insertAdjacentHTML('beforeend', htmlStr);
+    currentOffset += 50; isFetching = false;
+  } catch {
     const loader = sr.querySelector('.load-more');
-    if(loader) loader.remove();
-    if(isNewSearch) sr.innerHTML=`<div class="sr-msg" style="color:var(--danger)">搜索失败</div>`;
+    if (loader) loader.remove();
+    if (isNewSearch) sr.innerHTML = `<div class="sr-msg" style="color:var(--danger)">搜索失败</div>`;
     isFetching = false;
   }
 }
 
 document.getElementById('sr').addEventListener('scroll', function() {
-  if(isFetching || !hasMore) return;
-  if (this.scrollHeight - this.scrollTop - this.clientHeight < 30) {
-    doSrch(false);
-  }
+  if (isFetching || !hasMore) return;
+  if (this.scrollHeight - this.scrollTop - this.clientHeight < 30) doSrch(false);
 });
 
-function fillG(g){
-  document.getElementById('fn').value=g.name||'';
-  document.getElementById('fdev').value=g.developer||'';
-  document.getElementById('fyr').value=g.year||'';
-  document.getElementById('fcv').value=g.cover||'';
+function fillG(g) {
+  document.getElementById('fn').value = g.name || '';
+  document.getElementById('fdev').value = g.developer || '';
+  document.getElementById('fyr').value = g.year || '';
+  document.getElementById('fcv').value = g.cover || '';
   rcl('pc');
-  (g.platforms||[]).forEach(p=>{
-    const pv=p.toLowerCase().includes('xbox')?'xbox':p.toLowerCase().includes('playstation')||p.includes('PS')?'ps5':p.toLowerCase().includes('switch')?'switch':p.toLowerCase().includes('pc')||p.toLowerCase().includes('windows')?'steam':null;
-    if(pv){const c=document.querySelector(`#pc [data-v="${pv}"]`);if(c){const m={xbox:'onx',ps5:'onp',switch:'onsw',steam:'onst'};c.classList.add(m[pv]||'on');}}
+  (g.platforms||[]).forEach(p => {
+    const pv = p.toLowerCase().includes('xbox')?'xbox':p.toLowerCase().includes('playstation')||p.includes('PS')?'ps5':p.toLowerCase().includes('switch')?'switch':p.toLowerCase().includes('pc')||p.toLowerCase().includes('windows')?'steam':null;
+    if (pv) { const c = document.querySelector(`#pc [data-v="${pv}"]`); if(c) { const m={xbox:'onx',ps5:'onp',switch:'onsw',steam:'onst'}; c.classList.add(m[pv]||'on'); } }
   });
   rcl('gc');
-  (g.genres||[]).forEach(gn=>{const c=document.querySelector(`#gc [data-v="${gn}"]`);if(c)c.classList.add('on');});
-  document.getElementById('sr').style.display='none';document.getElementById('gs').value='';
+  (g.genres||[]).forEach(gn => { const c = document.querySelector(`#gc [data-v="${gn}"]`); if(c) c.classList.add('on'); });
+  document.getElementById('sr').style.display = 'none';
+  document.getElementById('gs').value = '';
 }
 
-async function saveGame(){
-  const name=document.getElementById('fn').value.trim();if(!name){document.getElementById('fn').focus();return;}
-  const pls=[...document.querySelectorAll('#pc .chip')].filter(c=>c.className!=='chip').map(c=>c.dataset.v).filter(Boolean);
-  const gns=[...document.querySelectorAll('#gc .chip')].filter(c=>c.className!=='chip').map(c=>c.dataset.v).filter(Boolean);
-  const sts=[...document.querySelectorAll('#sc .chip')].filter(c=>c.className!=='chip').map(c=>c.dataset.v).filter(Boolean);
-  const p={name,platforms:pls,genres:gns,styles:sts,developer:document.getElementById('fdev').value.trim(),year:parseInt(document.getElementById('fyr').value)||null,status:document.getElementById('fst2').value,hours:parseInt(document.getElementById('fhr').value)||0,completion:document.getElementById('fcp').value,rating:star,review:document.getElementById('frev').value.trim(),cover:document.getElementById('fcv').value.trim()};
-  
-  const { data: { session } } = await db.auth.getSession();
+async function saveGame() {
+  const name = document.getElementById('fn').value.trim(); if (!name) { document.getElementById('fn').focus(); return; }
+  const pls = [...document.querySelectorAll('#pc .chip')].filter(c=>c.className!=='chip').map(c=>c.dataset.v).filter(Boolean);
+  const gns = [...document.querySelectorAll('#gc .chip')].filter(c=>c.className!=='chip').map(c=>c.dataset.v).filter(Boolean);
+  const sts = [...document.querySelectorAll('#sc .chip')].filter(c=>c.className!=='chip').map(c=>c.dataset.v).filter(Boolean);
+  const p = {name, platforms:pls, genres:gns, styles:sts, developer:document.getElementById('fdev').value.trim(), year:parseInt(document.getElementById('fyr').value)||null, status:document.getElementById('fst2').value, hours:parseInt(document.getElementById('fhr').value)||0, completion:document.getElementById('fcp').value, rating:star, review:document.getElementById('frev').value.trim(), cover:document.getElementById('fcv').value.trim()};
+  const {data:{session}} = await db.auth.getSession();
   const user = session?.user;
-
-  if(user){
-    if(editId){
-      const{error}=await db.from('games').update(p).eq('id',editId).eq('user_id',user.id);
-      if(error){alert('更新云端失败：'+error.message);return;}
-      const i=games.findIndex(g=>g.id==editId);if(i>-1)games[i]={...games[i],...p};
-    }else{
-      const{data,error}=await db.from('games').insert({...p, user_id: user.id}).select().single();
-      if(error){alert('添加云端失败：'+error.message);return;}
-      if(data)games.unshift(data);
+  if (user) {
+    if (editId) {
+      const {error} = await db.from('games').update(p).eq('id',editId).eq('user_id',user.id);
+      if (error) { alert('更新云端失败：'+error.message); return; }
+      const i = games.findIndex(g => g.id==editId); if (i>-1) games[i] = {...games[i],...p};
+    } else {
+      const {data,error} = await db.from('games').insert({...p, user_id:user.id}).select().single();
+      if (error) { alert('添加云端失败：'+error.message); return; }
+      if (data) games.unshift(data);
     }
-  }else{
-    if(editId){const i=games.findIndex(g=>g._id==editId);if(i>-1)games[i]={...games[i],...p};}
-    else{games.unshift({_id:Date.now().toString(36)+Math.random().toString(36).slice(2),created_at:new Date().toISOString(),...p});}
-    localStorage.setItem('gj',JSON.stringify(games));
+  } else {
+    if (editId) { const i = games.findIndex(g => g._id==editId); if(i>-1) games[i] = {...games[i],...p}; }
+    else { games.unshift({_id:Date.now().toString(36)+Math.random().toString(36).slice(2), created_at:new Date().toISOString(), ...p}); }
+    localStorage.setItem('gj', JSON.stringify(games));
   }
-  closeOv('ov-edit');render();
+  closeOv('ov-edit'); render();
 }
 
-async function delGame(){
-  if(!editId||!confirm('确认删除这款游戏？'))return;
-  const { data: { session } } = await db.auth.getSession();
+async function delGame() {
+  if (!editId || !confirm('确认删除这款游戏？')) return;
+  const {data:{session}} = await db.auth.getSession();
   const user = session?.user;
-  
-  if(user){
-    await db.from('games').delete().eq('id',editId).eq('user_id',user.id);
-  }
-  games=games.filter(g=>(g.id||g._id)!=editId);
-  if(!user) localStorage.setItem('gj',JSON.stringify(games));
-  
-  // 清理所有弹窗
-  document.querySelectorAll('.ov').forEach(o=>o.classList.remove('on'));
+  if (user) await db.from('games').delete().eq('id',editId).eq('user_id',user.id);
+  games = games.filter(g => (g.id||g._id) != editId);
+  if (!user) localStorage.setItem('gj', JSON.stringify(games));
+  document.querySelectorAll('.ov').forEach(o => o.classList.remove('on'));
   render();
 }
 
-function go(pg,btn){
-  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
-  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('on'));
+function go(pg, btn) {
+  document.querySelectorAll('.pg').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('on'));
   document.getElementById('pg-'+pg).classList.add('on');
-  if(btn)btn.classList.add('on');
-  if(pg==='stats')drawCharts();
+  if (btn) btn.classList.add('on');
+  if (pg === 'stats') drawCharts();
 }
 
-function drawCharts(){
-  const stC={playing:0,done:0,wishlist:0,dropped:0},gnC={},pfC={},rtC=[0,0,0,0,0],styC={};
-  games.forEach(g=>{
-    if(stC[g.status]!==undefined)stC[g.status]++;
-    (g.platforms||[]).forEach(p=>{const k=PFMAP[p]||p;pfC[k]=(pfC[k]||0)+1;});
-    (g.genres||[]).forEach(gn=>{gnC[gn]=(gnC[gn]||0)+1;});
-    (g.styles||[]).forEach(s=>{styC[s]=(styC[s]||0)+1;});
-    if(g.rating>=1&&g.rating<=5)rtC[g.rating-1]++;
+function drawCharts() {
+  const stC={playing:0,done:0,wishlist:0,dropped:0}, gnC={}, pfC={}, rtC=[0,0,0,0,0], styC={};
+  games.forEach(g => {
+    if (stC[g.status]!==undefined) stC[g.status]++;
+    (g.platforms||[]).forEach(p => { const k=PFMAP[p]||p; pfC[k]=(pfC[k]||0)+1; });
+    (g.genres||[]).forEach(gn => { gnC[gn]=(gnC[gn]||0)+1; });
+    (g.styles||[]).forEach(s => { styC[s]=(styC[s]||0)+1; });
+    if (g.rating>=1&&g.rating<=5) rtC[g.rating-1]++;
   });
   const co={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#9a9890',font:{size:11}}}}};
   const pal=['#d4f04a','#40e8c4','#f0b940','#ff6e6e','#8cb4ff','#d68cff','#ff9c69','#6ecfff'];
@@ -747,46 +797,184 @@ function drawCharts(){
   const tSty=Object.entries(styC).sort((a,b)=>b[1]-a[1]).slice(0,10);br('ch-sty',tSty.map(x=>x[0]),tSty.map(x=>x[1]));
 }
 
-let amd='login';
-function am(m){amd=m;document.getElementById('t-in').classList.toggle('on',m==='login');document.getElementById('t-up').classList.toggle('on',m==='signup');document.getElementById('asub').textContent=m==='login'?'登录':'注册';document.getElementById('amsg').textContent='';}
+let amd = 'login';
+function am(m) {
+  amd = m;
+  document.getElementById('t-in').classList.toggle('on', m==='login');
+  document.getElementById('t-up').classList.toggle('on', m==='signup');
+  document.getElementById('asub').textContent = m==='login'?'登录':'注册';
+  document.getElementById('amsg').textContent = '';
+}
 
-async function doAuth(){
-  const e=document.getElementById('ae').value.trim(),p=document.getElementById('ap').value;
+async function doAuth() {
+  const e=document.getElementById('ae').value.trim(), p=document.getElementById('ap').value;
   const msg=document.getElementById('amsg');
-  if(!e||!p){msg.textContent='请填写邮箱和密码';msg.className='amsg err';return;}
-  msg.textContent=amd==='login'?'登录中…':'注册中…';msg.className='amsg';
-  const{error}=amd==='login'?await db.auth.signInWithPassword({email:e,password:p}):await db.auth.signUp({email:e,password:p});
-  
-  if(error){
-    msg.textContent=error.message;
-    msg.className='amsg err';
+  if (!e||!p) { msg.textContent='请填写邮箱和密码'; msg.className='amsg err'; return; }
+  msg.textContent = amd==='login'?'登录中…':'注册中…'; msg.className='amsg';
+  const {error} = amd==='login' ? await db.auth.signInWithPassword({email:e,password:p}) : await db.auth.signUp({email:e,password:p});
+  if (error) {
+    msg.textContent = error.message; msg.className='amsg err';
   } else {
-    msg.textContent=amd==='login'?'登录成功！':'注册成功，请查收验证邮件';
-    msg.className='amsg ok';
-    if(amd==='login'){
-      setTimeout(async ()=>{
+    msg.textContent = amd==='login'?'登录成功！':'注册成功，请查收验证邮件';
+    msg.className = 'amsg ok';
+    if (amd==='login') {
+      setTimeout(async () => {
         let localG = [];
-        try{ localG = JSON.parse(localStorage.getItem('gj')||'[]'); }catch{}
-        
+        try { localG = JSON.parse(localStorage.getItem('gj')||'[]'); } catch {}
         const {data:{user}} = await db.auth.getUser();
-        if(user && localG.length > 0) {
-           const toInsert = localG.map(g => {
-              const copy = {...g, user_id: user.id};
-              delete copy.id;
-              delete copy._id;
-              return copy;
-           });
-           await db.from('games').insert(toInsert);
-           localStorage.removeItem('gj'); 
+        if (user && localG.length > 0) {
+          const toInsert = localG.map(g => { const copy={...g,user_id:user.id}; delete copy.id; delete copy._id; return copy; });
+          await db.from('games').insert(toInsert);
+          localStorage.removeItem('gj');
         }
-        go('list',document.querySelector('nav button'));
+        go('list', document.querySelector('nav button'));
         load();
       }, 700);
     }
   }
 }
 
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ===== AI 游戏聊天室 =====
+let aiChatOpen = false;
+let aiChatHistory = [];
+let aiCurrentGame = null;
+
+function toggleAIChat() {
+  aiChatOpen = !aiChatOpen;
+  document.getElementById('chat-panel').classList.toggle('open', aiChatOpen);
+  document.getElementById('d-ai-btn-txt').textContent = aiChatOpen ? '收起 AI 对话' : '和 AI 聊聊这款游戏';
+  if (aiChatOpen && document.getElementById('chat-msgs').children.length === 0) {
+    initAIChat();
+  }
+  if (aiChatOpen) {
+    setTimeout(() => { document.getElementById('chat-msgs').scrollTop = 9999; }, 100);
+  }
+}
+
+function initAIChat() {
+  const g = aiCurrentGame; if (!g) return;
+  document.getElementById('chat-game-name').textContent = g.name;
+  aiChatHistory = [];
+
+  // 快捷问题（根据游戏类型动态生成）
+  const genres = g.genres || [];
+  const baseQs = ['这款游戏的剧情有哪些亮点？', '有什么值得注意的玩法技巧？', '推荐给什么类型的玩家？'];
+  const extraQs = [];
+  if (genres.includes('souls') || genres.includes('action')) extraQs.push('Boss 战有什么破防技巧？');
+  if (genres.includes('rpg') || genres.includes('open')) extraQs.push('有哪些值得探索的隐藏内容？');
+  if (genres.includes('visual') || genres.includes('narrative')) extraQs.push('有几条路线/结局？');
+  if (g.review) extraQs.push('根据我的评测，你觉得我会喜欢什么相似作品？');
+  const qs = [...new Set([...extraQs, ...baseQs])].slice(0, 4);
+  document.getElementById('chat-quick').innerHTML = qs.map(q => `<button class="qq" onclick="sendAIQuick('${q.replace(/'/g,'&#39;')}')">${q}</button>`).join('');
+
+  // 开场白
+  const statusText = {playing:'正在游玩中', done:'已通关', wishlist:'列在想玩清单里', dropped:'放弃了'}[g.status] || '';
+  const greet = `你好！我已加载《${g.name}》的全部档案。\n\n你${statusText}，投入了 ${g.hours||0} 小时${g.rating?`，评分 ${'★'.repeat(g.rating)}`:''}。${g.review?`\n\n你的评测："${g.review.slice(0,60)}${g.review.length>60?'…':''}"`:''}\n\n有什么想聊的？剧情、Boss 攻略、世界观、隐藏要素……随时发问。`;
+  addAIBubble(greet, 'ai', false);
+}
+
+function sendAIQuick(q) {
+  document.getElementById('chat-inp').value = q;
+  sendAIMsg();
+}
+
+function addAIBubble(text, role, animate) {
+  const msgs = document.getElementById('chat-msgs');
+  const div = document.createElement('div');
+  div.className = `cmsg ${role === 'ai' ? 'ai-msg' : 'user-msg'}`;
+  div.innerHTML = `<div class="cmsg-av ${role==='ai'?'ai-av':'usr-av'}">${role==='ai'?'AI':'我'}</div><div class="cmsg-bbl"></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  const bbl = div.querySelector('.cmsg-bbl');
+  if (animate && role === 'ai') {
+    let i = 0;
+    const speed = text.length > 200 ? 8 : 18; // 长文快速打字，短文慢速
+    const tick = () => {
+      if (i < text.length) {
+        bbl.textContent += text[i++];
+        msgs.scrollTop = msgs.scrollHeight;
+        setTimeout(tick, 1000 / speed);
+      }
+    };
+    tick();
+  } else {
+    bbl.textContent = text;
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+}
+
+function showAITyping() {
+  const msgs = document.getElementById('chat-msgs');
+  const div = document.createElement('div');
+  div.className = 'cmsg ai-msg'; div.id = 'ai-typing';
+  div.innerHTML = `<div class="cmsg-av ai-av">AI</div><div class="cmsg-bbl"><div class="typing-dots"><span></span><span></span><span></span></div></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function removeAITyping() {
+  const t = document.getElementById('ai-typing');
+  if (t) t.remove();
+}
+
+async function sendAIMsg() {
+  const inp = document.getElementById('chat-inp');
+  const v = inp.value.trim(); if (!v) return;
+  inp.value = '';
+
+  addAIBubble(v, 'user', false);
+  aiChatHistory.push({role:'user', parts:[{text:v}]});
+
+  const snd = document.getElementById('chat-snd');
+  snd.disabled = true;
+  showAITyping();
+
+  const g = aiCurrentGame;
+  const systemCtx = `你是一位专精于游戏《${g.name}》的 AI 情报员，风格专业、有温度，会适当融入这款游戏的氛围和语境来回答。
+游戏档案：开发商「${g.developer||'未知'}」，${g.year||'未知'}年发行，类型：${(g.genres||[]).join('、')||'未知'}，风格：${(g.styles||[]).join('、')||'未知'}。
+玩家记录：游玩时长 ${g.hours||0} 小时，评分 ${g.rating?g.rating+'星':'未评分'}，完成度：${g.completion||'未记录'}。
+玩家评测原文："${g.review||'无'}"。
+回答要求：用中文，简洁有力，每次控制在 250 字以内。避免使用 Markdown 格式符号（如 **、##、- 列表符号等），纯文字输出。`;
+
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        system_instruction: {parts:[{text:systemCtx}]},
+        contents: aiChatHistory,
+        generationConfig: {maxOutputTokens:600, temperature:0.85}
+      })
+    });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData?.error?.message || `HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '（AI 情报员暂时离线，请稍后再试）';
+    removeAITyping();
+    addAIBubble(reply, 'ai', true);
+    aiChatHistory.push({role:'model', parts:[{text:reply}]});
+
+    // 保持历史不超过 20 轮（避免 token 过长）
+    if (aiChatHistory.length > 40) aiChatHistory = aiChatHistory.slice(-40);
+
+  } catch(e) {
+    removeAITyping();
+    const errMsg = e.message.includes('API_KEY') || e.message.includes('key')
+      ? '⚠ API Key 无效，请检查 GEMINI_KEY 配置是否正确。'
+      : `连接失败：${e.message}`;
+    addAIBubble(errMsg, 'ai', false);
+  }
+  snd.disabled = false;
+  document.getElementById('chat-inp').focus();
+}
+
 init();
 </script>
 </body>
