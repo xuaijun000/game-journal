@@ -13,7 +13,6 @@
       --b:rgba(255,255,255,.07);--b2:rgba(255,255,255,.14);
       --t:#e8e6df;--t2:#9a9890;--t3:#525150;
       --acc:#d4f04a;--acc2:#40e8c4;--warn:#f0b940;--danger:#ff5555;
-      --ai-gradient: linear-gradient(45deg, #40e8c4, #d4f04a, #f0b940);
       --r:10px;--rl:14px;
     }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -47,38 +46,30 @@
     .btn-a:hover{background:#dcf55a}
     .btn-sm{padding:4px 10px;font-size:.78rem}
     .btn-d{border-color:rgba(255,85,85,.25);color:var(--danger)}.btn-d:hover{background:rgba(255,85,85,.08)}
-    
-    .btn-ai {
-      background: var(--ai-gradient);
-      background-size: 200% auto;
-      color: #111; border: none; font-weight: 600;
-      animation: shine 3s linear infinite;
-    }
-    @keyframes shine { to { background-position: 200% center; } }
-
     .pf-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.1rem}
     .pfchip{padding:4px 12px;border-radius:99px;font-size:.75rem;font-family:'DM Mono',monospace;border:1px solid var(--b);cursor:pointer;transition:all .15s;background:var(--bg2);color:var(--t3)}
     .pfchip:hover{border-color:var(--b2);color:var(--t2)}
     .pfchip.on{border-color:var(--acc);color:var(--acc);background:rgba(212,240,74,.08)}
+    .pfchip[data-p="xbox"].on{border-color:#4ec44e;color:#4ec44e;background:rgba(16,124,16,.12)}
+    .pfchip[data-p="ps"].on{border-color:#6ea8fe;color:#6ea8fe;background:rgba(0,55,145,.15)}
+    .pfchip[data-p="switch"].on{border-color:#ff6e6e;color:#ff6e6e;background:rgba(228,0,15,.1)}
+    .pfchip[data-p="steam"].on{border-color:#66c0f4;color:#66c0f4;background:rgba(102,192,244,.08)}
     .gg{display:grid;grid-template-columns:repeat(auto-fill,minmax(265px,1fr));gap:12px}
     
     @keyframes fu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
     
+    /* ✨ 新版卡片动效 */
     .gc{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);overflow:hidden;cursor:pointer;transition:all .3s cubic-bezier(0.25, 0.46, 0.45, 0.94);animation:fu .25s ease both; position: relative;}
     .gc:hover{border-color:var(--acc);transform:translateY(-5px);box-shadow: 0 12px 24px rgba(0,0,0,0.4);}
     
     .gc-cover-wrap {position: relative; width: 100%; height: 150px; overflow: hidden; background: var(--bg3);}
     .gc-cover-bg {position: absolute; inset: -20px; background-size: cover; background-position: center; filter: blur(15px); opacity: 0.35; transition: all .4s ease;}
     .gc-cover{position: relative; z-index: 2; width:100%;height:100%;object-fit:contain;display:block; transition: transform .4s ease;}
+    
     .gc:hover .gc-cover { transform: scale(1.08) rotate(2.5deg); }
     .gc:hover .gc-cover-bg { transform: scale(1.1); opacity: 0.6; }
     
     .gc-ph{width:100%;height:150px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:2.5rem;opacity:.25}
-    .gc-body{padding:.95rem 1rem 1rem; position: relative; z-index: 2; background: var(--bg2);}
-    .gc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px}
-    .gc-name{font-family:'Noto Serif SC',serif;font-size:.95rem;font-weight:600;line-height:1.35;flex:1}
-    .pdot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:5px}
-    .gc-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
     .tag{font-size:.7rem;padding:2px 7px;border-radius:99px;font-family:'DM Mono',monospace;border:1px solid var(--b);color:var(--t3);background:var(--bg3)}
     .tx{border-color:rgba(16,124,16,.5);color:#4ec44e;background:rgba(16,124,16,.12)}
     .tp{border-color:rgba(0,55,145,.6);color:#6ea8fe;background:rgba(0,55,145,.15)}
@@ -93,27 +84,35 @@
     .empty{grid-column:1/-1;text-align:center;padding:4rem 1rem;color:var(--t3)}
     .empty-i{font-size:3rem;opacity:.3;margin-bottom:.8rem}
     .ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(5px);z-index:300;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto}
+    
+    /* ✨ 弹窗背景渐显 */
     @keyframes ovFade { from { opacity: 0; } to { opacity: 1; } }
     .ov.on{display:flex; animation: ovFade 0.3s ease-out forwards;}
+    
     .modal{background:var(--bg2);border:1px solid var(--b2);border-radius:var(--rl);width:100%;max-width:600px;margin:auto;box-shadow:0 25px 50px rgba(0,0,0,0.5);}
+    
+    /* ✨ 详情馆旋转弹出动效 */
     @keyframes modalSpin {
       0% { opacity: 0; transform: scale(0.5) translateY(50px) rotate(-8deg); }
       60% { transform: scale(1.02) translateY(-5px) rotate(2deg); opacity: 1; }
       100% { transform: scale(1) translateY(0) rotate(0); opacity: 1; }
     }
     .ov.on .d-modal { animation: modalSpin 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+    
+    /* ✨ 封面图夸张飞旋入场动效 */
     @keyframes coverSpin {
       0% { opacity: 0; transform: scale(0.3) rotate(-35deg) translateY(40px); }
       100% { opacity: 1; transform: scale(1) rotate(0) translateY(0); }
     }
     .ov.on .d-cover-img { animation: coverSpin 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s both; }
 
+    /* ✨ 详情馆专属 CSS */
     .d-modal { overflow: hidden; padding: 0; }
     .d-hero { height: 160px; position: relative; overflow: hidden; background: var(--bg3); }
     .d-hero-bg { position: absolute; inset: -20px; filter: blur(20px); opacity: 0.35; background-size: cover; background-position: center; transition: all 0.3s ease; }
     .d-body { padding: 0 1.5rem 1.5rem; position: relative; z-index: 2; }
     .d-top { display: flex; gap: 18px; margin-top: -65px; margin-bottom: 1.5rem; align-items: flex-end; }
-    .d-cover-img { width: 110px; height: 155px; object-fit: contain; border-radius: 8px; border: 3px solid var(--bg2); box-shadow: 0 10px 20px rgba(0,0,0,0.6); background: #000; flex-shrink: 0; }
+    .d-cover-img { width: 110px; height: 155px; object-fit: cover; border-radius: 8px; border: 3px solid var(--bg2); box-shadow: 0 10px 20px rgba(0,0,0,0.6); background: var(--bg3); flex-shrink: 0; }
     .d-info { padding-bottom: 5px; flex: 1; }
     .d-name { font-family: 'Noto Serif SC', serif; font-size: 1.45rem; font-weight: 600; line-height: 1.25; text-shadow: 0 2px 6px rgba(0,0,0,0.9); margin-bottom: 6px; }
     .d-meta { font-size: .82rem; color: var(--t2); font-family: 'DM Mono', monospace; margin-bottom: 10px; }
@@ -146,10 +145,11 @@
     .sr-msg{padding:12px;text-align:center;font-size:.82rem;color:var(--t3)}
     .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .field{margin-bottom:.9rem}
-    .field label{display:flex;justify-content:space-between;font-size:.72rem;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px}
+    .field label{display:block;font-size:.72rem;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px}
     .field input,.field select,.field textarea{width:100%;background:var(--bg3);border:1px solid var(--b);border-radius:8px;padding:8px 12px;color:var(--t);font-family:inherit;font-size:.88rem;outline:none;transition:border .15s}
     .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--b2)}
     .field textarea{height:84px;resize:vertical}
+    .field select option{background:var(--bg3)}
     .chips{display:flex;gap:6px;flex-wrap:wrap}
     .chip{padding:4px 11px;border-radius:99px;font-size:.75rem;font-family:'DM Mono',monospace;border:1px solid var(--b);color:var(--t3);cursor:pointer;transition:all .13s;background:var(--bg3);user-select:none}
     .chip:hover{border-color:var(--b2);color:var(--t2)}
@@ -170,26 +170,6 @@
     .cc h3{font-size:.72rem;color:var(--t3);letter-spacing:.07em;text-transform:uppercase;margin-bottom:1rem}
     .cw{position:relative;height:190px}
     .cc.full{grid-column:1/-1}
-
-    .ai-card {
-      grid-column: 1/-1;
-      background: linear-gradient(135deg, #1b1d21 0%, #141518 100%);
-      border: 1px solid rgba(64, 232, 196, 0.2);
-      border-radius: var(--rl);
-      padding: 1.5rem;
-      position: relative;
-      overflow: hidden;
-      margin-bottom: 2rem;
-    }
-    .ai-card::before {
-      content: 'AI'; position: absolute; top: -10px; right: -10px; 
-      font-size: 5rem; font-weight: 900; opacity: 0.05; font-family: 'DM Mono';
-    }
-    .ai-card h3 { font-family: 'Noto Serif SC'; color: var(--acc2); margin-bottom: 0.5rem; }
-    .ai-persona-text { font-size: 0.95rem; color: var(--t2); line-height: 1.6; font-style: italic; }
-    .ai-persona-loading { animation: pulse 1.5s infinite; color: var(--t3); }
-    @keyframes pulse { 50% { opacity: 0.4; } }
-
     .auth-c{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh}
     .abox{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);padding:2.2rem;width:100%;max-width:340px}
     .abox h2{font-family:'Noto Serif SC',serif;font-size:1.2rem;margin-bottom:.4rem}
@@ -252,12 +232,6 @@
   </div>
 
   <div class="pg" id="pg-stats">
-    <div class="ai-card">
-      <h3>🔮 玩家灵魂画像 (AI)</h3>
-      <div id="ai-persona" class="ai-persona-text">点击右侧按钮，让 AI 分析你的游戏品味...</div>
-      <button class="btn btn-ai btn-sm" style="margin-top: 1rem;" onclick="generatePersona()">开始分析我的灵魂</button>
-    </div>
-
     <div class="cg">
       <div class="cc"><h3>状态分布</h3><div class="cw"><canvas id="ch-st"></canvas></div></div>
       <div class="cc"><h3>类型分布</h3><div class="cw"><canvas id="ch-gn"></canvas></div></div>
@@ -284,6 +258,7 @@
   </div>
 </main>
 
+<!-- ✨ 沉浸式详情弹窗馆 -->
 <div class="ov" id="ov-detail" onclick="if(event.target===this)closeOv('ov-detail')">
   <div class="modal d-modal">
     <div class="d-hero"><div class="d-hero-bg" id="dh-bg"></div></div>
@@ -315,6 +290,7 @@
   </div>
 </div>
 
+<!-- 传统的编辑/添加弹窗 -->
 <div class="ov" id="ov-edit" onclick="if(event.target===this)closeOv('ov-edit')">
   <div class="modal">
     <div class="mh"><h2 id="m-title">添加游戏</h2><button class="btn btn-sm" onclick="closeOv('ov-edit')">✕</button></div>
@@ -374,11 +350,16 @@
           <div class="chip" data-v="lighthearted" onclick="tc(this)">轻松愉快</div>
           <div class="chip" data-v="fantasy"    onclick="tc(this)">奇幻</div>
           <div class="chip" data-v="scifi"      onclick="tc(this)">科幻</div>
+          <div class="chip" data-v="historical" onclick="tc(this)">历史</div>
+          <div class="chip" data-v="modern"     onclick="tc(this)">现代都市</div>
+          <div class="chip" data-v="postapoc"   onclick="tc(this)">末日废土</div>
+          <div class="chip" data-v="cyberpunk"  onclick="tc(this)">赛博朋克</div>
           <div class="chip" data-v="pixel"      onclick="tc(this)">像素风</div>
           <div class="chip" data-v="anime"      onclick="tc(this)">二次元</div>
           <div class="chip" data-v="realistic"  onclick="tc(this)">写实风格</div>
           <div class="chip" data-v="cartoon"    onclick="tc(this)">卡通风格</div>
           <div class="chip" data-v="narrative"  onclick="tc(this)">剧情驱动</div>
+          <div class="chip" data-v="casual"     onclick="tc(this)">休闲向</div>
           <div class="chip" data-v="hard"       onclick="tc(this)">高难度挑战</div>
         </div>
       </div>
@@ -411,11 +392,18 @@
           <span class="shint" id="shint">未评分</span>
         </div>
       </div>
-      <div class="field">
-        <label><span>我的评测</span> <button class="btn btn-ai btn-sm" onclick="aiExpandReview()">✨ AI 扩写</button></label>
-        <textarea id="frev" placeholder="输入关键词，AI 帮你写长评..."></textarea>
+      <div class="field"><label>完成度</label>
+        <select id="fcp">
+          <option value="">未记录</option>
+          <option value="main">主线通关</option>
+          <option value="side">主线+支线</option>
+          <option value="full">全收集/铂金</option>
+          <option value="partial">部分完成</option>
+          <option value="dropped">中途放弃</option>
+        </select>
       </div>
-      <div class="field"><label>封面图片 URL</label><input type="url" id="fcv" placeholder="手动粘贴 URL"></div>
+      <div class="field"><label>我的评测</label><textarea id="frev" placeholder="记录你的感受、高光时刻、吐槽…"></textarea></div>
+      <div class="field"><label>封面图片 URL（可选）</label><input type="url" id="fcv" placeholder="粘贴图片链接，或留空使用 IGDB 自动填入"></div>
     </div>
     <div class="mfoot">
       <button class="btn btn-d" id="bdel" style="display:none" onclick="delGame()">删除</button>
@@ -429,7 +417,6 @@
 const SB_URL='https://qbzxfwnosacwbdumkvoz.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFienhmd25vc2Fjd2JkdW1rdm96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NjQyMTEsImV4cCI6MjA4OTQ0MDIxMX0.cvREkp0ZmiUuSpMj9TZB0ZGUXv1WMor0jN3yd4HEBwY';
 const IGDB_PROXY='https://qbzxfwnosacwbdumkvoz.supabase.co/functions/v1/dynamic-worker'; 
-const AI_PROXY='https://qbzxfwnosacwbdumkvoz.supabase.co/functions/v1/ai-handler'; 
 
 const {createClient}=supabase;
 const db=createClient(SB_URL,SB_KEY);
@@ -442,7 +429,10 @@ const PFG={xbox:'xbox',xbox360:'xbox',ps5:'ps',ps4:'ps',switch:'switch',switch2:
 const PTAG={xbox:'tx',xbox360:'tx',ps5:'tp',ps4:'tp',switch:'tsw',switch2:'tsw',steam:'tst'};
 const CPMAP = {main: '主线通关', side: '主线+支线', full: '全收集/铂金', partial: '部分完成', dropped: '中途放弃'};
 
-let currentQuery = '', currentOffset = 0, isFetching = false, hasMore = true;
+let currentQuery = '';
+let currentOffset = 0;
+let isFetching = false;
+let hasMore = true;
 
 async function init(){
   const {data:{session}}=await db.auth.getSession();
@@ -486,7 +476,6 @@ function render(){
   else if(so==='name')list.sort((a,b)=>a.name.localeCompare(b.name,'zh'));
   else list.sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
   
-  // ✨ 更新顶部统计看板
   document.getElementById('s-total').textContent=games.length;
   document.getElementById('s-pl').textContent=games.filter(g=>g.status==='playing').length;
   document.getElementById('s-dn').textContent=games.filter(g=>g.status==='done').length;
@@ -495,24 +484,249 @@ function render(){
   document.getElementById('s-av').textContent=rated.length?(rated.reduce((s,g)=>s+g.rating,0)/rated.length).toFixed(1):'—';
   
   const gg=document.getElementById('gg');
-  if(!list.length){gg.innerHTML=`<div class="empty"><div class="empty-i">🎮</div>没有相关记录</div>`;return;}
+  if(!list.length){gg.innerHTML=`<div class="empty"><div class="empty-i">🎮</div>${q||fs||pff!=='all'?'没有符合条件的游戏':'还没有记录，点击「添加游戏」开始吧！'}</div>`;return;}
   gg.innerHTML=list.map((g,i)=>{
+    const pftags=(g.platforms||[]).map(p=>`<span class="tag ${PTAG[p]||''}">${PFMAP[p]||p}</span>`).join('');
+    const gntags=(g.genres||[]).slice(0,2).map(gn=>`<span class="tag">${gn}</span>`).join('');
     const dc={playing:'var(--acc)',done:'var(--acc2)',wishlist:'var(--warn)',dropped:'var(--t3)'}[g.status]||'var(--t3)';
     return`<div class="gc" style="animation-delay:${Math.min(i*.03,.2)}s" onclick="openDetail('${g.id||g._id}')">
-      ${g.cover?`<div class="gc-cover-wrap"><div class="gc-cover-bg" style="background-image:url('${esc(g.cover)}')"></div><img class="gc-cover" src="${esc(g.cover)}" alt="" loading="lazy"></div>`:``}
+      ${g.cover?`<div class="gc-cover-wrap"><div class="gc-cover-bg" style="background-image:url('${esc(g.cover)}')"></div><img class="gc-cover" src="${esc(g.cover)}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'"></div>`:``}
+      <div class="gc-ph" style="${g.cover?'display:none':''}">🎮</div>
       <div class="gc-body">
         <div class="gc-top"><div class="gc-name">${esc(g.name)}</div><div class="pdot" style="background:${dc}"></div></div>
-        <div class="gc-tags">${(g.platforms||[]).map(p=>`<span class="tag ${PTAG[p]||''}">${PFMAP[p]||p}</span>`).join('')}</div>
+        <div class="gc-tags">${pftags}${gntags}</div>
+        ${g.review?`<div class="gc-rev">${esc(g.review)}</div>`:''}
         <div class="gc-foot">
           <div class="stars">${'★'.repeat(g.rating||0)}${'☆'.repeat(5-(g.rating||0))}</div>
-          <span class="htxt">${g.hours}h</span>
+          <div style="display:flex;align-items:center;gap:10px">${g.hours?`<span class="htxt">${g.hours}h</span>`:''}<span class="stxt ${STCLS[g.status]||''}">${STMAP[g.status]||''}</span></div>
         </div>
       </div>
     </div>`;
   }).join('');
 }
 
-// ✨ 统计图表绘制逻辑
+// ✨ 沉浸式详情馆逻辑
+function openDetail(id) {
+  const g = games.find(x=>(x.id||x._id)==id); if(!g) return;
+  editId = id; // 为删除和编辑功能提供 ID
+  
+  document.getElementById('dh-bg').style.backgroundImage = g.cover ? `url(${g.cover})` : 'none';
+  document.getElementById('d-cover').src = g.cover || '';
+  document.getElementById('d-cover').style.display = g.cover ? 'block' : 'none';
+  
+  document.getElementById('d-name').textContent = g.name || '未知游戏';
+  document.getElementById('d-meta').textContent = [g.developer, g.year].filter(Boolean).join(' · ');
+  
+  const pftags = (g.platforms||[]).map(p=>`<span class="tag ${PTAG[p]||''}">${PFMAP[p]||p}</span>`).join('');
+  const gntags = (g.genres||[]).slice(0,4).map(gn=>`<span class="tag">${gn}</span>`).join('');
+  document.getElementById('d-tags').innerHTML = pftags + gntags;
+  
+  const dc={playing:'var(--acc)',done:'var(--acc2)',wishlist:'var(--warn)',dropped:'var(--t3)'}[g.status]||'var(--t3)';
+  document.getElementById('d-st-val').innerHTML = `<span style="color:${dc}">${STMAP[g.status]||'—'}</span>`;
+  document.getElementById('d-hr-val').textContent = g.hours ? g.hours + 'h' : '0h';
+  document.getElementById('d-rt-val').innerHTML = g.rating ? '★'.repeat(g.rating) + `<span style="color:var(--t3)">${'★'.repeat(5-g.rating)}</span>` : `<span style="color:var(--t3)">暂无</span>`;
+  document.getElementById('d-cp-val').textContent = CPMAP[g.completion] || '—';
+  
+  const revBox = document.getElementById('d-rev-box');
+  if(g.review) {
+    revBox.style.display = 'block';
+    document.getElementById('d-rev-val').textContent = g.review;
+  } else {
+    revBox.style.display = 'none';
+  }
+  
+  document.getElementById('ov-detail').classList.add('on');
+}
+
+function openEditFromDetail() {
+  closeOv('ov-detail');
+  openEdit(editId);
+}
+
+function openAdd(){
+  editId=null;star=0;
+  document.getElementById('m-title').textContent='添加游戏';
+  document.getElementById('bdel').style.display='none';
+  ['fn','fdev','fyr','frev','fcv','gs'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  document.getElementById('fst2').value='playing';
+  document.getElementById('fhr').value=0;document.getElementById('fhrv').textContent='0h';
+  document.getElementById('fcp').value='';
+  rcl('pc');rcl('gc');rcl('sc');setStar(0);
+  document.getElementById('sr').style.display='none';
+  document.getElementById('ov-edit').classList.add('on');
+}
+
+function openEdit(id){
+  const g=games.find(x=>(x.id||x._id)==id);if(!g)return;
+  editId=id;star=g.rating||0;
+  document.getElementById('m-title').textContent='编辑记录';
+  document.getElementById('bdel').style.display='none'; // 在编辑表单隐藏删除，挪到详情馆了
+  document.getElementById('fn').value=g.name||'';
+  document.getElementById('fdev').value=g.developer||'';
+  document.getElementById('fyr').value=g.year||'';
+  document.getElementById('fst2').value=g.status||'playing';
+  document.getElementById('fhr').value=g.hours||0;document.getElementById('fhrv').textContent=(g.hours||0)+'h';
+  document.getElementById('fcp').value=g.completion||'';
+  document.getElementById('frev').value=g.review||'';
+  document.getElementById('fcv').value=g.cover||'';
+  document.getElementById('gs').value='';document.getElementById('sr').style.display='none';
+  rcl('pc');(g.platforms||[]).forEach(p=>{const c=document.querySelector(`#pc [data-v="${p}"]`);if(c){const m={x:'onx',p:'onp',sw:'onsw',st:'onst'};const pmap={xbox:'x',xbox360:'x',ps5:'p',ps4:'p',switch:'sw',switch2:'sw',steam:'st'};c.classList.add(m[pmap[p]]||'on');}});
+  rcl('gc');(g.genres||[]).forEach(gn=>{const c=document.querySelector(`#gc [data-v="${gn}"]`);if(c)c.classList.add('on');});
+  rcl('sc');(g.styles||[]).forEach(s=>{const c=document.querySelector(`#sc [data-v="${s}"]`);if(c)c.classList.add('on');});
+  setStar(g.rating||0);
+  document.getElementById('ov-edit').classList.add('on');
+}
+
+function closeOv(id){document.getElementById(id).classList.remove('on');}
+function rcl(id){document.querySelectorAll(`#${id} .chip`).forEach(c=>{c.className='chip';});}
+function tc(el,pfx){
+  const cls=pfx?{'x':'onx','p':'onp','sw':'onsw','st':'onst'}[pfx]||'on':'on';
+  if([...el.classList].some(c=>c.startsWith('on'))){el.className='chip';}
+  else{el.classList.add(cls);}
+}
+function setStar(n){star=n;document.querySelectorAll('.sb').forEach((b,i)=>b.classList.toggle('on',i<n));document.getElementById('shint').textContent=HINT[n]||'未评分';}
+
+function onSrch(v){
+  clearTimeout(srT);
+  const sr=document.getElementById('sr');
+  if(!v.trim()){sr.style.display='none';return;}
+  srT=setTimeout(()=>{
+    currentQuery = v.trim();
+    currentOffset = 0;
+    hasMore = true;
+    doSrch(true);
+  },400);
+}
+
+async function doSrch(isNewSearch = false){
+  const sr=document.getElementById('sr');
+  if(!IGDB_PROXY){sr.style.display='block';sr.innerHTML=`<div class="sr-msg" style="color:var(--warn)">⚠ 请先配置 IGDB Proxy</div>`;return;}
+  
+  if(isNewSearch) {
+    sr.style.display='block';
+    sr.innerHTML=`<div class="sr-msg">搜索中…</div>`;
+    sr.scrollTop = 0;
+  } else {
+    sr.insertAdjacentHTML('beforeend', `<div class="sr-msg load-more" style="padding:10px">加载更多中…</div>`);
+  }
+
+  isFetching = true;
+
+  try{
+    const res=await fetch(IGDB_PROXY,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({query: currentQuery, offset: currentOffset})
+    });
+    const data=await res.json();
+    
+    const loader = sr.querySelector('.load-more');
+    if(loader) loader.remove();
+
+    if(!data || !data.length){
+      if(isNewSearch) sr.innerHTML=`<div class="sr-msg">未找到相关游戏</div>`;
+      else if(hasMore) sr.insertAdjacentHTML('beforeend', `<div class="sr-msg">没有更多结果了</div>`);
+      hasMore = false;
+      isFetching = false;
+      return;
+    }
+
+    if(data.length < 50) hasMore = false;
+
+    const htmlStr = data.map(g=>`<div class="sri" onclick='fillG(${JSON.stringify(g).replace(/'/g,"&#39;")})'>
+      ${g.cover?`<img class="sri-cv" src="${g.cover}" alt="">`:``}<div class="sri-info"><div class="sri-name" title="${esc(g.name)}">${esc(g.name)}</div><div class="sri-meta">${[g.year,g.platforms?.join(' / ')].filter(Boolean).join(' · ')}</div></div>
+    </div>`).join('');
+
+    if(isNewSearch) {
+      sr.innerHTML = htmlStr;
+    } else {
+      sr.insertAdjacentHTML('beforeend', htmlStr);
+    }
+
+    currentOffset += 50;
+    isFetching = false;
+  }catch{
+    const loader = sr.querySelector('.load-more');
+    if(loader) loader.remove();
+    if(isNewSearch) sr.innerHTML=`<div class="sr-msg" style="color:var(--danger)">搜索失败</div>`;
+    isFetching = false;
+  }
+}
+
+document.getElementById('sr').addEventListener('scroll', function() {
+  if(isFetching || !hasMore) return;
+  if (this.scrollHeight - this.scrollTop - this.clientHeight < 30) {
+    doSrch(false);
+  }
+});
+
+function fillG(g){
+  document.getElementById('fn').value=g.name||'';
+  document.getElementById('fdev').value=g.developer||'';
+  document.getElementById('fyr').value=g.year||'';
+  document.getElementById('fcv').value=g.cover||'';
+  rcl('pc');
+  (g.platforms||[]).forEach(p=>{
+    const pv=p.toLowerCase().includes('xbox')?'xbox':p.toLowerCase().includes('playstation')||p.includes('PS')?'ps5':p.toLowerCase().includes('switch')?'switch':p.toLowerCase().includes('pc')||p.toLowerCase().includes('windows')?'steam':null;
+    if(pv){const c=document.querySelector(`#pc [data-v="${pv}"]`);if(c){const m={xbox:'onx',ps5:'onp',switch:'onsw',steam:'onst'};c.classList.add(m[pv]||'on');}}
+  });
+  rcl('gc');
+  (g.genres||[]).forEach(gn=>{const c=document.querySelector(`#gc [data-v="${gn}"]`);if(c)c.classList.add('on');});
+  document.getElementById('sr').style.display='none';document.getElementById('gs').value='';
+}
+
+async function saveGame(){
+  const name=document.getElementById('fn').value.trim();if(!name){document.getElementById('fn').focus();return;}
+  const pls=[...document.querySelectorAll('#pc .chip')].filter(c=>c.className!=='chip').map(c=>c.dataset.v).filter(Boolean);
+  const gns=[...document.querySelectorAll('#gc .chip')].filter(c=>c.className!=='chip').map(c=>c.dataset.v).filter(Boolean);
+  const sts=[...document.querySelectorAll('#sc .chip')].filter(c=>c.className!=='chip').map(c=>c.dataset.v).filter(Boolean);
+  const p={name,platforms:pls,genres:gns,styles:sts,developer:document.getElementById('fdev').value.trim(),year:parseInt(document.getElementById('fyr').value)||null,status:document.getElementById('fst2').value,hours:parseInt(document.getElementById('fhr').value)||0,completion:document.getElementById('fcp').value,rating:star,review:document.getElementById('frev').value.trim(),cover:document.getElementById('fcv').value.trim()};
+  
+  const { data: { session } } = await db.auth.getSession();
+  const user = session?.user;
+
+  if(user){
+    if(editId){
+      const{error}=await db.from('games').update(p).eq('id',editId).eq('user_id',user.id);
+      if(error){alert('更新云端失败：'+error.message);return;}
+      const i=games.findIndex(g=>g.id==editId);if(i>-1)games[i]={...games[i],...p};
+    }else{
+      const{data,error}=await db.from('games').insert({...p, user_id: user.id}).select().single();
+      if(error){alert('添加云端失败：'+error.message);return;}
+      if(data)games.unshift(data);
+    }
+  }else{
+    if(editId){const i=games.findIndex(g=>g._id==editId);if(i>-1)games[i]={...games[i],...p};}
+    else{games.unshift({_id:Date.now().toString(36)+Math.random().toString(36).slice(2),created_at:new Date().toISOString(),...p});}
+    localStorage.setItem('gj',JSON.stringify(games));
+  }
+  closeOv('ov-edit');render();
+}
+
+async function delGame(){
+  if(!editId||!confirm('确认删除这款游戏？'))return;
+  const { data: { session } } = await db.auth.getSession();
+  const user = session?.user;
+  
+  if(user){
+    await db.from('games').delete().eq('id',editId).eq('user_id',user.id);
+  }
+  games=games.filter(g=>(g.id||g._id)!=editId);
+  if(!user) localStorage.setItem('gj',JSON.stringify(games));
+  
+  // 清理所有弹窗
+  document.querySelectorAll('.ov').forEach(o=>o.classList.remove('on'));
+  render();
+}
+
+function go(pg,btn){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('on'));
+  document.getElementById('pg-'+pg).classList.add('on');
+  if(btn)btn.classList.add('on');
+  if(pg==='stats')drawCharts();
+}
+
 function drawCharts(){
   const stC={playing:0,done:0,wishlist:0,dropped:0},gnC={},pfC={},rtC=[0,0,0,0,0],styC={};
   games.forEach(g=>{
@@ -533,108 +747,43 @@ function drawCharts(){
   const tSty=Object.entries(styC).sort((a,b)=>b[1]-a[1]).slice(0,10);br('ch-sty',tSty.map(x=>x[0]),tSty.map(x=>x[1]));
 }
 
-function openDetail(id) {
-  const g = games.find(x=>(x.id||x._id)==id); if(!g) return;
-  editId = id;
-  document.getElementById('dh-bg').style.backgroundImage = g.cover ? `url(${g.cover})` : 'none';
-  document.getElementById('d-cover').src = g.cover || '';
-  document.getElementById('d-name').textContent = g.name;
-  document.getElementById('d-meta').textContent = [g.developer, g.year].filter(Boolean).join(' · ');
-  document.getElementById('d-st-val').textContent = STMAP[g.status];
-  document.getElementById('d-hr-val').textContent = (g.hours||0) + 'h';
-  document.getElementById('d-rt-val').innerHTML = '★'.repeat(g.rating) + `<span style="color:var(--t3)">${'★'.repeat(5-g.rating)}</span>`;
-  document.getElementById('d-cp-val').textContent = CPMAP[g.completion] || '—';
-  document.getElementById('d-rev-val').textContent = g.review || '暂无评价';
-  document.getElementById('ov-detail').classList.add('on');
-}
+let amd='login';
+function am(m){amd=m;document.getElementById('t-in').classList.toggle('on',m==='login');document.getElementById('t-up').classList.toggle('on',m==='signup');document.getElementById('asub').textContent=m==='login'?'登录':'注册';document.getElementById('amsg').textContent='';}
 
-function openEditFromDetail() { closeOv('ov-detail'); openEdit(editId); }
-
-function openAdd(){
-  editId=null; star=0;
-  document.getElementById('m-title').textContent='添加游戏';
-  ['fn','fdev','fyr','frev','fcv','gs'].forEach(id=>document.getElementById(id).value='');
-  rcl('pc'); rcl('gc'); rcl('sc'); setStar(0);
-  document.getElementById('ov-edit').classList.add('on');
-}
-
-function openEdit(id){
-  const g=games.find(x=>(x.id||x._id)==id); if(!g) return;
-  editId=id; star=g.rating;
-  document.getElementById('m-title').textContent='编辑记录';
-  document.getElementById('fn').value=g.name;
-  document.getElementById('fdev').value=g.developer||'';
-  document.getElementById('fyr').value=g.year||'';
-  document.getElementById('frev').value=g.review||'';
-  document.getElementById('fcv').value=g.cover||'';
-  setStar(g.rating);
-  document.getElementById('ov-edit').classList.add('on');
-}
-
-function closeOv(id){document.getElementById(id).classList.remove('on');}
-function rcl(id){document.querySelectorAll(`#${id} .chip`).forEach(c=>c.className='chip');}
-function tc(el,pfx){
-  const cls=pfx?{'x':'onx','p':'onp','sw':'onsw','st':'onst'}[pfx]||'on':'on';
-  if([...el.classList].some(c=>c.startsWith('on'))){el.className='chip';}
-  else{el.classList.add(cls);}
-}
-function setStar(n){star=n;document.querySelectorAll('.sb').forEach((b,i)=>b.classList.toggle('on',i<n));}
-
-async function aiExpandReview() {
-  const revArea = document.getElementById('frev');
-  const keywords = revArea.value.trim();
-  const gameName = document.getElementById('fn').value.trim();
-  if(!gameName) return alert('请先输入游戏名称');
-  const btn = event.currentTarget;
-  const originalText = btn.textContent;
-  btn.textContent = '🪄 思考中...';
-  btn.disabled = true;
-  try {
-    const res = await fetch(AI_PROXY, { method: 'POST', body: JSON.stringify({ type: 'expand', game: gameName, keywords: keywords }) });
-    const data = await res.json();
-    revArea.value = data.result || 'AI 生成失败';
-  } catch (e) { alert('AI 暂时走神了'); }
-  finally { btn.textContent = originalText; btn.disabled = false; }
-}
-
-async function generatePersona() {
-  if(games.length < 3) return alert('游戏库数据太少啦，至少添加 3 款游戏 AI 才能分析哦');
-  const personaEl = document.getElementById('ai-persona');
-  personaEl.innerHTML = '<span class="ai-persona-loading">正在扫描你的游戏档案，连接量子纠缠中...</span>';
-  const libraryData = games.map(g => `${g.name}(${g.rating}星,${g.hours}h)`).join(', ');
-  try {
-    const res = await fetch(AI_PROXY, { method: 'POST', body: JSON.stringify({ type: 'persona', data: libraryData }) });
-    const data = await res.json();
-    personaEl.textContent = data.result || 'AI 没说出话来...';
-  } catch (e) { personaEl.textContent = '分析失败，请检查 Edge Function 部署状态。'; }
-}
-
-async function saveGame(){
-  const name=document.getElementById('fn').value.trim(); if(!name) return;
-  const p={name, rating:star, review:document.getElementById('frev').value.trim(), cover:document.getElementById('fcv').value.trim(), developer: document.getElementById('fdev').value, year: parseInt(document.getElementById('fyr').value)||null};
-  const {data:{session}}=await db.auth.getSession();
-  if(session?.user){
-    if(editId) await db.from('games').update(p).eq('id',editId);
-    else await db.from('games').insert({...p, user_id: session.user.id});
+async function doAuth(){
+  const e=document.getElementById('ae').value.trim(),p=document.getElementById('ap').value;
+  const msg=document.getElementById('amsg');
+  if(!e||!p){msg.textContent='请填写邮箱和密码';msg.className='amsg err';return;}
+  msg.textContent=amd==='login'?'登录中…':'注册中…';msg.className='amsg';
+  const{error}=amd==='login'?await db.auth.signInWithPassword({email:e,password:p}):await db.auth.signUp({email:e,password:p});
+  
+  if(error){
+    msg.textContent=error.message;
+    msg.className='amsg err';
+  } else {
+    msg.textContent=amd==='login'?'登录成功！':'注册成功，请查收验证邮件';
+    msg.className='amsg ok';
+    if(amd==='login'){
+      setTimeout(async ()=>{
+        let localG = [];
+        try{ localG = JSON.parse(localStorage.getItem('gj')||'[]'); }catch{}
+        
+        const {data:{user}} = await db.auth.getUser();
+        if(user && localG.length > 0) {
+           const toInsert = localG.map(g => {
+              const copy = {...g, user_id: user.id};
+              delete copy.id;
+              delete copy._id;
+              return copy;
+           });
+           await db.from('games').insert(toInsert);
+           localStorage.removeItem('gj'); 
+        }
+        go('list',document.querySelector('nav button'));
+        load();
+      }, 700);
+    }
   }
-  closeOv('ov-edit'); load();
-}
-
-async function delGame(){
-  if(!editId||!confirm('确定删除？')) return;
-  const {data:{session}}=await db.auth.getSession();
-  if(session?.user) await db.from('games').delete().eq('id',editId);
-  games = games.filter(g => (g.id||g._id) !== editId);
-  closeOv('ov-detail'); render();
-}
-
-function go(pg,btn){
-  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
-  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('on'));
-  document.getElementById('pg-'+pg).classList.add('on');
-  if(btn) btn.classList.add('on');
-  // ✨ 切换到统计页时自动绘图
-  if(pg==='stats') setTimeout(drawCharts, 50);
 }
 
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
