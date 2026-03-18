@@ -48,7 +48,6 @@
     .btn-sm{padding:4px 10px;font-size:.78rem}
     .btn-d{border-color:rgba(255,85,85,.25);color:var(--danger)}.btn-d:hover{background:rgba(255,85,85,.08)}
     
-    /* ✨ AI 风格按钮 */
     .btn-ai {
       background: var(--ai-gradient);
       background-size: 200% auto;
@@ -67,6 +66,7 @@
     
     .gc{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);overflow:hidden;cursor:pointer;transition:all .3s cubic-bezier(0.25, 0.46, 0.45, 0.94);animation:fu .25s ease both; position: relative;}
     .gc:hover{border-color:var(--acc);transform:translateY(-5px);box-shadow: 0 12px 24px rgba(0,0,0,0.4);}
+    
     .gc-cover-wrap {position: relative; width: 100%; height: 150px; overflow: hidden; background: var(--bg3);}
     .gc-cover-bg {position: absolute; inset: -20px; background-size: cover; background-position: center; filter: blur(15px); opacity: 0.35; transition: all .4s ease;}
     .gc-cover{position: relative; z-index: 2; width:100%;height:100%;object-fit:contain;display:block; transition: transform .4s ease;}
@@ -171,7 +171,6 @@
     .cw{position:relative;height:190px}
     .cc.full{grid-column:1/-1}
 
-    /* ✨ AI Persona Card */
     .ai-card {
       grid-column: 1/-1;
       background: linear-gradient(135deg, #1b1d21 0%, #141518 100%);
@@ -253,7 +252,6 @@
   </div>
 
   <div class="pg" id="pg-stats">
-    <!-- ✨ AI 灵魂画像卡片 -->
     <div class="ai-card">
       <h3>🔮 玩家灵魂画像 (AI)</h3>
       <div id="ai-persona" class="ai-persona-text">点击右侧按钮，让 AI 分析你的游戏品味...</div>
@@ -415,9 +413,9 @@
       </div>
       <div class="field">
         <label><span>我的评测</span> <button class="btn btn-ai btn-sm" onclick="aiExpandReview()">✨ AI 扩写</button></label>
-        <textarea id="frev" placeholder="输入关键词（如：好玩、画质神），AI 帮你写长评..."></textarea>
+        <textarea id="frev" placeholder="输入关键词，AI 帮你写长评..."></textarea>
       </div>
-      <div class="field"><label>封面图片 URL</label><input type="url" id="fcv" placeholder="自动填入或手动粘贴"></div>
+      <div class="field"><label>封面图片 URL</label><input type="url" id="fcv" placeholder="手动粘贴 URL"></div>
     </div>
     <div class="mfoot">
       <button class="btn btn-d" id="bdel" style="display:none" onclick="delGame()">删除</button>
@@ -488,6 +486,7 @@ function render(){
   else if(so==='name')list.sort((a,b)=>a.name.localeCompare(b.name,'zh'));
   else list.sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
   
+  // ✨ 更新顶部统计看板
   document.getElementById('s-total').textContent=games.length;
   document.getElementById('s-pl').textContent=games.filter(g=>g.status==='playing').length;
   document.getElementById('s-dn').textContent=games.filter(g=>g.status==='done').length;
@@ -513,6 +512,27 @@ function render(){
   }).join('');
 }
 
+// ✨ 统计图表绘制逻辑
+function drawCharts(){
+  const stC={playing:0,done:0,wishlist:0,dropped:0},gnC={},pfC={},rtC=[0,0,0,0,0],styC={};
+  games.forEach(g=>{
+    if(stC[g.status]!==undefined)stC[g.status]++;
+    (g.platforms||[]).forEach(p=>{const k=PFMAP[p]||p;pfC[k]=(pfC[k]||0)+1;});
+    (g.genres||[]).forEach(gn=>{gnC[gn]=(gnC[gn]||0)+1;});
+    (g.styles||[]).forEach(s=>{styC[s]=(styC[s]||0)+1;});
+    if(g.rating>=1&&g.rating<=5)rtC[g.rating-1]++;
+  });
+  const co={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#9a9890',font:{size:11}}}}};
+  const pal=['#d4f04a','#40e8c4','#f0b940','#ff6e6e','#8cb4ff','#d68cff','#ff9c69','#6ecfff'];
+  function dn(id,labels,data){if(charts[id])charts[id].destroy();charts[id]=new Chart(document.getElementById(id),{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:pal.slice(0,data.length),borderWidth:0}]},options:{...co,cutout:'65%'}});}
+  function br(id,labels,data,colors){if(charts[id])charts[id].destroy();charts[id]=new Chart(document.getElementById(id),{type:'bar',data:{labels,datasets:[{data,backgroundColor:colors||pal,borderRadius:5,borderWidth:0}]},options:{...co,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#9a9890'},grid:{color:'rgba(255,255,255,.04)'}},y:{ticks:{color:'#9a9890',stepSize:1},grid:{color:'rgba(255,255,255,.04)'}}}}});}
+  dn('ch-st',['游玩中','已通关','想玩','放弃'],Object.values(stC));
+  const tGn=Object.entries(gnC).sort((a,b)=>b[1]-a[1]).slice(0,6);dn('ch-gn',tGn.map(x=>x[0]),tGn.map(x=>x[1]));
+  const tPf=Object.entries(pfC).sort((a,b)=>b[1]-a[1]);dn('ch-pf',tPf.map(x=>x[0]),tPf.map(x=>x[1]));
+  br('ch-rt',['1★','2★','3★','4★','5★'],rtC,['#444','#666','#999','#d4f04a','#40e8c4']);
+  const tSty=Object.entries(styC).sort((a,b)=>b[1]-a[1]).slice(0,10);br('ch-sty',tSty.map(x=>x[0]),tSty.map(x=>x[1]));
+}
+
 function openDetail(id) {
   const g = games.find(x=>(x.id||x._id)==id); if(!g) return;
   editId = id;
@@ -521,7 +541,7 @@ function openDetail(id) {
   document.getElementById('d-name').textContent = g.name;
   document.getElementById('d-meta').textContent = [g.developer, g.year].filter(Boolean).join(' · ');
   document.getElementById('d-st-val').textContent = STMAP[g.status];
-  document.getElementById('d-hr-val').textContent = g.hours + 'h';
+  document.getElementById('d-hr-val').textContent = (g.hours||0) + 'h';
   document.getElementById('d-rt-val').innerHTML = '★'.repeat(g.rating) + `<span style="color:var(--t3)">${'★'.repeat(5-g.rating)}</span>`;
   document.getElementById('d-cp-val').textContent = CPMAP[g.completion] || '—';
   document.getElementById('d-rev-val').textContent = g.review || '暂无评价';
@@ -543,6 +563,8 @@ function openEdit(id){
   editId=id; star=g.rating;
   document.getElementById('m-title').textContent='编辑记录';
   document.getElementById('fn').value=g.name;
+  document.getElementById('fdev').value=g.developer||'';
+  document.getElementById('fyr').value=g.year||'';
   document.getElementById('frev').value=g.review||'';
   document.getElementById('fcv').value=g.cover||'';
   setStar(g.rating);
@@ -563,49 +585,33 @@ async function aiExpandReview() {
   const keywords = revArea.value.trim();
   const gameName = document.getElementById('fn').value.trim();
   if(!gameName) return alert('请先输入游戏名称');
-  
   const btn = event.currentTarget;
   const originalText = btn.textContent;
   btn.textContent = '🪄 思考中...';
   btn.disabled = true;
-
   try {
-    const res = await fetch(AI_PROXY, {
-      method: 'POST',
-      body: JSON.stringify({ type: 'expand', game: gameName, keywords: keywords })
-    });
+    const res = await fetch(AI_PROXY, { method: 'POST', body: JSON.stringify({ type: 'expand', game: gameName, keywords: keywords }) });
     const data = await res.json();
-    revArea.value = data.result;
-  } catch (e) {
-    alert('AI 暂时走神了，请稍后再试');
-  } finally {
-    btn.textContent = originalText;
-    btn.disabled = false;
-  }
+    revArea.value = data.result || 'AI 生成失败';
+  } catch (e) { alert('AI 暂时走神了'); }
+  finally { btn.textContent = originalText; btn.disabled = false; }
 }
 
 async function generatePersona() {
   if(games.length < 3) return alert('游戏库数据太少啦，至少添加 3 款游戏 AI 才能分析哦');
   const personaEl = document.getElementById('ai-persona');
   personaEl.innerHTML = '<span class="ai-persona-loading">正在扫描你的游戏档案，连接量子纠缠中...</span>';
-  
   const libraryData = games.map(g => `${g.name}(${g.rating}星,${g.hours}h)`).join(', ');
-
   try {
-    const res = await fetch(AI_PROXY, {
-      method: 'POST',
-      body: JSON.stringify({ type: 'persona', data: libraryData })
-    });
+    const res = await fetch(AI_PROXY, { method: 'POST', body: JSON.stringify({ type: 'persona', data: libraryData }) });
     const data = await res.json();
-    personaEl.textContent = data.result;
-  } catch (e) {
-    personaEl.textContent = '分析失败，可能是你的品味太高端，AI 无法理解。';
-  }
+    personaEl.textContent = data.result || 'AI 没说出话来...';
+  } catch (e) { personaEl.textContent = '分析失败，请检查 Edge Function 部署状态。'; }
 }
 
 async function saveGame(){
   const name=document.getElementById('fn').value.trim(); if(!name) return;
-  const p={name, rating:star, review:document.getElementById('frev').value.trim(), cover:document.getElementById('fcv').value.trim()};
+  const p={name, rating:star, review:document.getElementById('frev').value.trim(), cover:document.getElementById('fcv').value.trim(), developer: document.getElementById('fdev').value, year: parseInt(document.getElementById('fyr').value)||null};
   const {data:{session}}=await db.auth.getSession();
   if(session?.user){
     if(editId) await db.from('games').update(p).eq('id',editId);
@@ -614,11 +620,21 @@ async function saveGame(){
   closeOv('ov-edit'); load();
 }
 
+async function delGame(){
+  if(!editId||!confirm('确定删除？')) return;
+  const {data:{session}}=await db.auth.getSession();
+  if(session?.user) await db.from('games').delete().eq('id',editId);
+  games = games.filter(g => (g.id||g._id) !== editId);
+  closeOv('ov-detail'); render();
+}
+
 function go(pg,btn){
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('nav button').forEach(b=>b.classList.remove('on'));
   document.getElementById('pg-'+pg).classList.add('on');
   if(btn) btn.classList.add('on');
+  // ✨ 切换到统计页时自动绘图
+  if(pg==='stats') setTimeout(drawCharts, 50);
 }
 
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
