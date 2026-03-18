@@ -39,6 +39,8 @@
     .tb{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:1.1rem}
     .tb input,.tb select{background:var(--bg2);border:1px solid var(--b);border-radius:8px;padding:7px 12px;color:var(--t);font-family:inherit;font-size:.85rem;outline:none;transition:border .15s}
     .tb input{flex:1;min-width:150px}.tb input:focus,.tb select:focus{border-color:var(--b2)}
+    /* 防止 readonly 时的鼠标样式变成禁止符号 */
+    input[readonly] { cursor: text; }
     .btn{padding:7px 16px;border-radius:8px;font-family:inherit;font-size:.85rem;cursor:pointer;border:1px solid var(--b2);background:transparent;color:var(--t);transition:all .15s;white-space:nowrap}
     .btn:hover{background:var(--bg3)}
     .btn-a{background:var(--acc);color:#111;border-color:transparent;font-weight:500}
@@ -157,7 +159,8 @@
       <div class="sc" style="--c:var(--acc2)"><div class="sn" id="s-av">—</div><div class="sl">平均评分</div></div>
     </div>
     <div class="tb">
-      <input type="text" id="q" placeholder="搜索游戏名称…" oninput="render()" autocomplete="off" autocorrect="off" spellcheck="false">
+      <!-- 重点防填充修改点：通过 readonly 拦截自动输入 -->
+      <input type="text" id="q" placeholder="搜索游戏名称…" oninput="render()" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')" onblur="this.setAttribute('readonly', 'readonly')" spellcheck="false">
       <select id="fst" onchange="render()">
         <option value="">全部状态</option>
         <option value="playing">游玩中</option>
@@ -202,8 +205,8 @@
           <button class="on" id="t-in" onclick="am('login')">登录</button>
           <button id="t-up" onclick="am('signup')">注册</button>
         </div>
-        <div class="field"><label>邮箱</label><input type="email" id="ae" placeholder="your@email.com"></div>
-        <div class="field"><label>密码</label><input type="password" id="ap" placeholder="至少 6 位"></div>
+        <div class="field"><label>邮箱</label><input type="email" id="ae" placeholder="your@email.com" autocomplete="email"></div>
+        <div class="field"><label>密码</label><input type="password" id="ap" placeholder="至少 6 位" autocomplete="current-password"></div>
         <button class="btn btn-a" style="width:100%" id="asub" onclick="doAuth()">登录</button>
         <div class="amsg" id="amsg"></div>
       </div>
@@ -218,12 +221,19 @@
     <div class="mc" onsubmit="return false">
       <div class="sbox">
         <span class="sico">🔍</span>
-        <input type="text" id="gs" placeholder="搜索游戏名称自动填入（需配置 IGDB）…" oninput="onSrch(this.value)" autocomplete="off">
+        <!-- 防填充 -->
+        <input type="text" id="gs" placeholder="搜索游戏名称自动填入（需配置 IGDB）…" oninput="onSrch(this.value)" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')" onblur="this.setAttribute('readonly', 'readonly')">
         <div class="sr" id="sr" style="display:none"></div>
       </div>
       <div class="row2">
-        <div class="field"><label>游戏名称 *</label><input type="text" id="fn" placeholder="例：《黑神话：悟空》" autocomplete="off"></div>
-        <div class="field"><label>开发商 / 发行商</label><input type="text" id="fdev" placeholder="例：Game Science"></div>
+        <div class="field"><label>游戏名称 *</label>
+           <!-- 防填充 -->
+           <input type="text" id="fn" placeholder="例：《黑神话：悟空》" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')" onblur="this.setAttribute('readonly', 'readonly')">
+        </div>
+        <div class="field"><label>开发商 / 发行商</label>
+           <!-- 防填充 -->
+           <input type="text" id="fdev" placeholder="例：Game Science" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')" onblur="this.setAttribute('readonly', 'readonly')">
+        </div>
       </div>
       <div class="field">
         <label>游玩平台（可多选）</label>
