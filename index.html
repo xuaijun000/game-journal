@@ -451,7 +451,7 @@
 
 <script>
 // ===== 配置区 =====
-const GEMINI_KEY = 'AIzaSyDcHQHTqTGXPbA7K_eAn6574zJAuiTMk1c';  // 👈 替换这里
+const GEMINI_KEY = '在这里粘贴你的Gemini API Key';  // 👈 替换这里
 const SB_URL = 'https://qbzxfwnosacwbdumkvoz.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFienhmd25vc2Fjd2JkdW1rdm96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NjQyMTEsImV4cCI6MjA4OTQ0MDIxMX0.cvREkp0ZmiUuSpMj9TZB0ZGUXv1WMor0jN3yd4HEBwY';
 const IGDB_PROXY = 'https://qbzxfwnosacwbdumkvoz.supabase.co/functions/v1/dynamic-worker';
@@ -940,9 +940,13 @@ async function sendAIMsg() {
 回答要求：用中文，简洁有力，每次控制在 250 字以内。避免使用 Markdown 格式符号（如 **、##、- 列表符号等），纯文字输出。`;
 
   try {
-    const res = await fetch(`https://qbzxfwnosacwbdumkvoz.supabase.co/functions/v1/gemini-proxy`, {
+    const res = await fetch('https://qbzxfwnosacwbdumkvoz.supabase.co/functions/v1/gemini-proxy', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json', 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFienhmd25vc2Fjd2JkdW1rdm96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NjQyMTEsImV4cCI6MjA4OTQ0MDIxMX0.cvREkp0ZmiUuSpMj9TZB0ZGUXv1WMor0jN3yd4HEBwY'},
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SB_KEY,
+        'Authorization': `Bearer ${SB_KEY}`,
+      },
       body: JSON.stringify({
         system_instruction: {parts:[{text:systemCtx}]},
         contents: aiChatHistory,
@@ -961,15 +965,11 @@ async function sendAIMsg() {
     addAIBubble(reply, 'ai', true);
     aiChatHistory.push({role:'model', parts:[{text:reply}]});
 
-    // 保持历史不超过 20 轮（避免 token 过长）
     if (aiChatHistory.length > 40) aiChatHistory = aiChatHistory.slice(-40);
 
   } catch(e) {
     removeAITyping();
-    const errMsg = e.message.includes('API_KEY') || e.message.includes('key')
-      ? '⚠ API Key 无效，请检查 GEMINI_KEY 配置是否正确。'
-      : `连接失败：${e.message}`;
-    addAIBubble(errMsg, 'ai', false);
+    addAIBubble(`连接失败：${e.message}`, 'ai', false);
   }
   snd.disabled = false;
   document.getElementById('chat-inp').focus();
