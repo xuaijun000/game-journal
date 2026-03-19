@@ -1626,7 +1626,6 @@ async function generateSummary(){
 
 /* 发现页详情弹窗 */
 let discCurrentGame=null,discChatOpen=false,discChatHistory=[];
-let discDataCache=discDataCache||[];
 function openDiscDetailByIdx(idx){if(discDataCache[idx])openDiscDetail(discDataCache[idx]);}
 function openDiscDetail(g){
   discCurrentGame=g;discChatOpen=false;discChatHistory=[];
