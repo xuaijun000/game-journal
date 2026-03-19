@@ -1814,10 +1814,13 @@ async function getPkmCNName(id, engName){
     const r = await fetch(`${POKEAPI}/pokemon-species/${id}`);
     if(!r.ok) return engName||'';
     const d = await r.json();
-    const n = d.names?.find(x=>x.language.name==='zh-Hans'||x.language.name==='zh-Hant');
-    const cn = n?.name || engName || '';
-    if(cn) pkmCNCache[id] = cn;
-    return cn;
+    // 优先简体，再繁体，再日文罗马音，最后英文
+    const zhHans = d.names?.find(x=>x.language.name==='zh-Hans');
+    const zhHant = d.names?.find(x=>x.language.name==='zh-Hant');
+    const cn = zhHans?.name || zhHant?.name || engName || '';
+    if(cn && cn!==engName) pkmCNCache[id] = cn;
+    else if(engName) pkmCNCache[id] = engName;
+    return pkmCNCache[id] || engName || '';
   }catch{ return engName||''; }
 }
 
@@ -2013,8 +2016,7 @@ async function loadGen(gen,el){
     const items=await Promise.all(batch.map(async id=>{
       try{
         const p=await fetchPkm(id);
-        const sp=await fetchPkmSpecies(id).catch(()=>null);
-        const cn=getCNName(sp,p.name)||(await getPkmCNName(p.id,p.name));
+        const cn=await getPkmCNName(p.id,p.name);
         const img=p.sprites?.front_default||'';
         const col=pkmCollection[p.id]||{};
         const mark=col.caught?'✓':col.liked?'♥':col.wanted?'★':'';
@@ -2392,8 +2394,23 @@ async function genSeriesLogFromChat(){
     const text=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
     if(!text)throw new Error('返回为空');
     const ta=document.getElementById('series-notes-inp');
-    if(ta)ta.value=(ta.value?ta.value+'\n\n':'')+'[AI 日志]\n'+text;
-    if(ta)ta.value=(ta.value?ta.value+'\n\n':'')+'[AI 日志]\n'+text;
+    if(ta){
+      const prev=ta.value.trim();
+      ta.value=(prev?prev+'\n\n':'')+'[AI 日志]\n'+text;
+    }
+    // 自动保存到 pkm_logs 表
+    const{data:{session}}=await db.auth.getSession();
+    if(session?.user){
+      await db.from('pkm_logs').insert({
+        user_id:session.user.id,
+        pkm_id:0,
+        pkm_name:'📝 '+s.name,
+        summary:text,
+        game_series:s.name
+      });
+      loadPkmLogs();
+    }
+    if(btn){btn.textContent='✓ 已保存到日志';setTimeout(()=>{btn.disabled=false;btn.textContent='📋 生成游玩日志';},2000);}
   }catch(e){
     alert('生成失败：'+e.message);
     if(btn){btn.disabled=false;btn.textContent='📋 生成游玩日志';}
@@ -2402,6 +2419,7 @@ async function genSeriesLogFromChat(){
 
 // 初始化宝可梦专栏
 async function initPkm(){
+  Object.keys(genCache).forEach(k=>delete genCache[k]);
   await loadSeriesData();
   await loadTodayPkm();
   await loadPkmCollection();
