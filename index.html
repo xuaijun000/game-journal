@@ -978,6 +978,9 @@ async function sendAIMsg(){
 禁止说话像AI客服或说明书。
 禁止忽视游戏世界观、用通用语气回答。
 
+【重要例外——现实问题必须直接回答】
+当玩家问价格、发售日期、游戏容量、是否有中文、平台支持等现实层面的问题时，必须直接、明确地回答，不能用游戏世界观或隐喻来敷衍。如果不知道具体数字，就说不知道或建议去查，不要绕圈子。现实问题 > 世界观沉浸感。
+
 ${reinject?'【人格提醒】回想《'+g.name+'》的世界。你从那个世界说话，不是在介绍它。':''}
 回答要求：中文，200字以内，纯文字不用Markdown符号。`;  try{
     const res=await fetch(`${SB_URL}/functions/v1/gemini-proxy`,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`},body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:aiChatHistory,generationConfig:{maxOutputTokens:600,temperature:1.15}})});
@@ -1178,6 +1181,9 @@ ${g.storyline?'故事背景：'+g.storyline:''}
 【禁止行为】
 禁止用"当然！""好的！""这是个很好的问题"开头。
 禁止说话像客服或说明书。
+
+【重要例外——现实问题必须直接回答】
+当玩家问价格、发售日期、游戏容量、是否有中文、平台支持等现实层面的问题时，必须直接、明确地回答，不能用游戏世界观或隐喻来敷衍。如果不知道具体数字，就说不知道或建议去查，不要绕圈子。现实问题 > 世界观沉浸感。
 
 ${reinject?'【提醒】保持《'+g.name+'》的世界观气质说话。':''}
 回答要求：中文，200字以内，纯文字不用Markdown符号。`;
