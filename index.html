@@ -8,7 +8,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
   <style>
-    :root{--bg:#080f0b;--bg2:#0e1a13;--bg3:#152319;--b:rgba(100,200,130,.08);--b2:rgba(100,200,130,.18);--t:#dff0e6;--t2:#8db89a;--t3:#4a6655;--acc:#4ade80;--acc2:#34d399;--warn:#fbbf24;--danger:#f87171;--r:10px;--rl:14px}
+    :root{--bg:#0f1f3d;--bg2:#162a50;--bg3:#1d3362;--b:rgba(96,165,250,.15);--b2:rgba(96,165,250,.28);--t:#e8f0ff;--t2:#93b4e8;--t3:#5578b0;--acc:#60a5fa;--acc2:#38bdf8;--warn:#fbbf24;--danger:#f87171;--r:10px;--rl:14px}
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     body{background:var(--bg);color:var(--t);font-family:'Noto Sans SC',sans-serif;font-weight:300;line-height:1.7;min-height:100vh}
     header{position:sticky;top:0;z-index:200;background:rgba(13,14,16,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--b);height:54px;display:flex;align-items:center;padding:0 1.5rem;gap:1rem}
@@ -17,7 +17,7 @@
     nav{display:flex;gap:2px;flex:1}
     nav button{background:none;border:none;cursor:pointer;color:var(--t2);font-size:.83rem;padding:6px 13px;border-radius:8px;font-family:inherit;transition:all .15s}
     nav button:hover{color:var(--t);background:var(--bg3)}
-    nav button.on{color:var(--acc);background:rgba(74,222,128,.08)}
+    nav button.on{color:var(--acc);background:rgba(96,165,250,.08)}
     .hdr-r{display:flex;align-items:center;gap:8px;margin-left:auto}
     .av{width:28px;height:28px;border-radius:50%;background:var(--bg3);border:1px solid var(--b2);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--t2);font-family:'DM Mono',monospace}
     .hbtn{background:none;border:1px solid var(--b2);border-radius:8px;padding:5px 13px;color:var(--t2);font-family:inherit;font-size:.82rem;cursor:pointer;transition:all .15s}
@@ -34,12 +34,12 @@
     .btn{padding:7px 16px;border-radius:8px;font-family:inherit;font-size:.85rem;cursor:pointer;border:1px solid var(--b2);background:transparent;color:var(--t);transition:all .15s;white-space:nowrap}
     .btn:hover{background:var(--bg3)}
     .btn-a{background:var(--acc);color:#111;border-color:transparent;font-weight:500}
-    .btn-a:hover{background:#6ee7a0}
+    .btn-a:hover{background:#93c5fd}
     .btn-sm{padding:4px 10px;font-size:.78rem}
     .btn-d{border-color:rgba(255,85,85,.25);color:var(--danger)}
     .pf-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.1rem}
     .pfchip{padding:4px 12px;border-radius:99px;font-size:.75rem;font-family:'DM Mono',monospace;border:1px solid var(--b);cursor:pointer;transition:all .15s;background:var(--bg2);color:var(--t3)}
-    .pfchip.on{border-color:var(--acc);color:var(--acc);background:rgba(74,222,128,.09)}
+    .pfchip.on{border-color:var(--acc);color:var(--acc);background:rgba(96,165,250,.09)}
     .pfchip[data-p="xbox"].on{border-color:#4ec44e;color:#4ec44e;background:rgba(16,124,16,.12)}
     .pfchip[data-p="ps"].on{border-color:#6ea8fe;color:#6ea8fe;background:rgba(0,55,145,.15)}
     .pfchip[data-p="switch"].on{border-color:#ff6e6e;color:#ff6e6e;background:rgba(228,0,15,.1)}
@@ -90,7 +90,7 @@
     .d-stat:last-child{border-right:none}
     .d-val{display:block;font-size:1.15rem;font-family:'DM Mono',monospace;font-weight:500;color:var(--t);margin-bottom:3px}
     .d-lbl{font-size:.7rem;color:var(--t3);letter-spacing:1px;text-transform:uppercase}
-    .d-rev-box{background:rgba(74,222,128,.03);border:1px dashed rgba(74,222,128,.15);border-radius:12px;padding:1.3rem;position:relative;margin-bottom:12px}
+    .d-rev-box{background:rgba(74,222,128,.03);border:1px dashed rgba(96,165,250,.15);border-radius:12px;padding:1.3rem;position:relative;margin-bottom:12px}
     .d-rev-box::before{content:'\201C';position:absolute;top:10px;left:12px;font-size:3rem;color:var(--acc);opacity:.15;font-family:serif;line-height:1}
     .d-rev-lbl{font-size:.75rem;color:var(--acc);margin-bottom:8px;font-weight:500;text-transform:uppercase;letter-spacing:1px}
     .d-rev-val{font-size:.95rem;color:var(--t);line-height:1.6;white-space:pre-wrap;position:relative;z-index:1}
@@ -118,7 +118,7 @@
     .field select option{background:var(--bg3)}
     .chips{display:flex;gap:6px;flex-wrap:wrap}
     .chip{padding:4px 11px;border-radius:99px;font-size:.75rem;font-family:'DM Mono',monospace;border:1px solid var(--b);color:var(--t3);cursor:pointer;transition:all .13s;background:var(--bg3);user-select:none}
-    .chip.on{border-color:var(--acc);color:var(--acc);background:rgba(74,222,128,.08)}
+    .chip.on{border-color:var(--acc);color:var(--acc);background:rgba(96,165,250,.08)}
     .chip.onx{border-color:#4ec44e;color:#4ec44e;background:rgba(16,124,16,.1)}
     .chip.onp{border-color:#6ea8fe;color:#6ea8fe;background:rgba(0,55,145,.12)}
     .chip.onsw{border-color:#ff6e6e;color:#ff6e6e;background:rgba(228,0,15,.1)}
@@ -128,7 +128,7 @@
     .sb.on{color:var(--acc)}.sb:hover{transform:scale(1.2)}
     .shint{font-size:.75rem;color:var(--t3);margin-left:8px;font-family:'DM Mono',monospace}
     .slwrap{display:flex;align-items:center;gap:10px}
-    .slwrap input[type=range]{flex:1;accent-color:#4ade80}
+    .slwrap input[type=range]{flex:1;accent-color:#60a5fa}
     .slval{font-size:.82rem;font-family:'DM Mono',monospace;color:var(--t2);min-width:52px}
     .cg{display:grid;grid-template-columns:1fr 1fr;gap:16px}
     .cc{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);padding:1.3rem}
@@ -154,10 +154,10 @@
     .disc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.4rem;flex-wrap:wrap;gap:12px}
     .disc-tabs{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--b);border-radius:10px;padding:4px}
     .disc-tab{padding:5px 14px;border-radius:7px;font-size:.78rem;font-family:'DM Mono',monospace;cursor:pointer;border:none;background:none;color:var(--t3);transition:all .15s;white-space:nowrap}
-    .disc-tab.on{background:var(--bg3);color:var(--acc);border:1px solid rgba(74,222,128,.2)}
+    .disc-tab.on{background:var(--bg3);color:var(--acc);border:1px solid rgba(96,165,250,.2)}
     .disc-pf-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.2rem}
     .disc-pfchip{padding:3px 11px;border-radius:99px;font-size:.72rem;font-family:'DM Mono',monospace;border:1px solid var(--b);cursor:pointer;transition:all .15s;background:var(--bg2);color:var(--t3)}
-    .disc-pfchip.on{border-color:var(--acc);color:var(--acc);background:rgba(74,222,128,.09)}
+    .disc-pfchip.on{border-color:var(--acc);color:var(--acc);background:rgba(96,165,250,.09)}
     .disc-pfchip[data-pf="6"].on{border-color:#66c0f4;color:#66c0f4;background:rgba(102,192,244,.08)}
     .disc-pfchip[data-pf="48"].on{border-color:#4ec44e;color:#4ec44e;background:rgba(16,124,16,.12)}
     .disc-pfchip[data-pf="167"].on{border-color:#ff6e6e;color:#ff6e6e;background:rgba(228,0,15,.1)}
@@ -177,8 +177,8 @@
     .rank-score{flex-shrink:0;text-align:right;min-width:52px}
     .rank-score-val{font-family:'DM Mono',monospace;font-size:1.05rem;font-weight:500;color:var(--acc);display:block}
     .rank-score-lbl{font-size:.65rem;color:var(--t3);letter-spacing:.05em;text-transform:uppercase}
-    .rank-add-btn{flex-shrink:0;padding:5px 12px;border-radius:7px;font-size:.75rem;font-family:'DM Mono',monospace;border:1px solid rgba(212,240,74,.25);background:rgba(74,222,128,.05);color:var(--acc);cursor:pointer;transition:all .15s;white-space:nowrap}
-    .rank-add-btn:hover{background:rgba(74,222,128,.15)}
+    .rank-add-btn{flex-shrink:0;padding:5px 12px;border-radius:7px;font-size:.75rem;font-family:'DM Mono',monospace;border:1px solid rgba(212,240,74,.25);background:rgba(96,165,250,.05);color:var(--acc);cursor:pointer;transition:all .15s;white-space:nowrap}
+    .rank-add-btn:hover{background:rgba(96,165,250,.15)}
     .rank-add-btn.added{border-color:rgba(64,232,196,.25);color:var(--acc2);background:rgba(64,232,196,.05);cursor:default}
     /* 发现页详情弹窗 */
     .disc-modal{max-width:560px}
@@ -195,8 +195,8 @@
     .disc-actions{display:flex;gap:8px;padding:1rem 1.5rem;border-top:1px solid var(--b);flex-wrap:wrap}
     .disc-igdb-btn{padding:6px 14px;border-radius:8px;font-size:.78rem;font-family:'DM Mono',monospace;border:1px solid var(--b2);background:none;color:var(--t2);cursor:pointer;transition:all .15s;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
     .disc-igdb-btn:hover{color:var(--t);border-color:var(--b2);background:var(--bg3)}
-    .disc-ai-btn{flex:1;padding:7px 14px;border-radius:8px;font-size:.78rem;font-family:'DM Mono',monospace;border:1px dashed rgba(74,222,128,.4);background:rgba(74,222,128,.05);color:var(--acc);cursor:pointer;transition:all .15s}
-    .disc-ai-btn:hover{background:rgba(74,222,128,.12)}
+    .disc-ai-btn{flex:1;padding:7px 14px;border-radius:8px;font-size:.78rem;font-family:'DM Mono',monospace;border:1px dashed rgba(96,165,250,.4);background:rgba(96,165,250,.05);color:var(--acc);cursor:pointer;transition:all .15s}
+    .disc-ai-btn:hover{background:rgba(96,165,250,.12)}
     .disc-chat-area{border-top:1px solid var(--b);display:none;flex-direction:column;max-height:320px}
     .disc-chat-area.open{display:flex}
     .disc-loading{text-align:center;padding:3rem;color:var(--t3);font-size:.85rem}
@@ -205,8 +205,8 @@
     .disc-loading-dots span:nth-child(2){animation-delay:.2s}
     .disc-loading-dots span:nth-child(3){animation-delay:.4s}
     /* AI chat */
-    .d-ai-btn{width:100%;margin-top:12px;padding:10px 16px;border-radius:8px;border:1px dashed rgba(74,222,128,.35);background:rgba(74,222,128,.04);color:var(--acc);font-size:.85rem;cursor:pointer;font-family:'DM Mono',monospace;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
-    .d-ai-btn:hover{background:rgba(74,222,128,.1)}
+    .d-ai-btn{width:100%;margin-top:12px;padding:10px 16px;border-radius:8px;border:1px dashed rgba(96,165,250,.35);background:rgba(96,165,250,.04);color:var(--acc);font-size:.85rem;cursor:pointer;font-family:'DM Mono',monospace;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+    .d-ai-btn:hover{background:rgba(96,165,250,.1)}
     .chat-panel{background:var(--bg);border-top:1px solid var(--b);display:none;flex-direction:column;max-height:360px}
     .chat-panel.open{display:flex}
     .chat-hdr{padding:8px 14px;background:var(--bg2);border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
@@ -219,17 +219,17 @@
     .cmsg{display:flex;gap:8px;align-items:flex-start;max-width:92%}
     .cmsg.user-msg{align-self:flex-end;flex-direction:row-reverse}
     .cmsg-av{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-family:'DM Mono',monospace}
-    .cmsg-av.ai-av{background:rgba(74,222,128,.12);color:var(--acc);border:1px solid rgba(74,222,128,.2)}
-    .cmsg-av.usr-av{background:rgba(64,232,196,.08);color:var(--acc2);border:1px solid rgba(64,232,196,.15)}
+    .cmsg-av.ai-av{background:rgba(96,165,250,.12);color:var(--acc);border:1px solid rgba(96,165,250,.2)}
+    .cmsg-av.usr-av{background:rgba(56,189,248,.08);color:var(--acc2);border:1px solid rgba(56,189,248,.15)}
     .cmsg-bbl{padding:7px 11px;border-radius:10px;font-size:.82rem;line-height:1.55;white-space:pre-wrap;word-break:break-word}
     .cmsg.ai-msg .cmsg-bbl{background:rgba(255,255,255,.04);border:1px solid var(--b);color:var(--t);border-radius:2px 10px 10px 10px}
-    .cmsg.user-msg .cmsg-bbl{background:rgba(74,222,128,.09);border:1px solid rgba(212,240,74,.18);color:var(--acc);border-radius:10px 2px 10px 10px}
+    .cmsg.user-msg .cmsg-bbl{background:rgba(96,165,250,.09);border:1px solid rgba(212,240,74,.18);color:var(--acc);border-radius:10px 2px 10px 10px}
     .quick-qs{display:flex;gap:6px;padding:0 14px 8px;flex-wrap:wrap;flex-shrink:0}
     .qq{padding:4px 10px;border-radius:99px;border:1px solid var(--b);background:none;color:var(--t3);font-size:.71rem;cursor:pointer;font-family:'DM Mono',monospace;transition:all .15s;white-space:nowrap}
-    .qq:hover{border-color:rgba(74,222,128,.4);color:var(--acc)}
+    .qq:hover{border-color:rgba(96,165,250,.4);color:var(--acc)}
     .chat-inp-row{display:flex;gap:8px;padding:8px 14px 14px;border-top:1px solid var(--b);flex-shrink:0}
     .chat-inp{flex:1;background:rgba(255,255,255,.05);border:1px solid var(--b);border-radius:8px;padding:7px 12px;color:var(--t);font-size:.82rem;outline:none;font-family:inherit}
-    .chat-snd{padding:7px 14px;border-radius:8px;background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.3);color:var(--acc);font-size:.8rem;cursor:pointer;font-family:'DM Mono',monospace;white-space:nowrap}
+    .chat-snd{padding:7px 14px;border-radius:8px;background:rgba(96,165,250,.12);border:1px solid rgba(96,165,250,.3);color:var(--acc);font-size:.8rem;cursor:pointer;font-family:'DM Mono',monospace;white-space:nowrap}
     .chat-snd:disabled{opacity:.4;cursor:not-allowed}
     .typing-dots{display:flex;gap:3px;align-items:center;padding:2px 0}
     .typing-dots span{width:5px;height:5px;border-radius:50%;background:var(--acc);opacity:.35;animation:tdot 1s infinite}
@@ -239,14 +239,14 @@
 
     /* 聊天总结 */
     .sum-box{margin-top:10px;border:1px solid rgba(64,232,196,.2);border-radius:12px;overflow:hidden}
-    .sum-latest{padding:1rem 1.2rem;background:rgba(64,232,196,.04)}
+    .sum-latest{padding:1rem 1.2rem;background:rgba(56,189,248,.06)}
     .sum-latest-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
     .sum-lbl{font-size:.72rem;color:var(--acc2);font-weight:500;text-transform:uppercase;letter-spacing:1px;display:flex;align-items:center;gap:6px}
     .sum-date{font-size:.68rem;color:var(--t3);font-family:'DM Mono',monospace}
     .sum-text{font-size:.88rem;color:var(--t);line-height:1.65;white-space:pre-wrap}
-    .sum-old-toggle{width:100%;padding:7px 1.2rem;background:rgba(255,255,255,.02);border:none;border-top:1px solid rgba(64,232,196,.12);color:var(--t3);font-size:.72rem;font-family:'DM Mono',monospace;cursor:pointer;text-align:left;transition:all .15s}
+    .sum-old-toggle{width:100%;padding:7px 1.2rem;background:rgba(255,255,255,.02);border:none;border-top:1px solid rgba(56,189,248,.12);color:var(--t3);font-size:.72rem;font-family:'DM Mono',monospace;cursor:pointer;text-align:left;transition:all .15s}
     .sum-old-toggle:hover{color:var(--t2);background:rgba(255,255,255,.04)}
-    .sum-old-list{display:none;border-top:1px solid rgba(64,232,196,.12)}
+    .sum-old-list{display:none;border-top:1px solid rgba(56,189,248,.12)}
     .sum-old-list.open{display:block}
     .sum-old-item{padding:.9rem 1.2rem;border-bottom:1px solid var(--b)}
     .sum-old-item:last-child{border-bottom:none}
@@ -254,8 +254,8 @@
     .sum-old-text{font-size:.82rem;color:var(--t2);line-height:1.6;white-space:pre-wrap}
     /* 生成总结按钮 */
     .chat-sum-bar{padding:6px 14px 10px;flex-shrink:0;display:flex;justify-content:flex-end}
-    .chat-sum-btn{padding:5px 14px;border-radius:7px;font-size:.73rem;font-family:'DM Mono',monospace;border:1px solid rgba(64,232,196,.3);background:rgba(64,232,196,.06);color:var(--acc2);cursor:pointer;transition:all .15s}
-    .chat-sum-btn:hover{background:rgba(64,232,196,.15)}
+    .chat-sum-btn{padding:5px 14px;border-radius:7px;font-size:.73rem;font-family:'DM Mono',monospace;border:1px solid rgba(64,232,196,.3);background:rgba(56,189,248,.06);color:var(--acc2);cursor:pointer;transition:all .15s}
+    .chat-sum-btn:hover{background:rgba(56,189,248,.15)}
     .chat-sum-btn:disabled{opacity:.4;cursor:not-allowed}
 
     /* ===== 宝可梦专栏 ===== */
@@ -278,32 +278,32 @@
     .pkm-action-row{display:flex;gap:6px;flex-wrap:wrap}
     .pkm-btn{flex:1;padding:6px 10px;border-radius:8px;font-size:.75rem;font-family:'DM Mono',monospace;border:1px solid var(--b2);background:none;color:var(--t2);cursor:pointer;transition:all .15s;white-space:nowrap}
     .pkm-btn:hover{background:var(--bg3);color:var(--t)}
-    .pkm-btn.caught{border-color:var(--acc2);color:var(--acc2);background:rgba(64,232,196,.08)}
+    .pkm-btn.caught{border-color:var(--acc2);color:var(--acc2);background:rgba(56,189,248,.08)}
     .pkm-btn.liked{border-color:#ff80ab;color:#ff80ab;background:rgba(255,128,171,.08)}
     .pkm-btn.wanted{border-color:var(--warn);color:var(--warn);background:rgba(240,185,64,.08)}
-    .pkm-btn-ai{width:100%;margin-top:6px;padding:7px;border-radius:8px;border:1px dashed rgba(74,222,128,.4);background:rgba(74,222,128,.05);color:var(--acc);font-size:.78rem;font-family:'DM Mono',monospace;cursor:pointer;transition:all .2s}
-    .pkm-btn-ai:hover{background:rgba(74,222,128,.12)}
+    .pkm-btn-ai{width:100%;margin-top:6px;padding:7px;border-radius:8px;border:1px dashed rgba(96,165,250,.4);background:rgba(96,165,250,.05);color:var(--acc);font-size:.78rem;font-family:'DM Mono',monospace;cursor:pointer;transition:all .2s}
+    .pkm-btn-ai:hover{background:rgba(96,165,250,.12)}
     .pkm-right{display:flex;flex-direction:column;gap:14px}
     /* 搜索区 */
     .pkm-search-box{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);padding:1rem}
     .pkm-search-row{display:flex;gap:8px;margin-bottom:10px}
     .pkm-search-inp{flex:1;background:var(--bg3);border:1px solid var(--b);border-radius:8px;padding:7px 12px;color:var(--t);font-family:inherit;font-size:.88rem;outline:none;transition:border .15s}
-    .pkm-search-inp:focus{border-color:rgba(74,222,128,.5)}
+    .pkm-search-inp:focus{border-color:rgba(96,165,250,.5)}
     .pkm-search-results{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px;max-height:220px;overflow-y:auto}
     .pkm-mini{background:var(--bg3);border:1px solid var(--b);border-radius:8px;padding:8px 4px 6px;text-align:center;cursor:pointer;transition:all .15s}
-    .pkm-mini:hover{border-color:rgba(74,222,128,.4);background:var(--bg2)}
+    .pkm-mini:hover{border-color:rgba(96,165,250,.4);background:var(--bg2)}
     .pkm-mini img{width:56px;height:56px;object-fit:contain;image-rendering:pixelated}
     .pkm-mini-name{font-size:.65rem;color:var(--t2);margin-top:2px}
     /* 世代浏览 */
     .pkm-gen-box{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);padding:1rem}
     .pkm-gen-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px}
     .pkm-gen-tab{padding:3px 10px;border-radius:99px;font-size:.72rem;font-family:'DM Mono',monospace;border:1px solid var(--b);background:var(--bg3);color:var(--t3);cursor:pointer;transition:all .15s}
-    .pkm-gen-tab.on{border-color:var(--acc);color:var(--acc);background:rgba(74,222,128,.09)}
+    .pkm-gen-tab.on{border-color:var(--acc);color:var(--acc);background:rgba(96,165,250,.09)}
     .pkm-gen-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:6px;max-height:320px;overflow-y:auto}
     /* 进化链 */
     .pkm-evo-chain{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:8px 0}
     .pkm-evo-item{text-align:center;cursor:pointer;padding:6px;border-radius:8px;transition:all .15s;border:1px solid transparent}
-    .pkm-evo-item:hover{border-color:rgba(74,222,128,.3);background:var(--bg3)}
+    .pkm-evo-item:hover{border-color:rgba(96,165,250,.3);background:var(--bg3)}
     .pkm-evo-item img{width:56px;height:56px;object-fit:contain;image-rendering:pixelated;display:block;margin:0 auto}
     .pkm-evo-name{font-size:.68rem;color:var(--t2);margin-top:3px}
     .pkm-evo-arrow{color:var(--t3);font-size:1.1rem;flex-shrink:0}
@@ -346,27 +346,27 @@
     .series-pill{padding:5px 16px;border-radius:99px;font-size:.75rem;font-family:'DM Mono',monospace;border:1px solid var(--b);background:var(--bg3);color:var(--t3);cursor:pointer;transition:all .15s}
     .series-pill:hover{border-color:var(--b2);color:var(--t2)}
     .series-pill.active-none{border-color:var(--t3);color:var(--t3);background:rgba(255,255,255,.05)}
-    .series-pill.active-played{border-color:var(--acc2);color:var(--acc2);background:rgba(64,232,196,.1)}
-    .series-pill.active-cleared{border-color:var(--acc);color:var(--acc);background:rgba(74,222,128,.1)}
+    .series-pill.active-played{border-color:var(--acc2);color:var(--acc2);background:rgba(56,189,248,.1)}
+    .series-pill.active-cleared{border-color:var(--acc);color:var(--acc);background:rgba(96,165,250,.1)}
     .series-body{padding:1.2rem 1.5rem}
     .series-grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
     .series-inp-group{display:flex;flex-direction:column;gap:5px}
     .series-inp-label{font-size:.7rem;color:var(--t3);letter-spacing:.06em;text-transform:uppercase}
     .series-inp{background:var(--bg3);border:1px solid var(--b);border-radius:8px;padding:8px 12px;color:var(--t);font-family:inherit;font-size:.85rem;outline:none;transition:border .15s;width:100%}
-    .series-inp:focus{border-color:rgba(74,222,128,.4)}
+    .series-inp:focus{border-color:rgba(96,165,250,.4)}
     .series-textarea{background:var(--bg3);border:1px solid var(--b);border-radius:8px;padding:8px 12px;color:var(--t);font-family:inherit;font-size:.85rem;outline:none;resize:vertical;height:90px;width:100%;transition:border .15s}
-    .series-textarea:focus{border-color:rgba(74,222,128,.4)}
+    .series-textarea:focus{border-color:rgba(96,165,250,.4)}
     .series-ai-bar{display:flex;gap:8px;margin-top:8px;padding-top:10px;border-top:1px solid var(--b)}
-    .series-ai-btn{flex:1;padding:8px;border-radius:8px;border:1px dashed rgba(74,222,128,.35);background:rgba(74,222,128,.04);color:var(--acc);font-size:.78rem;font-family:'DM Mono',monospace;cursor:pointer;transition:all .2s}
-    .series-ai-btn:hover{background:rgba(74,222,128,.1)}
+    .series-ai-btn{flex:1;padding:8px;border-radius:8px;border:1px dashed rgba(96,165,250,.35);background:rgba(96,165,250,.04);color:var(--acc);font-size:.78rem;font-family:'DM Mono',monospace;cursor:pointer;transition:all .2s}
+    .series-ai-btn:hover{background:rgba(96,165,250,.1)}
     .series-ai-btn:disabled{opacity:.4;cursor:not-allowed}
 
     /* 系列追踪 */
     .pkm-series-box{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);padding:1rem}
     .pkm-series-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
     .pkm-series-card{background:var(--bg3);border:1px solid var(--b);border-radius:8px;padding:10px;cursor:pointer;transition:all .15s;text-align:center}
-    .pkm-series-card:hover{border-color:rgba(74,222,128,.3)}
-    .pkm-series-card.played{border-color:var(--acc2);background:rgba(64,232,196,.06)}
+    .pkm-series-card:hover{border-color:rgba(96,165,250,.3)}
+    .pkm-series-card.played{border-color:var(--acc2);background:rgba(56,189,248,.06)}
     .pkm-series-card.cleared{border-color:var(--acc);background:rgba(212,240,74,.06)}
     .pkm-series-name{font-size:.78rem;font-weight:500;margin-bottom:3px}
     .pkm-series-year{font-size:.65rem;color:var(--t3);font-family:'DM Mono',monospace}
@@ -421,7 +421,7 @@
     /* 类型标签 */
     .genre-chips{display:flex;gap:5px;flex-wrap:wrap}
     .genre-chip{padding:3px 9px;border-radius:99px;font-size:.72rem;font-family:'DM Mono',monospace;border:1px solid var(--b);color:var(--t3);cursor:pointer;transition:all .13s;background:var(--bg3);user-select:none}
-    .genre-chip.on{border-color:var(--acc);color:var(--acc);background:rgba(74,222,128,.07)}
+    .genre-chip.on{border-color:var(--acc);color:var(--acc);background:rgba(96,165,250,.07)}
 
     @media(max-width:640px){.stats{grid-template-columns:repeat(3,1fr)}.cg{grid-template-columns:1fr}.row2{grid-template-columns:1fr}.disc-header{flex-direction:column;align-items:flex-start}.disc-tabs{flex-wrap:wrap}}
     #pkm-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:.55}
@@ -602,51 +602,90 @@
 
   <!-- 动漫 -->
   <div class="pg" id="pg-anime">
-    <div class="media-pg" id="anime-pg">
-      <div class="media-stats" id="anime-stats"></div>
-      <div class="media-tb">
-        <input type="text" id="anime-q" placeholder="搜索动漫标题…" oninput="renderMedia('anime')" autocomplete="off">
-        <select id="anime-fst" onchange="renderMedia('anime')">
-          <option value="">全部状态</option>
-          <option value="watching">观看中</option>
-          <option value="completed">已看完</option>
-          <option value="planned">想看</option>
-          <option value="paused">暂停</option>
-          <option value="dropped">放弃</option>
-        </select>
-        <select id="anime-fso" onchange="renderMedia('anime')">
-          <option value="date">最新添加</option>
-          <option value="rating">评分最高</option>
-          <option value="title">标题排序</option>
-        </select>
-        <button class="btn btn-a" onclick="openMediaAdd('anime')">＋ 添加动漫</button>
+    <div class="media-pg">
+      <!-- 标签页切换 -->
+      <div class="disc-tabs" style="margin-bottom:.5rem">
+        <div class="disc-tab-btn on" id="anime-tab-list" onclick="switchMediaTab('anime','list',this)">📋 我的记录</div>
+        <div class="disc-tab-btn" id="anime-tab-rank" onclick="switchMediaTab('anime','rank',this)">🏆 排行榜</div>
       </div>
-      <div class="media-grid" id="anime-grid"><div style="text-align:center;padding:3rem;color:var(--t3)">加载中…</div></div>
+      <!-- 我的记录 -->
+      <div id="anime-panel-list">
+        <div class="media-stats" id="anime-stats"></div>
+        <div class="media-tb">
+          <input type="text" id="anime-q" placeholder="搜索动漫标题…" oninput="renderMedia('anime')" autocomplete="off">
+          <select id="anime-fst" onchange="renderMedia('anime')">
+            <option value="">全部状态</option>
+            <option value="watching">观看中</option>
+            <option value="completed">已看完</option>
+            <option value="planned">想看</option>
+            <option value="paused">暂停</option>
+            <option value="dropped">放弃</option>
+          </select>
+          <select id="anime-fso" onchange="renderMedia('anime')">
+            <option value="date">最新添加</option>
+            <option value="rating">评分最高</option>
+            <option value="title">标题排序</option>
+          </select>
+          <button class="btn btn-a" onclick="openMediaAdd('anime')">＋ 添加动漫</button>
+        </div>
+        <div class="media-grid" id="anime-grid"><div style="text-align:center;padding:3rem;color:var(--t3)">加载中…</div></div>
+      </div>
+      <!-- 排行榜 -->
+      <div id="anime-panel-rank" style="display:none">
+        <div class="disc-header" style="margin-bottom:.8rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <div class="disc-tabs">
+            <div class="disc-tab-btn on" data-mode="top" onclick="setMediaRankMode('anime','top',this)">🔥 热门推荐</div>
+            <div class="disc-tab-btn" data-mode="airing" onclick="setMediaRankMode('anime','airing',this)">📺 连载中</div>
+            <div class="disc-tab-btn" data-mode="upcoming" onclick="setMediaRankMode('anime','upcoming',this)">🗓 即将播出</div>
+            <div class="disc-tab-btn" data-mode="movie" onclick="setMediaRankMode('anime','movie',this)">🎬 剧场版</div>
+          </div>
+          <span style="font-size:.72rem;color:var(--t3);font-family:'DM Mono',monospace">数据来源 MAL</span>
+        </div>
+        <div id="anime-rank-list"><div class="disc-loading">加载中<span class="disc-loading-dots"><span></span><span></span><span></span></span></div></div>
+      </div>
     </div>
   </div>
 
   <!-- 漫画 -->
   <div class="pg" id="pg-manga">
-    <div class="media-pg" id="manga-pg">
-      <div class="media-stats" id="manga-stats"></div>
-      <div class="media-tb">
-        <input type="text" id="manga-q" placeholder="搜索漫画标题…" oninput="renderMedia('manga')" autocomplete="off">
-        <select id="manga-fst" onchange="renderMedia('manga')">
-          <option value="">全部状态</option>
-          <option value="reading">阅读中</option>
-          <option value="completed">已读完</option>
-          <option value="planned">想读</option>
-          <option value="paused">暂停</option>
-          <option value="dropped">放弃</option>
-        </select>
-        <select id="manga-fso" onchange="renderMedia('manga')">
-          <option value="date">最新添加</option>
-          <option value="rating">评分最高</option>
-          <option value="title">标题排序</option>
-        </select>
-        <button class="btn btn-a" onclick="openMediaAdd('manga')">＋ 添加漫画</button>
+    <div class="media-pg">
+      <div class="disc-tabs" style="margin-bottom:.5rem">
+        <div class="disc-tab-btn on" id="manga-tab-list" onclick="switchMediaTab('manga','list',this)">📋 我的记录</div>
+        <div class="disc-tab-btn" id="manga-tab-rank" onclick="switchMediaTab('manga','rank',this)">🏆 排行榜</div>
       </div>
-      <div class="media-grid" id="manga-grid"><div style="text-align:center;padding:3rem;color:var(--t3)">加载中…</div></div>
+      <div id="manga-panel-list">
+        <div class="media-stats" id="manga-stats"></div>
+        <div class="media-tb">
+          <input type="text" id="manga-q" placeholder="搜索漫画标题…" oninput="renderMedia('manga')" autocomplete="off">
+          <select id="manga-fst" onchange="renderMedia('manga')">
+            <option value="">全部状态</option>
+            <option value="reading">阅读中</option>
+            <option value="completed">已读完</option>
+            <option value="planned">想读</option>
+            <option value="paused">暂停</option>
+            <option value="dropped">放弃</option>
+          </select>
+          <select id="manga-fso" onchange="renderMedia('manga')">
+            <option value="date">最新添加</option>
+            <option value="rating">评分最高</option>
+            <option value="title">标题排序</option>
+          </select>
+          <button class="btn btn-a" onclick="openMediaAdd('manga')">＋ 添加漫画</button>
+        </div>
+        <div class="media-grid" id="manga-grid"><div style="text-align:center;padding:3rem;color:var(--t3)">加载中…</div></div>
+      </div>
+      <div id="manga-panel-rank" style="display:none">
+        <div class="disc-header" style="margin-bottom:.8rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <div class="disc-tabs">
+            <div class="disc-tab-btn on" data-mode="top" onclick="setMediaRankMode('manga','top',this)">🔥 热门推荐</div>
+            <div class="disc-tab-btn" data-mode="manga" onclick="setMediaRankMode('manga','manga',this)">📖 漫画榜</div>
+            <div class="disc-tab-btn" data-mode="manhwa" onclick="setMediaRankMode('manga','manhwa',this)">🇰🇷 韩漫</div>
+            <div class="disc-tab-btn" data-mode="novel" onclick="setMediaRankMode('manga','novel',this)">📝 轻小说</div>
+          </div>
+          <span style="font-size:.72rem;color:var(--t3);font-family:'DM Mono',monospace">数据来源 MAL</span>
+        </div>
+        <div id="manga-rank-list"><div class="disc-loading">加载中<span class="disc-loading-dots"><span></span><span></span><span></span></span></div></div>
+      </div>
     </div>
   </div>
 </main>
@@ -780,12 +819,20 @@
         <div style="padding:4px 10px 8px;display:flex;gap:6px;flex-wrap:wrap;background:var(--bg)" id="media-chat-quick"></div>
         <div style="display:flex;gap:6px;padding:6px 10px 10px;background:var(--bg);border-top:1px solid var(--b)">
           <input id="media-chat-inp" style="flex:1;background:var(--bg3);border:1px solid var(--b);border-radius:8px;padding:6px 10px;color:var(--t);font-family:inherit;font-size:.82rem;outline:none" placeholder="问 AI 任何关于这部作品的问题…" onkeydown="if(event.key==='Enter')sendMediaAIMsg()">
-          <button onclick="sendMediaAIMsg()" style="padding:6px 12px;border-radius:8px;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.3);color:var(--acc);font-size:.78rem;cursor:pointer;font-family:'DM Mono',monospace" id="media-ai-snd">发送</button>
+          <button onclick="sendMediaAIMsg()" style="padding:6px 12px;border-radius:8px;background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.3);color:var(--acc);font-size:.78rem;cursor:pointer;font-family:'DM Mono',monospace" id="media-ai-snd">发送</button>
         </div>
       </div>
     </div>
+    <!-- 总结区块 -->
+    <div id="media-sum-box" class="media-sum-box" style="margin:0 1.5rem 10px;display:none">
+      <div class="media-sum-hdr"><span class="media-sum-lbl">⬡ 对话存档</span><span id="media-sum-count" style="font-size:.65rem;color:var(--t3)"></span></div>
+      <div id="media-sum-list"></div>
+    </div>
     <div class="mfoot" style="padding:.8rem 1.5rem">
-      <button class="btn" onclick="toggleMediaChat()" id="media-ai-btn" style="color:var(--acc);border-color:rgba(74,222,128,.3)">⬡ 和 AI 聊聊</button>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn" onclick="toggleMediaChat()" id="media-ai-btn" style="color:var(--acc);border-color:rgba(96,165,250,.3)">⬡ 和 AI 聊聊</button>
+        <button class="chat-sum-btn" id="media-sum-btn" onclick="generateMediaSummary()" style="display:none">📋 生成存档</button>
+      </div>
       <div style="display:flex;gap:8px">
         <button class="btn" onclick="closeOv('ov-media')">取消</button>
         <button class="btn btn-a" id="media-save-btn" onclick="saveMedia()">保存</button>
@@ -902,7 +949,7 @@
         <div style="padding:4px 10px 8px;display:flex;gap:6px;flex-wrap:wrap;background:var(--bg)" id="series-quick-qs"></div>
         <div style="display:flex;gap:6px;padding:6px 10px 10px;background:var(--bg);border-top:1px solid var(--b)">
           <input id="series-chat-inp" style="flex:1;background:var(--bg3);border:1px solid var(--b);border-radius:8px;padding:6px 10px;color:var(--t);font-family:inherit;font-size:.82rem;outline:none" placeholder="和 AI 聊聊这部作品…" onkeydown="if(event.key==='Enter'){sendSeriesAIMsg();}">
-          <button onclick="sendSeriesAIMsg()" style="padding:6px 12px;border-radius:8px;background:rgba(74,222,128,.12);border:1px solid rgba(74,222,128,.3);color:var(--acc);font-size:.78rem;cursor:pointer;font-family:'DM Mono',monospace" id="series-ai-snd">发送</button>
+          <button onclick="sendSeriesAIMsg()" style="padding:6px 12px;border-radius:8px;background:rgba(96,165,250,.12);border:1px solid rgba(96,165,250,.3);color:var(--acc);font-size:.78rem;cursor:pointer;font-family:'DM Mono',monospace" id="series-ai-snd">发送</button>
         </div>
         <div style="padding:4px 10px 8px;display:flex;justify-content:flex-end;background:var(--bg)">
           <button onclick="genSeriesLogFromChat()" class="chat-sum-btn" id="series-log-btn">📋 生成游玩日志</button>
@@ -1308,13 +1355,13 @@ function drawCharts(){
     if(g.rating>=1&&g.rating<=5)rtC[g.rating-1]++;
   });
   const co={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#9a9890',font:{size:11}}}}};
-  const pal=['#4ade80','#34d399','#f0b940','#ff6e6e','#8cb4ff','#d68cff','#ff9c69','#6ecfff'];
+  const pal=['#60a5fa','#38bdf8','#f0b940','#ff6e6e','#8cb4ff','#d68cff','#ff9c69','#6ecfff'];
   function dn(id,labels,data){if(charts[id])charts[id].destroy();charts[id]=new Chart(document.getElementById(id),{type:'doughnut',data:{labels,datasets:[{data,backgroundColor:pal.slice(0,data.length),borderWidth:0}]},options:{...co,cutout:'65%'}});}
   function br(id,labels,data,colors){if(charts[id])charts[id].destroy();charts[id]=new Chart(document.getElementById(id),{type:'bar',data:{labels,datasets:[{data,backgroundColor:colors||pal,borderRadius:5,borderWidth:0}]},options:{...co,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#9a9890'},grid:{color:'rgba(255,255,255,.04)'}},y:{ticks:{color:'#9a9890',stepSize:1},grid:{color:'rgba(255,255,255,.04)'}}}}});}
   dn('ch-st',['游玩中','已通关','想玩','放弃'],Object.values(stC));
   const tGn=Object.entries(gnC).sort((a,b)=>b[1]-a[1]).slice(0,6);dn('ch-gn',tGn.map(x=>x[0]),tGn.map(x=>x[1]));
   const tPf=Object.entries(pfC).sort((a,b)=>b[1]-a[1]);dn('ch-pf',tPf.map(x=>x[0]),tPf.map(x=>x[1]));
-  br('ch-rt',['1★','2★','3★','4★','5★'],rtC,['#444','#666','#999','#4ade80','#34d399']);
+  br('ch-rt',['1★','2★','3★','4★','5★'],rtC,['#444','#666','#999','#60a5fa','#38bdf8']);
   const tSty=Object.entries(styC).sort((a,b)=>b[1]-a[1]).slice(0,10);br('ch-sty',tSty.map(x=>x[0]),tSty.map(x=>x[1]));
 }
 let amd='login';
@@ -2147,14 +2194,14 @@ function openSeriesDetail(el){
   // 状态胶囊高亮
   setSeriesStatusUI(log.status||'none');
   // 英雄区背景色
-  const colors={none:'linear-gradient(135deg,#1b1d21,#141518)',played:'linear-gradient(135deg,rgba(64,232,196,.15),rgba(13,14,16,1))',cleared:'linear-gradient(135deg,rgba(74,222,128,.15),rgba(13,14,16,1))'};
+  const colors={none:'linear-gradient(135deg,#1b1d21,#141518)',played:'linear-gradient(135deg,rgba(56,189,248,.15),rgba(13,14,16,1))',cleared:'linear-gradient(135deg,rgba(96,165,250,.15),rgba(13,14,16,1))'};
   document.getElementById('series-hero').style.background=colors[log.status||'none'];
   document.getElementById('ov-series').classList.add('on');
 }
 
 function setSeriesStatus(st){
   setSeriesStatusUI(st);
-  const colors={none:'linear-gradient(135deg,#1b1d21,#141518)',played:'linear-gradient(135deg,rgba(64,232,196,.15),rgba(13,14,16,1))',cleared:'linear-gradient(135deg,rgba(74,222,128,.15),rgba(13,14,16,1))'};
+  const colors={none:'linear-gradient(135deg,#1b1d21,#141518)',played:'linear-gradient(135deg,rgba(56,189,248,.15),rgba(13,14,16,1))',cleared:'linear-gradient(135deg,rgba(96,165,250,.15),rgba(13,14,16,1))'};
   document.getElementById('series-hero').style.background=colors[st];
   // 存到 hidden input
   document.getElementById('series-save-btn').dataset.status=st;
@@ -2497,6 +2544,172 @@ async function initPkm(){
 }
 
 
+/* ===== 动漫/漫画排行榜 ===== */
+const mediaRankMode = {anime:'top', manga:'top'};
+const mediaRankCache = {};
+
+function switchMediaTab(type, tab, el) {
+  document.querySelectorAll(`#${type}-tab-list, #${type}-tab-rank`).forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  document.getElementById(`${type}-panel-list`).style.display = tab==='list'?'':'none';
+  document.getElementById(`${type}-panel-rank`).style.display = tab==='rank'?'':'none';
+  if (tab==='rank' && !mediaRankCache[`${type}_${mediaRankMode[type]}`]) {
+    loadMediaRank(type, mediaRankMode[type]);
+  }
+}
+
+function setMediaRankMode(type, mode, el) {
+  el.closest('.disc-tabs').querySelectorAll('.disc-tab-btn').forEach(b=>b.classList.remove('on'));
+  el.classList.add('on');
+  mediaRankMode[type] = mode;
+  if (!mediaRankCache[`${type}_${mode}`]) loadMediaRank(type, mode);
+  else document.getElementById(`${type}-rank-list`).innerHTML = mediaRankCache[`${type}_${mode}`];
+}
+
+async function loadMediaRank(type, mode) {
+  const listEl = document.getElementById(`${type}-rank-list`);
+  listEl.innerHTML = '<div class="disc-loading">加载中<span class="disc-loading-dots"><span></span><span></span><span></span></span></div>';
+  try {
+    let url = '';
+    if (type === 'anime') {
+      const modeMap = {top:'anime?order_by=score&sort=desc&limit=30', airing:'anime?status=airing&order_by=score&sort=desc&limit=30', upcoming:'anime?status=upcoming&order_by=members&sort=desc&limit=30', movie:'anime?type=movie&order_by=score&sort=desc&limit=30'};
+      url = `${JIKAN}/${modeMap[mode]||modeMap.top}`;
+    } else {
+      const modeMap = {top:'manga?order_by=score&sort=desc&limit=30', manga:'manga?type=manga&order_by=score&sort=desc&limit=30', manhwa:'manga?type=manhwa&order_by=score&sort=desc&limit=30', novel:'manga?type=lightnovel&order_by=score&sort=desc&limit=30'};
+      url = `${JIKAN}/${modeMap[mode]||modeMap.top}`;
+    }
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('HTTP '+r.status);
+    const d = await r.json();
+    if (!d.data?.length) { listEl.innerHTML='<div class="disc-loading">暂无数据</div>'; return; }
+    const html = '<div class="media-rank-grid">'+d.data.map((item,i)=>{
+      const rank = i+1;
+      const numCls = rank===1?'top1':rank===2?'top2':rank===3?'top3':'';
+      const cover = item.images?.jpg?.image_url||'';
+      const score = item.score?item.score.toFixed(1):'—';
+      const meta = [
+        item.year||item.published?.prop?.from?.year||'',
+        item.episodes?item.episodes+'集':(item.chapters?item.chapters+'话':''),
+        (item.genres||[]).slice(0,2).map(g=>g.name).join('/')
+      ].filter(Boolean).join(' · ');
+      const titleJp = item.title_japanese||item.title;
+      const titleEn = item.title||'';
+      return `<div class="media-rank-item" style="animation-delay:${Math.min(i*.025,.5)}s" onclick="openMediaRankDetail(${JSON.stringify({title:titleJp,titleEn,cover,score,meta,synopsis:(item.synopsis||'').slice(0,300),url:item.url||''}).replace(/"/g,'&quot;')})">
+        <div class="media-rank-num ${numCls}">${rank}</div>
+        ${cover?`<img class="media-rank-cover" src="${cover}" loading="lazy" onerror="this.style.display='none'">`:'<div class="media-rank-cover" style="display:flex;align-items:center;justify-content:center;font-size:1.5rem;opacity:.2">📖</div>'}
+        <div class="media-rank-info">
+          <div class="media-rank-title">${esc(titleJp)}</div>
+          <div class="media-rank-meta">${esc(meta)}</div>
+        </div>
+        <div class="media-rank-score">
+          <span class="media-rank-score-val">${score}</span>
+          <span class="media-rank-score-lbl">MAL评分</span>
+        </div>
+      </div>`;
+    }).join('')+'</div>';
+    mediaRankCache[`${type}_${mode}`] = html;
+    listEl.innerHTML = html;
+  } catch(e) {
+    listEl.innerHTML = `<div class="disc-loading">加载失败：${e.message}</div>`;
+  }
+}
+
+// 排行榜点击详情（简化弹窗复用 disc 详情弹窗）
+function openMediaRankDetail(item) {
+  document.getElementById('disc-title').textContent = item.title;
+  document.getElementById('disc-cover').src = item.cover||'';
+  document.getElementById('disc-cover').style.display = item.cover?'block':'none';
+  document.getElementById('disc-hero-bg').style.backgroundImage = item.cover?`url(${item.cover})`:'none';
+  document.getElementById('disc-dev').textContent = item.titleEn||'';
+  document.getElementById('disc-year').textContent = '';
+  document.getElementById('disc-score').textContent = item.score?item.score+' MAL分':'';
+  document.getElementById('disc-rcount').textContent = item.meta||'';
+  document.getElementById('disc-ptags').innerHTML = '';
+  document.getElementById('disc-summary').textContent = item.synopsis||'暂无简介';
+  document.getElementById('disc-storyline').style.display = 'none';
+  const link = document.getElementById('disc-igdb-link');
+  link.href = item.url||'#'; link.textContent = '↗ MAL 详情';
+  document.getElementById('disc-add-btn').style.display = 'none';
+  document.getElementById('disc-ai-btn').style.display = 'none';
+  document.getElementById('disc-chat-area').classList.remove('open');
+  document.getElementById('ov-disc').classList.add('on');
+}
+
+/* ===== 动漫/漫画 AI 总结 ===== */
+let mediaSummaries = [];
+
+async function loadMediaSummaries(type, title) {
+  const box = document.getElementById('media-sum-box');
+  const listEl = document.getElementById('media-sum-list');
+  const countEl = document.getElementById('media-sum-count');
+  const {data:{session}} = await db.auth.getSession();
+  if (!session?.user) { box.style.display='none'; return; }
+  const {data} = await db.from('media_summaries').select('*')
+    .eq('user_id', session.user.id)
+    .eq('media_type', type)
+    .eq('media_title', title)
+    .order('created_at', {ascending:false});
+  mediaSummaries = data||[];
+  if (!mediaSummaries.length) { box.style.display='none'; return; }
+  box.style.display = 'block';
+  countEl.textContent = mediaSummaries.length+'条';
+  listEl.innerHTML = mediaSummaries.map(s=>`
+    <div class="media-sum-item">
+      <div class="media-sum-item-hdr">
+        <span class="media-sum-date">${new Date(s.created_at).toLocaleDateString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}</span>
+        <button onclick="delMediaSum('${s.id}')" style="background:none;border:none;color:var(--t3);cursor:pointer;font-size:.72rem;padding:0" title="删除">🗑</button>
+      </div>
+      <div class="media-sum-text">${esc(s.summary)}</div>
+    </div>`).join('');
+}
+
+async function delMediaSum(id) {
+  if (!confirm('删除这条存档？')) return;
+  const {data:{session}} = await db.auth.getSession();
+  if (!session?.user) return;
+  await db.from('media_summaries').delete().eq('id',id).eq('user_id',session.user.id);
+  mediaSummaries = mediaSummaries.filter(s=>s.id!==id);
+  const box = document.getElementById('media-sum-box');
+  if (!mediaSummaries.length) { box.style.display='none'; return; }
+  document.getElementById('media-sum-count').textContent = mediaSummaries.length+'条';
+  document.getElementById('media-sum-list').innerHTML = mediaSummaries.map(s=>`
+    <div class="media-sum-item">
+      <div class="media-sum-item-hdr">
+        <span class="media-sum-date">${new Date(s.created_at).toLocaleDateString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}</span>
+        <button onclick="delMediaSum('${s.id}')" style="background:none;border:none;color:var(--t3);cursor:pointer;font-size:.72rem;padding:0" title="删除">🗑</button>
+      </div>
+      <div class="media-sum-text">${esc(s.summary)}</div>
+    </div>`).join('');
+}
+
+async function generateMediaSummary() {
+  if (mediaChatHistory.length < 2) { alert('至少聊几句再生成存档吧'); return; }
+  const btn = document.getElementById('media-sum-btn');
+  btn.disabled=true; btn.textContent='生成中…';
+  const title = document.getElementById('media-modal-title').textContent;
+  const type = mediaType;
+  const histText = mediaChatHistory.map(m=>(m.role==='user'?'我':'AI')+':'+m.parts[0].text).join('\n');
+  const prompt = '以下是关于'+(type==='anime'?'动漫':'漫画')+'《'+title+'》的对话：\n\n'+histText+'\n\n请将这段对话的精华内容写成一则100-130字的观后感/读后感风格的存档，第一人称，提炼有价值的内容（角色分析、情节讨论、个人感受等），纯文字不用Markdown。';
+  try {
+    const res = await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:300,temperature:0.9}})});
+    if (!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    if (!text) throw new Error('返回为空');
+    const {data:{session}} = await db.auth.getSession();
+    if (!session?.user) { alert('请先登录'); btn.disabled=false; btn.textContent='📋 生成存档'; return; }
+    const {error} = await db.from('media_summaries').insert({user_id:session.user.id,media_type:type,media_title:title,summary:text});
+    if (error) throw new Error(error.message);
+    btn.textContent='✓ 已保存';
+    setTimeout(()=>{btn.disabled=false;btn.textContent='📋 生成存档';},2000);
+    await loadMediaSummaries(type, title);
+  } catch(e) {
+    alert('生成失败：'+e.message);
+    btn.disabled=false; btn.textContent='📋 生成存档';
+  }
+}
+
+
 /* ===== 动漫 / 漫画 通用模块 ===== */
 const JIKAN = 'https://api.jikan.moe/v4';
 const MEDIA_TABLE = {anime:'anime_list', manga:'manga_list'};
@@ -2621,6 +2834,8 @@ function openMediaAdd(type) {
   document.getElementById('media-ai-btn').textContent = '⬡ 和 AI 聊聊';
   document.getElementById('media-chat-msgs').innerHTML = '';
   document.getElementById('media-save-btn').textContent = '保存';
+  document.getElementById('media-sum-box').style.display='none';
+  document.getElementById('media-sum-btn').style.display='none';
   renderGenreChips(type);
   setMediaRating(0);
   document.getElementById('ov-media').classList.add('on');
@@ -2656,7 +2871,9 @@ function openMediaEdit(type, id) {
   document.getElementById('media-ai-btn').textContent = '⬡ 和 AI 聊聊';
   document.getElementById('media-chat-msgs').innerHTML = '';
   document.getElementById('media-save-btn').textContent = '保存修改';
+  document.getElementById('media-sum-btn').style.display='none';
   renderGenreChips(type);
+  loadMediaSummaries(type, item.title);
   setMediaRating(item.rating||0);
   document.getElementById('ov-media').classList.add('on');
 }
@@ -2783,7 +3000,10 @@ function toggleMediaChat() {
   mediaChatOpen = !mediaChatOpen;
   document.getElementById('media-chat-wrap').style.display = mediaChatOpen?'block':'none';
   document.getElementById('media-ai-btn').textContent = mediaChatOpen?'收起 AI 对话':'⬡ 和 AI 聊聊';
+  const sumBtn = document.getElementById('media-sum-btn');
+  if (sumBtn) sumBtn.style.display = mediaChatOpen?'inline-flex':'none';
   if (mediaChatOpen && document.getElementById('media-chat-msgs').children.length===0) initMediaChat();
+  if (mediaChatOpen) setTimeout(()=>{document.getElementById('media-chat-msgs').scrollTop=9999;},100);
 }
 
 function initMediaChat() {
