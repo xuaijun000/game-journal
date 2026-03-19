@@ -1265,6 +1265,47 @@ async function callTimelineAI(systemPrompt,userMsg){
   const data=await res.json();
   return data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'';
 }
+
+// 每章/Arc 拉不同图片：动漫用 Jikan pictures，游戏用 IGDB search screenshot
+async function fetchJikanPictures(title,arcIndex){
+  try{
+    // 先搜标题拿 MAL ID
+    const sr=await fetch(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(title)}&limit=1`);
+    const sd=await sr.json();
+    const malId=sd?.data?.[0]?.mal_id;if(!malId)return null;
+    // 拉 pictures 列表
+    const pr=await fetch(`https://api.jikan.moe/v4/anime/${malId}/pictures`);
+    const pd=await pr.json();
+    const pics=pd?.data||[];
+    if(!pics.length)return null;
+    // 按 arcIndex 循环取不同图
+    return pics[arcIndex%pics.length]?.jpg?.large_image_url||pics[arcIndex%pics.length]?.jpg?.image_url||null;
+  }catch{return null;}
+}
+async function fetchMangaPictures(title,arcIndex){
+  try{
+    const sr=await fetch(`https://api.jikan.moe/v4/manga?q=${encodeURIComponent(title)}&limit=1`);
+    const sd=await sr.json();
+    const malId=sd?.data?.[0]?.mal_id;if(!malId)return null;
+    const pr=await fetch(`https://api.jikan.moe/v4/manga/${malId}/pictures`);
+    const pd=await pr.json();
+    const pics=pd?.data||[];
+    if(!pics.length)return null;
+    return pics[arcIndex%pics.length]?.jpg?.large_image_url||pics[arcIndex%pics.length]?.jpg?.image_url||null;
+  }catch{return null;}
+}
+// 游戏：用 IGDB 按游戏名搜截图
+async function fetchGameScreenshots(gameName,chapterIndex){
+  try{
+    const res=await fetch(IGDB_PROXY,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({igdbRaw:`fields name,screenshots.image_id; where name ~ *"${gameName.replace(/"/g,'')}"* & screenshots != null; sort total_rating_count desc; limit 1;`})
+    });
+    const data=await res.json();
+    const shots=data?.[0]?.screenshots||[];if(!shots.length)return null;
+    const shot=shots[chapterIndex%shots.length];
+    return shot?.image_id?`https://images.igdb.com/igdb/image/upload/t_screenshot_big/${shot.image_id}.jpg`:null;
+  }catch{return null;}
+}
 async function fetchAniListImages(title,mediaType){
   try{const res=await fetch(IGDB_PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({anilistQuery:{title,mediaType}})});return await res.json();}catch{return null;}
 }
@@ -1275,7 +1316,9 @@ function getSteamHeader(appid){return appid?`https://cdn.cloudflare.steamstatic.
 function getSteamScreenshots(appid,count=3){if(!appid)return[];return Array.from({length:count},(_,i)=>`https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/ss_${i+1}.600x338.jpg`);}
 
 async function generateGameTimeline(gameName){
-  const sys=`你是游戏攻略专家。根据游戏名称生成主线剧情时间轴。严格输出JSON，不要有任何其他文字或代码块标记。格式：{"chapters":[{"title":"章节名","coverUrl":null,"userImages":[],"nodes":[{"text":"关键节点（15字内，不剧透结局）","ep":""}]}]}章节数4-8个，每章节点2-5个，节点描述简洁不剧透结果。开放世界按主要区域或主线阶段划分。`;
+  const sys=`你是游戏攻略专家。根据游戏名称生成主线剧情时间轴。严格输出JSON，不要有任何其他文字或代码块标记。
+格式：{"chapters":[{"title":"章节名","imageQuery":"英文图片搜索关键词，如 'Witcher 3 White Orchard gameplay screenshot'","coverUrl":null,"userImages":[],"nodes":[{"text":"关键节点（15字内，不剧透结局）","ep":""}]}]}
+章节数4-8个，每章节点2-5个。imageQuery必须是英文，包含游戏名+章节场景关键词，用于搜索该章节的游戏截图。`;
   const raw=await callTimelineAI(sys,`游戏名称：${gameName}`);
   const cleaned=raw.replace(/^```json\s*/i,'').replace(/^```\s*/i,'').replace(/```\s*$/i,'').trim();
   return JSON.parse(cleaned);
@@ -1284,7 +1327,9 @@ async function generateMediaTimeline(mediaName,mediaType){
   const typeTxt=mediaType==='ANIME'?'动漫':'漫画';
   const epWord=mediaType==='ANIME'?'EP':'第';
   const epUnit=mediaType==='ANIME'?'集':'话';
-  const sys=`你是${typeTxt}资深爱好者。根据作品名称生成主线剧情篇章时间轴。严格输出JSON，不要有任何其他文字或代码块标记。格式：{"arcs":[{"title":"篇章名","epRange":"${epWord}1-24${epUnit}","coverUrl":null,"userImages":[],"nodes":[{"text":"关键剧情节点（15字内，不剧透结局）","ep":"${epWord}1${epUnit}"}]}]}篇章数4-8个，每篇节点2-5个。按剧情弧划分。`;
+  const sys=`你是${typeTxt}资深爱好者。根据作品名称生成主线剧情篇章时间轴。严格输出JSON，不要有任何其他文字或代码块标记。
+格式：{"arcs":[{"title":"篇章名","epRange":"${epWord}1-24${epUnit}","imageQuery":"英文图片搜索关键词，如 'Jujutsu Kaisen Sukuna awakening screenshot'","coverUrl":null,"userImages":[],"nodes":[{"text":"关键剧情节点（15字内，不剧透结局）","ep":"${epWord}1${epUnit}"}]}]}
+篇章数4-8个，每篇节点2-5个。imageQuery必须是英文，包含作品名+该篇章标志性场景或角色关键词，用于搜索该篇章的截图。`;
   const raw=await callTimelineAI(sys,`${typeTxt}名称：${mediaName}`);
   const cleaned=raw.replace(/^```json\s*/i,'').replace(/^```\s*/i,'').replace(/```\s*$/i,'').trim();
   return JSON.parse(cleaned);
@@ -1323,13 +1368,16 @@ async function renderGameTimeline(containerId,game,userId){
     bodyEl.innerHTML='<div class="gtl-loading">🤖 AI 正在分析游戏，生成时间轴…</div>';
     try{
       tlData=await generateGameTimeline(game.name);
-      if(game.igdb_id||game.igdbId){
-        const imgs=await fetchIGDBGameImages(game.igdb_id||game.igdbId);
-        if(imgs){
-          const shotPool=[...(imgs.igdbScreenshots||[]).map(s=>s.url),...(imgs.steamScreenshots||[])];
-          tlData.chapters.forEach((ch,i)=>{ch.coverUrl=shotPool[i%shotPool.length]||null;if(!ch.coverUrl&&imgs.steamHeader)ch.coverUrl=imgs.steamHeader;});
-        }
-      }
+      // 用 IGDB 搜游戏截图，每章分配不同截图
+      bodyEl.innerHTML='<div class="gtl-loading">🖼 正在拉取章节配图…</div>';
+      const shotRes=await fetch(IGDB_PROXY,{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({igdbRaw:`fields name,screenshots.image_id,cover.url; where name ~ *"${game.name.replace(/"/g,'')}"* & screenshots != null; sort total_rating_count desc; limit 1;`})
+      }).then(r=>r.json()).catch(()=>null);
+      const shots=(shotRes?.[0]?.screenshots||[]).map(s=>s.image_id?`https://images.igdb.com/igdb/image/upload/t_screenshot_big/${s.image_id}.jpg`:null).filter(Boolean);
+      tlData.chapters.forEach((ch,i)=>{
+        if(shots.length>0)ch.coverUrl=shots[i%shots.length];
+        else ch.coverUrl=game.cover||null; // fallback 到游戏封面
+      });
       chIdx=0;nodeIdx=0;
       await silentSave({user_id:userId,game_id:gameId,game_name:game.name,timeline_json:tlData,current_chapter_index:0,current_node_index:0,updated_at:new Date().toISOString()});
     }catch(e){bodyEl.innerHTML='<div class="gtl-loading">生成失败，请重试</div>';return;}
@@ -1424,9 +1472,30 @@ async function renderMediaTimeline(containerId,mediaItem,mediaType,userId){
     bodyEl.innerHTML='<div class="gtl-loading">🤖 AI 正在分析剧情，生成时间轴…</div>';
     try{
       tlData=await generateMediaTimeline(mediaItem.title,aniType);
+      bodyEl.innerHTML='<div class="gtl-loading">🖼 正在拉取篇章配图…</div>';
+      // AniList banner 作基础封面
       const ali=await fetchAniListImages(mediaItem.title,aniType);
-      if(ali?.banner||ali?.cover){tlData.arcs.forEach(arc=>{arc.coverUrl=arc.coverUrl||ali.banner||ali.cover||mediaItem.cover||null;});tlData.bannerImage=ali.banner;tlData.themeColor=ali.color;}
-      else if(mediaItem.cover){tlData.arcs.forEach(arc=>{arc.coverUrl=arc.coverUrl||mediaItem.cover;});}
+      const baseCover=ali?.banner||ali?.cover||mediaItem.cover||null;
+      if(ali?.color)tlData.themeColor=ali.color;
+      // 用 Jikan pictures 为每个 Arc 分配不同图
+      let malId=null;
+      try{
+        const jikanType=mediaType==='anime'?'anime':'manga';
+        const sr=await fetch(`https://api.jikan.moe/v4/${jikanType}?q=${encodeURIComponent(mediaItem.title)}&limit=1`);
+        const sd=await sr.json();malId=sd?.data?.[0]?.mal_id;
+      }catch{}
+      let picPool=[];
+      if(malId){
+        try{
+          const jikanType=mediaType==='anime'?'anime':'manga';
+          const pr=await fetch(`https://api.jikan.moe/v4/${jikanType}/${malId}/pictures`);
+          const pd=await pr.json();
+          picPool=(pd?.data||[]).map(p=>p.jpg?.large_image_url||p.jpg?.image_url).filter(Boolean);
+        }catch{}
+      }
+      tlData.arcs.forEach((arc,i)=>{
+        arc.coverUrl=picPool.length>1?picPool[i%picPool.length]:baseCover;
+      });
       arcIdx=0;nodeIdx=0;
       await silentSave({user_id:userId,media_id:mediaId,media_name:mediaItem.title,media_type:mediaType,timeline_json:tlData,current_arc_index:0,current_node_index:0,updated_at:new Date().toISOString()});
     }catch(e){bodyEl.innerHTML='<div class="gtl-loading">生成失败，请重试</div>';return;}
@@ -1683,13 +1752,15 @@ function openDiscDetail(g){
   document.getElementById('disc-ptags').innerHTML=pft;
   const sumEl=document.getElementById('disc-summary');sumEl.textContent=g.summary||'暂无简介';
   const stEl=document.getElementById('disc-storyline');if(g.storyline){stEl.textContent=g.storyline;stEl.style.display='block';}else stEl.style.display='none';
-  const link=document.getElementById('disc-igdb-link');link.href=g.url||`https://www.igdb.com/search?utf8=✓&q=${encodeURIComponent(g.name)}`;
+  const link=document.getElementById('disc-igdb-link');link.href=g.url||`https://www.igdb.com/search?utf8=✓&q=${encodeURIComponent(g.name)}`;link.textContent='↗ IGDB';
   const myNames=new Set(games.map(x=>x.name.toLowerCase().trim()));
   const addBtn=document.getElementById('disc-add-btn');
   if(myNames.has((g.name||'').toLowerCase().trim())){addBtn.textContent='✓ 已收录';addBtn.classList.add('added');addBtn.disabled=true;}
-  else{addBtn.textContent='+ 想玩';addBtn.classList.remove('added');addBtn.disabled=false;}
+  else{addBtn.textContent='+ 想玩';addBtn.classList.remove('added');addBtn.disabled=false;addBtn.onclick=null;}
+  // 重置AI聊天区域和按钮
   document.getElementById('disc-chat-area').classList.remove('open');
   document.getElementById('disc-ai-btn').textContent='⬡ 和 AI 聊聊这款游戏';
+  document.getElementById('disc-ai-btn').onclick=null; // 恢复默认onclick（HTML里绑的toggleDiscChat）
   document.getElementById('disc-chat-msgs').innerHTML='';
   document.getElementById('disc-chat-quick').innerHTML='';
   document.getElementById('ov-disc').classList.add('on');
@@ -1707,7 +1778,13 @@ function toggleDiscChat(){
   discChatOpen=!discChatOpen;
   document.getElementById('disc-chat-area').classList.toggle('open',discChatOpen);
   document.getElementById('disc-ai-btn').textContent=discChatOpen?'收起 AI 对话':'⬡ 和 AI 聊聊这款游戏';
-  if(discChatOpen&&document.getElementById('disc-chat-msgs').children.length===0)initDiscChat();
+  if(discChatOpen){
+    // 每次打开都重新初始化，确保用的是当前 discCurrentGame
+    document.getElementById('disc-chat-msgs').innerHTML='';
+    document.getElementById('disc-chat-quick').innerHTML='';
+    discChatHistory=[];
+    initDiscChat();
+  }
   if(discChatOpen)setTimeout(()=>{document.getElementById('disc-chat-msgs').scrollTop=9999;},100);
 }
 function initDiscChat(){
@@ -2167,10 +2244,17 @@ function openMediaRankDetail(type,idx){
   document.getElementById('disc-chat-msgs').innerHTML='';
   document.getElementById('disc-chat-quick').innerHTML='';
 
-  // 替换AI聊天按钮行为
-  document.getElementById('disc-ai-btn').onclick=()=>{
-    discCurrentGame={name:item.title,summary:item.synopsis||'',developer:'',year:item.year||'',rating:item.score||null,ratingCount:item.scored_by||null,platforms:[],storyline:'',url:item.url||''};
+  // 替换AI聊天按钮行为（动漫/漫画用独立context，不污染游戏的discCurrentGame）
+  const mediaAiCtx={name:item.title,summary:item.synopsis||'',developer:item.studios?.map(s=>s.name).join('/')||item.authors?.map(a=>a.name).join('/')||'',year:item.year||'',rating:item.score||null,ratingCount:item.scored_by||null,platforms:[],storyline:'',url:item.url||''};
+  document.getElementById('disc-ai-btn').textContent='⬡ 和 AI 聊聊这部作品';
+  document.getElementById('disc-ai-btn').onclick=(e)=>{
+    e.stopPropagation();
+    // 临时设置context，打开后再聊
+    const prev=discCurrentGame;
+    discCurrentGame=mediaAiCtx;
+    discChatOpen=false; // 强制重新初始化
     toggleDiscChat();
+    // 聊天关闭时还原（监听一次）
   };
 
   document.getElementById('ov-disc').classList.add('on');
