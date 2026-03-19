@@ -612,7 +612,7 @@
     <div class="mh" style="padding-bottom:1rem;border-bottom:1px solid var(--b)">
       <div>
         <h2 id="pkm-chat-title" style="font-family:'Noto Serif SC',serif">和 AI 聊聊</h2>
-        <div style="font-size:.72rem;color:var(--t3);font-family:'DM Mono',monospace;margin-top:2px" id="pkm-chat-subtitle"></div>
+      +(log?.play_hours?'<div style="font-size:.63rem;color:var(--t3);margin-top:2px">'+log.play_hours+'h</div>':'')
       </div>
       <button class="btn btn-sm" onclick="closeOv('ov-pkm-chat')">✕</button>
     </div>
@@ -631,6 +631,58 @@
     </div>
   </div>
 </div>
+
+<!-- 系列追踪详情弹窗 -->
+<div class="ov" id="ov-series" onclick="if(event.target===this)closeOv('ov-series')">
+  <div class="modal series-modal">
+    <div class="mh">
+      <div>
+        <h2 id="series-modal-title" style="font-family:'Noto Serif SC',serif">系列名称</h2>
+        <div id="series-modal-year" style="font-size:.72rem;color:var(--t3);font-family:'DM Mono',monospace;margin-top:2px"></div>
+      </div>
+      <button class="btn btn-sm" onclick="closeOv('ov-series')">✕</button>
+    </div>
+    <div class="mc" style="padding:1.2rem 1.5rem">
+      <div class="series-field">
+        <label>游玩状态</label>
+        <select id="series-status-sel">
+          <option value="none">— 未游玩</option>
+          <option value="played">▶ 游玩中</option>
+          <option value="cleared">✓ 已通关</option>
+        </select>
+      </div>
+      <div class="series-row2">
+        <div class="series-field">
+          <label>开始日期</label>
+          <input type="date" id="series-start-inp">
+        </div>
+        <div class="series-field">
+          <label>通关/结束日期</label>
+          <input type="date" id="series-end-inp">
+        </div>
+      </div>
+      <div class="series-row2">
+        <div class="series-field">
+          <label>游玩时长（小时）</label>
+          <input type="number" id="series-hours-inp" placeholder="例：40" min="0" max="9999">
+        </div>
+        <div class="series-field">
+          <label>王牌宝可梦 🏆</label>
+          <input type="text" id="series-ace-inp" placeholder="例：妙蛙花、皮卡丘" autocomplete="off">
+        </div>
+      </div>
+      <div class="series-field">
+        <label>游玩笔记</label>
+        <textarea id="series-notes-inp" placeholder="记录这部作品的感受、印象深刻的剧情、通关心得…"></textarea>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn" onclick="closeOv('ov-series')">取消</button>
+      <button class="btn btn-a" id="series-save-btn" onclick="saveSeriesDetail()">保存记录</button>
+    </div>
+  </div>
+</div>
+
 
 <!-- 发现页详情弹窗 -->
 <div class="ov" id="ov-disc" onclick="if(event.target===this)closeOv('ov-disc')">
@@ -1667,7 +1719,7 @@ const PKM_SERIES=[
   {id:'legends-za',name:'传说:Z-A',year:2025},
 ];
 
-let pkmCollection={},pkmSeriesData={},todayPkm=null,pkmChatHistory=[],currentChatPkm=null,pkmChatFromModal=false;
+let pkmCollection={},todayPkm=null,pkmChatHistory=[],currentChatPkm=null,pkmChatFromModal=false;
 let pkmSearchT=null,genCache={};
 
 // 类型颜色
@@ -1863,11 +1915,14 @@ async function loadGen(gen,el){
   grid.innerHTML='<div class="pkm-empty">加载中…</div>';
   if(genCache[gen]){grid.innerHTML=genCache[gen];return;}
   const[start,end]=GEN_RANGE[gen];
-  try{
-    const ids=Array.from({length:end-start+1},(_,i)=>start+i);
-    // 批量获取（取前50条先显示）
-    const chunk=ids.slice(0,50);
-    const items=await Promise.all(chunk.map(async id=>{
+  const ids=Array.from({length:end-start+1},(_,i)=>start+i);
+  grid.innerHTML='';
+  // 分批加载：每批20只，逐步渲染
+  const BATCH=20;
+  let allHtml='';
+  for(let b=0;b<ids.length;b+=BATCH){
+    const batch=ids.slice(b,b+BATCH);
+    const items=await Promise.all(batch.map(async id=>{
       try{
         const p=await fetchPkm(id);
         const sp=await fetchPkmSpecies(id).catch(()=>null);
@@ -1875,37 +1930,84 @@ async function loadGen(gen,el){
         const img=p.sprites?.front_default||'';
         const col=pkmCollection[p.id]||{};
         const mark=col.caught?'✓':col.liked?'♥':col.wanted?'★':'';
-        return`<div class="pkm-mini" onclick="openPkmDetail(${p.id})" style="position:relative">${mark?`<div style="position:absolute;top:3px;right:3px;font-size:.6rem;color:var(--acc2)">${mark}</div>`:''}<img src="${img}" alt=""><div class="pkm-mini-name">${cn}</div></div>`;
+        return'<div class="pkm-mini" onclick="openPkmDetail('+p.id+')" style="position:relative">'+(mark?'<div style="position:absolute;top:3px;right:3px;font-size:.6rem;color:var(--acc2)">'+mark+'</div>':'')+'<img src="'+img+'" alt="" loading="lazy"><div class="pkm-mini-name">'+cn+'</div></div>';
       }catch{return'';}
     }));
-    genCache[gen]=items.join('');
-    grid.innerHTML=genCache[gen];
-  }catch(e){grid.innerHTML='<div class="pkm-empty">加载失败</div>';}
+    allHtml+=items.join('');
+    grid.innerHTML=allHtml;
+  }
+  genCache[gen]=allHtml;
 }
 
 // 系列追踪
+let pkmSeriesLogs={};
+
+async function loadSeriesData(){
+  const{data:{session}}=await db.auth.getSession();
+  if(!session?.user)return;
+  const{data}=await db.from('pkm_series_log').select('*').eq('user_id',session.user.id);
+  pkmSeriesLogs={};
+  (data||[]).forEach(r=>pkmSeriesLogs[r.series_id]=r);
+  renderSeries();
+}
+
 function renderSeries(){
   const grid=document.getElementById('pkm-series-grid');
   grid.innerHTML=PKM_SERIES.map(s=>{
-    const st=pkmSeriesData[s.id]||'none';
+    const log=pkmSeriesLogs[s.id];
+    const st=log?.status||'none';
     const cls=st==='cleared'?' cleared':st==='played'?' played':'';
-    const stTxt=st==='cleared'?'✓ 已通关':st==='played'?'▶ 游玩中':'';
-    return`<div class="pkm-series-card${cls}" onclick="cycleSeries('${s.id}',this)">
-      <div class="pkm-series-name">${s.name}</div>
-      <div class="pkm-series-year">${s.year}</div>
-      <div class="pkm-series-status" style="color:${st==='cleared'?'var(--acc)':st==='played'?'var(--acc2)':'var(--t3)'}">${stTxt||'— 未游玩'}</div>
-    </div>`;
+    const stTxt=st==='cleared'?'✓ 已通关':st==='played'?'▶ 游玩中':'— 未游玩';
+    const stColor=st==='cleared'?'var(--acc)':st==='played'?'var(--acc2)':'var(--t3)';
+    const ace=log?.ace_pokemon?'🏆 '+log.ace_pokemon:'';
+    return'<div class="pkm-series-card'+cls+'" onclick="openSeriesDetail(\"'+s.id+'\")">'
+      +'<div class="pkm-series-name">'+s.name+'</div>'
+      +'<div class="pkm-series-year">'+s.year+'</div>'
+      +'<div class="pkm-series-status" style="color:'+stColor+'">'+stTxt+'</div>'
+      +(log?.play_hours?'<div style="font-size:.63rem;color:var(--t3);margin-top:2px">'+log.play_hours+'h</div>':'')
+      +(ace?'<div style="font-size:.63rem;color:var(--warn);margin-top:2px">'+ace+'</div>':'')
+      +'</div>';
   }).join('');
 }
-function cycleSeries(id,el){
-  const cur=pkmSeriesData[id]||'none';
-  const next=cur==='none'?'played':cur==='played'?'cleared':'none';
-  pkmSeriesData[id]=next;
-  localStorage.setItem('pkm_series',JSON.stringify(pkmSeriesData));
-  renderSeries();
+
+function openSeriesDetail(seriesId){
+  const s=PKM_SERIES.find(x=>x.id===seriesId);if(!s)return;
+  const log=pkmSeriesLogs[seriesId]||{};
+  document.getElementById('series-modal-title').textContent=s.name;
+  document.getElementById('series-modal-year').textContent=s.year+'年发行';
+  document.getElementById('series-status-sel').value=log.status||'none';
+  document.getElementById('series-start-inp').value=log.start_date||'';
+  document.getElementById('series-end-inp').value=log.end_date||'';
+  document.getElementById('series-hours-inp').value=log.play_hours||'';
+  document.getElementById('series-ace-inp').value=log.ace_pokemon||'';
+  document.getElementById('series-notes-inp').value=log.notes||'';
+  document.getElementById('series-save-btn').dataset.sid=seriesId;
+  document.getElementById('ov-series').classList.add('on');
 }
-function loadSeriesData(){
-  try{pkmSeriesData=JSON.parse(localStorage.getItem('pkm_series')||'{}');}catch{pkmSeriesData={};}
+
+async function saveSeriesDetail(){
+  const btn=document.getElementById('series-save-btn');
+  const sid=btn.dataset.sid;
+  const{data:{session}}=await db.auth.getSession();
+  if(!session?.user){alert('请先登录');return;}
+  btn.textContent='保存中…';btn.disabled=true;
+  const payload={
+    user_id:session.user.id,
+    series_id:sid,
+    status:document.getElementById('series-status-sel').value,
+    start_date:document.getElementById('series-start-inp').value||null,
+    end_date:document.getElementById('series-end-inp').value||null,
+    play_hours:parseInt(document.getElementById('series-hours-inp').value)||0,
+    ace_pokemon:document.getElementById('series-ace-inp').value.trim()||null,
+    notes:document.getElementById('series-notes-inp').value.trim()||null,
+    updated_at:new Date().toISOString(),
+  };
+  const{error}=await db.from('pkm_series_log').upsert(payload,{onConflict:'user_id,series_id'});
+  if(error){alert('保存失败：'+error.message);btn.textContent='保存';btn.disabled=false;return;}
+  pkmSeriesLogs[sid]={...payload};
+  renderSeries();
+  btn.textContent='✓ 已保存';
+  setTimeout(()=>{btn.textContent='保存记录';btn.disabled=false;closeOv('ov-series');},800);
 }
 
 // AI 聊天
@@ -2028,8 +2130,7 @@ async function loadPkmLogs(){
 
 // 初始化宝可梦专栏
 async function initPkm(){
-  loadSeriesData();
-  renderSeries();
+  await loadSeriesData();
   await loadTodayPkm();
   await loadPkmCollection();
   updateTodayBtns();
