@@ -2565,8 +2565,7 @@ function setMediaRankMode(type, mode, el) {
   el.closest('.disc-tabs').querySelectorAll('.disc-tab-btn').forEach(b=>b.classList.remove('on'));
   el.classList.add('on');
   mediaRankMode[type] = mode;
-  if (!mediaRankCache[`${type}_${mode}`]) loadMediaRank(type, mode);
-  else document.getElementById(`${type}-rank-list`).innerHTML = mediaRankCache[`${type}_${mode}`];
+  loadMediaRank(type, mode);
 }
 
 async function loadMediaRank(type, mode) {
@@ -2576,23 +2575,23 @@ async function loadMediaRank(type, mode) {
     let url = '';
     if (type === 'anime') {
       const modeMap = {
-        top:     'top/anime?limit=30',
-        airing:  'top/anime?filter=airing&limit=30',
-        upcoming:'top/anime?filter=upcoming&limit=30',
-        movie:   'top/anime?type=movie&limit=30'
+        top:     'top/anime?limit=25',
+        airing:  'top/anime?filter=airing&limit=25',
+        upcoming:'top/anime?filter=upcoming&limit=25',
+        movie:   'top/anime?type=movie&limit=25'
       };
       url = `${JIKAN}/${modeMap[mode]||modeMap.top}`;
     } else {
       const modeMap = {
-        top:    'top/manga?limit=30',
-        manga:  'top/manga?type=manga&limit=30',
-        manhwa: 'top/manga?type=manhwa&limit=30',
-        novel:  'top/manga?type=lightnovel&limit=30'
+        top:    'top/manga?limit=25',
+        manga:  'top/manga?type=manga&limit=25',
+        manhwa: 'top/manga?type=manhwa&limit=25',
+        novel:  'top/manga?type=lightnovel&limit=25'
       };
       url = `${JIKAN}/${modeMap[mode]||modeMap.top}`;
     }
-    const r = await fetch(url);
-    if (!r.ok) throw new Error('HTTP '+r.status);
+    const r = await fetch(url, {headers:{'Accept':'application/json'}});
+    if (!r.ok) throw new Error('HTTP '+r.status+' url:'+url);
     const d = await r.json();
     if (!d.data?.length) { listEl.innerHTML='<div class="disc-loading">暂无数据</div>'; return; }
     const html = '<div class="media-rank-grid">'+d.data.map((item,i)=>{
