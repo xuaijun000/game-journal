@@ -1128,13 +1128,8 @@ function initDiscChat(){
   const qs=['这款游戏的玩法特色是什么？','剧情或世界观有什么亮点？','适合什么类型的玩家？','有什么需要注意的入坑须知？'];
   document.getElementById('disc-chat-quick').innerHTML=qs.map(q=>`<button class="qq" onclick="sendDiscQuick('${q.replace(/'/g,"&#39;")}')">${q}</button>`).join('');
   const score=g.rating?`综合评分 ${Math.round(g.rating)} 分，${g.ratingCount||0} 人评价`:'';
-  addDiscBubble(`《${g.name}》的情报已就绪。
-
-${score?score+'
-
-':''}${g.summary?g.summary.slice(0,80)+'…
-
-':''}想了解什么？玩法、剧情、入坑建议……直接问。`,'ai',false);
+  const greetText='《'+g.name+'》的情报已就绪。\n\n'+(score?score+'\n\n':'')+(g.summary?g.summary.slice(0,80)+'…\n\n':'')+'想了解什么？玩法、剧情、入坑建议……直接问。';
+  addDiscBubble(greetText,'ai',false);
 }
 
 function sendDiscQuick(q){document.getElementById('disc-chat-inp').value=q;sendDiscAIMsg();}
