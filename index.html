@@ -621,6 +621,12 @@ sort total_rating_count desc; limit 30;`
 }
 function renderRankList(data){
   const rl=document.getElementById('rank-list');
+  discDataCache=data.map((g,i)=>{
+    const cover=g.cover?.url?g.cover.url.replace('t_thumb','t_cover_big'):null;
+    const dev=(g.involved_companies||[]).find(c=>c.developer)?.company?.name||'';
+    const year=g.first_release_date?new Date(g.first_release_date*1000).getFullYear():'';
+    return{name:g.name,cover,developer:dev,year:year||null,rating:g.total_rating||null,ratingCount:g.total_rating_count||null,hypes:g.hypes||null,platforms:g.platforms||[],summary:g.summary||'',storyline:g.storyline||'',url:g.url||''};
+  });
   const myNames=new Set(games.map(g=>g.name.toLowerCase().trim()));
   rl.innerHTML=data.map((g,i)=>{
     const rank=i+1;
@@ -640,8 +646,8 @@ function renderRankList(data){
     const added=myNames.has((g.name||'').toLowerCase().trim());
     const bid=`ab${i}`;
     const gj=JSON.stringify({name:g.name,cover,developer:dev,year:year||null}).replace(/'/g,"&#39;");
-    const discGj=JSON.stringify({name:g.name,cover,developer:dev,year:year||null,rating:g.total_rating||null,ratingCount:g.total_rating_count||null,hypes:g.hypes||null,platforms:g.platforms||[],summary:g.summary||'',storyline:g.storyline||'',url:g.url||''}).replace(/'/g,"&#39;");
-    return`<div class="rank-item" style="animation-delay:${Math.min(i*.025,.5)}s;cursor:pointer" onclick="openDiscDetail(${discGj})">
+    const discIdx=i;
+    return`<div class="rank-item" style="animation-delay:${Math.min(i*.025,.5)}s;cursor:pointer" onclick="openDiscDetailByIdx(${discIdx})">
       <div class="rank-num ${numCls}">${rank}</div>
       ${cover?`<img class="rank-cover" src="${cover}" alt="" loading="lazy" onerror="this.style.display='none'">`:
               '<div class="rank-cover-ph">🎮</div>'}
@@ -1062,6 +1068,10 @@ async function generateSummary(){
 /* ===== 发现页详情弹窗 ===== */
 let discCurrentGame=null,discChatOpen=false,discChatHistory=[];
 
+let discDataCache=[];
+function openDiscDetailByIdx(idx){
+  if(discDataCache[idx])openDiscDetail(discDataCache[idx]);
+}
 function openDiscDetail(g){
   discCurrentGame=g;discChatOpen=false;discChatHistory=[];
   const cover=g.cover;
