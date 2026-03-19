@@ -257,6 +257,94 @@
     .chat-sum-btn{padding:5px 14px;border-radius:7px;font-size:.73rem;font-family:'DM Mono',monospace;border:1px solid rgba(64,232,196,.3);background:rgba(64,232,196,.06);color:var(--acc2);cursor:pointer;transition:all .15s}
     .chat-sum-btn:hover{background:rgba(64,232,196,.15)}
     .chat-sum-btn:disabled{opacity:.4;cursor:not-allowed}
+
+    /* ===== 宝可梦专栏 ===== */
+    .pkm-layout{display:grid;grid-template-columns:320px 1fr;gap:18px;align-items:start}
+    .pkm-today{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);overflow:hidden;position:sticky;top:72px}
+    .pkm-today-hero{height:180px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .pkm-today-bg{position:absolute;inset:0;filter:blur(30px);opacity:.3;background-size:cover;background-position:center}
+    .pkm-today-img{position:relative;z-index:2;width:140px;height:140px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 4px 12px rgba(0,0,0,.6))}
+    .pkm-today-body{padding:1rem}
+    .pkm-today-num{font-size:.7rem;color:var(--t3);font-family:'DM Mono',monospace;margin-bottom:2px}
+    .pkm-today-name{font-family:'Noto Serif SC',serif;font-size:1.3rem;font-weight:600;margin-bottom:6px}
+    .pkm-types{display:flex;gap:5px;margin-bottom:10px}
+    .pkm-type{padding:2px 10px;border-radius:99px;font-size:.7rem;font-family:'DM Mono',monospace;font-weight:500}
+    .pkm-stats{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+    .pkm-stat-row{display:flex;align-items:center;gap:8px}
+    .pkm-stat-lbl{font-size:.68rem;color:var(--t3);font-family:'DM Mono',monospace;width:32px;flex-shrink:0}
+    .pkm-stat-bar{flex:1;height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
+    .pkm-stat-fill{height:100%;border-radius:3px;transition:width .6s ease}
+    .pkm-stat-val{font-size:.68rem;font-family:'DM Mono',monospace;color:var(--t2);min-width:26px;text-align:right}
+    .pkm-action-row{display:flex;gap:6px;flex-wrap:wrap}
+    .pkm-btn{flex:1;padding:6px 10px;border-radius:8px;font-size:.75rem;font-family:'DM Mono',monospace;border:1px solid var(--b2);background:none;color:var(--t2);cursor:pointer;transition:all .15s;white-space:nowrap}
+    .pkm-btn:hover{background:var(--bg3);color:var(--t)}
+    .pkm-btn.caught{border-color:var(--acc2);color:var(--acc2);background:rgba(64,232,196,.08)}
+    .pkm-btn.liked{border-color:#ff80ab;color:#ff80ab;background:rgba(255,128,171,.08)}
+    .pkm-btn.wanted{border-color:var(--warn);color:var(--warn);background:rgba(240,185,64,.08)}
+    .pkm-btn-ai{width:100%;margin-top:6px;padding:7px;border-radius:8px;border:1px dashed rgba(212,240,74,.4);background:rgba(212,240,74,.05);color:var(--acc);font-size:.78rem;font-family:'DM Mono',monospace;cursor:pointer;transition:all .2s}
+    .pkm-btn-ai:hover{background:rgba(212,240,74,.12)}
+    .pkm-right{display:flex;flex-direction:column;gap:14px}
+    /* 搜索区 */
+    .pkm-search-box{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);padding:1rem}
+    .pkm-search-row{display:flex;gap:8px;margin-bottom:10px}
+    .pkm-search-inp{flex:1;background:var(--bg3);border:1px solid var(--b);border-radius:8px;padding:7px 12px;color:var(--t);font-family:inherit;font-size:.88rem;outline:none;transition:border .15s}
+    .pkm-search-inp:focus{border-color:rgba(212,240,74,.5)}
+    .pkm-search-results{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px;max-height:220px;overflow-y:auto}
+    .pkm-mini{background:var(--bg3);border:1px solid var(--b);border-radius:8px;padding:8px 4px 6px;text-align:center;cursor:pointer;transition:all .15s}
+    .pkm-mini:hover{border-color:rgba(212,240,74,.4);background:var(--bg2)}
+    .pkm-mini img{width:56px;height:56px;object-fit:contain;image-rendering:pixelated}
+    .pkm-mini-name{font-size:.65rem;color:var(--t2);margin-top:2px}
+    /* 世代浏览 */
+    .pkm-gen-box{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);padding:1rem}
+    .pkm-gen-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px}
+    .pkm-gen-tab{padding:3px 10px;border-radius:99px;font-size:.72rem;font-family:'DM Mono',monospace;border:1px solid var(--b);background:var(--bg3);color:var(--t3);cursor:pointer;transition:all .15s}
+    .pkm-gen-tab.on{border-color:var(--acc);color:var(--acc);background:rgba(212,240,74,.08)}
+    .pkm-gen-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:6px;max-height:320px;overflow-y:auto}
+    /* 进化链 */
+    .pkm-evo-chain{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:8px 0}
+    .pkm-evo-item{text-align:center;cursor:pointer;padding:6px;border-radius:8px;transition:all .15s;border:1px solid transparent}
+    .pkm-evo-item:hover{border-color:rgba(212,240,74,.3);background:var(--bg3)}
+    .pkm-evo-item img{width:56px;height:56px;object-fit:contain;image-rendering:pixelated;display:block;margin:0 auto}
+    .pkm-evo-name{font-size:.68rem;color:var(--t2);margin-top:3px}
+    .pkm-evo-arrow{color:var(--t3);font-size:1.1rem;flex-shrink:0}
+    /* 详情弹窗 */
+    .pkm-detail-modal{max-width:520px}
+    .pkm-detail-hero{height:200px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .pkm-detail-bg{position:absolute;inset:0;filter:blur(25px);opacity:.35;background-size:cover;background-position:center}
+    .pkm-detail-img{position:relative;z-index:2;width:150px;height:150px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 6px 16px rgba(0,0,0,.7));transition:transform .3s ease}
+    .pkm-detail-img:hover{transform:scale(1.08)}
+    .pkm-detail-body{padding:1.2rem 1.5rem}
+    .pkm-detail-name{font-family:'Noto Serif SC',serif;font-size:1.4rem;font-weight:600;margin-bottom:4px}
+    .pkm-detail-meta{font-size:.78rem;color:var(--t2);font-family:'DM Mono',monospace;margin-bottom:10px}
+    .pkm-detail-desc{font-size:.85rem;color:var(--t2);line-height:1.7;margin-bottom:12px;border-left:2px solid var(--b2);padding-left:10px}
+    /* AI聊天 & 日志 */
+    .pkm-chat-area{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);overflow:hidden}
+    .pkm-chat-hdr{padding:10px 14px;background:var(--bg3);border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between}
+    .pkm-chat-title{font-size:.78rem;font-family:'DM Mono',monospace;color:var(--t2)}
+    .pkm-chat-title em{color:var(--acc);font-style:normal}
+    .pkm-chat-msgs{height:280px;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+    .pkm-log-box{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);overflow:hidden}
+    .pkm-log-hdr{padding:10px 14px;background:var(--bg3);border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between;font-size:.78rem;font-family:'DM Mono',monospace;color:var(--t2)}
+    .pkm-log-list{max-height:250px;overflow-y:auto}
+    .pkm-log-item{padding:10px 14px;border-bottom:1px solid var(--b)}
+    .pkm-log-item:last-child{border-bottom:none}
+    .pkm-log-item-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+    .pkm-log-name{font-size:.78rem;font-weight:500}
+    .pkm-log-date{font-size:.65rem;color:var(--t3);font-family:'DM Mono',monospace}
+    .pkm-log-text{font-size:.8rem;color:var(--t2);line-height:1.6}
+    .pkm-log-series{font-size:.65rem;color:var(--acc);font-family:'DM Mono',monospace;margin-top:3px}
+    .pkm-empty{text-align:center;padding:2rem;color:var(--t3);font-size:.82rem}
+    /* 系列追踪 */
+    .pkm-series-box{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);padding:1rem}
+    .pkm-series-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+    .pkm-series-card{background:var(--bg3);border:1px solid var(--b);border-radius:8px;padding:10px;cursor:pointer;transition:all .15s;text-align:center}
+    .pkm-series-card:hover{border-color:rgba(212,240,74,.3)}
+    .pkm-series-card.played{border-color:var(--acc2);background:rgba(64,232,196,.06)}
+    .pkm-series-card.cleared{border-color:var(--acc);background:rgba(212,240,74,.06)}
+    .pkm-series-name{font-size:.78rem;font-weight:500;margin-bottom:3px}
+    .pkm-series-year{font-size:.65rem;color:var(--t3);font-family:'DM Mono',monospace}
+    .pkm-series-status{font-size:.68rem;margin-top:4px}
+    @media(max-width:768px){.pkm-layout{grid-template-columns:1fr}.pkm-today{position:static}}
     @media(max-width:640px){.stats{grid-template-columns:repeat(3,1fr)}.cg{grid-template-columns:1fr}.row2{grid-template-columns:1fr}.disc-header{flex-direction:column;align-items:flex-start}.disc-tabs{flex-wrap:wrap}}
     #pkm-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:.18}
     main,header{position:relative;z-index:1}
@@ -270,6 +358,7 @@
     <button class="on" onclick="go('list',this)">游戏库</button>
     <button onclick="go('disc',this)">发现</button>
     <button onclick="go('stats',this)">统计</button>
+    <button onclick="go('pkm',this)">🐟 宝可梦</button>
   </nav>
   <div class="hdr-r">
     <div class="av" id="av">?</div>
@@ -363,6 +452,73 @@
       </div>
     </div>
   </div>
+
+  <!-- 宝可梦专栏 -->
+  <div class="pg" id="pg-pkm">
+    <div class="pkm-layout">
+      <!-- 左侧：今日宝可梦 -->
+      <div class="pkm-today">
+        <div class="pkm-today-hero">
+          <div class="pkm-today-bg" id="pkm-today-bg"></div>
+          <img id="pkm-today-img" src="" alt="" class="pkm-today-img">
+        </div>
+        <div class="pkm-today-body">
+          <div class="pkm-today-num" id="pkm-today-num">#???</div>
+          <div class="pkm-today-name" id="pkm-today-name">加载中…</div>
+          <div class="pkm-types" id="pkm-today-types"></div>
+          <div class="pkm-stats" id="pkm-today-stats"></div>
+          <div id="pkm-today-evo" style="margin-bottom:10px"></div>
+          <div class="pkm-action-row">
+            <button class="pkm-btn" id="pkm-btn-caught" onclick="togglePkmStatus('caught')">✓ 已捕获</button>
+            <button class="pkm-btn" id="pkm-btn-liked" onclick="togglePkmStatus('liked')">♥ 喜欢</button>
+            <button class="pkm-btn" id="pkm-btn-wanted" onclick="togglePkmStatus('wanted')">★ 想要</button>
+          </div>
+          <button class="pkm-btn-ai" onclick="openPkmChat()">⬡ 和 AI 聊聊它</button>
+          <button class="btn btn-sm" style="width:100%;margin-top:6px;color:var(--t3)" onclick="loadTodayPkm(true)">🔀 换一只</button>
+        </div>
+      </div>
+      <!-- 右侧 -->
+      <div class="pkm-right">
+        <!-- 搜索 -->
+        <div class="pkm-search-box">
+          <div style="font-size:.72rem;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">🔍 搜索宝可梦</div>
+          <div class="pkm-search-row">
+            <input class="pkm-search-inp" id="pkm-search-inp" placeholder="输入名称或编号…" oninput="onPkmSearch(this.value)" autocomplete="off">
+          </div>
+          <div class="pkm-search-results" id="pkm-search-results"></div>
+        </div>
+        <!-- 世代浏览 -->
+        <div class="pkm-gen-box">
+          <div style="font-size:.72rem;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">📖 按世代浏览</div>
+          <div class="pkm-gen-tabs" id="pkm-gen-tabs">
+            <div class="pkm-gen-tab on" data-gen="1" onclick="loadGen(1,this)">第一世代</div>
+            <div class="pkm-gen-tab" data-gen="2" onclick="loadGen(2,this)">第二世代</div>
+            <div class="pkm-gen-tab" data-gen="3" onclick="loadGen(3,this)">第三世代</div>
+            <div class="pkm-gen-tab" data-gen="4" onclick="loadGen(4,this)">第四世代</div>
+            <div class="pkm-gen-tab" data-gen="5" onclick="loadGen(5,this)">第五世代</div>
+            <div class="pkm-gen-tab" data-gen="6" onclick="loadGen(6,this)">第六世代</div>
+            <div class="pkm-gen-tab" data-gen="7" onclick="loadGen(7,this)">第七世代</div>
+            <div class="pkm-gen-tab" data-gen="8" onclick="loadGen(8,this)">第八世代</div>
+            <div class="pkm-gen-tab" data-gen="9" onclick="loadGen(9,this)">第九世代</div>
+          </div>
+          <div class="pkm-gen-grid" id="pkm-gen-grid"><div class="pkm-empty">加载中…</div></div>
+        </div>
+        <!-- 系列追踪 -->
+        <div class="pkm-series-box">
+          <div style="font-size:.72rem;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px">🎮 系列追踪</div>
+          <div class="pkm-series-grid" id="pkm-series-grid"></div>
+        </div>
+        <!-- 对话日志 -->
+        <div class="pkm-log-box">
+          <div class="pkm-log-hdr">
+            <span>📋 游戏日志</span>
+            <span id="pkm-log-count" style="color:var(--t3)"></span>
+          </div>
+          <div id="pkm-log-list" class="pkm-log-list"><div class="pkm-empty">还没有日志，和 AI 聊完后可以生成</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
 </main>
 
 <!-- 详情弹窗 -->
@@ -415,6 +571,63 @@
       <button class="btn btn-d" onclick="delGame()">删除</button>
       <button class="btn" onclick="closeOv('ov-detail')">关闭</button>
       <button class="btn btn-a" onclick="openEditFromDetail()">编辑记录</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- 宝可梦详情弹窗 -->
+<div class="ov" id="ov-pkm" onclick="if(event.target===this)closeOv('ov-pkm')">
+  <div class="modal pkm-detail-modal">
+    <div class="pkm-detail-hero">
+      <div class="pkm-detail-bg" id="pkm-detail-bg"></div>
+      <img id="pkm-detail-img" src="" alt="" class="pkm-detail-img">
+    </div>
+    <div class="pkm-detail-body">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
+        <div>
+          <div class="pkm-today-num" id="pkm-detail-num"></div>
+          <div class="pkm-detail-name" id="pkm-detail-name"></div>
+        </div>
+        <div class="pkm-types" id="pkm-detail-types" style="margin-bottom:0;flex-shrink:0"></div>
+      </div>
+      <div class="pkm-detail-meta" id="pkm-detail-meta"></div>
+      <div class="pkm-detail-desc" id="pkm-detail-desc"></div>
+      <div class="pkm-stats" id="pkm-detail-stats" style="margin-bottom:12px"></div>
+      <div id="pkm-detail-evo" style="margin-bottom:12px"></div>
+      <div class="pkm-action-row">
+        <button class="pkm-btn" id="pkm-detail-caught" onclick="togglePkmStatusModal('caught')">✓ 已捕获</button>
+        <button class="pkm-btn" id="pkm-detail-liked" onclick="togglePkmStatusModal('liked')">♥ 喜欢</button>
+        <button class="pkm-btn" id="pkm-detail-wanted" onclick="togglePkmStatusModal('wanted')">★ 想要</button>
+      </div>
+      <button class="pkm-btn-ai" style="margin-top:8px" onclick="openPkmChatFromModal()">⬡ 和 AI 聊聊它</button>
+    </div>
+    <div class="mfoot"><button class="btn" onclick="closeOv('ov-pkm')">关闭</button></div>
+  </div>
+</div>
+
+<!-- 宝可梦 AI 聊天弹窗 -->
+<div class="ov" id="ov-pkm-chat" onclick="if(event.target===this)closeOv('ov-pkm-chat')">
+  <div class="modal" style="max-width:560px">
+    <div class="mh" style="padding-bottom:1rem;border-bottom:1px solid var(--b)">
+      <div>
+        <h2 id="pkm-chat-title" style="font-family:'Noto Serif SC',serif">和 AI 聊聊</h2>
+        <div style="font-size:.72rem;color:var(--t3);font-family:'DM Mono',monospace;margin-top:2px" id="pkm-chat-subtitle"></div>
+      </div>
+      <button class="btn btn-sm" onclick="closeOv('ov-pkm-chat')">✕</button>
+    </div>
+    <div class="chat-msgs" id="pkm-ai-msgs" style="height:300px;padding:12px 1.5rem;display:flex;flex-direction:column;gap:8px;overflow-y:auto"></div>
+    <div class="quick-qs" id="pkm-ai-quick" style="padding:0 1.5rem 8px"></div>
+    <div style="padding:0 1.5rem 8px">
+      <div style="font-size:.72rem;color:var(--t3);font-family:'DM Mono',monospace;margin-bottom:4px">游戏系列（可选，影响 AI 回答方向）</div>
+      <input id="pkm-series-inp" style="width:100%;background:var(--bg3);border:1px solid var(--b);border-radius:8px;padding:6px 12px;color:var(--t);font-family:inherit;font-size:.82rem;outline:none" placeholder="例：宝可梦朱/紫、黑/白2、传说阿尔宙斯…" autocomplete="off">
+    </div>
+    <div class="chat-inp-row" style="padding:8px 1.5rem">
+      <input class="chat-inp" id="pkm-ai-inp" placeholder="问 AI 任何关于这只宝可梦的问题…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendPkmAIMsg();}">
+      <button class="chat-snd" id="pkm-ai-snd" onclick="sendPkmAIMsg()">发送</button>
+    </div>
+    <div class="chat-sum-bar" style="padding:4px 1.5rem 10px;display:flex;justify-content:flex-end">
+      <button class="chat-sum-btn" id="pkm-sum-btn" onclick="generatePkmLog()">📋 生成游戏日志</button>
     </div>
   </div>
 </div>
@@ -796,6 +1009,7 @@ function go(pg,btn){
   if(btn)btn.classList.add('on');
   if(pg==='stats')drawCharts();
   if(pg==='disc'&&document.getElementById('rank-list').children.length<=1)loadDisc();
+  if(pg==='pkm'&&!window._pkmInited){window._pkmInited=true;initPkm();}
 }
 function drawCharts(){
   const stC={playing:0,done:0,wishlist:0,dropped:0},gnC={},pfC={},rtC=[0,0,0,0,0],styC={};
@@ -1433,6 +1647,395 @@ ${reinject?'【提醒】保持《'+g.name+'》的世界观气质说话。':''}
   }
   loop();
 })();
+
+
+/* ===== 宝可梦专栏 ===== */
+const POKEAPI='https://pokeapi.co/api/v2';
+const TYPE_COLOR={normal:'#A8A878',fire:'#F08030',water:'#6890F0',electric:'#F8D030',grass:'#78C850',ice:'#98D8D8',fighting:'#C03028',poison:'#A040A0',ground:'#E0C068',flying:'#A890F0',psychic:'#F85888',bug:'#A8B820',rock:'#B8A038',ghost:'#705898',dragon:'#7038F8',dark:'#705848',steel:'#B8B8D0',fairy:'#EE99AC'};
+const TYPE_ZH={normal:'一般',fire:'火',water:'水',electric:'电',grass:'草',ice:'冰',fighting:'格斗',poison:'毒',ground:'地面',flying:'飞行',psychic:'超能力',bug:'虫',rock:'岩石',ghost:'幽灵',dragon:'龙',dark:'恶',steel:'钢',fairy:'妖精'};
+const STAT_ZH={hp:'HP',attack:'攻击',defense:'防御','special-attack':'特攻','special-defense':'特防',speed:'速度'};
+const GEN_RANGE={1:[1,151],2:[152,251],3:[252,386],4:[387,493],5:[494,649],6:[650,721],7:[722,809],8:[810,905],9:[906,1010]};
+const PKM_SERIES=[
+  {id:'red-blue',name:'红/蓝',year:1996},{id:'yellow',name:'黄',year:1998},{id:'gold-silver',name:'金/银',year:1999},{id:'crystal',name:'水晶',year:2000},
+  {id:'ruby-sapphire',name:'红宝石/蓝宝石',year:2002},{id:'firered-leafgreen',name:'火红/叶绿',year:2004},{id:'emerald',name:'绿宝石',year:2004},
+  {id:'diamond-pearl',name:'钻石/珍珠',year:2006},{id:'platinum',name:'白金',year:2008},{id:'heartgold-soulsilver',name:'心金/魂银',year:2009},
+  {id:'black-white',name:'黑/白',year:2010},{id:'black2-white2',name:'黑2/白2',year:2012},
+  {id:'x-y',name:'X/Y',year:2013},{id:'oras',name:'始源红/蓝',year:2014},
+  {id:'sun-moon',name:'太阳/月亮',year:2016},{id:'usum',name:'究极日月',year:2017},
+  {id:'sword-shield',name:'剑/盾',year:2019},{id:'bdsp',name:'晶灿钻石/明亮珍珠',year:2021},
+  {id:'legends-arceus',name:'传说:阿尔宙斯',year:2022},{id:'scarlet-violet',name:'朱/紫',year:2022},
+  {id:'legends-za',name:'传说:Z-A',year:2025},
+];
+
+let pkmCollection={},pkmSeriesData={},todayPkm=null,pkmChatHistory=[],currentChatPkm=null,pkmChatFromModal=false;
+let pkmSearchT=null,genCache={};
+
+// 类型颜色
+function typeTag(t){const c=TYPE_COLOR[t]||'#888';return`<span class="pkm-type" style="background:${c}22;color:${c};border:1px solid ${c}44">${TYPE_ZH[t]||t}</span>`;}
+
+// 种族值条
+function statBar(name,val){const pct=Math.min(100,Math.round(val/255*100));const c=val>=100?'var(--acc2)':val>=60?'var(--acc)':'var(--warn)';return`<div class="pkm-stat-row"><span class="pkm-stat-lbl">${STAT_ZH[name]||name}</span><div class="pkm-stat-bar"><div class="pkm-stat-fill" style="width:${pct}%;background:${c}"></div></div><span class="pkm-stat-val">${val}</span></div>`;}
+
+// 获取宝可梦数据
+async function fetchPkm(idOrName){
+  const r=await fetch(`${POKEAPI}/pokemon/${idOrName}`);
+  if(!r.ok)throw new Error('未找到');
+  return r.json();
+}
+async function fetchPkmSpecies(idOrName){
+  const r=await fetch(`${POKEAPI}/pokemon-species/${idOrName}`);
+  if(!r.ok)return null;
+  return r.json();
+}
+
+// 获取中文名
+function getCNName(species){
+  if(!species)return null;
+  const n=species.names?.find(x=>x.language.name==='zh-Hans'||x.language.name==='zh-Hant');
+  return n?.name||null;
+}
+function getCNFlavorText(species){
+  if(!species)return null;
+  const e=species.flavor_text_entries?.find(x=>x.language.name==='zh-Hans'||x.language.name==='zh-Hant');
+  return e?.flavor_text?.replace(/\f|\n/g,' ')||null;
+}
+
+// 今日宝可梦（用日期做种子，每天固定一只）
+async function loadTodayPkm(random=false){
+  const today=new Date();
+  let seed=random?Math.floor(Math.random()*1010)+1:((today.getFullYear()*365+today.getMonth()*31+today.getDate())%1010)+1;
+  try{
+    const p=await fetchPkm(seed);
+    const sp=await fetchPkmSpecies(p.species.url.split('/').slice(-2)[0]);
+    todayPkm={...p,species:sp};
+    renderTodayPkm(p,sp);
+    await loadPkmCollection();
+    updateTodayBtns();
+  }catch(e){console.error('今日宝可梦加载失败',e);}
+}
+
+function renderTodayPkm(p,sp){
+  const img=p.sprites?.other?.['official-artwork']?.front_default||p.sprites?.front_default||'';
+  const img2=p.sprites?.front_default||img;
+  document.getElementById('pkm-today-img').src=img2;
+  document.getElementById('pkm-today-bg').style.backgroundImage=img?`url(${img})`:'none';
+  const cnName=getCNName(sp)||p.name;
+  document.getElementById('pkm-today-num').textContent=`#${String(p.id).padStart(3,'0')}`;
+  document.getElementById('pkm-today-name').textContent=cnName;
+  document.getElementById('pkm-today-types').innerHTML=p.types.map(t=>typeTag(t.type.name)).join('');
+  document.getElementById('pkm-today-stats').innerHTML=p.stats.map(s=>statBar(s.stat.name,s.base_stat)).join('');
+  loadEvoChain(sp,'pkm-today-evo');
+}
+
+async function loadEvoChain(sp,containerId){
+  if(!sp?.evolution_chain?.url)return;
+  try{
+    const r=await fetch(sp.evolution_chain.url);const ec=await r.json();
+    const chain=[];
+    let cur=ec.chain;
+    while(cur){chain.push(cur.species.name);cur=cur.evolves_to?.[0];}
+    if(chain.length<=1){document.getElementById(containerId).innerHTML='';return;}
+    const items=await Promise.all(chain.map(async n=>{
+      const p=await fetchPkm(n);
+      const s=await fetchPkmSpecies(n);
+      const img=p.sprites?.front_default||'';
+      const cn=getCNName(s)||n;
+      return{name:n,cn,img,id:p.id};
+    }));
+    document.getElementById(containerId).innerHTML=`<div style="font-size:.68rem;color:var(--t3);margin-bottom:4px;font-family:'DM Mono',monospace">进化链</div><div class="pkm-evo-chain">${items.map((it,i)=>`${i>0?'<span class="pkm-evo-arrow">→</span>':''}<div class="pkm-evo-item" onclick="openPkmDetail(${it.id})"><img src="${it.img}" alt=""><div class="pkm-evo-name">${it.cn}</div></div>`).join('')}</div>`;
+  }catch(e){}
+}
+
+// 图鉴收藏
+async function loadPkmCollection(){
+  const{data:{session}}=await db.auth.getSession();if(!session?.user)return;
+  const{data}=await db.from('pkm_collection').select('*').eq('user_id',session.user.id);
+  pkmCollection={};
+  (data||[]).forEach(r=>{if(!pkmCollection[r.pkm_id])pkmCollection[r.pkm_id]={};pkmCollection[r.pkm_id][r.status]=r.id;});
+}
+function updateTodayBtns(){
+  if(!todayPkm)return;
+  const col=pkmCollection[todayPkm.id]||{};
+  ['caught','liked','wanted'].forEach(s=>{
+    const btn=document.getElementById(`pkm-btn-${s}`);
+    if(btn){btn.className='pkm-btn'+(col[s]?` ${s}`:'');}
+  });
+}
+async function togglePkmStatus(status){
+  const{data:{session}}=await db.auth.getSession();
+  if(!session?.user){alert('请先登录');return;}
+  if(!todayPkm)return;
+  await togglePkmStatusFor(todayPkm.id,todayPkm.name,status);
+  updateTodayBtns();
+  if(document.getElementById('ov-pkm').classList.contains('on'))updateDetailBtns(todayPkm.id);
+}
+async function togglePkmStatusModal(status){
+  const{data:{session}}=await db.auth.getSession();
+  if(!session?.user){alert('请先登录');return;}
+  const id=parseInt(document.getElementById('pkm-detail-num').textContent.replace('#',''));
+  const name=document.getElementById('pkm-detail-name').textContent;
+  await togglePkmStatusFor(id,name,status);
+  updateDetailBtns(id);
+  if(todayPkm&&todayPkm.id===id)updateTodayBtns();
+}
+async function togglePkmStatusFor(pkmId,pkmName,status){
+  const{data:{session}}=await db.auth.getSession();const user=session?.user;if(!user)return;
+  const col=pkmCollection[pkmId]||{};
+  if(col[status]){
+    await db.from('pkm_collection').delete().eq('id',col[status]);
+    delete col[status];
+  }else{
+    const{data}=await db.from('pkm_collection').insert({user_id:user.id,pkm_id:pkmId,pkm_name:pkmName,status}).select().single();
+    if(data){if(!pkmCollection[pkmId])pkmCollection[pkmId]={};pkmCollection[pkmId][status]=data.id;}
+  }
+}
+function updateDetailBtns(pkmId){
+  const col=pkmCollection[pkmId]||{};
+  ['caught','liked','wanted'].forEach(s=>{
+    const btn=document.getElementById(`pkm-detail-${s}`);
+    if(btn){btn.className='pkm-btn'+(col[s]?` ${s}`:'');}
+  });
+}
+
+// 宝可梦详情弹窗
+async function openPkmDetail(idOrName){
+  document.getElementById('ov-pkm').classList.add('on');
+  document.getElementById('pkm-detail-img').src='';
+  document.getElementById('pkm-detail-name').textContent='加载中…';
+  document.getElementById('pkm-detail-desc').textContent='';
+  document.getElementById('pkm-detail-stats').innerHTML='';
+  document.getElementById('pkm-detail-evo').innerHTML='';
+  try{
+    const p=await fetchPkm(idOrName);
+    const sp=await fetchPkmSpecies(p.species.url.split('/').slice(-2)[0]);
+    const cnName=getCNName(sp)||p.name;
+    const desc=getCNFlavorText(sp)||'暂无描述';
+    const img=p.sprites?.other?.['official-artwork']?.front_default||p.sprites?.front_default||'';
+    const img2=p.sprites?.front_default||img;
+    document.getElementById('pkm-detail-img').src=img2;
+    document.getElementById('pkm-detail-bg').style.backgroundImage=img?`url(${img})`:'none';
+    document.getElementById('pkm-detail-num').textContent=`#${String(p.id).padStart(3,'0')}`;
+    document.getElementById('pkm-detail-name').textContent=cnName;
+    document.getElementById('pkm-detail-types').innerHTML=p.types.map(t=>typeTag(t.type.name)).join('');
+    document.getElementById('pkm-detail-meta').textContent=`身高 ${p.height/10}m · 体重 ${p.weight/10}kg`;
+    document.getElementById('pkm-detail-desc').textContent=desc;
+    document.getElementById('pkm-detail-stats').innerHTML=p.stats.map(s=>statBar(s.stat.name,s.base_stat)).join('');
+    await loadEvoChain(sp,'pkm-detail-evo');
+    await loadPkmCollection();
+    updateDetailBtns(p.id);
+    // 存当前弹窗宝可梦
+    currentChatPkm={id:p.id,name:cnName,types:p.types.map(t=>t.type.name),species:sp};
+  }catch(e){document.getElementById('pkm-detail-name').textContent='加载失败';}
+}
+
+// 搜索
+function onPkmSearch(v){
+  clearTimeout(pkmSearchT);
+  const res=document.getElementById('pkm-search-results');
+  if(!v.trim()){res.innerHTML='';return;}
+  pkmSearchT=setTimeout(async()=>{
+    res.innerHTML='<div style="color:var(--t3);font-size:.8rem;padding:8px">搜索中…</div>';
+    try{
+      // 先尝试直接按名/ID查
+      const q=v.trim().toLowerCase();
+      // 搜索列表（限前20条模糊）
+      const r=await fetch(`${POKEAPI}/pokemon?limit=2000`);
+      const d=await r.json();
+      const matches=d.results.filter(x=>x.name.includes(q)||x.url.split('/').slice(-2)[0]===q).slice(0,16);
+      if(!matches.length){res.innerHTML='<div style="color:var(--t3);font-size:.8rem;padding:8px">未找到</div>';return;}
+      const items=await Promise.all(matches.map(async m=>{
+        const p=await fetchPkm(m.name);
+        const sp=await fetchPkmSpecies(m.name).catch(()=>null);
+        const cn=getCNName(sp)||m.name;
+        const img=p.sprites?.front_default||'';
+        return`<div class="pkm-mini" onclick="openPkmDetail(${p.id})"><img src="${img}" alt=""><div class="pkm-mini-name">${cn}</div></div>`;
+      }));
+      res.innerHTML=items.join('');
+    }catch(e){res.innerHTML='<div style="color:var(--danger);font-size:.8rem;padding:8px">搜索失败</div>';}
+  },500);
+}
+
+// 世代浏览
+async function loadGen(gen,el){
+  document.querySelectorAll('.pkm-gen-tab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  const grid=document.getElementById('pkm-gen-grid');
+  grid.innerHTML='<div class="pkm-empty">加载中…</div>';
+  if(genCache[gen]){grid.innerHTML=genCache[gen];return;}
+  const[start,end]=GEN_RANGE[gen];
+  try{
+    const ids=Array.from({length:end-start+1},(_,i)=>start+i);
+    // 批量获取（取前50条先显示）
+    const chunk=ids.slice(0,50);
+    const items=await Promise.all(chunk.map(async id=>{
+      try{
+        const p=await fetchPkm(id);
+        const sp=await fetchPkmSpecies(id).catch(()=>null);
+        const cn=getCNName(sp)||p.name;
+        const img=p.sprites?.front_default||'';
+        const col=pkmCollection[p.id]||{};
+        const mark=col.caught?'✓':col.liked?'♥':col.wanted?'★':'';
+        return`<div class="pkm-mini" onclick="openPkmDetail(${p.id})" style="position:relative">${mark?`<div style="position:absolute;top:3px;right:3px;font-size:.6rem;color:var(--acc2)">${mark}</div>`:''}<img src="${img}" alt=""><div class="pkm-mini-name">${cn}</div></div>`;
+      }catch{return'';}
+    }));
+    genCache[gen]=items.join('');
+    grid.innerHTML=genCache[gen];
+  }catch(e){grid.innerHTML='<div class="pkm-empty">加载失败</div>';}
+}
+
+// 系列追踪
+function renderSeries(){
+  const grid=document.getElementById('pkm-series-grid');
+  grid.innerHTML=PKM_SERIES.map(s=>{
+    const st=pkmSeriesData[s.id]||'none';
+    const cls=st==='cleared'?' cleared':st==='played'?' played':'';
+    const stTxt=st==='cleared'?'✓ 已通关':st==='played'?'▶ 游玩中':'';
+    return`<div class="pkm-series-card${cls}" onclick="cycleSeries('${s.id}',this)">
+      <div class="pkm-series-name">${s.name}</div>
+      <div class="pkm-series-year">${s.year}</div>
+      <div class="pkm-series-status" style="color:${st==='cleared'?'var(--acc)':st==='played'?'var(--acc2)':'var(--t3)'}">${stTxt||'— 未游玩'}</div>
+    </div>`;
+  }).join('');
+}
+function cycleSeries(id,el){
+  const cur=pkmSeriesData[id]||'none';
+  const next=cur==='none'?'played':cur==='played'?'cleared':'none';
+  pkmSeriesData[id]=next;
+  localStorage.setItem('pkm_series',JSON.stringify(pkmSeriesData));
+  renderSeries();
+}
+function loadSeriesData(){
+  try{pkmSeriesData=JSON.parse(localStorage.getItem('pkm_series')||'{}');}catch{pkmSeriesData={};}
+}
+
+// AI 聊天
+function openPkmChat(){
+  if(!todayPkm)return;
+  const sp=todayPkm.species;
+  currentChatPkm={id:todayPkm.id,name:getCNName(sp)||todayPkm.name,types:todayPkm.types.map(t=>t.type.name),species:sp};
+  pkmChatFromModal=false;
+  openPkmChatModal();
+}
+function openPkmChatFromModal(){
+  pkmChatFromModal=true;
+  openPkmChatModal();
+}
+function openPkmChatModal(){
+  const g=currentChatPkm;if(!g)return;
+  pkmChatHistory=[];
+  document.getElementById('pkm-chat-title').textContent='和 AI 聊聊 '+g.name;
+  document.getElementById('pkm-chat-subtitle').textContent='宝可梦情报员已就绪';
+  document.getElementById('pkm-ai-msgs').innerHTML='';
+  document.getElementById('pkm-ai-quick').innerHTML='';
+  document.getElementById('pkm-series-inp').value='';
+  document.getElementById('pkm-sum-btn').textContent='📋 生成游戏日志';
+  document.getElementById('pkm-sum-btn').disabled=false;
+  document.getElementById('ov-pkm-chat').classList.add('on');
+  // 初始化快捷问题
+  const qs=['这只宝可梦的对战技能推荐？','它的进化条件是什么？','在哪部作品里登场印象最深？','有什么有趣的冷知识？','怎么培育出高个体值？'];
+  document.getElementById('pkm-ai-quick').innerHTML=qs.map(q=>`<button class="qq" onclick="sendPkmQuick('${q.replace(/'/g,"&#39;")}')">${q}</button>`).join('');
+  // 开场白
+  const types=g.types.map(t=>TYPE_ZH[t]||t).join('/');
+  const greet='《'+g.name+'》的档案已加载。\n\n属性：'+types+'，编号 #'+String(g.id).padStart(3,'0')+'。\n\n关于对战配置、进化条件、游戏出场、冷知识……随便问，我在。';
+  addPkmBubble(greet,'ai',false);
+}
+function sendPkmQuick(q){document.getElementById('pkm-ai-inp').value=q;sendPkmAIMsg();}
+function addPkmBubble(text,role,animate){
+  const msgs=document.getElementById('pkm-ai-msgs');
+  const div=document.createElement('div');
+  div.className='cmsg '+(role==='ai'?'ai-msg':'user-msg');
+  div.innerHTML='<div class="cmsg-av '+(role==='ai'?'ai-av':'usr-av')+'">'+(role==='ai'?'AI':'我')+'</div><div class="cmsg-bbl"></div>';
+  msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
+  const bbl=div.querySelector('.cmsg-bbl');
+  if(animate&&role==='ai'){let i=0;const spd=text.length>200?8:18;const t=()=>{if(i<text.length){bbl.textContent+=text[i++];msgs.scrollTop=msgs.scrollHeight;setTimeout(t,1000/spd);}};t();}
+  else{bbl.textContent=text;msgs.scrollTop=msgs.scrollHeight;}
+}
+async function sendPkmAIMsg(){
+  const inp=document.getElementById('pkm-ai-inp');const v=inp.value.trim();if(!v)return;
+  inp.value='';addPkmBubble(v,'user',false);pkmChatHistory.push({role:'user',parts:[{text:v}]});
+  const snd=document.getElementById('pkm-ai-snd');snd.disabled=true;
+  const td=document.createElement('div');td.className='cmsg ai-msg';td.id='pkm-typing';
+  td.innerHTML='<div class="cmsg-av ai-av">AI</div><div class="cmsg-bbl"><div class="typing-dots"><span></span><span></span><span></span></div></div>';
+  const msgs=document.getElementById('pkm-ai-msgs');msgs.appendChild(td);msgs.scrollTop=msgs.scrollHeight;
+  const g=currentChatPkm;
+  const series=document.getElementById('pkm-series-inp').value.trim();
+  const reinject=pkmChatHistory.length>0&&pkmChatHistory.length%8===0;
+  const sys=`你是一位精通宝可梦世界的博士级情报员，专精于${g.name}（#${String(g.id).padStart(3,'0')}，${g.types.map(t=>TYPE_ZH[t]||t).join('/')}属性）。
+
+你对这只宝可梦了如指掌：它的进化方式、对战技能、个性搭配、在各作品中的出场方式、相关剧情和冷知识。
+
+${series?`玩家当前游玩的系列：${series}，请优先结合该作品中的相关内容来回答。`:''}
+
+【重要例外——现实问题直接回答】
+价格、发售日期、游戏平台等现实问题必须直接回答，不能用宝可梦世界观绕圈子。
+
+${reinject?'【提醒】保持宝可梦博士的专业气质。':''}
+回答要求：中文，200字以内，纯文字不用Markdown符号。`;
+  try{
+    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:pkmChatHistory,generationConfig:{maxOutputTokens:500,temperature:1.0}})});
+    if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err?.error?.message||'HTTP '+res.status);}
+    const data=await res.json();
+    const reply=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'（AI 暂时离线）';
+    const t=document.getElementById('pkm-typing');if(t)t.remove();
+    addPkmBubble(reply,'ai',true);
+    pkmChatHistory.push({role:'model',parts:[{text:reply}]});
+    if(pkmChatHistory.length>30)pkmChatHistory=pkmChatHistory.slice(-30);
+  }catch(e){const t=document.getElementById('pkm-typing');if(t)t.remove();addPkmBubble('连接失败：'+e.message,'ai',false);}
+  snd.disabled=false;inp.focus();
+}
+
+// 生成游戏日志
+async function generatePkmLog(){
+  if(pkmChatHistory.length<2){alert('至少聊几句再生成日志吧～');return;}
+  const btn=document.getElementById('pkm-sum-btn');
+  btn.disabled=true;btn.textContent='生成中…';
+  const g=currentChatPkm;
+  const series=document.getElementById('pkm-series-inp').value.trim();
+  const histText=pkmChatHistory.map(m=>(m.role==='user'?'训练师':'博士')+':'+m.parts[0].text).join('\n');
+  const prompt='以下是关于宝可梦'+g.name+'的对话记录：\n\n'+histText+'\n\n请将这段对话中有价值的内容写成一则100-150字的训练师日志。用第一人称，像宝可梦训练师在记录探索日记一样，融入宝可梦世界的氛围。提炼关键信息（对战技巧、进化情报、冷知识等），纯文字不用Markdown。';
+  try{
+    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:300,temperature:0.8}})});
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    const summary=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    if(!summary)throw new Error('AI 返回为空');
+    const{data:{session}}=await db.auth.getSession();const user=session?.user;
+    if(!user){alert('请先登录才能保存日志');btn.disabled=false;btn.textContent='📋 生成游戏日志';return;}
+    const{error}=await db.from('pkm_logs').insert({user_id:user.id,pkm_id:g.id,pkm_name:g.name,summary,game_series:series||null});
+    if(error)throw new Error(error.message);
+    btn.textContent='✓ 日志已保存';
+    setTimeout(()=>{btn.disabled=false;btn.textContent='📋 生成游戏日志';},2000);
+    loadPkmLogs();
+  }catch(e){alert('生成失败：'+e.message);btn.disabled=false;btn.textContent='📋 生成游戏日志';}
+}
+
+// 加载日志
+async function loadPkmLogs(){
+  const{data:{session}}=await db.auth.getSession();if(!session?.user)return;
+  const{data}=await db.from('pkm_logs').select('*').eq('user_id',session.user.id).order('created_at',{ascending:false}).limit(30);
+  const list=document.getElementById('pkm-log-list');
+  if(!data||!data.length){list.innerHTML='<div class="pkm-empty">还没有日志，和 AI 聊完后可以生成</div>';document.getElementById('pkm-log-count').textContent='';return;}
+  document.getElementById('pkm-log-count').textContent=data.length+' 条';
+  list.innerHTML=data.map(r=>`<div class="pkm-log-item">
+    <div class="pkm-log-item-hdr">
+      <span class="pkm-log-name">📖 ${r.pkm_name}</span>
+      <span class="pkm-log-date">${new Date(r.created_at).toLocaleDateString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}</span>
+    </div>
+    <div class="pkm-log-text">${esc(r.summary)}</div>
+    ${r.game_series?'<div class="pkm-log-series">'+esc(r.game_series)+'</div>':''}
+  </div>`).join('');
+}
+
+// 初始化宝可梦专栏
+async function initPkm(){
+  loadSeriesData();
+  renderSeries();
+  await loadTodayPkm();
+  await loadPkmCollection();
+  updateTodayBtns();
+  loadGen(1,document.querySelector('.pkm-gen-tab'));
+  await loadPkmLogs();
+}
 
 
 init();
