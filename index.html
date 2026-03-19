@@ -369,7 +369,7 @@
       <button class="d-ai-btn" onclick="toggleAIChat()"><span>⬡</span><span id="d-ai-btn-txt">和 AI 聊聊这款游戏</span></button>
       <div id="sum-box" style="display:none" class="sum-box">
         <div class="sum-latest">
-          <div class="sum-latest-hdr"><span class="sum-lbl">⬡ 聊天笔记</span><span class="sum-date" id="sum-latest-date"></span></div>
+          <div class="sum-latest-hdr"><span class="sum-lbl">⬡ 情报存档</span><span class="sum-date" id="sum-latest-date"></span></div>
           <div class="sum-text" id="sum-latest-text"></div>
         </div>
         <button class="sum-old-toggle" id="sum-old-toggle" onclick="toggleOldSums()" style="display:none"></button>
@@ -387,7 +387,7 @@
         <input class="chat-inp" id="chat-inp" placeholder="问 AI 任何关于这款游戏的问题…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAIMsg();}">
         <button class="chat-snd" id="chat-snd" onclick="sendAIMsg()">发送</button>
       </div>
-      <div class="chat-sum-bar"><button class="chat-sum-btn" id="chat-sum-btn" onclick="generateSummary()">📝 生成本次总结</button></div>
+      <div class="chat-sum-bar"><button class="chat-sum-btn" id="chat-sum-btn" onclick="generateSummary()">⬡ 封存本次情报</button></div>
     </div>
     <div class="mfoot">
       <button class="btn btn-d" onclick="delGame()">删除</button>
@@ -973,8 +973,8 @@ async function generateSummary(){
   const btn=document.getElementById('chat-sum-btn');
   btn.disabled=true;btn.textContent='生成中…';
   const g=aiCurrentGame;
-  const historyText=aiChatHistory.map(m=>`${m.role==='user'?'玩家':'AI'}：${m.parts[0].text}`).join('\n');
-  const prompt=`以下是玩家和AI就游戏《${g.name}》的一段对话记录：\n\n${historyText}\n\n请用100-150字为这段对话生成一条简洁的笔记总结，记录对话中涉及的关键信息、攻略要点或有价值的内容。用第三人称或陈述句，不要用"玩家问了"这种描述方式，直接写结论和要点。纯文字，不用Markdown。`;
+  const historyText=aiChatHistory.map(m=>`${m.role==='user'?'冒险者':'向导'}：${m.parts[0].text}`).join('\n');
+  const prompt=`以下是一段关于《${g.name}》的对话记录：\n\n${historyText}\n\n请将这段对话的核心内容写成一则100-150字的"游戏手记"。\n\n要求：\n- 完全用《${g.name}》的世界观气质来写，感觉像是在这个游戏世界里写下的笔记或日志，而不是现实中的攻略总结\n- 融入游戏的氛围和用语，比如《Final Fantasy》可以写得史诗感十足，《只狼》可以写得简练克制，《动物森友会》可以写得温柔日常\n- 提炼对话中真正有价值的信息（攻略要点、剧情线索、隐藏内容等），但用游戏内的视角来表达\n- 不要出现"玩家""AI""对话"这些词，就像是一个真实存在于游戏世界中的人写下的记录\n- 纯文字，不用Markdown符号`;
   try{
     const res=await fetch(`${SB_URL}/functions/v1/gemini-proxy`,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:300,temperature:0.7}})});
     if(!res.ok)throw new Error(`HTTP ${res.status}`);
@@ -982,17 +982,17 @@ async function generateSummary(){
     const summary=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
     if(!summary)throw new Error('AI 返回为空');
     const{data:{session}}=await db.auth.getSession();const user=session?.user;
-    if(!user){alert('请先登录才能保存总结');btn.disabled=false;btn.textContent='📝 生成本次总结';return;}
+    if(!user){alert('请先登录才能保存总结');btn.disabled=false;btn.textContent='⬡ 封存本次情报';return;}
     const gameId=String(editId);
     const{error}=await db.from('chat_summaries').insert({user_id:user.id,game_id:gameId,summary});
     if(error)throw new Error(error.message);
     currentSummaries.unshift({summary,created_at:new Date().toISOString(),game_id:gameId,user_id:user.id});
     renderSummaries();
-    btn.textContent='✓ 已保存';
-    setTimeout(()=>{btn.disabled=false;btn.textContent='📝 生成本次总结';},2000);
+    btn.textContent='✓ 情报已封存';
+    setTimeout(()=>{btn.disabled=false;btn.textContent='⬡ 封存本次情报';},2000);
   }catch(e){
     alert('生成失败：'+e.message);
-    btn.disabled=false;btn.textContent='📝 生成本次总结';
+    btn.disabled=false;btn.textContent='⬡ 封存本次情报';
   }
 }
 
