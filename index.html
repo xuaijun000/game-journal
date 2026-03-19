@@ -1531,234 +1531,109 @@ ${reinject?'【提醒】保持《'+g.name+'》的世界观气质说话。':''}
 }
 
 
-/* ===== 像素宝可梦背景 ===== */
+/* ===== 宝可梦背景（PokéAPI 官方像素图） ===== */
 (function(){
-  const canvas=document.getElementById('pkm-canvas');
-  const ctx=canvas.getContext('2d');
+  const canvas = document.getElementById('pkm-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H;
 
-  // 像素图谱：每个宝可梦用 12x12 点阵定义，1=主色 2=深色 3=高光 0=透明
-  const SPRITES={
-    pikaChu:{
-      w:12,h:12,
-      c1:'#f6c833',c2:'#b8860b',c3:'#fff5cc',
-      px:[
-        0,0,1,1,0,0,0,1,1,0,0,0,
-        0,1,1,1,1,0,1,1,1,1,0,0,
-        0,1,2,1,1,1,1,1,2,1,0,0,
-        0,1,1,3,1,1,1,3,1,1,0,0,
-        0,0,1,1,1,1,1,1,1,0,0,0,
-        0,0,1,1,1,1,1,1,0,0,0,0,
-        2,2,0,1,1,1,1,0,2,2,0,0,
-        0,0,0,1,1,1,1,0,0,0,0,0,
-        0,0,1,1,0,0,1,1,0,0,0,0,
-        0,1,1,0,0,0,0,1,1,0,0,0,
-        0,1,1,0,0,0,0,1,1,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,
-      ]
-    },
-    bulba:{
-      w:12,h:12,
-      c1:'#78c850',c2:'#2e7d32',c3:'#a5d6a7',
-      px:[
-        0,0,0,2,2,2,2,0,0,0,0,0,
-        0,0,2,1,1,1,1,2,0,0,0,0,
-        0,2,1,1,3,1,1,1,2,0,0,0,
-        0,2,1,1,1,1,1,1,2,0,0,0,
-        2,1,1,2,1,1,2,1,1,2,0,0,
-        2,1,1,1,1,1,1,1,1,2,0,0,
-        2,1,1,1,1,1,1,1,1,2,0,0,
-        0,2,1,1,1,1,1,1,2,0,0,0,
-        0,0,2,2,1,1,2,2,0,0,0,0,
-        0,0,0,2,1,1,2,0,0,0,0,0,
-        0,0,2,1,1,1,1,2,0,0,0,0,
-        0,0,2,2,2,2,2,2,0,0,0,0,
-      ]
-    },
-    psyduck:{
-      w:12,h:12,
-      c1:'#f6d860',c2:'#c8a400',c3:'#fff9c4',
-      px:[
-        0,0,1,1,1,1,1,1,0,0,0,0,
-        0,1,1,1,1,1,1,1,1,0,0,0,
-        1,1,2,1,1,1,1,2,1,1,0,0,
-        1,1,1,3,1,1,3,1,1,1,0,0,
-        1,1,1,1,1,1,1,1,1,1,0,0,
-        0,1,2,1,1,1,1,2,1,0,0,0,
-        0,1,1,2,2,2,2,1,1,0,0,0,
-        0,0,1,1,1,1,1,1,0,0,0,0,
-        0,0,1,2,1,1,2,1,0,0,0,0,
-        0,0,2,1,1,1,1,2,0,0,0,0,
-        0,0,2,2,0,0,2,2,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,
-      ]
-    },
-    eevee:{
-      w:12,h:12,
-      c1:'#c8914a',c2:'#7b4f20',c3:'#f5deb3',
-      px:[
-        0,0,3,3,3,3,3,3,0,0,0,0,
-        0,3,3,3,3,3,3,3,3,0,0,0,
-        3,3,2,3,3,3,3,2,3,3,0,0,
-        3,3,3,1,3,3,1,3,3,3,0,0,
-        3,3,3,3,3,3,3,3,3,3,0,0,
-        3,1,3,3,3,3,3,3,1,3,0,0,
-        0,3,1,3,2,2,3,1,3,0,0,0,
-        0,3,3,1,1,1,1,3,3,0,0,0,
-        0,0,1,3,3,3,3,1,0,0,0,0,
-        0,2,2,2,3,3,2,2,2,0,0,0,
-        0,2,0,0,0,0,0,0,2,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,
-      ]
-    },
-    gengar:{
-      w:12,h:12,
-      c1:'#7c5cbf',c2:'#4a2d8a',c3:'#b39ddb',
-      px:[
-        0,0,1,1,0,0,0,1,1,0,0,0,
-        0,1,1,1,1,1,1,1,1,1,0,0,
-        1,1,3,1,1,1,1,1,3,1,1,0,
-        1,1,1,1,1,1,1,1,1,1,1,0,
-        1,1,2,1,1,1,1,1,2,1,1,0,
-        1,1,1,2,2,2,2,2,1,1,1,0,
-        1,1,1,1,1,1,1,1,1,1,1,0,
-        1,1,1,1,1,1,1,1,1,1,1,0,
-        0,1,1,1,1,1,1,1,1,1,0,0,
-        0,1,0,1,1,1,1,1,0,1,0,0,
-        0,0,0,1,0,0,0,1,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,
-      ]
-    },
-    snorlax:{
-      w:12,h:12,
-      c1:'#546e7a',c2:'#263238',c3:'#eceff1',
-      px:[
-        0,0,1,1,1,1,1,1,0,0,0,0,
-        0,1,1,1,1,1,1,1,1,0,0,0,
-        1,1,2,1,1,1,1,2,1,1,0,0,
-        1,1,1,3,1,1,3,1,1,1,0,0,
-        1,1,1,1,1,1,1,1,1,1,0,0,
-        3,3,1,1,1,1,1,1,3,3,0,0,
-        1,1,3,3,1,1,3,3,1,1,0,0,
-        1,1,1,1,3,3,1,1,1,1,0,0,
-        1,1,1,1,1,1,1,1,1,1,0,0,
-        0,1,2,1,1,1,1,2,1,0,0,0,
-        0,1,1,2,2,2,2,1,1,0,0,0,
-        0,0,1,1,1,1,1,1,0,0,0,0,
-      ]
-    },
-    jigglypuff:{
-      w:12,h:12,
-      c1:'#f48fb1',c2:'#c2185b',c3:'#fce4ec',
-      px:[
-        0,0,0,1,1,1,1,0,0,0,0,0,
-        0,0,1,1,1,1,1,1,0,0,0,0,
-        0,1,1,2,1,1,2,1,1,0,0,0,
-        0,1,1,1,3,1,3,1,1,0,0,0,
-        0,1,1,1,1,1,1,1,1,0,0,0,
-        0,0,1,1,2,2,2,1,0,0,0,0,
-        0,0,1,1,1,1,1,1,0,0,0,0,
-        0,0,0,1,1,1,1,0,0,0,0,0,
-        0,0,1,1,0,0,1,1,0,0,0,0,
-        0,0,1,0,0,0,0,1,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,
-      ]
-    },
-    mew:{
-      w:12,h:12,
-      c1:'#f8bbd0',c2:'#e91e8c',c3:'#ffffff',
-      px:[
-        0,0,0,0,1,1,0,0,0,0,0,0,
-        0,0,0,1,1,1,1,0,0,0,0,0,
-        0,0,1,1,3,1,1,1,0,0,0,0,
-        0,1,1,1,1,1,1,1,1,0,0,0,
-        0,1,1,2,1,1,2,1,1,0,0,0,
-        0,1,1,1,1,1,1,1,1,0,0,0,
-        0,0,1,1,1,2,1,1,0,0,0,0,
-        0,0,0,1,1,1,1,0,0,0,0,0,
-        0,0,0,0,1,1,2,2,0,0,0,0,
-        0,0,0,0,0,1,0,0,2,0,0,0,
-        0,0,0,0,0,1,0,0,0,2,0,0,
-        0,0,0,0,0,0,0,0,0,0,0,0,
-      ]
-    },
-  };
-
-  const SPRITE_KEYS=Object.keys(SPRITES);
-  const SCALE=3; // 每个像素点放大3倍 = 36px 宝可梦
-  const COUNT=14;
-  let sprites=[];
-  let W,H;
-
-  function resize(){
-    W=canvas.width=window.innerWidth;
-    H=canvas.height=window.innerHeight;
-  }
-  window.addEventListener('resize',resize);
+  function resize(){ W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+  window.addEventListener('resize', resize);
   resize();
 
-  function drawSprite(sp,x,y,alpha){
-    const s=SPRITES[sp.key];
-    const sz=SCALE*sp.scale;
-    ctx.save();
-    ctx.globalAlpha=alpha;
-    ctx.imageSmoothingEnabled=false;
-    // 像素感：直接逐像素画矩形
-    for(let row=0;row<s.h;row++){
-      for(let col=0;col<s.w;col++){
-        const v=s.px[row*s.w+col];
-        if(!v)continue;
-        ctx.fillStyle=v===1?s.c1:v===2?s.c2:s.c3;
-        ctx.fillRect(
-          Math.round(x+col*sz),
-          Math.round(y+row*sz),
-          sz,sz
-        );
-      }
-    }
-    ctx.restore();
-  }
+  // 随机取的宝可梦 ID 池（覆盖全九世代，各世代都有）
+  const ID_POOL = [
+    1,4,7,25,39,52,54,94,131,133,143,147,150,151,
+    152,155,158,175,179,196,197,202,212,245,249,250,251,
+    255,258,261,280,300,333,349,350,351,371,380,381,384,385,386,
+    387,390,393,403,417,427,443,448,459,468,470,471,479,480,481,482,483,484,487,491,493,
+    494,495,498,501,509,519,527,543,551,570,572,574,577,585,592,599,605,610,613,622,627,635,643,644,646,647,648,649,
+    650,653,656,661,664,669,672,674,677,679,682,684,686,688,690,692,694,696,698,700,701,702,706,708,710,712,714,
+    722,725,728,731,734,736,739,741,744,746,749,751,753,755,757,759,761,764,766,769,771,774,777,779,782,785,788,789,791,792,800,
+    810,813,816,819,821,824,827,829,831,833,837,840,843,845,848,850,852,854,856,859,862,863,864,865,866,868,870,875,877,882,888,889,890,
+    906,909,912,914,917,919,921,924,927,929,931,933,935,937,939,941,943,945,947,949,951,953,955,957,959,963,965,967,969,971,975,977,979,
+  ];
 
-  // 初始化精灵
-  for(let i=0;i<COUNT;i++){
-    const key=SPRITE_KEYS[Math.floor(Math.random()*SPRITE_KEYS.length)];
-    sprites.push({
-      key,
-      x:Math.random()*window.innerWidth,
-      y:Math.random()*window.innerHeight,
-      vx:(Math.random()-.5)*0.35,
-      vy:(Math.random()-.5)*0.35,
-      scale:0.8+Math.random()*0.8,
-      phase:Math.random()*Math.PI*2, // 漂浮相位
-      bobAmp:8+Math.random()*10,
-      bobSpeed:0.004+Math.random()*0.006,
-      alpha:0.5+Math.random()*0.4,
+  const COUNT = 16;
+  const sprites = [];
+  const imgCache = {};
+
+  // 加载宝可梦像素图
+  async function loadImg(id) {
+    if (imgCache[id]) return imgCache[id];
+    return new Promise(resolve => {
+      const img = new Image();
+      const url = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+      img.crossOrigin = 'anonymous';
+      img.onload = () => { imgCache[id] = img; resolve(img); };
+      img.onerror = () => resolve(null);
+      img.src = url;
     });
   }
 
-  let frame=0;
-  function loop(){
-    ctx.clearRect(0,0,W,H);
-    frame++;
-    for(const sp of sprites){
-      // 漂浮波动
-      sp.phase+=sp.bobSpeed;
-      const bobY=Math.sin(sp.phase)*sp.bobAmp;
-      // 缓慢位移
-      sp.x+=sp.vx;
-      sp.y+=sp.vy;
+  // 随机初始化精灵
+  function randId() { return ID_POOL[Math.floor(Math.random() * ID_POOL.length)]; }
+
+  async function initSprites() {
+    const ids = Array.from({length: COUNT}, () => randId());
+    await Promise.all(ids.map(async (id, i) => {
+      const img = await loadImg(id);
+      sprites.push({
+        id, img,
+        x: Math.random() * W,
+        y: Math.random() * H,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4,
+        scale: 1.5 + Math.random() * 2,   // 放大倍数，保持像素感
+        phase: Math.random() * Math.PI * 2,
+        bobAmp: 8 + Math.random() * 12,
+        bobSpeed: 0.003 + Math.random() * 0.005,
+        alpha: 0.3 + Math.random() * 0.35,
+        // 每只宝可梦随机定时换成另一只
+        swapTimer: 300 + Math.floor(Math.random() * 400),
+        swapCount: 0,
+      });
+    }));
+    loop();
+  }
+
+  function loop() {
+    ctx.clearRect(0, 0, W, H);
+    for (const sp of sprites) {
+      // 漂浮
+      sp.phase += sp.bobSpeed;
+      const bobY = Math.sin(sp.phase) * sp.bobAmp;
+      sp.x += sp.vx;
+      sp.y += sp.vy;
       // 边界回绕
-      const sw=SPRITES[sp.key].w*SCALE*sp.scale;
-      const sh=SPRITES[sp.key].h*SCALE*sp.scale;
-      if(sp.x>W+sw)sp.x=-sw;
-      if(sp.x<-sw)sp.x=W+sw;
-      if(sp.y>H+sh)sp.y=-sh;
-      if(sp.y<-sh)sp.y=H+sh;
-      drawSprite(sp,sp.x,sp.y+bobY,sp.alpha);
+      const sz = 96 * sp.scale / 3;
+      if (sp.x > W + sz) sp.x = -sz;
+      if (sp.x < -sz) sp.x = W + sz;
+      if (sp.y > H + sz) sp.y = -sz;
+      if (sp.y < -sz) sp.y = H + sz;
+      // 定时换宝可梦
+      sp.swapCount++;
+      if (sp.swapCount >= sp.swapTimer) {
+        sp.swapCount = 0;
+        sp.swapTimer = 300 + Math.floor(Math.random() * 400);
+        const newId = randId();
+        loadImg(newId).then(img => { sp.id = newId; sp.img = img; });
+      }
+      // 绘制
+      if (sp.img) {
+        const drawW = sp.img.width * sp.scale;
+        const drawH = sp.img.height * sp.scale;
+        ctx.save();
+        ctx.globalAlpha = sp.alpha;
+        ctx.imageSmoothingEnabled = false; // 保持像素感
+        ctx.drawImage(sp.img, Math.round(sp.x), Math.round(sp.y + bobY), drawW, drawH);
+        ctx.restore();
+      }
     }
     requestAnimationFrame(loop);
   }
-  loop();
+
+  initSprites();
 })();
 
 
