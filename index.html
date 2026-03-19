@@ -537,16 +537,16 @@ async function loadDisc(){
     const pf=discPF!=='all'?`& platforms = (${discPF})`:'';
     const queries={
       rating:`fields name,cover.url,total_rating,total_rating_count,platforms.name,first_release_date,involved_companies.company.name,involved_companies.developer;
-where total_rating_count > 200 & total_rating != null & category = 0 ${pf};
+where total_rating_count > 200 & total_rating != null ${pf};
 sort total_rating desc; limit 30;`,
       recent:`fields name,cover.url,total_rating,total_rating_count,platforms.name,first_release_date,involved_companies.company.name,involved_companies.developer;
-where first_release_date > ${now-365*24*3600} & first_release_date < ${now} & total_rating_count > 20 & category = 0 ${pf};
+where first_release_date > ${now-365*24*3600} & first_release_date < ${now} & total_rating_count > 20 ${pf};
 sort first_release_date desc; limit 30;`,
       hype:`fields name,cover.url,hypes,platforms.name,first_release_date,involved_companies.company.name,involved_companies.developer;
-where first_release_date > ${now} & hypes != null & category = 0 ${pf};
+where first_release_date > ${now} & hypes != null ${pf};
 sort hypes desc; limit 30;`,
       popular:`fields name,cover.url,total_rating,total_rating_count,platforms.name,first_release_date,involved_companies.company.name,involved_companies.developer;
-where total_rating_count > 50 & category = 0 ${pf};
+where total_rating_count > 50 ${pf};
 sort total_rating_count desc; limit 30;`
     };
     const res=await fetch(IGDB_PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({igdbRaw:queries[discMode]})});
