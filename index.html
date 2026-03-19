@@ -258,9 +258,12 @@
     .chat-sum-btn:hover{background:rgba(64,232,196,.15)}
     .chat-sum-btn:disabled{opacity:.4;cursor:not-allowed}
     @media(max-width:640px){.stats{grid-template-columns:repeat(3,1fr)}.cg{grid-template-columns:1fr}.row2{grid-template-columns:1fr}.disc-header{flex-direction:column;align-items:flex-start}.disc-tabs{flex-wrap:wrap}}
+    #pkm-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:.18}
+    main,header{position:relative;z-index:1}
   </style>
 </head>
 <body>
+<canvas id="pkm-canvas"></canvas>
 <header>
   <div class="logo">🐟冬冬<em>鱼鱼</em>🎮</div>
   <nav>
@@ -1199,6 +1202,237 @@ ${reinject?'【提醒】保持《'+g.name+'》的世界观气质说话。':''}
   }catch(e){const t=document.getElementById('disc-typing');if(t)t.remove();addDiscBubble(`连接失败：${e.message}`,'ai',false);}
   snd.disabled=false;inp.focus();
 }
+
+
+/* ===== 像素宝可梦背景 ===== */
+(function(){
+  const canvas=document.getElementById('pkm-canvas');
+  const ctx=canvas.getContext('2d');
+
+  // 像素图谱：每个宝可梦用 12x12 点阵定义，1=主色 2=深色 3=高光 0=透明
+  const SPRITES={
+    pikaChu:{
+      w:12,h:12,
+      c1:'#f6c833',c2:'#b8860b',c3:'#fff5cc',
+      px:[
+        0,0,1,1,0,0,0,1,1,0,0,0,
+        0,1,1,1,1,0,1,1,1,1,0,0,
+        0,1,2,1,1,1,1,1,2,1,0,0,
+        0,1,1,3,1,1,1,3,1,1,0,0,
+        0,0,1,1,1,1,1,1,1,0,0,0,
+        0,0,1,1,1,1,1,1,0,0,0,0,
+        2,2,0,1,1,1,1,0,2,2,0,0,
+        0,0,0,1,1,1,1,0,0,0,0,0,
+        0,0,1,1,0,0,1,1,0,0,0,0,
+        0,1,1,0,0,0,0,1,1,0,0,0,
+        0,1,1,0,0,0,0,1,1,0,0,0,
+        0,0,0,0,0,0,0,0,0,0,0,0,
+      ]
+    },
+    bulba:{
+      w:12,h:12,
+      c1:'#78c850',c2:'#2e7d32',c3:'#a5d6a7',
+      px:[
+        0,0,0,2,2,2,2,0,0,0,0,0,
+        0,0,2,1,1,1,1,2,0,0,0,0,
+        0,2,1,1,3,1,1,1,2,0,0,0,
+        0,2,1,1,1,1,1,1,2,0,0,0,
+        2,1,1,2,1,1,2,1,1,2,0,0,
+        2,1,1,1,1,1,1,1,1,2,0,0,
+        2,1,1,1,1,1,1,1,1,2,0,0,
+        0,2,1,1,1,1,1,1,2,0,0,0,
+        0,0,2,2,1,1,2,2,0,0,0,0,
+        0,0,0,2,1,1,2,0,0,0,0,0,
+        0,0,2,1,1,1,1,2,0,0,0,0,
+        0,0,2,2,2,2,2,2,0,0,0,0,
+      ]
+    },
+    psyduck:{
+      w:12,h:12,
+      c1:'#f6d860',c2:'#c8a400',c3:'#fff9c4',
+      px:[
+        0,0,1,1,1,1,1,1,0,0,0,0,
+        0,1,1,1,1,1,1,1,1,0,0,0,
+        1,1,2,1,1,1,1,2,1,1,0,0,
+        1,1,1,3,1,1,3,1,1,1,0,0,
+        1,1,1,1,1,1,1,1,1,1,0,0,
+        0,1,2,1,1,1,1,2,1,0,0,0,
+        0,1,1,2,2,2,2,1,1,0,0,0,
+        0,0,1,1,1,1,1,1,0,0,0,0,
+        0,0,1,2,1,1,2,1,0,0,0,0,
+        0,0,2,1,1,1,1,2,0,0,0,0,
+        0,0,2,2,0,0,2,2,0,0,0,0,
+        0,0,0,0,0,0,0,0,0,0,0,0,
+      ]
+    },
+    eevee:{
+      w:12,h:12,
+      c1:'#c8914a',c2:'#7b4f20',c3:'#f5deb3',
+      px:[
+        0,0,3,3,3,3,3,3,0,0,0,0,
+        0,3,3,3,3,3,3,3,3,0,0,0,
+        3,3,2,3,3,3,3,2,3,3,0,0,
+        3,3,3,1,3,3,1,3,3,3,0,0,
+        3,3,3,3,3,3,3,3,3,3,0,0,
+        3,1,3,3,3,3,3,3,1,3,0,0,
+        0,3,1,3,2,2,3,1,3,0,0,0,
+        0,3,3,1,1,1,1,3,3,0,0,0,
+        0,0,1,3,3,3,3,1,0,0,0,0,
+        0,2,2,2,3,3,2,2,2,0,0,0,
+        0,2,0,0,0,0,0,0,2,0,0,0,
+        0,0,0,0,0,0,0,0,0,0,0,0,
+      ]
+    },
+    gengar:{
+      w:12,h:12,
+      c1:'#7c5cbf',c2:'#4a2d8a',c3:'#b39ddb',
+      px:[
+        0,0,1,1,0,0,0,1,1,0,0,0,
+        0,1,1,1,1,1,1,1,1,1,0,0,
+        1,1,3,1,1,1,1,1,3,1,1,0,
+        1,1,1,1,1,1,1,1,1,1,1,0,
+        1,1,2,1,1,1,1,1,2,1,1,0,
+        1,1,1,2,2,2,2,2,1,1,1,0,
+        1,1,1,1,1,1,1,1,1,1,1,0,
+        1,1,1,1,1,1,1,1,1,1,1,0,
+        0,1,1,1,1,1,1,1,1,1,0,0,
+        0,1,0,1,1,1,1,1,0,1,0,0,
+        0,0,0,1,0,0,0,1,0,0,0,0,
+        0,0,0,0,0,0,0,0,0,0,0,0,
+      ]
+    },
+    snorlax:{
+      w:12,h:12,
+      c1:'#546e7a',c2:'#263238',c3:'#eceff1',
+      px:[
+        0,0,1,1,1,1,1,1,0,0,0,0,
+        0,1,1,1,1,1,1,1,1,0,0,0,
+        1,1,2,1,1,1,1,2,1,1,0,0,
+        1,1,1,3,1,1,3,1,1,1,0,0,
+        1,1,1,1,1,1,1,1,1,1,0,0,
+        3,3,1,1,1,1,1,1,3,3,0,0,
+        1,1,3,3,1,1,3,3,1,1,0,0,
+        1,1,1,1,3,3,1,1,1,1,0,0,
+        1,1,1,1,1,1,1,1,1,1,0,0,
+        0,1,2,1,1,1,1,2,1,0,0,0,
+        0,1,1,2,2,2,2,1,1,0,0,0,
+        0,0,1,1,1,1,1,1,0,0,0,0,
+      ]
+    },
+    jigglypuff:{
+      w:12,h:12,
+      c1:'#f48fb1',c2:'#c2185b',c3:'#fce4ec',
+      px:[
+        0,0,0,1,1,1,1,0,0,0,0,0,
+        0,0,1,1,1,1,1,1,0,0,0,0,
+        0,1,1,2,1,1,2,1,1,0,0,0,
+        0,1,1,1,3,1,3,1,1,0,0,0,
+        0,1,1,1,1,1,1,1,1,0,0,0,
+        0,0,1,1,2,2,2,1,0,0,0,0,
+        0,0,1,1,1,1,1,1,0,0,0,0,
+        0,0,0,1,1,1,1,0,0,0,0,0,
+        0,0,1,1,0,0,1,1,0,0,0,0,
+        0,0,1,0,0,0,0,1,0,0,0,0,
+        0,0,0,0,0,0,0,0,0,0,0,0,
+        0,0,0,0,0,0,0,0,0,0,0,0,
+      ]
+    },
+    mew:{
+      w:12,h:12,
+      c1:'#f8bbd0',c2:'#e91e8c',c3:'#ffffff',
+      px:[
+        0,0,0,0,1,1,0,0,0,0,0,0,
+        0,0,0,1,1,1,1,0,0,0,0,0,
+        0,0,1,1,3,1,1,1,0,0,0,0,
+        0,1,1,1,1,1,1,1,1,0,0,0,
+        0,1,1,2,1,1,2,1,1,0,0,0,
+        0,1,1,1,1,1,1,1,1,0,0,0,
+        0,0,1,1,1,2,1,1,0,0,0,0,
+        0,0,0,1,1,1,1,0,0,0,0,0,
+        0,0,0,0,1,1,2,2,0,0,0,0,
+        0,0,0,0,0,1,0,0,2,0,0,0,
+        0,0,0,0,0,1,0,0,0,2,0,0,
+        0,0,0,0,0,0,0,0,0,0,0,0,
+      ]
+    },
+  };
+
+  const SPRITE_KEYS=Object.keys(SPRITES);
+  const SCALE=3; // 每个像素点放大3倍 = 36px 宝可梦
+  const COUNT=14;
+  let sprites=[];
+  let W,H;
+
+  function resize(){
+    W=canvas.width=window.innerWidth;
+    H=canvas.height=window.innerHeight;
+  }
+  window.addEventListener('resize',resize);
+  resize();
+
+  function drawSprite(sp,x,y,alpha){
+    const s=SPRITES[sp.key];
+    const sz=SCALE*sp.scale;
+    ctx.save();
+    ctx.globalAlpha=alpha;
+    ctx.imageSmoothingEnabled=false;
+    // 像素感：直接逐像素画矩形
+    for(let row=0;row<s.h;row++){
+      for(let col=0;col<s.w;col++){
+        const v=s.px[row*s.w+col];
+        if(!v)continue;
+        ctx.fillStyle=v===1?s.c1:v===2?s.c2:s.c3;
+        ctx.fillRect(
+          Math.round(x+col*sz),
+          Math.round(y+row*sz),
+          sz,sz
+        );
+      }
+    }
+    ctx.restore();
+  }
+
+  // 初始化精灵
+  for(let i=0;i<COUNT;i++){
+    const key=SPRITE_KEYS[Math.floor(Math.random()*SPRITE_KEYS.length)];
+    sprites.push({
+      key,
+      x:Math.random()*window.innerWidth,
+      y:Math.random()*window.innerHeight,
+      vx:(Math.random()-.5)*0.35,
+      vy:(Math.random()-.5)*0.35,
+      scale:0.8+Math.random()*0.8,
+      phase:Math.random()*Math.PI*2, // 漂浮相位
+      bobAmp:8+Math.random()*10,
+      bobSpeed:0.004+Math.random()*0.006,
+      alpha:0.5+Math.random()*0.4,
+    });
+  }
+
+  let frame=0;
+  function loop(){
+    ctx.clearRect(0,0,W,H);
+    frame++;
+    for(const sp of sprites){
+      // 漂浮波动
+      sp.phase+=sp.bobSpeed;
+      const bobY=Math.sin(sp.phase)*sp.bobAmp;
+      // 缓慢位移
+      sp.x+=sp.vx;
+      sp.y+=sp.vy;
+      // 边界回绕
+      const sw=SPRITES[sp.key].w*SCALE*sp.scale;
+      const sh=SPRITES[sp.key].h*SCALE*sp.scale;
+      if(sp.x>W+sw)sp.x=-sw;
+      if(sp.x<-sw)sp.x=W+sw;
+      if(sp.y>H+sh)sp.y=-sh;
+      if(sp.y<-sh)sp.y=H+sh;
+      drawSprite(sp,sp.x,sp.y+bobY,sp.alpha);
+    }
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
 
 
 init();
