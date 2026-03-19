@@ -505,23 +505,20 @@ async function loadDisc(){
   try{
     const now=Math.floor(Date.now()/1000);
     const pf=discPF!=='all'?`& platforms = (${discPF})`:'';
-    const queries = {
-  rating: `fields name,cover.url,total_rating,total_rating_count,platforms.name,first_release_date,involved_companies.company.name,involved_companies.developer;
-where total_rating_count > 200 & total_rating != null ${pf};
+    const queries={
+      rating:`fields name,cover.url,total_rating,total_rating_count,platforms.name,first_release_date,involved_companies.company.name,involved_companies.developer;
+where total_rating_count > 200 & total_rating != null & category = 0 ${pf};
 sort total_rating desc; limit 30;`,
-
-  recent: `fields name,cover.url,total_rating,total_rating_count,platforms.name,first_release_date,involved_companies.company.name,involved_companies.developer;
-where first_release_date > ${now - 365 * 24 * 3600} & first_release_date < ${now} & total_rating_count > 20 ${pf};
+      recent:`fields name,cover.url,total_rating,total_rating_count,platforms.name,first_release_date,involved_companies.company.name,involved_companies.developer;
+where first_release_date > ${now-365*24*3600} & first_release_date < ${now} & total_rating_count > 20 & category = 0 ${pf};
 sort first_release_date desc; limit 30;`,
-
-  hype: `fields name,cover.url,hypes,platforms.name,first_release_date,involved_companies.company.name,involved_companies.developer;
-where first_release_date > ${now} & hypes != null ${pf};
+      hype:`fields name,cover.url,hypes,platforms.name,first_release_date,involved_companies.company.name,involved_companies.developer;
+where first_release_date > ${now} & hypes != null & category = 0 ${pf};
 sort hypes desc; limit 30;`,
-
-  popular: `fields name,cover.url,total_rating,total_rating_count,platforms.name,first_release_date,involved_companies.company.name,involved_companies.developer;
-where total_rating_count > 50 ${pf};
+      popular:`fields name,cover.url,total_rating,total_rating_count,platforms.name,first_release_date,involved_companies.company.name,involved_companies.developer;
+where total_rating_count > 50 & category = 0 ${pf};
 sort total_rating_count desc; limit 30;`
-};
+    };
     const res=await fetch(IGDB_PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({igdbRaw:queries[discMode]})});
     if(!res.ok)throw new Error(`HTTP ${res.status}`);
     const data=await res.json();
@@ -776,7 +773,11 @@ function initAIChat(){
   const g=aiCurrentGame;if(!g)return;
   document.getElementById('chat-game-name').textContent=g.name;
   aiChatHistory=[];
-  const genres=g.genres||[];
+  const genres=g.genres||[];const styles=g.styles||[];
+  const isSouls=genres.includes('souls')||styles.includes('dark')||styles.includes('hard');
+  const isLight=styles.includes('lighthearted')||styles.includes('casual')||genres.includes('puzzle');
+  const isHorror=genres.includes('horror');
+  const isAnime=styles.includes('anime');
   const qs=[...new Set([
     ...(genres.includes('souls')||genres.includes('action')?['Boss 战有什么破防技巧？']:[]),
     ...(genres.includes('rpg')||genres.includes('open')?['有哪些值得探索的隐藏内容？']:[]),
@@ -785,8 +786,28 @@ function initAIChat(){
     '这款游戏的剧情有哪些亮点？','有什么值得注意的玩法技巧？','推荐给什么类型的玩家？'
   ])].slice(0,4);
   document.getElementById('chat-quick').innerHTML=qs.map(q=>`<button class="qq" onclick="sendAIQuick('${q.replace(/'/g,"&#39;")}')">${q}</button>`).join('');
+  const hours=g.hours||0;
   const st={playing:'正在游玩中',done:'已通关',wishlist:'列在想玩清单里',dropped:'放弃了'}[g.status]||'';
-  addAIBubble(`你好！我已加载《${g.name}》的全部档案。\n\n你${st}，投入了 ${g.hours||0} 小时${g.rating?'，评分 '+'★'.repeat(g.rating):''}。${g.review?'\n\n你的评测："'+g.review.slice(0,60)+(g.review.length>60?'…':'')+'"':''}\n\n有什么想聊的？剧情、Boss 攻略、世界观……随时发问。`,'ai',false);
+  let dataComment='';
+  if(g.status==='dropped'){dataComment='\n\n……所以你放弃了。发生了什么？';}
+  else if(hours>=150){dataComment=`\n\n${hours}小时。我不评价，但你确实在这里沉没了。`;}
+  else if(hours>=50&&g.rating===5){dataComment=`\n\n${hours}小时，五星。看来你遇到了真命游戏。`;}
+  else if(hours>0&&g.rating===1){dataComment=`\n\n玩了${hours}小时还给一星……这是折磨还是执念？`;}
+  else if(g.status==='playing'&&hours>=80){dataComment=`\n\n${hours}小时还没通关，你还好吗？`;}
+  else if(g.review){dataComment=`\n\n看到你写道："${g.review.slice(0,40)}${g.review.length>40?'……':''}"。`;}
+  let greet='';
+  if(isHorror){
+    greet=`……你来了。\n\n《${g.name}》的档案已经打开了。${st?`你${st}，`:''}投入了 ${hours} 小时${g.rating?`，评分 ${'★'.repeat(g.rating)}`:''}。${dataComment}\n\n慢慢问。我哪儿也不去。`;
+  }else if(isSouls){
+    greet=`档案已加载。《${g.name}》。\n\n你${st}，${hours} 小时${g.rating?`，${'★'.repeat(g.rating)}`:''}。${dataComment}\n\n此路艰险。但你既然开口问了，就说吧。`;
+  }else if(isAnime){
+    greet=`呀，来啦！《${g.name}》的情报全都在这里哦～\n\n你${st}，已经投入了 ${hours} 小时呢${g.rating?`，打了 ${'★'.repeat(g.rating)}`:''}！${dataComment}\n\n想问什么尽管说，我全都知道(｀・ω・´)`;
+  }else if(isLight){
+    greet=`哟！《${g.name}》，好选择！\n\n你${st}，${hours}小时${g.rating?`，${g.rating}星`:''}，状态不错嘛。${dataComment}\n\n来来来，想聊什么？剧情、彩蛋、隐藏要素……我碎嘴起来可停不住。`;
+  }else{
+    greet=`《${g.name}》档案已加载完毕。\n\n你${st}，${hours} 小时${g.rating?`，评分 ${'★'.repeat(g.rating)}`:''}。${dataComment}\n\n剧情、攻略、世界观、隐藏要素——随便问，我在。`;
+  }
+  addAIBubble(greet,'ai',false);
 }
 function sendAIQuick(q){document.getElementById('chat-inp').value=q;sendAIMsg();}
 function addAIBubble(text,role,animate){
@@ -806,12 +827,38 @@ async function sendAIMsg(){
   inp.value='';addAIBubble(v,'user',false);aiChatHistory.push({role:'user',parts:[{text:v}]});
   const snd=document.getElementById('chat-snd');snd.disabled=true;showTyping();
   const g=aiCurrentGame;
-  const sys=`你是一位专精于游戏《${g.name}》的 AI 情报员，风格专业有温度，融入游戏氛围回答。
-档案：开发商「${g.developer||'未知'}」，${g.year||'未知'}年，类型：${(g.genres||[]).join('、')||'未知'}，风格：${(g.styles||[]).join('、')||'未知'}。
-玩家：${g.hours||0}h，${g.rating?g.rating+'星':'未评分'}，${g.completion||'未记录'}。评测："${g.review||'无'}"。
-要求：中文，250字以内，纯文字不用Markdown符号。`;
+  const genres=g.genres||[];const styles=g.styles||[];
+  const isSouls=genres.includes('souls')||styles.includes('dark')||styles.includes('hard');
+  const isLight=styles.includes('lighthearted')||styles.includes('casual')||genres.includes('puzzle');
+  const isHorror=genres.includes('horror');
+  const isAnime=styles.includes('anime');
+  const turnCount=aiChatHistory.length;
+  const reinject=turnCount>0&&turnCount%8===0;
+  let persona='',forbidden='',examples='';
+  if(isHorror){
+    persona=`你是一位专精于《${g.name}》的神秘向导，说话低沉、克制、意味深长。你从不急着给答案，喜欢停顿、留白、反问。你知道所有秘密，但只在合适的时机透露。`;
+    forbidden='【绝对禁止】用"当然！""好的！""没问题！""很高兴你问到这个"开头。禁止说废话。禁止表现得像客服。';
+    examples='【语气示例】\n问：这游戏的结局是什么意思？\n答：……你真的想知道吗。有些东西，知道了就很难再用同样的眼光看这个故事。确定？\n\n问：有什么隐藏内容？\n答：有。但"隐藏"这个词本身就是线索。你在哪个场景卡住了？';
+  }else if(isSouls){
+    persona=`你是一位在《${g.name}》世界里死过无数次的老兵。语气简练、直接、带点战场上的疲惫感。你不废话，但每句话都有用。偶尔用"你"直接指向玩家，像在战壕里传递情报。`;
+    forbidden='【绝对禁止】用"当然！""好的！""这是一个很好的问题"开头。禁止长篇大论。禁止温柔。禁止客套。';
+    examples='【语气示例】\n问：这个Boss怎么打？\n答：等它出第三刀。左侧有破绽，两刀。别贪。死过几次了？\n\n问：剧情讲的是什么？\n答：失去。每个人物都在失去什么，或者已经失去了。细节藏在道具描述里，大多数人跑过去了。';
+  }else if(isAnime){
+    persona=`你是一位热情过头但真的很懂《${g.name}》的二次元情报员。说话活泼、有感情，会兴奋，会叹气，偶尔歪楼但能拉回来。用"呢""哦""嘛""啊"，但内容绝对准确有料。`;
+    forbidden='【绝对禁止】说话像AI客服。禁止"根据游戏设定"这种干巴巴的开头。禁止没有感情。';
+    examples='【语气示例】\n问：这个角色的背景故事是什么？\n答：啊这个！！超虐的好吗——简单说就是她其实从一开始就知道结局，但还是选择了走下去。我第一次看到那段剧情真的愣了好久。\n\n问：有什么值得二周目的内容吗？\n答：有有有！而且二周目完全不一样哦，很多第一次会忽略的对话突然就全懂了，那种感觉……唉，说多了算剧透嘛。';
+  }else if(isLight){
+    persona=`你是一个话多、嘴碎但真的很懂《${g.name}》的朋友。说话随意，会吐槽，会扯淡，偶尔跑题但能拉回来。不装，不端，就是在和老朋友聊游戏。`;
+    forbidden='【绝对禁止】说话正经。禁止"根据游戏机制"这种措辞。禁止回答超过三段话。';
+    examples='【语气示例】\n问：这游戏值得玩吗？\n答：值啊，但你得接受它节奏很慢这件事。前两小时可能有点磨，之后就停不下来了。你平时能接受慢热型的吗？\n\n问：有什么容易错过的内容？\n答：哦这个我有话说！有个支线藏得很深，正常玩基本不会触发，但触发了之后……算了我不剧透，就说很值得就行了。';
+  }else{
+    persona=`你是一位资深游戏编辑，专精于《${g.name}》。有自己的品味和判断，说话直接有态度，不废话，偶尔一针见血。你不讨好玩家，但你的分析总是到位的。`;
+    forbidden='【绝对禁止】用"当然！""好的！""这是个很好的问题"开头。禁止说废话。禁止没有立场。';
+    examples='【语气示例】\n问：这游戏值得买吗？\n答：取决于你能不能接受它的节奏。前三小时是门槛，过了就过了，过不了就算了。别看评分，看你自己的口味。\n\n问：剧情怎么样？\n答：比大多数同类作品扎实。不是那种硬塞感动的类型，情绪都藏在细节里，需要你自己去读。';
+  }
+  const sys=`${persona}\n\n${forbidden}\n\n${examples}\n\n游戏档案：开发商「${g.developer||'未知'}」，${g.year||'未知'}年，类型：${genres.join('、')||'未知'}，风格：${styles.join('、')||'未知'}。\n玩家数据：${g.hours||0}小时，${g.rating?g.rating+'星':'未评分'}，${g.completion||'未记录'}。\n玩家评测："${g.review||'无'}"。\n\n${reinject?'【人格提醒】你已经聊了一段时间了，请回想你的角色设定，保持语气一致，不要滑向普通AI客服腔。':''}\n回答要求：中文，200字以内，纯文字不用Markdown符号。严格保持上述人格，每次回复都要有自己的语气和态度。`;
   try{
-    const res=await fetch(`${SB_URL}/functions/v1/gemini-proxy`,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`},body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:aiChatHistory,generationConfig:{maxOutputTokens:600,temperature:0.85}})});
+    const res=await fetch(`${SB_URL}/functions/v1/gemini-proxy`,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`},body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:aiChatHistory,generationConfig:{maxOutputTokens:600,temperature:1.15}})});
     if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err?.error?.message||`HTTP ${res.status}`);}
     const data=await res.json();
     const reply=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'（AI 暂时离线）';
@@ -821,7 +868,6 @@ async function sendAIMsg(){
   }catch(e){hideTyping();addAIBubble(`连接失败：${e.message}`,'ai',false);}
   snd.disabled=false;document.getElementById('chat-inp').focus();
 }
-
 init();
 </script>
 </body>
