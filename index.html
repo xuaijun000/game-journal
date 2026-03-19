@@ -1756,11 +1756,11 @@ function openDiscDetail(g){
   const myNames=new Set(games.map(x=>x.name.toLowerCase().trim()));
   const addBtn=document.getElementById('disc-add-btn');
   if(myNames.has((g.name||'').toLowerCase().trim())){addBtn.textContent='✓ 已收录';addBtn.classList.add('added');addBtn.disabled=true;}
-  else{addBtn.textContent='+ 想玩';addBtn.classList.remove('added');addBtn.disabled=false;addBtn.onclick=null;}
+  else{addBtn.textContent='+ 想玩';addBtn.classList.remove('added');addBtn.disabled=false;addBtn.onclick=()=>discAddGame();}
   // 重置AI聊天区域和按钮
   document.getElementById('disc-chat-area').classList.remove('open');
   document.getElementById('disc-ai-btn').textContent='⬡ 和 AI 聊聊这款游戏';
-  document.getElementById('disc-ai-btn').onclick=null; // 恢复默认onclick（HTML里绑的toggleDiscChat）
+  document.getElementById('disc-ai-btn').onclick=()=>toggleDiscChat();
   document.getElementById('disc-chat-msgs').innerHTML='';
   document.getElementById('disc-chat-quick').innerHTML='';
   document.getElementById('ov-disc').classList.add('on');
