@@ -1932,7 +1932,7 @@ function renderTodayPkm(p,sp){
   const img2=p.sprites?.front_default||img;
   document.getElementById('pkm-today-img').src=img2;
   document.getElementById('pkm-today-bg').style.backgroundImage=img?`url(${img})`:'none';
-  const cnName=getCNName(sp)||p.name;
+  const cnName=getCNName(sp,p.name)||p.name;
   document.getElementById('pkm-today-num').textContent=`#${String(p.id).padStart(3,'0')}`;
   document.getElementById('pkm-today-name').textContent=cnName;
   document.getElementById('pkm-today-types').innerHTML=p.types.map(t=>typeTag(t.type.name)).join('');
@@ -1952,7 +1952,7 @@ async function loadEvoChain(sp,containerId){
       const p=await fetchPkm(n);
       const s=await fetchPkmSpecies(n);
       const img=p.sprites?.front_default||'';
-      const cn=getCNName(s)||n;
+      const cn=getCNName(s,n)||n;
       return{name:n,cn,img,id:p.id};
     }));
     document.getElementById(containerId).innerHTML=`<div style="font-size:.68rem;color:var(--t3);margin-bottom:4px;font-family:'DM Mono',monospace">进化链</div><div class="pkm-evo-chain">${items.map((it,i)=>`${i>0?'<span class="pkm-evo-arrow">→</span>':''}<div class="pkm-evo-item" onclick="openPkmDetail(${it.id})"><img src="${it.img}" alt=""><div class="pkm-evo-name">${it.cn}</div></div>`).join('')}</div>`;
@@ -2021,7 +2021,7 @@ async function openPkmDetail(idOrName){
   try{
     const p=await fetchPkm(idOrName);
     const sp=await fetchPkmSpecies(p.species.url.split('/').slice(-2)[0]);
-    const cnName=getCNName(sp)||p.name;
+    const cnName=getCNName(sp,p.name)||p.name;
     const desc=getCNFlavorText(sp)||'暂无描述';
     const img=p.sprites?.other?.['official-artwork']?.front_default||p.sprites?.front_default||'';
     const img2=p.sprites?.front_default||img;
@@ -2059,7 +2059,7 @@ function onPkmSearch(v){
       const items=await Promise.all(matches.map(async m=>{
         const p=await fetchPkm(m.name);
         const sp=await fetchPkmSpecies(m.name).catch(()=>null);
-        const cn=getCNName(sp)||m.name;
+        const cn=getCNName(sp,m.name)||m.name;
         const img=p.sprites?.front_default||'';
         return`<div class="pkm-mini" onclick="openPkmDetail(${p.id})"><img src="${img}" alt=""><div class="pkm-mini-name">${cn}</div></div>`;
       }));
@@ -2224,7 +2224,7 @@ async function saveSeriesDetail(){
 function openPkmChat(){
   if(!todayPkm)return;
   const sp=todayPkm.species;
-  currentChatPkm={id:todayPkm.id,name:getCNName(sp)||todayPkm.name,types:todayPkm.types.map(t=>t.type.name),species:sp};
+  currentChatPkm={id:todayPkm.id,name:getCNName(todayPkm.species,todayPkm.name)||todayPkm.name,types:todayPkm.types.map(t=>t.type.name),species:sp};
   pkmChatFromModal=false;
   openPkmChatModal();
 }
