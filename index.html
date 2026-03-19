@@ -1960,7 +1960,7 @@ function renderSeries(){
     const stTxt=st==='cleared'?'✓ 已通关':st==='played'?'▶ 游玩中':'— 未游玩';
     const stColor=st==='cleared'?'var(--acc)':st==='played'?'var(--acc2)':'var(--t3)';
     const ace=log?.ace_pokemon?'🏆 '+log.ace_pokemon:'';
-    return'<div class="pkm-series-card'+cls+'" onclick="openSeriesDetail(\"'+s.id+'\")">'
+    return'<div class="pkm-series-card'+cls+'" onclick="openSeriesDetail(this)" data-sid="'+s.id+'">'  
       +'<div class="pkm-series-name">'+s.name+'</div>'
       +'<div class="pkm-series-year">'+s.year+'</div>'
       +'<div class="pkm-series-status" style="color:'+stColor+'">'+stTxt+'</div>'
@@ -1970,7 +1970,8 @@ function renderSeries(){
   }).join('');
 }
 
-function openSeriesDetail(seriesId){
+function openSeriesDetail(el){
+  const seriesId=el.dataset.sid;
   const s=PKM_SERIES.find(x=>x.id===seriesId);if(!s)return;
   const log=pkmSeriesLogs[seriesId]||{};
   document.getElementById('series-modal-title').textContent=s.name;
