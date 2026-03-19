@@ -1359,10 +1359,9 @@ async function renderGameTimeline(containerId,game,userId){
         else if(ci===chIdx&&ni===nodeIdx)nState='active';
         const icon=nState==='done'?'✓':nState==='active'?'★':'○';
         let badge='';
-        // 已完成的节点也可以回退（点击取消标记）
         if(nState==='done')badge=`<button class="gtl-nbadge gtl-nb-mark" data-ci="${ci}" data-ni="${ni}" data-back="1" style="background:rgba(34,197,94,.1);color:#16a34a;border-color:rgba(34,197,94,.3)">↩ 回退</button>`;
         else if(nState==='active')badge=`<span class="gtl-nbadge gtl-nb-active">📍 当前</span>`;
-        else if(!locked)badge=`<button class="gtl-nbadge gtl-nb-mark" data-ci="${ci}" data-ni="${ni}">标记到这</button>`;
+        else badge=`<button class="gtl-nbadge gtl-nb-mark" data-ci="${ci}" data-ni="${ni}">标记到这</button>`;
         html+=`<div class="gtl-node ${nState}"><span class="gtl-node-icon">${icon}</span><span class="gtl-node-text${locked?' locked':''}">${esc(node.text)}</span>${node.ep?`<span class="gtl-node-ep">${node.ep}</span>`:''} ${badge}</div>`;
       });
       html+='</div>';
@@ -1459,7 +1458,7 @@ async function renderMediaTimeline(containerId,mediaItem,mediaType,userId){
         let badge='';
         if(nState==='done')badge=`<button class="gtl-nbadge gtl-nb-mark" data-ai="${ai}" data-ni="${ni}" data-back="1" style="background:rgba(34,197,94,.1);color:#16a34a;border-color:rgba(34,197,94,.3)">↩ 回退</button>`;
         else if(nState==='active')badge=`<span class="gtl-nbadge gtl-nb-active">📍 当前</span>`;
-        else if(!locked)badge=`<button class="gtl-nbadge gtl-nb-mark" data-ai="${ai}" data-ni="${ni}">标记到这</button>`;
+        else badge=`<button class="gtl-nbadge gtl-nb-mark" data-ai="${ai}" data-ni="${ni}">标记到这</button>`;
         html+=`<div class="gtl-node ${nState}"><span class="gtl-node-icon">${icon}</span><span class="gtl-node-text${locked?' locked':''}">${esc(node.text)}</span>${node.ep?`<span class="gtl-node-ep">${node.ep}</span>`:''} ${badge}</div>`;
       });
       html+='</div>';
@@ -2131,23 +2130,50 @@ function renderMediaRank(type,data){
 }
 function openMediaRankDetail(type,idx){
   const item=mediaRankDataCache[type]?.[idx];if(!item)return;
-  // 填充 media modal 预览模式
   const cover=item.images?.jpg?.image_url||'';
-  document.getElementById('media-modal-title').textContent=item.title;
-  document.getElementById('media-modal-sub').textContent=(item.year||'')+(item.score?' · '+item.score+'分':'')+(item.type?' · '+item.type:'');
-  if(cover){document.getElementById('media-modal-cover').src=cover;document.getElementById('media-modal-cover').style.display='block';document.getElementById('media-modal-cover').dataset.url=cover;document.getElementById('media-modal-bg').style.backgroundImage=`url(${cover})`;}
-  document.getElementById('media-total').value=item.episodes||item.chapters||'';
-  document.getElementById('media-current').value='';
-  document.getElementById('media-status').value=type==='anime'?'planned':'planned';
-  document.getElementById('media-review').value='';
-  document.getElementById('media-genre-chips').innerHTML=(item.genres||[]).map(g=>`<span class="genre-chip on">${g.name}</span>`).join('');
-  document.getElementById('media-search-wrap').style.display='none';
-  document.getElementById('media-ai-btn').style.display='none';
-  document.getElementById('media-chat-wrap').style.display='none';
-  document.getElementById('media-sum-box').style.display='none';
-  document.getElementById('media-timeline-slot').innerHTML='';
-  setMediaRating(0);editMediaId=null;currentMediaType=type;
-  document.getElementById('ov-media').classList.add('on');
+  const myNames=new Set(mediaData[type].map(x=>x.title.toLowerCase().trim()));
+  const already=myNames.has(item.title.toLowerCase().trim());
+
+  // 用发现页弹窗风格展示
+  document.getElementById('disc-hero-bg').style.backgroundImage=cover?`url(${cover})`:'none';
+  const dimg=document.getElementById('disc-cover');
+  if(cover){dimg.src=cover;dimg.style.display='block';}else dimg.style.display='none';
+  document.getElementById('disc-title').textContent=item.title||'';
+  document.getElementById('disc-dev').textContent=item.studios?.map(s=>s.name).join(' / ')||item.authors?.map(a=>a.name).join(' / ')||'';
+  document.getElementById('disc-year').textContent=item.year||'';
+  document.getElementById('disc-score').textContent=item.score?item.score+' 分':'';
+  document.getElementById('disc-rcount').textContent=item.scored_by?(item.scored_by>999?(item.scored_by/1000).toFixed(1)+'k':item.scored_by)+' 人评分':'';
+  const pftags=(item.genres||[]).slice(0,5).map(g=>`<span class="tag" style="font-size:.68rem">${g.name||g}</span>`).join('');
+  document.getElementById('disc-ptags').innerHTML=pftags;
+  document.getElementById('disc-summary').textContent=item.synopsis||'暂无简介';
+  document.getElementById('disc-storyline').style.display='none';
+  document.getElementById('disc-igdb-link').href=item.url||'#';
+  document.getElementById('disc-igdb-link').textContent='↗ MAL';
+
+  // 替换加入按钮
+  const addBtn=document.getElementById('disc-add-btn');
+  addBtn.textContent=already?'✓ 已收录':'+ 加入列表';
+  addBtn.classList.toggle('added',already);
+  addBtn.disabled=already;
+  addBtn.onclick=()=>{
+    if(already)return;
+    const gj={title:item.title,cover,total:item.episodes||item.chapters||0,year:item.year||'',genres:(item.genres||[]).map(g=>g.name||g)};
+    addMediaFromRank(type,gj,'disc-add-btn').then(()=>{addBtn.textContent='✓ 已收录';addBtn.classList.add('added');addBtn.disabled=true;});
+  };
+
+  // 重置AI聊天
+  document.getElementById('disc-chat-area').classList.remove('open');
+  document.getElementById('disc-ai-btn').textContent='⬡ 和 AI 聊聊这部作品';
+  document.getElementById('disc-chat-msgs').innerHTML='';
+  document.getElementById('disc-chat-quick').innerHTML='';
+
+  // 替换AI聊天按钮行为
+  document.getElementById('disc-ai-btn').onclick=()=>{
+    discCurrentGame={name:item.title,summary:item.synopsis||'',developer:'',year:item.year||'',rating:item.score||null,ratingCount:item.scored_by||null,platforms:[],storyline:'',url:item.url||''};
+    toggleDiscChat();
+  };
+
+  document.getElementById('ov-disc').classList.add('on');
 }
 async function addMediaFromRank(type,item,bid){
   const btn=document.getElementById(bid);if(!btn)return;btn.textContent='添加中…';btn.disabled=true;
