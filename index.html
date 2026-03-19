@@ -2143,8 +2143,10 @@ function openSeriesDetail(el){
   document.getElementById('series-ace-inp').value=log.ace_pokemon||'';
   document.getElementById('series-notes-inp').value=log.notes||'';
   document.getElementById('series-save-btn').dataset.sid=seriesId;
-  document.getElementById('series-ai-btn').disabled=false;
-  document.getElementById('series-ai-btn').textContent='⬡ AI 帮我生成一段游玩回顾';
+  seriesChatHistory=[];seriesChatOpen=false;
+  const sw=document.getElementById('series-chat-wrap');if(sw)sw.style.display='none';
+  const sab=document.getElementById('series-ai-btn');if(sab)sab.textContent='⬡ 和 AI 聊聊这部作品';
+  const scm=document.getElementById('series-chat-msgs');if(scm)scm.innerHTML='';
   // 状态胶囊高亮
   setSeriesStatusUI(log.status||'none');
   // 英雄区背景色
@@ -2236,7 +2238,7 @@ function openPkmChatModal(){
   const g=currentChatPkm;if(!g)return;
   pkmChatHistory=[];
   document.getElementById('pkm-chat-title').textContent='和 AI 聊聊 '+g.name;
-  document.getElementById('pkm-chat-subtitle').textContent='宝可梦情报员已就绪';
+  const subtitleEl=document.getElementById('pkm-chat-subtitle');if(subtitleEl)subtitleEl.textContent='宝可梦情报员已就绪';
   document.getElementById('pkm-ai-msgs').innerHTML='';
   document.getElementById('pkm-ai-quick').innerHTML='';
   document.getElementById('pkm-series-inp').value='';
@@ -2348,6 +2350,127 @@ async function deletePkmLog(id){
   const{data:{session}}=await db.auth.getSession();if(!session?.user)return;
   await db.from('pkm_logs').delete().eq('id',id).eq('user_id',session.user.id);
   loadPkmLogs();
+}
+
+
+/* ===== 系列 AI 对话 ===== */
+let seriesChatHistory=[],seriesChatOpen=false;
+
+function toggleSeriesChat(){
+  seriesChatOpen=!seriesChatOpen;
+  const wrap=document.getElementById('series-chat-wrap');
+  if(wrap)wrap.style.display=seriesChatOpen?'block':'none';
+  const btn=document.getElementById('series-ai-btn');
+  if(btn)btn.textContent=seriesChatOpen?'收起 AI 对话':'⬡ 和 AI 聊聊这部作品';
+  if(seriesChatOpen){
+    const msgs=document.getElementById('series-chat-msgs');
+    if(msgs&&msgs.children.length===0)initSeriesChat();
+  }
+}
+
+function initSeriesChat(){
+  const sid=document.getElementById('series-save-btn')?.dataset?.sid;
+  if(!sid)return;
+  const s=PKM_SERIES.find(x=>x.id===sid);if(!s)return;
+  seriesChatHistory=[];
+  const nameEl=document.getElementById('series-chat-game-name');
+  if(nameEl)nameEl.textContent=s.name;
+  const status=document.getElementById('series-save-btn')?.dataset?.status||'none';
+  const hours=document.getElementById('series-hours-inp')?.value||'';
+  const ace=document.getElementById('series-ace-inp')?.value||'';
+  const qs=['这部作品的剧情有什么亮点？','入坑建议是什么？','隐藏要素有哪些值得探索？','推荐怎么组队？'];
+  const qq=document.getElementById('series-quick-qs');
+  if(qq)qq.innerHTML=qs.map(q=>'<button class="qq" onclick="sendSeriesQuick(this.dataset.q)" data-q="'+q+'" style="font-size:.68rem">'+q+'</button>').join('');
+  const stTxt={none:'还没玩过',played:'正在游玩中',cleared:'已通关'}[status]||'';
+  const greet='《'+s.name+'》（'+s.year+'年）档案已加载。'+(stTxt?'你'+stTxt+'，':'')+(hours?'投入了约'+hours+'小时，':'')+(ace?'王牌是'+ace+'。':'')+' 关于剧情、攻略、隐藏要素，随便问。';
+  addSeriesBubble(greet,'ai',false);
+}
+
+function sendSeriesQuick(el){
+  const q=el.dataset?.q||el;
+  const inp=document.getElementById('series-chat-inp');
+  if(inp){inp.value=typeof q==='string'?q:'';sendSeriesAIMsg();}
+}
+
+function addSeriesBubble(text,role,animate){
+  const msgs=document.getElementById('series-chat-msgs');
+  if(!msgs)return;
+  const div=document.createElement('div');
+  div.className='cmsg '+(role==='ai'?'ai-msg':'user-msg');
+  div.innerHTML='<div class="cmsg-av '+(role==='ai'?'ai-av':'usr-av')+'">'+(role==='ai'?'AI':'我')+'</div><div class="cmsg-bbl"></div>';
+  msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
+  const bbl=div.querySelector('.cmsg-bbl');
+  if(animate&&role==='ai'){let i=0;const t=()=>{if(i<text.length){bbl.textContent+=text[i++];msgs.scrollTop=msgs.scrollHeight;setTimeout(t,55);}};t();}
+  else{bbl.textContent=text;msgs.scrollTop=msgs.scrollHeight;}
+}
+
+async function sendSeriesAIMsg(){
+  const inp=document.getElementById('series-chat-inp');
+  const v=inp?.value?.trim();if(!v)return;
+  inp.value='';
+  addSeriesBubble(v,'user',false);
+  seriesChatHistory.push({role:'user',parts:[{text:v}]});
+  const snd=document.getElementById('series-ai-snd');if(snd)snd.disabled=true;
+  const msgs=document.getElementById('series-chat-msgs');
+  const td=document.createElement('div');td.className='cmsg ai-msg';td.id='series-typing';
+  td.innerHTML='<div class="cmsg-av ai-av">AI</div><div class="cmsg-bbl"><div class="typing-dots"><span></span><span></span><span></span></div></div>';
+  if(msgs){msgs.appendChild(td);msgs.scrollTop=msgs.scrollHeight;}
+  const sid=document.getElementById('series-save-btn')?.dataset?.sid;
+  const s=PKM_SERIES.find(x=>x.id===sid)||{name:'未知',year:''};
+  const status=document.getElementById('series-save-btn')?.dataset?.status||'none';
+  const hours=document.getElementById('series-hours-inp')?.value||'';
+  const ace=document.getElementById('series-ace-inp')?.value||'';
+  const sys='你是宝可梦系列「'+s.name+'」（'+s.year+'年）的专属攻略顾问。玩家状态：'
+    +(status==='cleared'?'已通关':status==='played'?'游玩中':'未游玩')
+    +(hours?'，约'+hours+'小时':'')
+    +(ace?'，王牌：'+ace:'')
+    +'。用中文200字以内回答，不用Markdown。';
+  try{
+    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},
+      body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:seriesChatHistory,generationConfig:{maxOutputTokens:500,temperature:1.0}})
+    });
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    const reply=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'（AI 暂时离线）';
+    const t=document.getElementById('series-typing');if(t)t.remove();
+    addSeriesBubble(reply,'ai',true);
+    seriesChatHistory.push({role:'model',parts:[{text:reply}]});
+    if(seriesChatHistory.length>20)seriesChatHistory=seriesChatHistory.slice(-20);
+  }catch(e){
+    const t=document.getElementById('series-typing');if(t)t.remove();
+    addSeriesBubble('连接失败：'+e.message,'ai',false);
+  }
+  if(snd)snd.disabled=false;
+  if(inp)inp.focus();
+}
+
+async function genSeriesLogFromChat(){
+  if(seriesChatHistory.length<2){alert('至少聊几句再生成日志吧');return;}
+  const btn=document.getElementById('series-log-btn');
+  if(btn){btn.disabled=true;btn.textContent='生成中…';}
+  const sid=document.getElementById('series-save-btn')?.dataset?.sid;
+  const s=PKM_SERIES.find(x=>x.id===sid)||{name:'未知'};
+  const histText=seriesChatHistory.map(m=>(m.role==='user'?'训练师':'顾问')+':'+m.parts[0].text).join('\n');
+  const prompt='以下是关于宝可梦「'+s.name+'」的对话：\n\n'+histText+'\n\n请用第一人称训练师日记口吻，写一段100-130字的游玩日志，提炼有价值的内容，融入游戏氛围，纯文字不用Markdown。';
+  try{
+    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},
+      body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:300,temperature:0.9}})
+    });
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    const text=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    if(!text)throw new Error('返回为空');
+    const ta=document.getElementById('series-notes-inp');
+    if(ta)ta.value=(ta.value?ta.value+'\n\n':'')+'[AI 日志]\n'+text;
+    if(ta)ta.value=(ta.value?ta.value+'\n\n':'')+'[AI 日志]\n'+text;
+  }catch(e){
+    alert('生成失败：'+e.message);
+    if(btn){btn.disabled=false;btn.textContent='📋 生成游玩日志';}
+  }
 }
 
 // 初始化宝可梦专栏
