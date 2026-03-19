@@ -420,6 +420,24 @@
     .jikan-info{flex:1;min-width:0}
     .jikan-title{font-size:.83rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .jikan-meta{font-size:.7rem;color:var(--t3);font-family:'DM Mono',monospace}
+
+    .media-rank-item{display:flex;align-items:center;gap:14px;background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);padding:10px 14px;transition:all .2s;animation:rankIn .2s ease both}
+    .media-rank-item:hover{border-color:rgba(96,165,250,.35);background:var(--bg3);transform:translateX(3px)}
+    .media-rank-num{font-size:1.1rem;font-weight:700;font-family:'DM Mono',monospace;min-width:32px;text-align:center;color:var(--t3);flex-shrink:0}
+    .media-rank-num.top1{color:#fbbf24;font-size:1.3rem}.media-rank-num.top2{color:#94a3b8}.media-rank-num.top3{color:#cd7c3a}
+    .media-rank-cover{width:42px;height:58px;object-fit:cover;border-radius:5px;flex-shrink:0;background:var(--bg3)}
+    .media-rank-info{flex:1;min-width:0}
+    .media-rank-title{font-size:.88rem;font-weight:500;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .media-rank-meta{font-size:.7rem;color:var(--t3);font-family:'DM Mono',monospace;display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+    .media-rank-tag{padding:1px 7px;border-radius:99px;font-size:.63rem;background:rgba(96,165,250,.1);color:var(--acc2);border:1px solid rgba(96,165,250,.2)}
+    .media-rank-score{text-align:right;flex-shrink:0;min-width:52px}
+    .media-rank-score-val{font-size:1.15rem;font-weight:700;color:var(--acc);font-family:'DM Mono',monospace;display:block;line-height:1.2}
+    .media-rank-score-lbl{font-size:.62rem;color:var(--t3);font-family:'DM Mono',monospace}
+    .media-rank-add{padding:4px 10px;border-radius:7px;font-size:.72rem;font-family:'DM Mono',monospace;border:1px solid var(--b2);background:none;color:var(--t2);cursor:pointer;transition:all .15s;white-space:nowrap;flex-shrink:0}
+    .media-rank-add:hover{border-color:var(--acc);color:var(--acc);background:rgba(96,165,250,.08)}
+    .media-rank-add.added{border-color:var(--acc2);color:var(--acc2)}
+    .media-rank-grid{display:flex;flex-direction:column;gap:8px}
+
     .jikan-msg{padding:12px;text-align:center;font-size:.82rem;color:var(--t3)}
     /* 类型标签 */
     .genre-chips{display:flex;gap:5px;flex-wrap:wrap}
@@ -2606,17 +2624,24 @@ async function loadMediaRank(type, mode) {
       ].filter(Boolean).join(' · ');
       const titleJp = item.title_japanese||item.title;
       const titleEn = item.title||'';
-      return `<div class="media-rank-item" style="animation-delay:${Math.min(i*.025,.5)}s" onclick="openMediaRankDetail(${JSON.stringify({title:titleJp,titleEn,cover,score,meta,synopsis:(item.synopsis||'').slice(0,300),url:item.url||''}).replace(/"/g,'&quot;')})">
+      const genres = (item.genres||[]).slice(0,3).map(g=>`<span class="media-rank-tag">${g.name}</span>`).join('');
+      const detailData = JSON.stringify({title:titleJp,titleEn,cover,score,meta,synopsis:(item.synopsis||'').slice(0,300),url:item.url||''}).replace(/"/g,'&quot;');
+      const addedType = type;
+      const myTitles = new Set(mediaData[addedType].map(x=>x.title.toLowerCase().trim()));
+      const isAdded = myTitles.has(titleJp.toLowerCase().trim())||myTitles.has(titleEn.toLowerCase().trim());
+      const bid = `mrb${type}${i}`;
+      return `<div class="media-rank-item" style="animation-delay:${Math.min(i*.025,.5)}s">
         <div class="media-rank-num ${numCls}">${rank}</div>
-        ${cover?`<img class="media-rank-cover" src="${cover}" loading="lazy" onerror="this.style.display='none'">`:'<div class="media-rank-cover" style="display:flex;align-items:center;justify-content:center;font-size:1.5rem;opacity:.2">📖</div>'}
-        <div class="media-rank-info">
+        ${cover?`<img class="media-rank-cover" src="${cover}" loading="lazy" onerror="this.style.display='none'">`:'<div class="media-rank-cover" style="display:flex;align-items:center;justify-content:center;font-size:1.5rem;opacity:.2">🎬</div>'}
+        <div class="media-rank-info" onclick="openMediaRankDetail(${detailData})" style="cursor:pointer">
           <div class="media-rank-title">${esc(titleJp)}</div>
-          <div class="media-rank-meta">${esc(meta)}</div>
+          <div class="media-rank-meta">${esc(meta)} ${genres}</div>
         </div>
-        <div class="media-rank-score">
+        <div class="media-rank-score" onclick="openMediaRankDetail(${detailData})" style="cursor:pointer">
           <span class="media-rank-score-val">${score}</span>
-          <span class="media-rank-score-lbl">MAL评分</span>
+          <span class="media-rank-score-lbl">MAL分</span>
         </div>
+        <button class="media-rank-add ${isAdded?'added':''}" id="${bid}" onclick="addFromMediaRank(event,'${type}',${detailData},'${bid}')">${isAdded?'✓ 已收录':'+ 想看'}</button>
       </div>`;
     }).join('')+'</div>';
     mediaRankCache[`${type}_${mode}`] = html;
@@ -2624,6 +2649,35 @@ async function loadMediaRank(type, mode) {
   } catch(e) {
     listEl.innerHTML = `<div class="disc-loading">加载失败：${e.message}</div>`;
   }
+}
+
+
+async function addFromMediaRank(e, type, item, bid) {
+  e.stopPropagation();
+  const btn = document.getElementById(bid);
+  if (!btn || btn.classList.contains('added')) return;
+  const {data:{session}} = await db.auth.getSession();
+  if (!session?.user) { alert('请先登录'); return; }
+  btn.textContent='添加中…'; btn.disabled=true;
+  const status = type==='anime'?'planned':'planned';
+  const payload = {
+    user_id: session.user.id,
+    title: item.title||item.titleEn,
+    cover: item.cover||null,
+    status,
+    rating: 0,
+    episode_current: 0,
+    chapter_current: 0,
+  };
+  const {data, error} = await db.from(type==='anime'?'anime_list':'manga_list').insert(payload).select().single();
+  if (!error && data) {
+    mediaData[type].unshift(data);
+    btn.textContent='✓ 已收录';
+    btn.classList.add('added');
+  } else {
+    btn.textContent='+ 想看';
+  }
+  btn.disabled = false;
 }
 
 // 排行榜点击详情（简化弹窗复用 disc 详情弹窗）
