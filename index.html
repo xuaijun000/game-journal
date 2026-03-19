@@ -153,6 +153,9 @@
     /* 发现页 */
     .disc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.4rem;flex-wrap:wrap;gap:12px}
     .disc-tabs{display:flex;gap:4px;background:var(--bg2);border:1px solid var(--b);border-radius:10px;padding:4px}
+    .disc-tab-btn{padding:5px 14px;border-radius:7px;font-size:.78rem;font-family:'DM Mono',monospace;cursor:pointer;color:var(--t3);transition:all .15s;white-space:nowrap;user-select:none}
+    .disc-tab-btn:hover{color:var(--t2);background:var(--bg3)}
+    .disc-tab-btn.on{color:var(--acc);background:rgba(96,165,250,.12);font-weight:500}
     .disc-tab{padding:5px 14px;border-radius:7px;font-size:.78rem;font-family:'DM Mono',monospace;cursor:pointer;border:none;background:none;color:var(--t3);transition:all .15s;white-space:nowrap}
     .disc-tab.on{background:var(--bg3);color:var(--acc);border:1px solid rgba(96,165,250,.2)}
     .disc-pf-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.2rem}
@@ -2572,10 +2575,20 @@ async function loadMediaRank(type, mode) {
   try {
     let url = '';
     if (type === 'anime') {
-      const modeMap = {top:'anime?order_by=score&sort=desc&limit=30', airing:'anime?status=airing&order_by=score&sort=desc&limit=30', upcoming:'anime?status=upcoming&order_by=members&sort=desc&limit=30', movie:'anime?type=movie&order_by=score&sort=desc&limit=30'};
+      const modeMap = {
+        top:     'top/anime?filter=bypopularity&limit=30',
+        airing:  'top/anime?filter=airing&limit=30',
+        upcoming:'top/anime?filter=upcoming&limit=30',
+        movie:   'top/anime?type=movie&limit=30'
+      };
       url = `${JIKAN}/${modeMap[mode]||modeMap.top}`;
     } else {
-      const modeMap = {top:'manga?order_by=score&sort=desc&limit=30', manga:'manga?type=manga&order_by=score&sort=desc&limit=30', manhwa:'manga?type=manhwa&order_by=score&sort=desc&limit=30', novel:'manga?type=lightnovel&order_by=score&sort=desc&limit=30'};
+      const modeMap = {
+        top:    'top/manga?limit=30',
+        manga:  'top/manga?type=manga&limit=30',
+        manhwa: 'top/manga?type=manhwa&limit=30',
+        novel:  'top/manga?type=lightnovel&limit=30'
+      };
       url = `${JIKAN}/${modeMap[mode]||modeMap.top}`;
     }
     const r = await fetch(url);
