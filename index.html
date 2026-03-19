@@ -157,6 +157,15 @@
     .amsg{font-size:.8rem;margin-top:8px;min-height:18px}
     .amsg.err{color:var(--danger)}.amsg.ok{color:var(--acc2)}
 
+    /* ===== Steam 同步栏 ===== */
+    .steam-bar{display:flex;gap:8px;align-items:center;margin-bottom:1rem;padding:10px 14px;background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);flex-wrap:wrap}
+    .steam-bar-label{display:flex;align-items:center;gap:6px;font-size:.75rem;color:var(--t3);font-family:'DM Mono',monospace;white-space:nowrap}
+    .steam-icon{width:14px;height:14px;opacity:.5}
+    .steam-bar input{flex:1;min-width:180px;background:var(--bg3);border:1px solid var(--b);border-radius:8px;padding:6px 12px;color:var(--t);font-family:'DM Mono',monospace;font-size:.82rem;outline:none;transition:border .15s}
+    .steam-bar input:focus{border-color:rgba(102,192,244,.5)}
+    .steam-bar input::placeholder{color:var(--t3)}
+    .steam-msg{font-size:.75rem;font-family:'DM Mono',monospace;white-space:nowrap}
+
     /* ===== AI 游戏聊天室 ===== */
     .d-ai-btn{width:100%;margin-top:12px;padding:10px 16px;border-radius:8px;border:1px dashed rgba(212,240,74,.35);background:rgba(212,240,74,.04);color:var(--acc);font-size:.85rem;cursor:pointer;font-family:'DM Mono',monospace;letter-spacing:.05em;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
     .d-ai-btn:hover{background:rgba(212,240,74,.1);border-color:rgba(212,240,74,.6)}
@@ -192,7 +201,7 @@
     .typing-dots span:nth-child(3){animation-delay:.4s}
     @keyframes tdot{0%,100%{opacity:.35}50%{opacity:1}}
 
-    @media(max-width:640px){.stats{grid-template-columns:repeat(3,1fr)}.cg{grid-template-columns:1fr}.row2{grid-template-columns:1fr}}
+    @media(max-width:640px){.stats{grid-template-columns:repeat(3,1fr)}.cg{grid-template-columns:1fr}.row2{grid-template-columns:1fr}.steam-bar{flex-direction:column;align-items:stretch}}
   </style>
 </head>
 <body>
@@ -233,6 +242,18 @@
       </select>
       <button class="btn btn-a" onclick="openAdd()">＋ 添加游戏</button>
     </div>
+
+    <!-- Steam 同步栏 -->
+    <div class="steam-bar">
+      <div class="steam-bar-label">
+        <svg class="steam-icon" viewBox="0 0 24 24" fill="currentColor" style="color:#66c0f4;opacity:1"><path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658c.545-.371 1.203-.59 1.912-.59.063 0 .125.004.188.006l2.861-4.142V8.91c0-2.495 2.028-4.524 4.524-4.524 2.494 0 4.524 2.029 4.524 4.524s-2.03 4.525-4.524 4.525h-.105l-4.076 2.911c0 .052.004.105.004.159 0 1.875-1.515 3.396-3.39 3.396-1.635 0-3.016-1.173-3.331-2.718L.436 15.27C1.862 20.307 6.486 24 11.979 24c6.627 0 11.999-5.373 11.999-12S18.605 0 11.979 0zM7.54 18.21l-1.473-.61c.262.543.714.999 1.314 1.25 1.297.539 2.793-.076 3.332-1.375.263-.63.264-1.319.005-1.949s-.75-1.121-1.377-1.383c-.624-.26-1.29-.249-1.878-.03l1.523.63c.956.4 1.409 1.5 1.009 2.455-.397.957-1.497 1.41-2.454 1.012H7.54zm11.415-9.303c0-1.662-1.353-3.015-3.015-3.015-1.665 0-3.015 1.353-3.015 3.015 0 1.665 1.35 3.015 3.015 3.015 1.663 0 3.015-1.35 3.015-3.015zm-5.273-.005c0-1.252 1.013-2.266 2.265-2.266 1.249 0 2.266 1.014 2.266 2.266 0 1.251-1.017 2.265-2.266 2.265-1.252 0-2.265-1.014-2.265-2.265z"/></svg>
+        Steam ID
+      </div>
+      <input type="text" id="steam-id-inp" placeholder="76561198xxxxxxxxx  （需将游戏库设为公开）" autocomplete="off">
+      <button class="btn btn-sm" onclick="syncSteam()" id="steam-sync-btn" style="border-color:rgba(102,192,244,.3);color:#66c0f4">↓ 同步 Steam 库</button>
+      <span id="steam-msg" class="steam-msg"></span>
+    </div>
+
     <div class="pf-row">
       <div class="pfchip on" data-p="all"    onclick="setPF('all',this)">全部平台</div>
       <div class="pfchip"    data-p="xbox"   onclick="setPF('xbox',this)">Xbox</div>
@@ -294,14 +315,10 @@
         <div class="d-rev-lbl">评测与高光</div>
         <div id="d-rev-val" class="d-rev-val"></div>
       </div>
-
-      <!-- AI 游戏聊天室入口 -->
       <button class="d-ai-btn" id="d-ai-btn" onclick="toggleAIChat()">
         <span>⬡</span><span id="d-ai-btn-txt">和 AI 聊聊这款游戏</span>
       </button>
     </div>
-
-    <!-- AI 聊天面板 -->
     <div class="chat-panel" id="chat-panel">
       <div class="chat-hdr">
         <div class="chat-hdr-l">
@@ -317,7 +334,6 @@
         <button class="chat-snd" id="chat-snd" onclick="sendAIMsg()">发送</button>
       </div>
     </div>
-
     <div class="mfoot">
       <button class="btn btn-d" id="d-del" onclick="delGame()">删除</button>
       <button class="btn" onclick="closeOv('ov-detail')">关闭</button>
@@ -451,10 +467,10 @@
 
 <script>
 // ===== 配置区 =====
-const GEMINI_KEY = '在这里粘贴你的Gemini API Key';  // 👈 替换这里
 const SB_URL = 'https://qbzxfwnosacwbdumkvoz.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFienhmd25vc2Fjd2JkdW1rdm96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NjQyMTEsImV4cCI6MjA4OTQ0MDIxMX0.cvREkp0ZmiUuSpMj9TZB0ZGUXv1WMor0jN3yd4HEBwY';
 const IGDB_PROXY = 'https://qbzxfwnosacwbdumkvoz.supabase.co/functions/v1/dynamic-worker';
+const STEAM_PROXY = 'https://qbzxfwnosacwbdumkvoz.supabase.co/functions/v1/steam-proxy';
 
 const {createClient} = supabase;
 const db = createClient(SB_URL, SB_KEY);
@@ -470,6 +486,10 @@ const CPMAP = {main:'主线通关', side:'主线+支线', full:'全收集/铂金
 let currentQuery = '', currentOffset = 0, isFetching = false, hasMore = true;
 
 async function init() {
+  // 恢复上次填写的 Steam ID
+  const savedSteamId = localStorage.getItem('steamId');
+  if (savedSteamId) document.getElementById('steam-id-inp').value = savedSteamId;
+
   const {data:{session}} = await db.auth.getSession();
   if (session?.user) setUser(session.user);
   db.auth.onAuthStateChange((_, s) => setUser(s?.user || null));
@@ -586,7 +606,6 @@ function openDetail(id) {
     revBox.style.display = 'none';
   }
 
-  // 重置 AI 聊天状态
   aiCurrentGame = g;
   aiChatOpen = false;
   aiChatHistory = [];
@@ -836,6 +855,113 @@ async function doAuth() {
 
 function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
+// ===== Steam 同步 =====
+async function syncSteam() {
+  const steamId = document.getElementById('steam-id-inp').value.trim();
+  const msg = document.getElementById('steam-msg');
+  const btn = document.getElementById('steam-sync-btn');
+
+  if (!steamId) {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = '请先填写 Steam ID';
+    return;
+  }
+
+  localStorage.setItem('steamId', steamId);
+  btn.disabled = true;
+  btn.textContent = '同步中…';
+  msg.style.color = 'var(--t3)';
+  msg.textContent = '正在读取 Steam 库…';
+
+  try {
+    const res = await fetch(STEAM_PROXY, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SB_KEY,
+        'Authorization': `Bearer ${SB_KEY}`
+      },
+      body: JSON.stringify({ steamId })
+    });
+
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const { games: steamGames } = await res.json();
+
+    if (!steamGames?.length) {
+      msg.style.color = 'var(--warn)';
+      msg.textContent = '未找到游戏，请确认 Steam 库已设为公开';
+      return;
+    }
+
+    const { data: { session } } = await db.auth.getSession();
+    const user = session?.user;
+    let added = 0, updated = 0;
+
+    for (const sg of steamGames) {
+      // 按名称精确匹配（不区分大小写）
+      const existing = games.find(g =>
+        g.name.toLowerCase().trim() === sg.name.toLowerCase().trim()
+      );
+
+      if (existing) {
+        // 已有记录：仅当 Steam 时长更长时更新
+        if (sg.hours > (existing.hours || 0)) {
+          const newData = { hours: sg.hours };
+          if (user) {
+            await db.from('games').update(newData).eq('id', existing.id).eq('user_id', user.id);
+          }
+          const i = games.findIndex(g => (g.id || g._id) === (existing.id || existing._id));
+          if (i > -1) games[i] = { ...games[i], ...newData };
+          updated++;
+        }
+      } else if (sg.hours > 0) {
+        // 没有记录且玩过才新增，跳过 0 小时避免导入大量未玩游戏
+        const newGame = {
+          name: sg.name,
+          platforms: ['steam'],
+          genres: [],
+          styles: [],
+          developer: '',
+          year: null,
+          status: sg.hours >= 10 ? 'playing' : 'wishlist',
+          hours: sg.hours,
+          completion: '',
+          rating: 0,
+          review: '',
+          cover: sg.cover,
+        };
+
+        if (user) {
+          const { data, error } = await db.from('games')
+            .insert({ ...newGame, user_id: user.id })
+            .select()
+            .single();
+          if (!error && data) games.unshift(data);
+        } else {
+          games.unshift({
+            _id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+            created_at: new Date().toISOString(),
+            ...newGame
+          });
+          localStorage.setItem('gj', JSON.stringify(games));
+        }
+        added++;
+      }
+    }
+
+    msg.style.color = 'var(--acc2)';
+    msg.textContent = `✓ 新增 ${added} 款，更新 ${updated} 款时长`;
+    render();
+
+  } catch (e) {
+    msg.style.color = 'var(--danger)';
+    msg.textContent = `同步失败：${e.message}`;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '↓ 同步 Steam 库';
+  }
+}
+
 // ===== AI 游戏聊天室 =====
 let aiChatOpen = false;
 let aiChatHistory = [];
@@ -858,7 +984,6 @@ function initAIChat() {
   document.getElementById('chat-game-name').textContent = g.name;
   aiChatHistory = [];
 
-  // 快捷问题（根据游戏类型动态生成）
   const genres = g.genres || [];
   const baseQs = ['这款游戏的剧情有哪些亮点？', '有什么值得注意的玩法技巧？', '推荐给什么类型的玩家？'];
   const extraQs = [];
@@ -869,7 +994,6 @@ function initAIChat() {
   const qs = [...new Set([...extraQs, ...baseQs])].slice(0, 4);
   document.getElementById('chat-quick').innerHTML = qs.map(q => `<button class="qq" onclick="sendAIQuick('${q.replace(/'/g,'&#39;')}')">${q}</button>`).join('');
 
-  // 开场白
   const statusText = {playing:'正在游玩中', done:'已通关', wishlist:'列在想玩清单里', dropped:'放弃了'}[g.status] || '';
   const greet = `你好！我已加载《${g.name}》的全部档案。\n\n你${statusText}，投入了 ${g.hours||0} 小时${g.rating?`，评分 ${'★'.repeat(g.rating)}`:''}。${g.review?`\n\n你的评测："${g.review.slice(0,60)}${g.review.length>60?'…':''}"`:''}\n\n有什么想聊的？剧情、Boss 攻略、世界观、隐藏要素……随时发问。`;
   addAIBubble(greet, 'ai', false);
@@ -891,7 +1015,7 @@ function addAIBubble(text, role, animate) {
   const bbl = div.querySelector('.cmsg-bbl');
   if (animate && role === 'ai') {
     let i = 0;
-    const speed = text.length > 200 ? 8 : 18; // 长文快速打字，短文慢速
+    const speed = text.length > 200 ? 8 : 18;
     const tick = () => {
       if (i < text.length) {
         bbl.textContent += text[i++];
