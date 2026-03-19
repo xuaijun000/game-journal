@@ -372,6 +372,57 @@
     .pkm-series-year{font-size:.65rem;color:var(--t3);font-family:'DM Mono',monospace}
     .pkm-series-status{font-size:.68rem;margin-top:4px}
     @media(max-width:768px){.pkm-layout{grid-template-columns:1fr}.pkm-today{position:static}}
+
+    /* ===== 动漫/漫画通用样式 ===== */
+    .media-pg{display:flex;flex-direction:column;gap:16px}
+    .media-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:.5rem}
+    .media-tb{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:.8rem}
+    .media-tb input,.media-tb select{background:var(--bg2);border:1px solid var(--b);border-radius:8px;padding:7px 12px;color:var(--t);font-family:inherit;font-size:.85rem;outline:none}
+    .media-tb input{flex:1;min-width:150px}
+    .media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+
+    .media-star{background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--t3);padding:0 2px;transition:color .1s;line-height:1}
+    .media-star.on{color:#fbbf24}
+    .mc{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);overflow:hidden;cursor:pointer;transition:all .25s;animation:fu .2s ease both}
+    .mc:hover{border-color:var(--acc);transform:translateY(-4px);box-shadow:0 10px 24px rgba(0,0,0,.4)}
+    .mc-cover{width:100%;height:180px;object-fit:cover;display:block;background:var(--bg3)}
+    .mc-cover-ph{width:100%;height:180px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:3rem;opacity:.2}
+    .mc-body{padding:.85rem}
+    .mc-title{font-size:.88rem;font-weight:500;line-height:1.35;margin-bottom:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .mc-meta{font-size:.7rem;color:var(--t3);font-family:'DM Mono',monospace;margin-bottom:6px}
+    .mc-foot{display:flex;justify-content:space-between;align-items:center;padding-top:6px;border-top:1px solid var(--b)}
+    .mc-prog{font-size:.7rem;font-family:'DM Mono',monospace;color:var(--t3)}
+    /* 状态色 */
+    .ms-watching{color:var(--acc)}.ms-completed{color:var(--acc2)}.ms-planned{color:var(--warn)}
+    .ms-dropped{color:var(--t3)}.ms-paused{color:#a78bfa}
+    .ms-reading{color:var(--acc)}
+    /* 详情弹窗 */
+    .media-modal{max-width:560px}
+    .media-modal-hero{height:140px;position:relative;overflow:hidden;background:var(--bg3)}
+    .media-modal-bg{position:absolute;inset:-20px;filter:blur(20px);opacity:.4;background-size:cover;background-position:center}
+    .media-modal-top{display:flex;gap:16px;padding:0 1.5rem 0;margin-top:-55px;margin-bottom:1.2rem;align-items:flex-end;position:relative;z-index:2}
+    .media-modal-cover{width:80px;height:112px;object-fit:cover;border-radius:6px;border:3px solid var(--bg2);box-shadow:0 8px 16px rgba(0,0,0,.5);background:var(--bg3);flex-shrink:0}
+    .media-modal-info{padding-bottom:4px;flex:1}
+    .media-modal-title{font-family:'Noto Serif SC',serif;font-size:1.2rem;font-weight:600;line-height:1.3;margin-bottom:4px;text-shadow:0 2px 6px rgba(0,0,0,.8)}
+    /* 进度条 */
+    .prog-wrap{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+    .prog-bar{flex:1;height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
+    .prog-fill{height:100%;background:var(--acc);border-radius:3px;transition:width .4s ease}
+    .prog-txt{font-size:.72rem;font-family:'DM Mono',monospace;color:var(--t2);white-space:nowrap}
+    /* 搜索结果 */
+    .jikan-results{background:var(--bg3);border:1px solid var(--b2);border-radius:8px;margin-top:6px;max-height:280px;overflow-y:auto}
+    .jikan-item{display:flex;gap:10px;padding:8px 12px;cursor:pointer;transition:background .12s;border-bottom:1px solid var(--b)}
+    .jikan-item:last-child{border-bottom:none}.jikan-item:hover{background:var(--bg2)}
+    .jikan-cover{width:36px;height:50px;object-fit:cover;border-radius:4px;background:var(--bg2);flex-shrink:0}
+    .jikan-info{flex:1;min-width:0}
+    .jikan-title{font-size:.83rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .jikan-meta{font-size:.7rem;color:var(--t3);font-family:'DM Mono',monospace}
+    .jikan-msg{padding:12px;text-align:center;font-size:.82rem;color:var(--t3)}
+    /* 类型标签 */
+    .genre-chips{display:flex;gap:5px;flex-wrap:wrap}
+    .genre-chip{padding:3px 9px;border-radius:99px;font-size:.72rem;font-family:'DM Mono',monospace;border:1px solid var(--b);color:var(--t3);cursor:pointer;transition:all .13s;background:var(--bg3);user-select:none}
+    .genre-chip.on{border-color:var(--acc);color:var(--acc);background:rgba(74,222,128,.07)}
+
     @media(max-width:640px){.stats{grid-template-columns:repeat(3,1fr)}.cg{grid-template-columns:1fr}.row2{grid-template-columns:1fr}.disc-header{flex-direction:column;align-items:flex-start}.disc-tabs{flex-wrap:wrap}}
     #pkm-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:.55}
     main,header{position:relative;z-index:1}
@@ -386,6 +437,8 @@
     <button onclick="go('disc',this)">发现</button>
     <button onclick="go('stats',this)">统计</button>
     <button onclick="go('pkm',this)">🐟 宝可梦</button>
+    <button onclick="go('anime',this)">🎌 动漫</button>
+    <button onclick="go('manga',this)">📖 漫画</button>
   </nav>
   <div class="hdr-r">
     <div class="av" id="av">?</div>
@@ -546,6 +599,56 @@
       </div>
     </div>
   </div>
+
+  <!-- 动漫 -->
+  <div class="pg" id="pg-anime">
+    <div class="media-pg" id="anime-pg">
+      <div class="media-stats" id="anime-stats"></div>
+      <div class="media-tb">
+        <input type="text" id="anime-q" placeholder="搜索动漫标题…" oninput="renderMedia('anime')" autocomplete="off">
+        <select id="anime-fst" onchange="renderMedia('anime')">
+          <option value="">全部状态</option>
+          <option value="watching">观看中</option>
+          <option value="completed">已看完</option>
+          <option value="planned">想看</option>
+          <option value="paused">暂停</option>
+          <option value="dropped">放弃</option>
+        </select>
+        <select id="anime-fso" onchange="renderMedia('anime')">
+          <option value="date">最新添加</option>
+          <option value="rating">评分最高</option>
+          <option value="title">标题排序</option>
+        </select>
+        <button class="btn btn-a" onclick="openMediaAdd('anime')">＋ 添加动漫</button>
+      </div>
+      <div class="media-grid" id="anime-grid"><div style="text-align:center;padding:3rem;color:var(--t3)">加载中…</div></div>
+    </div>
+  </div>
+
+  <!-- 漫画 -->
+  <div class="pg" id="pg-manga">
+    <div class="media-pg" id="manga-pg">
+      <div class="media-stats" id="manga-stats"></div>
+      <div class="media-tb">
+        <input type="text" id="manga-q" placeholder="搜索漫画标题…" oninput="renderMedia('manga')" autocomplete="off">
+        <select id="manga-fst" onchange="renderMedia('manga')">
+          <option value="">全部状态</option>
+          <option value="reading">阅读中</option>
+          <option value="completed">已读完</option>
+          <option value="planned">想读</option>
+          <option value="paused">暂停</option>
+          <option value="dropped">放弃</option>
+        </select>
+        <select id="manga-fso" onchange="renderMedia('manga')">
+          <option value="date">最新添加</option>
+          <option value="rating">评分最高</option>
+          <option value="title">标题排序</option>
+        </select>
+        <button class="btn btn-a" onclick="openMediaAdd('manga')">＋ 添加漫画</button>
+      </div>
+      <div class="media-grid" id="manga-grid"><div style="text-align:center;padding:3rem;color:var(--t3)">加载中…</div></div>
+    </div>
+  </div>
 </main>
 
 <!-- 详情弹窗 -->
@@ -602,6 +705,94 @@
   </div>
 </div>
 
+
+
+<!-- 动漫/漫画 添加/编辑弹窗 -->
+<div class="ov" id="ov-media" onclick="if(event.target===this)closeOv('ov-media')">
+  <div class="modal media-modal">
+    <div class="media-modal-hero">
+      <div class="media-modal-bg" id="media-modal-bg"></div>
+    </div>
+    <div class="media-modal-top">
+      <img id="media-modal-cover" src="" class="media-modal-cover" onerror="this.style.display='none'">
+      <div class="media-modal-info">
+        <div class="media-modal-title" id="media-modal-title">添加作品</div>
+        <div style="font-size:.72rem;color:var(--t3);font-family:'DM Mono',monospace" id="media-modal-sub"></div>
+      </div>
+    </div>
+    <div class="mc" style="padding:0 1.5rem 0;background:none;border:none;cursor:default">
+      <!-- 搜索区 -->
+      <div style="margin-bottom:12px" id="media-search-wrap">
+        <div style="font-size:.7rem;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px">🔍 搜索 MAL 数据库</div>
+        <input id="media-search-inp" class="series-inp" style="width:100%" placeholder="输入标题搜索…" oninput="onMediaSearch(this.value)" autocomplete="off">
+        <div id="jikan-results" class="jikan-results" style="display:none"></div>
+      </div>
+      <!-- 状态 + 进度 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div class="series-inp-group">
+          <span class="series-inp-label">状态</span>
+          <select id="media-status" class="series-inp">
+            <option value="watching">观看中</option>
+            <option value="completed">已看完</option>
+            <option value="planned">想看</option>
+            <option value="paused">暂停</option>
+            <option value="dropped">放弃</option>
+          </select>
+        </div>
+        <div class="series-inp-group" id="media-prog-wrap">
+          <span class="series-inp-label" id="media-prog-label">看到第几集</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input type="number" id="media-current" class="series-inp" placeholder="0" min="0" style="flex:1">
+            <span style="color:var(--t3);font-size:.8rem">/</span>
+            <input type="number" id="media-total" class="series-inp" placeholder="?" min="0" style="flex:1">
+          </div>
+        </div>
+      </div>
+      <!-- 评分 -->
+      <div class="series-inp-group" style="margin-bottom:10px">
+        <span class="series-inp-label">评分</span>
+        <div style="display:flex;gap:6px">
+          <button class="media-star" data-v="1" onclick="setMediaRating(1)">★</button>
+          <button class="media-star" data-v="2" onclick="setMediaRating(2)">★</button>
+          <button class="media-star" data-v="3" onclick="setMediaRating(3)">★</button>
+          <button class="media-star" data-v="4" onclick="setMediaRating(4)">★</button>
+          <button class="media-star" data-v="5" onclick="setMediaRating(5)">★</button>
+          <span id="media-rating-lbl" style="color:var(--t3);font-size:.78rem;margin-left:4px;align-self:center"></span>
+        </div>
+      </div>
+      <!-- 类型标签 -->
+      <div class="series-inp-group" style="margin-bottom:10px">
+        <span class="series-inp-label">类型标签</span>
+        <div class="genre-chips" id="media-genre-chips"></div>
+      </div>
+      <!-- 评测 -->
+      <div class="series-inp-group" style="margin-bottom:10px">
+        <span class="series-inp-label">评测 / 短评</span>
+        <textarea id="media-review" class="series-textarea" style="height:70px" placeholder="写下你的感受…"></textarea>
+      </div>
+      <!-- AI 聊天 -->
+      <div id="media-chat-wrap" style="margin-bottom:10px;border:1px solid var(--b);border-radius:10px;overflow:hidden;display:none">
+        <div style="padding:8px 12px;background:var(--bg3);border-bottom:1px solid var(--b);display:flex;align-items:center;gap:8px">
+          <div class="ai-pulse"></div>
+          <span style="font-size:.75rem;font-family:'DM Mono',monospace;color:var(--t2)">AI 情报员 · <em id="media-chat-title" style="color:var(--acc);font-style:normal"></em></span>
+        </div>
+        <div id="media-chat-msgs" style="height:220px;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px;background:var(--bg)"></div>
+        <div style="padding:4px 10px 8px;display:flex;gap:6px;flex-wrap:wrap;background:var(--bg)" id="media-chat-quick"></div>
+        <div style="display:flex;gap:6px;padding:6px 10px 10px;background:var(--bg);border-top:1px solid var(--b)">
+          <input id="media-chat-inp" style="flex:1;background:var(--bg3);border:1px solid var(--b);border-radius:8px;padding:6px 10px;color:var(--t);font-family:inherit;font-size:.82rem;outline:none" placeholder="问 AI 任何关于这部作品的问题…" onkeydown="if(event.key==='Enter')sendMediaAIMsg()">
+          <button onclick="sendMediaAIMsg()" style="padding:6px 12px;border-radius:8px;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.3);color:var(--acc);font-size:.78rem;cursor:pointer;font-family:'DM Mono',monospace" id="media-ai-snd">发送</button>
+        </div>
+      </div>
+    </div>
+    <div class="mfoot" style="padding:.8rem 1.5rem">
+      <button class="btn" onclick="toggleMediaChat()" id="media-ai-btn" style="color:var(--acc);border-color:rgba(74,222,128,.3)">⬡ 和 AI 聊聊</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="closeOv('ov-media')">取消</button>
+        <button class="btn btn-a" id="media-save-btn" onclick="saveMedia()">保存</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- 宝可梦详情弹窗 -->
 <div class="ov" id="ov-pkm" onclick="if(event.target===this)closeOv('ov-pkm')">
@@ -1104,6 +1295,8 @@ function go(pg,btn){
   if(pg==='stats')drawCharts();
   if(pg==='disc'&&document.getElementById('rank-list').children.length<=1)loadDisc();
   if(pg==='pkm'&&!window._pkmInited){window._pkmInited=true;initPkm();}
+  if(pg==='anime'&&!window._animeInited){window._animeInited=true;initMediaList('anime');}
+  if(pg==='manga'&&!window._mangaInited){window._mangaInited=true;initMediaList('manga');}
 }
 function drawCharts(){
   const stC={playing:0,done:0,wishlist:0,dropped:0},gnC={},pfC={},rtC=[0,0,0,0,0],styC={};
@@ -2301,6 +2494,366 @@ async function initPkm(){
   updateTodayBtns();
   loadGen(1,document.querySelector('.pkm-gen-tab'));
   await loadPkmLogs();
+}
+
+
+/* ===== 动漫 / 漫画 通用模块 ===== */
+const JIKAN = 'https://api.jikan.moe/v4';
+const MEDIA_TABLE = {anime:'anime_list', manga:'manga_list'};
+const MEDIA_STATUS_ANIME = {watching:'观看中',completed:'已看完',planned:'想看',paused:'暂停',dropped:'放弃'};
+const MEDIA_STATUS_MANGA = {reading:'阅读中',completed:'已读完',planned:'想读',paused:'暂停',dropped:'放弃'};
+const MEDIA_STATUS_COLOR = {watching:'var(--acc)',reading:'var(--acc)',completed:'var(--acc2)',planned:'var(--warn)',paused:'#a78bfa',dropped:'var(--t3)'};
+const ANIME_GENRES = ['热血','冒险','喜剧','恋爱','奇幻','科幻','恐怖','悬疑','日常','运动','机甲','异世界','后宫','百合','BL'];
+const MANGA_GENRES = ['少年','少女','青年','热血','恋爱','奇幻','科幻','恐怖','悬疑','日常','运动','生活','百合','BL'];
+
+let mediaData = {anime:[], manga:[]};
+let mediaEditId = null;
+let mediaType = 'anime';
+let mediaRating = 0;
+let mediaSelectedGenres = [];
+let mediaCover = '';
+let mediaChatHistory = [];
+let mediaChatOpen = false;
+let jikanSearchT = null;
+
+// 初始化
+async function initMediaList(type) {
+  mediaData[type] = [];
+  const {data:{session}} = await db.auth.getSession();
+  if (!session?.user) { renderMedia(type); return; }
+  const {data} = await db.from(MEDIA_TABLE[type]).select('*').eq('user_id', session.user.id).order('created_at', {ascending:false});
+  mediaData[type] = data || [];
+  renderMedia(type);
+  renderMediaStats(type);
+}
+
+// 渲染卡片列表
+function renderMedia(type) {
+  const q = document.getElementById(type+'-q')?.value?.toLowerCase().trim() || '';
+  const fst = document.getElementById(type+'-fst')?.value || '';
+  const fso = document.getElementById(type+'-fso')?.value || 'date';
+  const grid = document.getElementById(type+'-grid');
+  if (!grid) return;
+
+  let list = [...mediaData[type]];
+  if (q) list = list.filter(x => x.title.toLowerCase().includes(q));
+  if (fst) list = list.filter(x => x.status === fst);
+  if (fso === 'rating') list.sort((a,b) => (b.rating||0)-(a.rating||0));
+  else if (fso === 'title') list.sort((a,b) => a.title.localeCompare(b.title,'zh'));
+  // else date (already sorted)
+
+  if (!list.length) {
+    grid.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--t3);font-size:.88rem">'+(q||fst?'没有找到符合条件的记录':'还没有记录，点右上角添加吧')+'</div>';
+    return;
+  }
+
+  const stMap = type==='anime'?MEDIA_STATUS_ANIME:MEDIA_STATUS_MANGA;
+  grid.innerHTML = list.map((item,i) => {
+    const stColor = MEDIA_STATUS_COLOR[item.status]||'var(--t3)';
+    const stLabel = stMap[item.status]||item.status;
+    const progLabel = type==='anime'?`第${item.episode_current||0}集`:`第${item.chapter_current||0}话`;
+    const total = type==='anime'?item.episode_total:item.chapter_total;
+    const stars = item.rating ? '★'.repeat(item.rating) : '';
+    return `<div class="mc" style="animation-delay:${Math.min(i*.04,.5)}s" onclick="openMediaEdit('${type}','${item.id}')">
+      ${item.cover ? `<img class="mc-cover" src="${item.cover}" loading="lazy" onerror="this.style.display='none'">` : '<div class="mc-cover-ph">🎌</div>'}
+      <div class="mc-body">
+        <div class="mc-title">${esc(item.title)}</div>
+        <div class="mc-meta">${item.year||''} ${(item.genres||[]).slice(0,2).join(' · ')}</div>
+        <div class="mc-foot">
+          <span style="font-size:.72rem;color:${stColor};font-family:'DM Mono',monospace">${stLabel}</span>
+          <span class="mc-prog">${stars||progLabel}${total?' / '+total+'':''}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// 统计数字
+function renderMediaStats(type) {
+  const el = document.getElementById(type+'-stats');
+  if (!el) return;
+  const list = mediaData[type];
+  const stMap = type==='anime'?MEDIA_STATUS_ANIME:MEDIA_STATUS_MANGA;
+  const counts = {};
+  list.forEach(x => counts[x.status] = (counts[x.status]||0)+1);
+  const totalProg = type==='anime'
+    ? list.reduce((s,x)=>s+(x.episode_current||0),0)
+    : list.reduce((s,x)=>s+(x.chapter_current||0),0);
+  const unit = type==='anime'?'集':'话';
+  el.innerHTML = [
+    ['总收录', list.length, 'var(--t2)'],
+    [stMap[type==='anime'?'watching':'reading']||'进行中', counts[type==='anime'?'watching':'reading']||0, 'var(--acc)'],
+    [stMap.completed||'已完成', counts.completed||0, 'var(--acc2)'],
+    [stMap.planned||'计划中', counts.planned||0, 'var(--warn)'],
+    [`累计${unit}数`, totalProg, '#a78bfa'],
+  ].map(([l,v,c])=>`<div style="background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);padding:.7rem;text-align:center">
+    <div style="font-size:1.4rem;font-weight:600;color:${c};font-family:'DM Mono',monospace">${v}</div>
+    <div style="font-size:.68rem;color:var(--t3);margin-top:2px">${l}</div>
+  </div>`).join('');
+}
+
+// 打开添加弹窗
+function openMediaAdd(type) {
+  mediaType = type;
+  mediaEditId = null;
+  mediaRating = 0;
+  mediaSelectedGenres = [];
+  mediaCover = '';
+  mediaChatHistory = [];
+  mediaChatOpen = false;
+
+  document.getElementById('media-modal-title').textContent = type==='anime'?'添加动漫':'添加漫画';
+  document.getElementById('media-modal-sub').textContent = '';
+  document.getElementById('media-modal-cover').src = '';
+  document.getElementById('media-modal-cover').style.display = 'none';
+  document.getElementById('media-modal-bg').style.backgroundImage = 'none';
+  document.getElementById('media-search-wrap').style.display = 'block';
+  document.getElementById('media-search-inp').value = '';
+  document.getElementById('jikan-results').style.display = 'none';
+  document.getElementById('media-status').innerHTML = type==='anime'
+    ? '<option value="watching">观看中</option><option value="completed">已看完</option><option value="planned">想看</option><option value="paused">暂停</option><option value="dropped">放弃</option>'
+    : '<option value="reading">阅读中</option><option value="completed">已读完</option><option value="planned">想读</option><option value="paused">暂停</option><option value="dropped">放弃</option>';
+  document.getElementById('media-prog-label').textContent = type==='anime'?'看到第几集':'看到第几话';
+  document.getElementById('media-current').value = '';
+  document.getElementById('media-total').value = '';
+  document.getElementById('media-review').value = '';
+  document.getElementById('media-chat-wrap').style.display = 'none';
+  document.getElementById('media-ai-btn').textContent = '⬡ 和 AI 聊聊';
+  document.getElementById('media-chat-msgs').innerHTML = '';
+  document.getElementById('media-save-btn').textContent = '保存';
+  renderGenreChips(type);
+  setMediaRating(0);
+  document.getElementById('ov-media').classList.add('on');
+}
+
+// 打开编辑弹窗
+function openMediaEdit(type, id) {
+  const item = mediaData[type].find(x=>x.id===id);
+  if (!item) return;
+  mediaType = type;
+  mediaEditId = id;
+  mediaCover = item.cover||'';
+  mediaSelectedGenres = [...(item.genres||[])];
+  mediaChatHistory = [];
+  mediaChatOpen = false;
+
+  const cover = item.cover||'';
+  document.getElementById('media-modal-title').textContent = item.title;
+  document.getElementById('media-modal-sub').textContent = [item.year,'MAL'].filter(Boolean).join(' · ');
+  const img = document.getElementById('media-modal-cover');
+  if (cover) { img.src=cover; img.style.display='block'; } else img.style.display='none';
+  document.getElementById('media-modal-bg').style.backgroundImage = cover?`url(${cover})`:'none';
+  document.getElementById('media-search-wrap').style.display = 'none';
+  document.getElementById('media-status').innerHTML = type==='anime'
+    ? '<option value="watching">观看中</option><option value="completed">已看完</option><option value="planned">想看</option><option value="paused">暂停</option><option value="dropped">放弃</option>'
+    : '<option value="reading">阅读中</option><option value="completed">已读完</option><option value="planned">想读</option><option value="paused">暂停</option><option value="dropped">放弃</option>';
+  document.getElementById('media-status').value = item.status;
+  document.getElementById('media-prog-label').textContent = type==='anime'?'看到第几集':'看到第几话';
+  document.getElementById('media-current').value = type==='anime'?(item.episode_current||''):(item.chapter_current||'');
+  document.getElementById('media-total').value = type==='anime'?(item.episode_total||''):(item.chapter_total||'');
+  document.getElementById('media-review').value = item.review||'';
+  document.getElementById('media-chat-wrap').style.display = 'none';
+  document.getElementById('media-ai-btn').textContent = '⬡ 和 AI 聊聊';
+  document.getElementById('media-chat-msgs').innerHTML = '';
+  document.getElementById('media-save-btn').textContent = '保存修改';
+  renderGenreChips(type);
+  setMediaRating(item.rating||0);
+  document.getElementById('ov-media').classList.add('on');
+}
+
+// 类型标签
+function renderGenreChips(type) {
+  const genres = type==='anime'?ANIME_GENRES:MANGA_GENRES;
+  document.getElementById('media-genre-chips').innerHTML = genres.map(g =>
+    `<div class="genre-chip${mediaSelectedGenres.includes(g)?' on':''}" onclick="toggleGenre('${g}')">${g}</div>`
+  ).join('');
+}
+function toggleGenre(g) {
+  if (mediaSelectedGenres.includes(g)) mediaSelectedGenres = mediaSelectedGenres.filter(x=>x!==g);
+  else mediaSelectedGenres.push(g);
+  renderGenreChips(mediaType);
+}
+
+// 评分
+function setMediaRating(v) {
+  mediaRating = v;
+  document.querySelectorAll('.media-star').forEach(s => {
+    s.classList.toggle('on', parseInt(s.dataset.v) <= v);
+  });
+  const labels = ['','⭐','⭐⭐','还不错','很好看','神作'];
+  document.getElementById('media-rating-lbl').textContent = labels[v]||'';
+}
+
+// Jikan 搜索
+function onMediaSearch(v) {
+  clearTimeout(jikanSearchT);
+  const res = document.getElementById('jikan-results');
+  if (!v.trim()) { res.style.display='none'; return; }
+  res.style.display = 'block';
+  res.innerHTML = '<div class="jikan-msg">搜索中…</div>';
+  jikanSearchT = setTimeout(async () => {
+    try {
+      const type = mediaType==='anime'?'anime':'manga';
+      const r = await fetch(`${JIKAN}/${type}?q=${encodeURIComponent(v)}&limit=8&sfw`);
+      const d = await r.json();
+      if (!d.data?.length) { res.innerHTML='<div class="jikan-msg">未找到结果</div>'; return; }
+      res.innerHTML = d.data.map(item => {
+        const cover = item.images?.jpg?.image_url||'';
+        const year = item.year||item.published?.prop?.from?.year||'';
+        const episodes = item.episodes||item.chapters||'';
+        const genres = (item.genres||[]).map(g=>g.name).join('、').slice(0,20);
+        return `<div class="jikan-item" onclick="selectJikanItem(${JSON.stringify({
+          title: item.title_japanese||item.title,
+          cover, year, episodes, genres,
+          synopsis: (item.synopsis||'').slice(0,200)
+        }).replace(/'/g,'&#39;').replace(/"/g,'&quot;')})">
+          ${cover?`<img class="jikan-cover" src="${cover}" loading="lazy">`:'<div class="jikan-cover"></div>'}
+          <div class="jikan-info">
+            <div class="jikan-title">${esc(item.title_japanese||item.title)}</div>
+            <div class="jikan-meta">${year||''} ${episodes?episodes+(mediaType==='anime'?'集':'话'):''} ${genres}</div>
+          </div>
+        </div>`;
+      }).join('');
+    } catch(e) { res.innerHTML='<div class="jikan-msg">搜索失败，请稍后重试</div>'; }
+  }, 600);
+}
+
+function selectJikanItem(item) {
+  mediaCover = item.cover||'';
+  document.getElementById('media-modal-title').textContent = item.title;
+  document.getElementById('media-modal-sub').textContent = [item.year, item.genres].filter(Boolean).join(' · ');
+  const img = document.getElementById('media-modal-cover');
+  if (mediaCover) { img.src=mediaCover; img.style.display='block'; } else img.style.display='none';
+  document.getElementById('media-modal-bg').style.backgroundImage = mediaCover?`url(${mediaCover})`:'none';
+  if (item.episodes) document.getElementById('media-total').value = item.episodes;
+  document.getElementById('jikan-results').style.display = 'none';
+  document.getElementById('media-search-inp').value = item.title;
+}
+
+// 保存
+async function saveMedia() {
+  const title = (document.getElementById('media-search-inp').value||document.getElementById('media-modal-title').textContent||'').trim();
+  if (!title || title==='添加动漫'||title==='添加漫画') { alert('请先搜索并选择一部作品'); return; }
+  const {data:{session}} = await db.auth.getSession();
+  if (!session?.user) { alert('请先登录'); return; }
+  const btn = document.getElementById('media-save-btn');
+  btn.textContent='保存中…'; btn.disabled=true;
+
+  const type = mediaType;
+  const status = document.getElementById('media-status').value;
+  const cur = parseInt(document.getElementById('media-current').value)||0;
+  const tot = parseInt(document.getElementById('media-total').value)||null;
+  const review = document.getElementById('media-review').value.trim();
+  const year = parseInt(document.getElementById('media-modal-sub').textContent)||null;
+
+  const payload = {
+    user_id: session.user.id,
+    title,
+    cover: mediaCover||null,
+    status,
+    review: review||null,
+    genres: mediaSelectedGenres.length?mediaSelectedGenres:null,
+    rating: mediaRating||0,
+    year: year||null,
+  };
+  if (type==='anime') { payload.episode_current=cur; payload.episode_total=tot; }
+  else { payload.chapter_current=cur; payload.chapter_total=tot; }
+
+  let error;
+  if (mediaEditId) {
+    ({error} = await db.from(MEDIA_TABLE[type]).update(payload).eq('id',mediaEditId).eq('user_id',session.user.id));
+    if (!error) {
+      const idx = mediaData[type].findIndex(x=>x.id===mediaEditId);
+      if (idx>=0) mediaData[type][idx]={...mediaData[type][idx],...payload};
+    }
+  } else {
+    const {data,error:e} = await db.from(MEDIA_TABLE[type]).insert(payload).select().single();
+    error=e;
+    if (!error&&data) mediaData[type].unshift(data);
+  }
+  if (error) { alert('保存失败：'+error.message); btn.textContent='保存'; btn.disabled=false; return; }
+  renderMedia(type);
+  renderMediaStats(type);
+  closeOv('ov-media');
+  btn.textContent='保存'; btn.disabled=false;
+}
+
+// AI 聊天
+function toggleMediaChat() {
+  mediaChatOpen = !mediaChatOpen;
+  document.getElementById('media-chat-wrap').style.display = mediaChatOpen?'block':'none';
+  document.getElementById('media-ai-btn').textContent = mediaChatOpen?'收起 AI 对话':'⬡ 和 AI 聊聊';
+  if (mediaChatOpen && document.getElementById('media-chat-msgs').children.length===0) initMediaChat();
+}
+
+function initMediaChat() {
+  const title = document.getElementById('media-modal-title').textContent;
+  document.getElementById('media-chat-title').textContent = title;
+  mediaChatHistory = [];
+  const type = mediaType;
+  const qs = type==='anime'
+    ? ['这部动漫的剧情亮点是什么？','主角的成长线怎么样？','有哪些名场面？','适合什么类型的观众？']
+    : ['这部漫画的画风怎么样？','剧情节奏如何？','有哪些精彩章节？','连载完结了吗？'];
+  document.getElementById('media-chat-quick').innerHTML = qs.map(q=>
+    `<button class="qq" onclick="sendMediaQuick('${q.replace(/'/g,"&#39;")}')" style="font-size:.68rem">${q}</button>`
+  ).join('');
+  const status = document.getElementById('media-status').value;
+  const stMap = type==='anime'?MEDIA_STATUS_ANIME:MEDIA_STATUS_MANGA;
+  const cur = document.getElementById('media-current').value;
+  const greet = '《'+title+'》的档案已加载。'+(cur?'你看到了第'+cur+(type==='anime'?'集':'话')+'。':'')
+    +(status?'状态：'+stMap[status]+'。':'')
+    +' 关于剧情、角色、名场面……随便问。';
+  addMediaBubble(greet,'ai',false);
+}
+
+function sendMediaQuick(q) {
+  document.getElementById('media-chat-inp').value=q;
+  sendMediaAIMsg();
+}
+
+function addMediaBubble(text,role,animate) {
+  const msgs = document.getElementById('media-chat-msgs');
+  const div = document.createElement('div');
+  div.className = 'cmsg '+(role==='ai'?'ai-msg':'user-msg');
+  div.innerHTML = '<div class="cmsg-av '+(role==='ai'?'ai-av':'usr-av')+'">'+(role==='ai'?'AI':'我')+'</div><div class="cmsg-bbl"></div>';
+  msgs.appendChild(div); msgs.scrollTop=msgs.scrollHeight;
+  const bbl = div.querySelector('.cmsg-bbl');
+  if (animate&&role==='ai') { let i=0; const t=()=>{if(i<text.length){bbl.textContent+=text[i++];msgs.scrollTop=msgs.scrollHeight;setTimeout(t,55);}};t(); }
+  else { bbl.textContent=text; msgs.scrollTop=msgs.scrollHeight; }
+}
+
+async function sendMediaAIMsg() {
+  const inp = document.getElementById('media-chat-inp');
+  const v = inp?.value?.trim(); if(!v) return;
+  inp.value=''; addMediaBubble(v,'user',false);
+  mediaChatHistory.push({role:'user',parts:[{text:v}]});
+  const snd = document.getElementById('media-ai-snd'); if(snd)snd.disabled=true;
+  const td = document.createElement('div'); td.className='cmsg ai-msg'; td.id='media-typing';
+  td.innerHTML='<div class="cmsg-av ai-av">AI</div><div class="cmsg-bbl"><div class="typing-dots"><span></span><span></span><span></span></div></div>';
+  const msgs = document.getElementById('media-chat-msgs');
+  if(msgs){msgs.appendChild(td);msgs.scrollTop=msgs.scrollHeight;}
+  const title = document.getElementById('media-modal-title').textContent;
+  const type = mediaType;
+  const sys = '你是《'+title+'》的专属情报员，精通这部'+(type==='anime'?'动漫':'漫画')+'的剧情、角色、世界观、名场面和制作背后的故事。用中文、200字以内回答，不用Markdown，不要说"当然"开头。';
+  try {
+    const res = await fetch(SB_URL+'/functions/v1/gemini-proxy',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},
+      body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:mediaChatHistory,generationConfig:{maxOutputTokens:500,temperature:1.1}})
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
+    const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'（AI 暂时离线）';
+    const t=document.getElementById('media-typing'); if(t)t.remove();
+    addMediaBubble(reply,'ai',true);
+    mediaChatHistory.push({role:'model',parts:[{text:reply}]});
+    if(mediaChatHistory.length>20) mediaChatHistory=mediaChatHistory.slice(-20);
+  } catch(e) {
+    const t=document.getElementById('media-typing'); if(t)t.remove();
+    addMediaBubble('连接失败：'+e.message,'ai',false);
+  }
+  if(snd)snd.disabled=false;
+  if(inp)inp.focus();
 }
 
 
