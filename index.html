@@ -217,6 +217,27 @@
     .typing-dots span:nth-child(2){animation-delay:.2s}
     .typing-dots span:nth-child(3){animation-delay:.4s}
     @keyframes tdot{0%,100%{opacity:.35}50%{opacity:1}}
+
+    /* 聊天总结 */
+    .sum-box{margin-top:10px;border:1px solid rgba(64,232,196,.2);border-radius:12px;overflow:hidden}
+    .sum-latest{padding:1rem 1.2rem;background:rgba(64,232,196,.04)}
+    .sum-latest-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+    .sum-lbl{font-size:.72rem;color:var(--acc2);font-weight:500;text-transform:uppercase;letter-spacing:1px;display:flex;align-items:center;gap:6px}
+    .sum-date{font-size:.68rem;color:var(--t3);font-family:'DM Mono',monospace}
+    .sum-text{font-size:.88rem;color:var(--t);line-height:1.65;white-space:pre-wrap}
+    .sum-old-toggle{width:100%;padding:7px 1.2rem;background:rgba(255,255,255,.02);border:none;border-top:1px solid rgba(64,232,196,.12);color:var(--t3);font-size:.72rem;font-family:'DM Mono',monospace;cursor:pointer;text-align:left;transition:all .15s}
+    .sum-old-toggle:hover{color:var(--t2);background:rgba(255,255,255,.04)}
+    .sum-old-list{display:none;border-top:1px solid rgba(64,232,196,.12)}
+    .sum-old-list.open{display:block}
+    .sum-old-item{padding:.9rem 1.2rem;border-bottom:1px solid var(--b)}
+    .sum-old-item:last-child{border-bottom:none}
+    .sum-old-date{font-size:.68rem;color:var(--t3);font-family:'DM Mono',monospace;margin-bottom:5px}
+    .sum-old-text{font-size:.82rem;color:var(--t2);line-height:1.6;white-space:pre-wrap}
+    /* 生成总结按钮 */
+    .chat-sum-bar{padding:6px 14px 10px;flex-shrink:0;display:flex;justify-content:flex-end}
+    .chat-sum-btn{padding:5px 14px;border-radius:7px;font-size:.73rem;font-family:'DM Mono',monospace;border:1px solid rgba(64,232,196,.3);background:rgba(64,232,196,.06);color:var(--acc2);cursor:pointer;transition:all .15s}
+    .chat-sum-btn:hover{background:rgba(64,232,196,.15)}
+    .chat-sum-btn:disabled{opacity:.4;cursor:not-allowed}
     @media(max-width:640px){.stats{grid-template-columns:repeat(3,1fr)}.cg{grid-template-columns:1fr}.row2{grid-template-columns:1fr}.disc-header{flex-direction:column;align-items:flex-start}.disc-tabs{flex-wrap:wrap}}
   </style>
 </head>
@@ -346,6 +367,14 @@
         <div id="d-rev-val" class="d-rev-val"></div>
       </div>
       <button class="d-ai-btn" onclick="toggleAIChat()"><span>⬡</span><span id="d-ai-btn-txt">和 AI 聊聊这款游戏</span></button>
+      <div id="sum-box" style="display:none" class="sum-box">
+        <div class="sum-latest">
+          <div class="sum-latest-hdr"><span class="sum-lbl">⬡ 聊天笔记</span><span class="sum-date" id="sum-latest-date"></span></div>
+          <div class="sum-text" id="sum-latest-text"></div>
+        </div>
+        <button class="sum-old-toggle" id="sum-old-toggle" onclick="toggleOldSums()" style="display:none"></button>
+        <div class="sum-old-list" id="sum-old-list"></div>
+      </div>
     </div>
     <div class="chat-panel" id="chat-panel">
       <div class="chat-hdr">
@@ -358,6 +387,7 @@
         <input class="chat-inp" id="chat-inp" placeholder="问 AI 任何关于这款游戏的问题…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAIMsg();}">
         <button class="chat-snd" id="chat-snd" onclick="sendAIMsg()">发送</button>
       </div>
+      <div class="chat-sum-bar"><button class="chat-sum-btn" id="chat-sum-btn" onclick="generateSummary()">📝 生成本次总结</button></div>
     </div>
     <div class="mfoot">
       <button class="btn btn-d" onclick="delGame()">删除</button>
@@ -595,6 +625,7 @@ function openDetail(id){
   document.getElementById('d-ai-btn-txt').textContent='和 AI 聊聊这款游戏';
   document.getElementById('chat-msgs').innerHTML='';
   document.getElementById('chat-quick').innerHTML='';
+  loadSummaries(id);
   document.getElementById('ov-detail').classList.add('on');
 }
 function openEditFromDetail(){closeOv('ov-detail');openEdit(editId);}
@@ -868,6 +899,81 @@ async function sendAIMsg(){
   }catch(e){hideTyping();addAIBubble(`连接失败：${e.message}`,'ai',false);}
   snd.disabled=false;document.getElementById('chat-inp').focus();
 }
+/* ===== 聊天总结 ===== */
+let currentSummaries=[];
+
+async function loadSummaries(gameId){
+  document.getElementById('sum-box').style.display='none';
+  currentSummaries=[];
+  const{data:{session}}=await db.auth.getSession();const user=session?.user;
+  if(!user)return;
+  const{data}=await db.from('chat_summaries').select('*').eq('user_id',user.id).eq('game_id',String(gameId)).order('created_at',{ascending:false});
+  if(!data||!data.length)return;
+  currentSummaries=data;
+  renderSummaries();
+}
+
+function renderSummaries(){
+  if(!currentSummaries.length)return;
+  const box=document.getElementById('sum-box');
+  const latest=currentSummaries[0];
+  document.getElementById('sum-latest-text').textContent=latest.summary;
+  document.getElementById('sum-latest-date').textContent=new Date(latest.created_at).toLocaleDateString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  box.style.display='block';
+  const oldToggle=document.getElementById('sum-old-toggle');
+  const oldList=document.getElementById('sum-old-list');
+  if(currentSummaries.length>1){
+    const oldCount=currentSummaries.length-1;
+    oldToggle.style.display='block';
+    oldToggle.textContent=`查看更早的 ${oldCount} 条笔记 ▾`;
+    oldList.innerHTML=currentSummaries.slice(1).map(s=>`
+      <div class="sum-old-item">
+        <div class="sum-old-date">${new Date(s.created_at).toLocaleDateString('zh-CN',{year:'numeric',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+        <div class="sum-old-text">${esc(s.summary)}</div>
+      </div>`).join('');
+  }else{
+    oldToggle.style.display='none';
+    oldList.innerHTML='';
+  }
+}
+
+function toggleOldSums(){
+  const list=document.getElementById('sum-old-list');
+  const btn=document.getElementById('sum-old-toggle');
+  const isOpen=list.classList.toggle('open');
+  const oldCount=currentSummaries.length-1;
+  btn.textContent=isOpen?`收起 ▴`:`查看更早的 ${oldCount} 条笔记 ▾`;
+}
+
+async function generateSummary(){
+  if(aiChatHistory.length<2){alert('至少聊几句再生成总结吧～');return;}
+  const btn=document.getElementById('chat-sum-btn');
+  btn.disabled=true;btn.textContent='生成中…';
+  const g=aiCurrentGame;
+  const historyText=aiChatHistory.map(m=>`${m.role==='user'?'玩家':'AI'}：${m.parts[0].text}`).join('\n');
+  const prompt=`以下是玩家和AI就游戏《${g.name}》的一段对话记录：\n\n${historyText}\n\n请用100-150字为这段对话生成一条简洁的笔记总结，记录对话中涉及的关键信息、攻略要点或有价值的内容。用第三人称或陈述句，不要用"玩家问了"这种描述方式，直接写结论和要点。纯文字，不用Markdown。`;
+  try{
+    const res=await fetch(`${SB_URL}/functions/v1/gemini-proxy`,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:300,temperature:0.7}})});
+    if(!res.ok)throw new Error(`HTTP ${res.status}`);
+    const data=await res.json();
+    const summary=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    if(!summary)throw new Error('AI 返回为空');
+    const{data:{session}}=await db.auth.getSession();const user=session?.user;
+    if(!user){alert('请先登录才能保存总结');btn.disabled=false;btn.textContent='📝 生成本次总结';return;}
+    const gameId=String(editId);
+    const{error}=await db.from('chat_summaries').insert({user_id:user.id,game_id:gameId,summary});
+    if(error)throw new Error(error.message);
+    currentSummaries.unshift({summary,created_at:new Date().toISOString(),game_id:gameId,user_id:user.id});
+    renderSummaries();
+    btn.textContent='✓ 已保存';
+    setTimeout(()=>{btn.disabled=false;btn.textContent='📝 生成本次总结';},2000);
+  }catch(e){
+    alert('生成失败：'+e.message);
+    btn.disabled=false;btn.textContent='📝 生成本次总结';
+  }
+}
+
+
 init();
 </script>
 </body>
