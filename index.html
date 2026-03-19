@@ -334,6 +334,33 @@
     .pkm-log-text{font-size:.8rem;color:var(--t2);line-height:1.6}
     .pkm-log-series{font-size:.65rem;color:var(--acc);font-family:'DM Mono',monospace;margin-top:3px}
     .pkm-empty{text-align:center;padding:2rem;color:var(--t3);font-size:.82rem}
+    /* 系列弹窗 */
+    .series-modal{max-width:560px}
+    .series-hero{height:120px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--bg3)}
+    .series-hero-bg{position:absolute;inset:0;opacity:.15;background-size:cover;background-position:center;filter:blur(20px)}
+    .series-hero-content{position:relative;z-index:2;text-align:center}
+    .series-hero-status{display:inline-flex;align-items:center;gap:8px;padding:6px 18px;border-radius:99px;font-size:.8rem;font-family:'DM Mono',monospace;font-weight:500;border:1px solid;margin-bottom:6px;cursor:pointer;transition:all .2s}
+    .series-hero-title{font-family:'Noto Serif SC',serif;font-size:1.5rem;font-weight:600;color:var(--t)}
+    .series-hero-year{font-size:.72rem;color:var(--t3);font-family:'DM Mono',monospace;margin-top:3px}
+    .series-status-pills{display:flex;gap:6px;justify-content:center;margin-top:10px}
+    .series-pill{padding:5px 16px;border-radius:99px;font-size:.75rem;font-family:'DM Mono',monospace;border:1px solid var(--b);background:var(--bg3);color:var(--t3);cursor:pointer;transition:all .15s}
+    .series-pill:hover{border-color:var(--b2);color:var(--t2)}
+    .series-pill.active-none{border-color:var(--t3);color:var(--t3);background:rgba(255,255,255,.05)}
+    .series-pill.active-played{border-color:var(--acc2);color:var(--acc2);background:rgba(64,232,196,.1)}
+    .series-pill.active-cleared{border-color:var(--acc);color:var(--acc);background:rgba(212,240,74,.1)}
+    .series-body{padding:1.2rem 1.5rem}
+    .series-grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+    .series-inp-group{display:flex;flex-direction:column;gap:5px}
+    .series-inp-label{font-size:.7rem;color:var(--t3);letter-spacing:.06em;text-transform:uppercase}
+    .series-inp{background:var(--bg3);border:1px solid var(--b);border-radius:8px;padding:8px 12px;color:var(--t);font-family:inherit;font-size:.85rem;outline:none;transition:border .15s;width:100%}
+    .series-inp:focus{border-color:rgba(212,240,74,.4)}
+    .series-textarea{background:var(--bg3);border:1px solid var(--b);border-radius:8px;padding:8px 12px;color:var(--t);font-family:inherit;font-size:.85rem;outline:none;resize:vertical;height:90px;width:100%;transition:border .15s}
+    .series-textarea:focus{border-color:rgba(212,240,74,.4)}
+    .series-ai-bar{display:flex;gap:8px;margin-top:8px;padding-top:10px;border-top:1px solid var(--b)}
+    .series-ai-btn{flex:1;padding:8px;border-radius:8px;border:1px dashed rgba(212,240,74,.35);background:rgba(212,240,74,.04);color:var(--acc);font-size:.78rem;font-family:'DM Mono',monospace;cursor:pointer;transition:all .2s}
+    .series-ai-btn:hover{background:rgba(212,240,74,.1)}
+    .series-ai-btn:disabled{opacity:.4;cursor:not-allowed}
+
     /* 系列追踪 */
     .pkm-series-box{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);padding:1rem}
     .pkm-series-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
@@ -635,50 +662,49 @@
 <!-- 系列追踪详情弹窗 -->
 <div class="ov" id="ov-series" onclick="if(event.target===this)closeOv('ov-series')">
   <div class="modal series-modal">
-    <div class="mh">
-      <div>
-        <h2 id="series-modal-title" style="font-family:'Noto Serif SC',serif">系列名称</h2>
-        <div id="series-modal-year" style="font-size:.72rem;color:var(--t3);font-family:'DM Mono',monospace;margin-top:2px"></div>
+    <!-- 顶部英雄区 -->
+    <div class="series-hero" id="series-hero">
+      <div class="series-hero-bg" id="series-hero-bg"></div>
+      <div class="series-hero-content">
+        <div class="series-hero-title" id="series-modal-title">系列名称</div>
+        <div class="series-hero-year" id="series-modal-year"></div>
+        <!-- 状态切换胶囊 -->
+        <div class="series-status-pills">
+          <div class="series-pill" id="spill-none" onclick="setSeriesStatus('none')">— 未游玩</div>
+          <div class="series-pill" id="spill-played" onclick="setSeriesStatus('played')">▶ 游玩中</div>
+          <div class="series-pill" id="spill-cleared" onclick="setSeriesStatus('cleared')">✓ 已通关</div>
+        </div>
       </div>
-      <button class="btn btn-sm" onclick="closeOv('ov-series')">✕</button>
+      <button class="btn btn-sm" onclick="closeOv('ov-series')" style="position:absolute;top:10px;right:10px;z-index:3">✕</button>
     </div>
-    <div class="mc" style="padding:1.2rem 1.5rem">
-      <div class="series-field">
-        <label>游玩状态</label>
-        <select id="series-status-sel">
-          <option value="none">— 未游玩</option>
-          <option value="played">▶ 游玩中</option>
-          <option value="cleared">✓ 已通关</option>
-        </select>
-      </div>
-      <div class="series-row2">
-        <div class="series-field">
-          <label>开始日期</label>
-          <input type="date" id="series-start-inp">
+    <!-- 表单区 -->
+    <div class="series-body">
+      <div class="series-grid2">
+        <div class="series-inp-group">
+          <span class="series-inp-label">📅 开始日期</span>
+          <input type="date" id="series-start-inp" class="series-inp">
         </div>
-        <div class="series-field">
-          <label>通关/结束日期</label>
-          <input type="date" id="series-end-inp">
+        <div class="series-inp-group">
+          <span class="series-inp-label">🏁 通关日期</span>
+          <input type="date" id="series-end-inp" class="series-inp">
         </div>
-      </div>
-      <div class="series-row2">
-        <div class="series-field">
-          <label>游玩时长（小时）</label>
-          <input type="number" id="series-hours-inp" placeholder="例：40" min="0" max="9999">
+        <div class="series-inp-group">
+          <span class="series-inp-label">⏱ 游玩时长（小时）</span>
+          <input type="number" id="series-hours-inp" class="series-inp" placeholder="例：40" min="0" max="9999">
         </div>
-        <div class="series-field">
-          <label>王牌宝可梦 🏆</label>
-          <input type="text" id="series-ace-inp" placeholder="例：妙蛙花、皮卡丘" autocomplete="off">
+        <div class="series-inp-group">
+          <span class="series-inp-label">🏆 王牌宝可梦</span>
+          <input type="text" id="series-ace-inp" class="series-inp" placeholder="例：妙蛙花、皮卡丘" autocomplete="off">
         </div>
       </div>
-      <div class="series-field">
-        <label>游玩笔记</label>
-        <textarea id="series-notes-inp" placeholder="记录这部作品的感受、印象深刻的剧情、通关心得…"></textarea>
+      <div class="series-inp-group" style="margin-bottom:0">
+        <span class="series-inp-label">📝 游玩笔记</span>
+        <textarea id="series-notes-inp" class="series-textarea" placeholder="记录这部作品的感受、印象深刻的剧情、通关心得…"></textarea>
       </div>
-    </div>
-    <div class="mfoot">
-      <button class="btn" onclick="closeOv('ov-series')">取消</button>
-      <button class="btn btn-a" id="series-save-btn" onclick="saveSeriesDetail()">保存记录</button>
+      <div class="series-ai-bar">
+        <button class="series-ai-btn" id="series-ai-btn" onclick="genSeriesAI()">⬡ AI 帮我生成一段游玩回顾</button>
+        <button class="btn btn-a" id="series-save-btn" onclick="saveSeriesDetail()" style="white-space:nowrap">保存记录</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1975,15 +2001,63 @@ function openSeriesDetail(el){
   const s=PKM_SERIES.find(x=>x.id===seriesId);if(!s)return;
   const log=pkmSeriesLogs[seriesId]||{};
   document.getElementById('series-modal-title').textContent=s.name;
-  document.getElementById('series-modal-year').textContent=s.year+'年发行';
-  document.getElementById('series-status-sel').value=log.status||'none';
+  document.getElementById('series-modal-year').textContent=s.year+' 年发行';
   document.getElementById('series-start-inp').value=log.start_date||'';
   document.getElementById('series-end-inp').value=log.end_date||'';
   document.getElementById('series-hours-inp').value=log.play_hours||'';
   document.getElementById('series-ace-inp').value=log.ace_pokemon||'';
   document.getElementById('series-notes-inp').value=log.notes||'';
   document.getElementById('series-save-btn').dataset.sid=seriesId;
+  document.getElementById('series-ai-btn').disabled=false;
+  document.getElementById('series-ai-btn').textContent='⬡ AI 帮我生成一段游玩回顾';
+  // 状态胶囊高亮
+  setSeriesStatusUI(log.status||'none');
+  // 英雄区背景色
+  const colors={none:'linear-gradient(135deg,#1b1d21,#141518)',played:'linear-gradient(135deg,rgba(64,232,196,.15),rgba(13,14,16,1))',cleared:'linear-gradient(135deg,rgba(212,240,74,.15),rgba(13,14,16,1))'};
+  document.getElementById('series-hero').style.background=colors[log.status||'none'];
   document.getElementById('ov-series').classList.add('on');
+}
+
+function setSeriesStatus(st){
+  setSeriesStatusUI(st);
+  const colors={none:'linear-gradient(135deg,#1b1d21,#141518)',played:'linear-gradient(135deg,rgba(64,232,196,.15),rgba(13,14,16,1))',cleared:'linear-gradient(135deg,rgba(212,240,74,.15),rgba(13,14,16,1))'};
+  document.getElementById('series-hero').style.background=colors[st];
+  // 存到 hidden input
+  document.getElementById('series-save-btn').dataset.status=st;
+}
+
+function setSeriesStatusUI(st){
+  ['none','played','cleared'].forEach(s=>{
+    const el=document.getElementById('spill-'+s);
+    if(!el)return;
+    el.className='series-pill'+(s===st?' active-'+s:'');
+  });
+  document.getElementById('series-save-btn').dataset.status=st;
+}
+
+async function genSeriesAI(){
+  const btn=document.getElementById('series-ai-btn');
+  const sid=document.getElementById('series-save-btn').dataset.sid;
+  const s=PKM_SERIES.find(x=>x.id===sid);if(!s)return;
+  const status=document.getElementById('series-save-btn').dataset.status||'none';
+  const hours=document.getElementById('series-hours-inp').value;
+  const ace=document.getElementById('series-ace-inp').value;
+  const notes=document.getElementById('series-notes-inp').value;
+  if(status==='none'){alert('请先标记游玩状态再生成回顾');return;}
+  btn.disabled=true;btn.textContent='生成中…';
+  const prompt='我玩了宝可梦系列「'+s.name+'」（'+s.year+'年），状态：'+(status==='cleared'?'已通关':'游玩中')+'，'+(hours?'游玩了约'+hours+'小时，':'')+(ace?'王牌宝可梦是'+ace+'，':'')+(notes?'我的感受：'+notes:'')+'。请用第一人称，以训练师日记的口吻，帮我写一段100-120字的游玩回顾，融入这部作品的氛围和特色，不要出现AI这个词，纯文字不用Markdown。';
+  try{
+    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:300,temperature:0.95}})});
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    const text=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    if(!text)throw new Error('返回为空');
+    const ta=document.getElementById('series-notes-inp');
+    ta.value=(ta.value?ta.value+'\n\n':'')+'[AI 回顾]\n'+text;
+
+    btn.textContent='⬡ 再生成一段';
+  }catch(e){alert('生成失败：'+e.message);}
+  btn.disabled=false;
 }
 
 async function saveSeriesDetail(){
@@ -1995,7 +2069,7 @@ async function saveSeriesDetail(){
   const payload={
     user_id:session.user.id,
     series_id:sid,
-    status:document.getElementById('series-status-sel').value,
+    status:btn.dataset.status||'none',
     start_date:document.getElementById('series-start-inp').value||null,
     end_date:document.getElementById('series-end-inp').value||null,
     play_hours:parseInt(document.getElementById('series-hours-inp').value)||0,
