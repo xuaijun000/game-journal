@@ -421,9 +421,13 @@
     .media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
     .media-star{background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--t3);padding:0 2px;transition:color .1s;line-height:1}
     .media-star.on{color:#fbbf24}
-    .mc{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);overflow:hidden;cursor:pointer;transition:all .25s;animation:fu .2s ease both}
-    .mc:hover{border-color:var(--acc);transform:translateY(-4px);box-shadow:0 10px 24px rgba(0,0,0,.4)}
-    .mc-cover{width:100%;height:180px;object-fit:cover;display:block;background:var(--bg3)}
+    .mc{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);overflow:hidden;cursor:pointer;transition:all .3s cubic-bezier(.25,.46,.45,.94);animation:fu .2s ease both}
+    .mc:hover{border-color:var(--acc);transform:translateY(-5px);box-shadow:0 12px 24px rgba(0,0,0,.4)}
+    .mc-cover-wrap{position:relative;width:100%;height:180px;overflow:hidden;background:var(--bg3)}
+    .mc-cover-bg{position:absolute;inset:-20px;background-size:cover;background-position:center;filter:blur(15px);opacity:.35;transition:all .4s ease}
+    .mc-cover{position:relative;z-index:2;width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s ease}
+    .mc:hover .mc-cover{transform:scale(1.08) rotate(2deg)}
+    .mc:hover .mc-cover-bg{transform:scale(1.1);opacity:.6}
     .mc-cover-ph{width:100%;height:180px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:3rem;opacity:.2}
     .mc-body{padding:.85rem}
     .mc-title{font-size:.88rem;font-weight:500;line-height:1.35;margin-bottom:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -1261,7 +1265,7 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 
 /* ===== 时间轴模块 ===== */
 async function callTimelineAI(systemPrompt,userMsg){
-  const res=await fetch(`${SB_URL}/functions/v1/gemini-proxy`,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`},body:JSON.stringify({system_instruction:{parts:[{text:systemPrompt}]},contents:[{role:'user',parts:[{text:userMsg}]}],generationConfig:{maxOutputTokens:1500,temperature:0.7}})});
+  const res=await fetch(`${SB_URL}/functions/v1/gemini-proxy`,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`},body:JSON.stringify({system_instruction:{parts:[{text:systemPrompt}]},contents:[{role:'user',parts:[{text:userMsg}]}],generationConfig:{maxOutputTokens:8000,temperature:0.7}})});
   const data=await res.json();
   return data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'';
 }
@@ -1316,21 +1320,39 @@ function getSteamHeader(appid){return appid?`https://cdn.cloudflare.steamstatic.
 function getSteamScreenshots(appid,count=3){if(!appid)return[];return Array.from({length:count},(_,i)=>`https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/ss_${i+1}.600x338.jpg`);}
 
 async function generateGameTimeline(gameName){
-  const sys=`你是游戏攻略专家。根据游戏名称生成主线剧情时间轴。严格输出JSON，不要有任何其他文字或代码块标记。
-格式：{"chapters":[{"title":"章节名","imageQuery":"英文图片搜索关键词，如 'Witcher 3 White Orchard gameplay screenshot'","coverUrl":null,"userImages":[],"nodes":[{"text":"关键节点（15字内，不剧透结局）","ep":""}]}]}
-章节数4-8个，每章节点2-5个。imageQuery必须是英文，包含游戏名+章节场景关键词，用于搜索该章节的游戏截图。`;
-  const raw=await callTimelineAI(sys,`游戏名称：${gameName}`);
+  const sys=`你是专业游戏攻略作者。根据游戏名称生成【完整】主线剧情时间轴，必须覆盖游戏从序章到最终结局的所有主线章节，绝对不能省略或合并章节。严格输出JSON，不要有任何其他文字或代码块标记。
+
+格式：
+{"chapters":[{"title":"章节名称（与游戏内章节名一致）","imageQuery":"英文截图搜索词，格式：'游戏英文名 章节场景关键词 gameplay screenshot'","coverUrl":null,"userImages":[],"nodes":[{"text":"该章节内关键剧情事件，15字内，描述发生了什么但不剧透最终结局","ep":""}]}]}
+
+严格要求：
+1. 章节数量必须与游戏实际章节数完全一致，短游戏（<5章）按实际来，长游戏（>15章）每个章节都要列出
+2. 每个章节内节点数3-6个，描述该章节内的关键剧情推进事件
+3. 节点描述用动词开头，简洁有力，如「抵达海拉鲁王国」「击败甘农多夫」
+4. imageQuery必须是英文，包含游戏英文名+该章节最具代表性的场景或事件关键词
+5. 绝对不允许用「…」「等」「其他章节」代替实际内容`;
+  const raw=await callTimelineAI(sys,`游戏名称：${gameName}\n\n请生成该游戏完整的主线章节时间轴，覆盖所有章节，不要省略任何一章。`);
   const cleaned=raw.replace(/^```json\s*/i,'').replace(/^```\s*/i,'').replace(/```\s*$/i,'').trim();
   return JSON.parse(cleaned);
 }
+
 async function generateMediaTimeline(mediaName,mediaType){
   const typeTxt=mediaType==='ANIME'?'动漫':'漫画';
   const epWord=mediaType==='ANIME'?'EP':'第';
   const epUnit=mediaType==='ANIME'?'集':'话';
-  const sys=`你是${typeTxt}资深爱好者。根据作品名称生成主线剧情篇章时间轴。严格输出JSON，不要有任何其他文字或代码块标记。
-格式：{"arcs":[{"title":"篇章名","epRange":"${epWord}1-24${epUnit}","imageQuery":"英文图片搜索关键词，如 'Jujutsu Kaisen Sukuna awakening screenshot'","coverUrl":null,"userImages":[],"nodes":[{"text":"关键剧情节点（15字内，不剧透结局）","ep":"${epWord}1${epUnit}"}]}]}
-篇章数4-8个，每篇节点2-5个。imageQuery必须是英文，包含作品名+该篇章标志性场景或角色关键词，用于搜索该篇章的截图。`;
-  const raw=await callTimelineAI(sys,`${typeTxt}名称：${mediaName}`);
+  const nodeLabel=mediaType==='ANIME'?'集':'话';
+  const sys=`你是${typeTxt}资深爱好者和剧情分析师。根据作品名称生成【完整】剧情时间轴，必须覆盖每一${nodeLabel}的剧情，绝对不能省略。严格输出JSON，不要有任何其他文字或代码块标记。
+
+格式：
+{"arcs":[{"title":"篇章名（如「渡鸦之篇」「空岛篇」）","epRange":"${epWord}1-24${epUnit}","imageQuery":"英文图片搜索词，格式：'作品英文名 篇章标志性角色或场景 screenshot'","coverUrl":null,"userImages":[],"nodes":[{"text":"该集/话的核心剧情事件，15字内，用动词开头描述发生了什么","ep":"${epWord}1${epUnit}"}]}]}
+
+严格要求：
+1. 按剧情弧（Arc）划分篇章，每个Arc覆盖对应的集数/话数范围
+2. 【最重要】每一${nodeLabel}必须有且仅有一个节点，ep字段填写该节点对应的集数/话数（如「${epWord}3${epUnit}」）
+3. 节点描述聚焦该集/话最重要的剧情事件，不剧透后续
+4. 节点按集数/话数顺序排列，不能跳过任何一集/话
+5. imageQuery必须英文，包含作品英文名+该篇章代表性场景`;
+  const raw=await callTimelineAI(sys,`${typeTxt}名称：${mediaName}\n\n请生成该作品完整时间轴，每一${nodeLabel}都要有一个节点，覆盖全部内容，不能省略任何一${nodeLabel}。`);
   const cleaned=raw.replace(/^```json\s*/i,'').replace(/^```\s*/i,'').replace(/```\s*$/i,'').trim();
   return JSON.parse(cleaned);
 }
@@ -2282,7 +2304,9 @@ function renderMedia(type){
     const stCls=`ms-${m.status}`;
     const stText={watching:'观看中',reading:'阅读中',completed:type==='anime'?'已看完':'已读完',planned:type==='anime'?'想看':'想读',paused:'暂停',dropped:'放弃'}[m.status];
     return`<div class="mc" onclick="openMediaEdit('${type}','${m.id||m._id}')">
-      ${m.cover?`<img class="mc-cover" src="${m.cover}" loading="lazy">`:`<div class="mc-cover-ph">🎬</div>`}
+      ${m.cover
+        ?`<div class="mc-cover-wrap"><div class="mc-cover-bg" style="background-image:url('${esc(m.cover)}')"></div><img class="mc-cover" src="${esc(m.cover)}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'"></div>`
+        :`<div class="mc-cover-ph">${type==='anime'?'🎬':'📖'}</div>`}
       <div class="mc-body"><div class="mc-title">${esc(m.title)}</div>
       <div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div><div class="prog-txt">${progTxt}</div></div>
       <div class="mc-foot"><div class="stars">${'★'.repeat(m.rating||0)}${'☆'.repeat(5-(m.rating||0))}</div><span class="stxt ${stCls}">${stText}</span></div></div></div>`;
