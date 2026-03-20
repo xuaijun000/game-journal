@@ -2235,8 +2235,7 @@ function openMediaRankDetail(type,idx){
   addBtn.onclick=()=>{
     if(already)return;
     const gj={title:item.title,cover,total:item.episodes||item.chapters||0,year:item.year||'',genres:(item.genres||[]).map(g=>g.name||g)};
-    addMediaFromRank(type,gj,'disc-add-btn').then(()=>{addBtn.textContent='✓ 已收录';addBtn.classList.add('added');addBtn.disabled=true;});
-  };
+    addMediaFromRank(type,gj,'disc-add-btn').then(()=>{addBtn.textContent='✓ 已收录';addBtn.classList.add('added');addBtn.disabled=true;});  };
 
   // 重置AI聊天
   document.getElementById('disc-chat-area').classList.remove('open');
@@ -2261,7 +2260,7 @@ function openMediaRankDetail(type,idx){
 }
 async function addMediaFromRank(type,item,bid){
   const btn=document.getElementById(bid);if(!btn)return;btn.textContent='添加中…';btn.disabled=true;
-  const newItem={title:item.title,cover:item.cover,total_eps:item.total||0,current_eps:0,status:type==='anime'?'planned':'planned',rating:0,review:'',genres:item.genres||[]};
+  const newItem={title:item.title,cover:item.cover,episode_total:item.total||0,episode_current:0,status:type==='anime'?'planned':'planned',rating:0,review:'',genres:item.genres||[]};
   const{data:{session}}=await db.auth.getSession();
   if(session?.user){const{data}=await db.from(type+'_list').insert({...newItem,user_id:session.user.id}).select().single();if(data)mediaData[type].unshift(data);}
   else{mediaData[type].unshift({_id:Date.now().toString(36),created_at:new Date().toISOString(),...newItem});localStorage.setItem(type+'_list',JSON.stringify(mediaData[type]));}
@@ -2278,8 +2277,8 @@ function renderMedia(type){
   const grid=document.getElementById(`${type}-grid`);
   if(!list.length){grid.innerHTML='<div class="empty">没有记录</div>';return;}
   grid.innerHTML=list.map(m=>{
-    const progTxt=m.total_eps?`${m.current_eps||0} / ${m.total_eps}`:`${m.current_eps||0} 话/集`;
-    const pct=m.total_eps?Math.min(100,((m.current_eps||0)/m.total_eps)*100):0;
+    const progTxt=m.episode_total?`${m.episode_current||0} / ${m.episode_total}`:`${m.episode_current||0} 话/集`;
+    const pct=m.episode_total?Math.min(100,((m.episode_current||0)/m.episode_total)*100):0;
     const stCls=`ms-${m.status}`;
     const stText={watching:'观看中',reading:'阅读中',completed:type==='anime'?'已看完':'已读完',planned:type==='anime'?'想看':'想读',paused:'暂停',dropped:'放弃'}[m.status];
     return`<div class="mc" onclick="openMediaEdit('${type}','${m.id||m._id}')">
@@ -2310,8 +2309,8 @@ function openMediaEdit(type,id){
   const m=mediaData[type].find(x=>(x.id||x._id)==id);if(!m)return;
   document.getElementById('media-modal-title').textContent=m.title;document.getElementById('media-modal-sub').textContent='编辑记录';
   document.getElementById('media-search-wrap').style.display='none';
-  document.getElementById('media-status').value=m.status;document.getElementById('media-current').value=m.current_eps||'';
-  document.getElementById('media-total').value=m.total_eps||'';document.getElementById('media-review').value=m.review||'';
+  document.getElementById('media-status').value=m.status;document.getElementById('media-current').value=m.episode_current||'';
+  document.getElementById('media-total').value=m.episode_total||'';document.getElementById('media-review').value=m.review||'';
   document.getElementById('media-genre-chips').innerHTML=(m.genres||[]).map(g=>`<span class="genre-chip on">${g}</span>`).join('');
   if(m.cover){document.getElementById('media-modal-cover').src=m.cover;document.getElementById('media-modal-cover').style.display='block';document.getElementById('media-modal-bg').style.backgroundImage=`url(${m.cover})`;}
   setMediaRating(m.rating||0);mediaCurrentItem=m;
@@ -2350,11 +2349,11 @@ async function saveMedia(){
   if(title==='添加动漫'||title==='添加漫画'){alert('请先搜索并选择作品');return;}
   const coverUrl=document.getElementById('media-modal-cover').dataset.url||document.getElementById('media-modal-cover').src;
   const genres=[...document.querySelectorAll('#media-genre-chips .genre-chip')].map(c=>c.textContent);
-  const p={title,cover:coverUrl&&coverUrl!==window.location.href?coverUrl:'',status:document.getElementById('media-status').value,current_eps:parseInt(document.getElementById('media-current').value)||0,total_eps:parseInt(document.getElementById('media-total').value)||null,rating:mediaStar,review:document.getElementById('media-review').value.trim(),genres};
+  const p={title,cover:coverUrl&&coverUrl!==window.location.href?coverUrl:'',status:document.getElementById('media-status').value,episode_current:parseInt(document.getElementById('media-current').value)||0,episode_total:parseInt(document.getElementById('media-total').value)||null,rating:mediaStar,review:document.getElementById('media-review').value.trim(),genres};
   const{data:{session}}=await db.auth.getSession();const user=session?.user;const type=currentMediaType;
   if(user){
     if(editMediaId){const{error}=await db.from(type+'_list').update(p).eq('id',editMediaId).eq('user_id',user.id);if(!error){const i=mediaData[type].findIndex(x=>x.id==editMediaId);if(i>-1)mediaData[type][i]={...mediaData[type][i],...p};}}
-    else{const{data,error}=await db.from(type+'_list').insert({...p,user_id:user.id}).select().single();if(!error&&data)mediaData[type].unshift(data);}
+    else{const{data,error}=await db.from(type+'_list').insert({...p,user_id:user.id}).select().single();if(error){alert('保存失败：'+error.message);return;}if(data)mediaData[type].unshift(data);}
   }else{
     if(editMediaId){const i=mediaData[type].findIndex(x=>x._id==editMediaId);if(i>-1)mediaData[type][i]={...mediaData[type][i],...p};}
     else{mediaData[type].unshift({_id:Date.now().toString(36),created_at:new Date().toISOString(),...p});}
