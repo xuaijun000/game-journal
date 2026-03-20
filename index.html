@@ -1341,20 +1341,59 @@ async function generateMediaTimeline(mediaName,mediaType){
   const epWord=mediaType==='ANIME'?'EP':'第';
   const epUnit=mediaType==='ANIME'?'集':'话';
   const nodeLabel=mediaType==='ANIME'?'集':'话';
-  const sys=`你是${typeTxt}资深爱好者和剧情分析师。根据作品名称生成【完整】剧情时间轴，必须覆盖每一${nodeLabel}的剧情，绝对不能省略。严格输出JSON，不要有任何其他文字或代码块标记。
+
+  // 先问 AI 总集数，再决定是否分批
+  const countSys=`你是${typeTxt}数据库。只输出一个数字，不要其他任何文字。`;
+  const countRaw=await callTimelineAI(countSys,`《${mediaName}》一共有多少${nodeLabel}？只输出数字。`);
+  const totalEps=parseInt(countRaw.trim())||0;
+
+  const batchSize=120; // 每批最多120集
+  const sys=(startEp,endEp)=>`你是${typeTxt}资深爱好者和剧情分析师。根据作品名称生成指定范围内的剧情时间轴。严格输出JSON，不要有任何其他文字或代码块标记。
 
 格式：
-{"arcs":[{"title":"篇章名（如「渡鸦之篇」「空岛篇」）","epRange":"${epWord}1-24${epUnit}","imageQuery":"英文图片搜索词，格式：'作品英文名 篇章标志性角色或场景 screenshot'","coverUrl":null,"userImages":[],"nodes":[{"text":"该集/话的核心剧情事件，15字内，用动词开头描述发生了什么","ep":"${epWord}1${epUnit}"}]}]}
+{"arcs":[{"title":"篇章名","epRange":"${epWord}${startEp}-${endEp}${epUnit}","imageQuery":"英文图片搜索词","coverUrl":null,"userImages":[],"nodes":[{"text":"该集核心剧情，15字内，动词开头","ep":"${epWord}N${epUnit}"}]}]}
 
 严格要求：
-1. 按剧情弧（Arc）划分篇章，每个Arc覆盖对应的集数/话数范围
-2. 【最重要】每一${nodeLabel}必须有且仅有一个节点，ep字段填写该节点对应的集数/话数（如「${epWord}3${epUnit}」）
-3. 节点描述聚焦该集/话最重要的剧情事件，不剧透后续
-4. 节点按集数/话数顺序排列，不能跳过任何一集/话
-5. imageQuery必须英文，包含作品英文名+该篇章代表性场景`;
-  const raw=await callTimelineAI(sys,`${typeTxt}名称：${mediaName}\n\n请生成该作品完整时间轴，每一${nodeLabel}都要有一个节点，覆盖全部内容，不能省略任何一${nodeLabel}。`);
-  const cleaned=raw.replace(/^```json\s*/i,'').replace(/^```\s*/i,'').replace(/```\s*$/i,'').trim();
-  return JSON.parse(cleaned);
+1. 只生成第${startEp}${nodeLabel}到第${endEp}${nodeLabel}的内容
+2. 每一${nodeLabel}必须有且仅有一个节点，ep字段填「${epWord}N${epUnit}」格式
+3. 按剧情自然划分Arc，Arc的epRange必须在[${startEp},${endEp}]范围内
+4. 节点按集数顺序排列，不能跳过任何一${nodeLabel}
+5. imageQuery必须英文`;
+
+  if(!totalEps||totalEps<=batchSize){
+    // 集数少或未知，直接一次生成
+    const singleSys=`你是${typeTxt}资深爱好者和剧情分析师。根据作品名称生成【完整】剧情时间轴。严格输出JSON，不要有任何其他文字或代码块标记。
+
+格式：
+{"arcs":[{"title":"篇章名","epRange":"${epWord}1-24${epUnit}","imageQuery":"英文图片搜索词","coverUrl":null,"userImages":[],"nodes":[{"text":"该集核心剧情，15字内，动词开头","ep":"${epWord}N${epUnit}"}]}]}
+
+严格要求：
+1. 每一${nodeLabel}必须有且仅有一个节点，ep字段填「${epWord}N${epUnit}」
+2. 按剧情Arc划分篇章，节点按集数顺序不能跳过
+3. imageQuery必须英文，包含作品英文名+篇章代表场景`;
+    const raw=await callTimelineAI(singleSys,`${typeTxt}名称：${mediaName}\n请生成完整时间轴，每一${nodeLabel}一个节点。`);
+    const cleaned=raw.replace(/^```json\s*/i,'').replace(/^```\s*/i,'').replace(/```\s*$/i,'').trim();
+    return JSON.parse(cleaned);
+  }
+
+  // 分批生成
+  const batches=[];
+  for(let start=1;start<=totalEps;start+=batchSize){
+    const end=Math.min(start+batchSize-1,totalEps);
+    batches.push([start,end]);
+  }
+
+  const allArcs=[];
+  for(const[start,end] of batches){
+    try{
+      const raw=await callTimelineAI(sys(start,end),`${typeTxt}名称：${mediaName}\n请生成第${start}${nodeLabel}到第${end}${nodeLabel}的时间轴，每一${nodeLabel}一个节点，不能省略。`);
+      const cleaned=raw.replace(/^```json\s*/i,'').replace(/^```\s*/i,'').replace(/```\s*$/i,'').trim();
+      const data=JSON.parse(cleaned);
+      allArcs.push(...(data.arcs||[]));
+    }catch(e){console.warn(`批次${start}-${end}生成失败`,e);}
+  }
+
+  return{arcs:allArcs};
 }
 function buildProgressContext(timelineData,chapterIdx,nodeIdx,isMedia=false){
   const chapters=isMedia?timelineData.arcs:timelineData.chapters;
@@ -1494,7 +1533,8 @@ async function renderMediaTimeline(containerId,mediaItem,mediaType,userId){
     bodyEl.innerHTML='<div class="gtl-loading">🤖 AI 正在分析剧情，生成时间轴…</div>';
     try{
       tlData=await generateMediaTimeline(mediaItem.title,aniType);
-      bodyEl.innerHTML='<div class="gtl-loading">🖼 正在拉取篇章配图…</div>';
+      const total=tlData.arcs?.reduce((s,a)=>s+a.nodes.length,0)||0;
+      bodyEl.innerHTML=`<div class="gtl-loading">🖼 正在拉取篇章配图…（共 ${total} 个节点）</div>`;
       // AniList banner 作基础封面
       const ali=await fetchAniListImages(mediaItem.title,aniType);
       const baseCover=ali?.banner||ali?.cover||mediaItem.cover||null;
