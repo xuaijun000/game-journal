@@ -1942,19 +1942,19 @@ function getCNName(species,engName){if(species){const n=species.names?.find(x=>x
 function getCNFlavorText(species){if(!species)return null;const e=species.flavor_text_entries?.find(x=>x.language.name==='zh-Hans'||x.language.name==='zh-Hant');return e?.flavor_text?.replace(/\f|\n/g,' ')||null;}
 
 async function loadTodayPkm(random=false){
-  // 每次都随机
   let seed=Math.floor(Math.random()*1010)+1;
   try{
     document.getElementById('pkm-today-name').textContent='加载中…';
     document.getElementById('pkm-today-desc').textContent='';
     document.getElementById('pkm-today-locations').innerHTML='';
     const p=await fetchPkm(seed);
-    const sp=await fetchPkmSpecies(p.species.url.split('/').slice(-2)[0]);
+    // 取 species：去掉形态后缀（-standard, -galar, -alola 等）
+    const speciesName=p.species?.name||p.name.replace(/-(standard|galar|alola|hisui|paldea|incarnate|aria|baile|midday|solo|red-striped|blue-striped|natural|male|female|plant|sandy|trash|heat|wash|frost|fan|mow|normal|attack|defense|speed|ordinary|overcast|sunshine|land|sky|zen|original|therian|black|white|resolute|ordinary|pirouette|active|shield|blade|confined|unbound|50|complete|10|dusk|dawn|ultra|original|crowned|ice|shadow|hangry|full-belly|gorging|family-of-four|four|nasal|droopy|stretchy|curly|small|large|super|eternal|average|small|large|super|red|orange|yellow|green|blue|indigo|violet|heart|star|diamond|deprived|well-fed|belly-full|hangry|phony|antique|disguised|busted|meteor|core|school|disguised|midday|midnight|dusk|dawn|ultra)$/,'').replace(/-[a-z]+$/,'');
+    const sp=await fetchPkmSpecies(speciesName).catch(()=>null)||await fetchPkmSpecies(p.id).catch(()=>null);
     todayPkm={...p,species:sp};
     renderTodayPkm(p,sp);
     await loadPkmCollection();
     updateTodayBtns();
-    // 拉获取方式（各游戏中的位置）
     loadPkmEncounters(p.id,p.name);
   }catch(e){console.error('宝可梦加载失败',e);}
 }
@@ -1971,38 +1971,91 @@ const GAME_NAME_ZH={
   'legends-arceus':'传说:阿尔宙斯','scarlet':'朱','violet':'紫'
 };
 
+// 常见地名翻译（英文路由名 -> 中文）
+const LOC_ZH={
+  'route':'道路','road':'小路','cave':'山洞','forest':'森林','tower':'塔',
+  'island':'岛','lake':'湖','mountain':'山','city':'市','town':'镇',
+  'village':'村','ruins':'遗迹','path':'小道','sea':'海','river':'河',
+  'area':'地区','safari':'狩猎区','ranch':'牧场','desert':'沙漠',
+  'valley':'山谷','volcano':'火山','shrine':'神殿','temple':'圣所',
+  'mansion':'大厦','gym':'道馆','gate':'门','bridge':'桥','meadow':'草地',
+  'garden':'庭园','power':'发电站','plant':'发电站','museum':'博物馆',
+  'airport':'机场','port':'港口','harbor':'港口','cliff':'悬崖',
+  'beach':'海滩','coast':'海岸','woods':'树林','park':'公园','hill':'丘陵',
+  'plateau':'高原','tower':'塔楼','lab':'研究所','outpost':'前哨',
+  'wilds':'荒野','fields':'田野','heights':'高地','badlands':'荒地',
+  'mirage':'幻影','pal':'宝可梦牧场','safari':'狩猎区',
+  // 具体地名
+  'pallet':'真新镇','viridian':'常磐市','pewter':'グレー市','cerulean':'ハナダ市',
+  'vermilion':'クチバ市','lavender':'シオン','celadon':'タマムシ','fuchsia':'セキチク',
+  'saffron':'ヤマブキ','cinnabar':'グレン','victory':'勝利','indigo':'インディゴ',
+  'littleroot':'コトキ','oldale':'カイナ','petalburg':'トウカ','rustboro':'カナズミ',
+  'dewford':'ムロ','slateport':'カイナ','mauville':'キンセツ','verdanturf':'シダケ',
+  'fallarbor':'ハジツゲ','lavaridge':'フエンタウン','fortree':'ヒワマキ',
+  'lilycove':'ミナモ','mossdeep':'トクサネ','sootopolis':'ルネ','ever':'エバーグランデ',
+  'twinleaf':'フタバ','sandgem':'マサゴ','jubilife':'コトブキ','oreburgh':'クロガネ',
+  'floaroma':'ソノオ','eterna':'ハクタイ','hearthome':'ヨスガ','solaceon':'ズイ',
+  'veilstone':'トバリ','pastoria':'ノモセ','celestic':'ミオ','canalave':'ミオ',
+  'snowpoint':'キッサキ','sunyshore':'ナギサ','lake-verity':'真実の湖','lake-valor':'知識の湖',
+  'spear-pillar':'やりのはしら','mt-coronet':'テンガン山',
+  // 神奥地名
+  'nuvema':'カノコ','accumula':'カラクサ','striaton':'サンヨウ','nacrene':'シッポウ',
+  'castelia':'ヒウン','nimbasa':'ライモン','driftveil':'ホドモエ','mistralton':'フキヨセ',
+  'lentimas':'リュウラセン','undella':'サザナミ','lacunosa':'ラクツ','opelucid':'ソウリュウ',
+  'pokemon-league':'ポケモンリーグ','victory-road':'チャンピオンロード',
+};
+
+function translateLocation(engName){
+  if(!engName)return engName;
+  // 先整体匹配
+  const lower=engName.toLowerCase().replace(/-/g,' ');
+  // 尝试分词翻译
+  let result=lower;
+  // 处理 route N 格式
+  const routeMatch=lower.match(/route\s*(\d+)/);
+  if(routeMatch)return`${routeMatch[1]}号道路`;
+  // 处理 mt. / mount 格式
+  if(lower.includes('mt') || lower.includes('mount'))result=result.replace(/mt\.?|mount/,'').trim()+'山';
+  // 逐词替换
+  Object.entries(LOC_ZH).forEach(([en,zh])=>{result=result.replace(new RegExp(`\\b${en}\\b`,'gi'),zh);});
+  // 去掉多余空格，首字母大写
+  return result.replace(/\s+/g,' ').trim()||engName;
+}
+
 async function loadPkmEncounters(pkmId,engName){
   const locEl=document.getElementById('pkm-today-locations');
   if(!locEl)return;
+  locEl.innerHTML=`<div style="font-size:.7rem;color:var(--t3);margin-bottom:4px;font-family:'DM Mono',monospace">🗺 各世代获取方式</div><div style="font-size:.72rem;color:var(--t3)">查询中…</div>`;
   try{
     const r=await fetch(`${POKEAPI}/pokemon/${pkmId}/encounters`);
     if(!r.ok){locEl.innerHTML='';return;}
     const data=await r.json();
     if(!data||!data.length){
-      locEl.innerHTML=`<div style="font-size:.7rem;color:var(--t3);margin-bottom:4px;font-family:'DM Mono',monospace">🗺 获取方式</div><div style="font-size:.75rem;color:var(--t3)">需通过交换、特殊事件或进化获得</div>`;
+      locEl.innerHTML=`<div style="font-size:.7rem;color:var(--t3);margin-bottom:4px;font-family:'DM Mono',monospace">🗺 获取方式</div><div style="font-size:.75rem;color:var(--t3)">通过进化、交换或特殊事件获得</div>`;
       return;
     }
-    // 按游戏分组
+    // 按游戏分组，合并地点
     const byGame={};
     data.forEach(loc=>{
+      const rawLoc=loc.location_area.name.replace(/-area$/,'').replace(/-/g,' ');
       loc.version_details.forEach(vd=>{
         const g=vd.version.name;
-        if(!byGame[g])byGame[g]=[];
-        const locName=loc.location_area.name.replace(/-/g,' ').replace(/area/g,'').trim();
-        if(!byGame[g].includes(locName))byGame[g].push(locName);
+        if(!byGame[g])byGame[g]=new Set();
+        byGame[g].add(rawLoc);
       });
     });
-    const games=Object.keys(byGame).slice(0,8); // 最多显示8个游戏
-    const html=games.map(g=>{
+    // 按游戏版本排序（优先显示新世代）
+    const gameOrder=['scarlet','violet','legends-arceus','brilliant-diamond','shining-pearl','sword','shield','ultra-sun','ultra-moon','sun','moon','omega-ruby','alpha-sapphire','x','y','black-2','white-2','black','white','heartgold','soulsilver','platinum','diamond','pearl','firered','leafgreen','emerald','ruby','sapphire','crystal','gold','silver','yellow','red','blue'];
+    const sortedGames=Object.keys(byGame).sort((a,b)=>{const ia=gameOrder.indexOf(a);const ib=gameOrder.indexOf(b);return(ia<0?99:ia)-(ib<0?99:ib);});
+    const html=sortedGames.map(g=>{
       const zhName=GAME_NAME_ZH[g]||g;
-      const locs=byGame[g].slice(0,2).join('、');
-      return`<div style="display:flex;gap:6px;align-items:flex-start;margin-bottom:3px">
-        <span style="font-size:.65rem;padding:1px 5px;border-radius:3px;background:rgba(96,165,250,.15);color:var(--acc);white-space:nowrap;flex-shrink:0">${zhName}</span>
-        <span style="font-size:.68rem;color:var(--t2);line-height:1.4">${locs}</span>
+      const locs=[...byGame[g]].slice(0,3).map(l=>translateLocation(l)).join('、');
+      return`<div style="display:flex;gap:6px;align-items:flex-start;margin-bottom:4px">
+        <span style="font-size:.62rem;padding:1px 6px;border-radius:3px;background:rgba(96,165,250,.15);color:var(--acc);white-space:nowrap;flex-shrink:0;font-family:'DM Mono',monospace">${zhName}</span>
+        <span style="font-size:.7rem;color:var(--t2);line-height:1.45">${locs}</span>
       </div>`;
     }).join('');
-    locEl.innerHTML=`<div style="font-size:.7rem;color:var(--t3);margin-bottom:6px;font-family:'DM Mono',monospace;letter-spacing:.05em">🗺 各世代获取方式</div>${html}`;
-  }catch(e){if(locEl)locEl.innerHTML='';}
+    locEl.innerHTML=`<div style="font-size:.7rem;color:var(--t3);margin-bottom:6px;font-family:'DM Mono',monospace;letter-spacing:.04em">🗺 各世代获取地点（${sortedGames.length}个版本）</div>${html}`;  }catch(e){if(locEl)locEl.innerHTML='';}
 }
 
 function renderTodayPkm(p,sp){
@@ -2010,12 +2063,12 @@ function renderTodayPkm(p,sp){
   const img2=p.sprites?.front_default||img;
   document.getElementById('pkm-today-img').src=img2;
   document.getElementById('pkm-today-bg').style.backgroundImage=img?`url(${img})`:'none';
-  const cnName=getCNName(sp,p.name)||p.name;
+  // 优先取 species 的中文名，取不到再用 species.name 或 p.name
+  const cnName=getCNName(sp,sp?.name||p.name)||(sp?.name||p.name);
   document.getElementById('pkm-today-num').textContent=`#${String(p.id).padStart(3,'0')}`;
   document.getElementById('pkm-today-name').textContent=cnName;
   document.getElementById('pkm-today-types').innerHTML=p.types.map(t=>typeTag(t.type.name)).join('');
   document.getElementById('pkm-today-stats').innerHTML=p.stats.map(s=>statBar(s.stat.name,s.base_stat)).join('');
-  // 简介
   const desc=getCNFlavorText(sp);
   const descEl=document.getElementById('pkm-today-desc');
   if(descEl)descEl.textContent=desc||'';
@@ -2088,7 +2141,17 @@ function onPkmSearch(v){
       const q=v.trim().toLowerCase();const r=await fetch(`${POKEAPI}/pokemon?limit=2000`);const d=await r.json();
       const matches=d.results.filter(x=>x.name.includes(q)||x.url.split('/').slice(-2)[0]===q).slice(0,16);
       if(!matches.length){res.innerHTML='<div style="color:var(--t3);font-size:.8rem;padding:8px">未找到</div>';return;}
-      const items=await Promise.all(matches.map(async m=>{const p=await fetchPkm(m.name);const sp=await fetchPkmSpecies(m.name).catch(()=>null);const cn=getCNName(sp,m.name)||(await getPkmCNName(p.id,m.name));const img=p.sprites?.front_default||'';return`<div class="pkm-mini" onclick="openPkmDetail(${p.id})"><img src="${img}" alt=""><div class="pkm-mini-name">${cn}</div></div>`;}));
+      const items=await Promise.all(matches.map(async m=>{
+        const p=await fetchPkm(m.name);
+        let cn=pkmCNCache[p.id];
+        if(!cn){
+          const sp=await fetchPkmSpecies(p.id).catch(()=>null);
+          cn=getCNName(sp,p.name)||p.name;
+          if(cn)pkmCNCache[p.id]=cn;
+        }
+        const img=p.sprites?.front_default||'';
+        return`<div class="pkm-mini" onclick="openPkmDetail(${p.id})"><img src="${img}" alt=""><div class="pkm-mini-name">${cn}</div></div>`;
+      }));
       res.innerHTML=items.join('');
     }catch(e){res.innerHTML='<div style="color:var(--danger);font-size:.8rem;padding:8px">搜索失败</div>';}
   },500);
@@ -2102,7 +2165,23 @@ async function loadGen(gen,el){
   for(let b=0;b<ids.length;b+=BATCH){
     const batch=ids.slice(b,b+BATCH);
     const items=await Promise.all(batch.map(async id=>{
-      try{const p=await fetchPkm(id);const cn=await getPkmCNName(p.id,p.name);const img=p.sprites?.front_default||'';const col=pkmCollection[p.id]||{};const mark=col.caught?'✓':col.liked?'♥':col.wanted?'★':'';return'<div class="pkm-mini" onclick="openPkmDetail('+p.id+')" style="position:relative">'+(mark?'<div style="position:absolute;top:3px;right:3px;font-size:.6rem;color:var(--acc2)">'+mark+'</div>':'')+'<img src="'+img+'" alt="" loading="lazy"><div class="pkm-mini-name">'+cn+'</div></div>';}catch{return'';}
+      try{
+        const p=await fetchPkm(id);
+        // 优先从缓存拿，没有再查 species
+        let cn=pkmCNCache[p.id];
+        if(!cn){
+          const sp=await fetchPkmSpecies(p.id).catch(()=>null);
+          cn=getCNName(sp,p.name)||p.name;
+          if(cn)pkmCNCache[p.id]=cn;
+        }
+        const img=p.sprites?.front_default||'';
+        const col=pkmCollection[p.id]||{};
+        const mark=col.caught?'✓':col.liked?'♥':col.wanted?'★':'';
+        return'<div class="pkm-mini" onclick="openPkmDetail('+p.id+')" style="position:relative">'
+          +(mark?'<div style="position:absolute;top:3px;right:3px;font-size:.6rem;color:var(--acc2)">'+mark+'</div>':'')
+          +'<img src="'+img+'" alt="" loading="lazy">'
+          +'<div class="pkm-mini-name">'+cn+'</div></div>';
+      }catch{return'';}
     }));
     allHtml+=items.join('');grid.innerHTML=allHtml;
   }
