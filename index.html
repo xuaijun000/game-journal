@@ -355,15 +355,22 @@
     .pkm-evo-name{font-size:.68rem;color:var(--t2);margin-top:3px}
     .pkm-evo-arrow{color:var(--t3);font-size:1.1rem;flex-shrink:0}
     .pkm-detail-modal{max-width:520px}
-    .pkm-detail-hero{height:200px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .pkm-detail-hero{height:320px;border-radius:16px 16px 0 0;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
     .pkm-detail-bg{position:absolute;inset:0;filter:blur(25px);opacity:.35;background-size:cover;background-position:center}
     .pkm-detail-ai-bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity 1s ease}
-    .pkm-detail-ai-bg.loaded{opacity:.55}
-    .pkm-detail-img{position:relative;z-index:2;width:150px;height:150px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 6px 16px rgba(0,0,0,.7));transition:transform .3s ease}
+    .pkm-detail-ai-bg.loaded{opacity:.78}
+    .pkm-detail-img{position:relative;z-index:2;width:190px;height:190px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 6px 16px rgba(0,0,0,.7));transition:transform .3s ease}
     .pkm-detail-img:hover{transform:scale(1.08)}
     .pkm-ai-art-btn{position:absolute;bottom:8px;right:8px;z-index:5;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.85);font-size:.68rem;padding:3px 8px;border-radius:20px;cursor:pointer;backdrop-filter:blur(6px);transition:all .2s;white-space:nowrap}
     .pkm-ai-art-btn:hover{background:rgba(255,255,255,.15);color:#fff}
     .pkm-ai-art-btn.loading{opacity:.6;pointer-events:none}
+    .pkm-ai-art-actions{position:absolute;bottom:8px;left:8px;z-index:5;display:flex;gap:6px}
+    .pkm-ai-art-action{background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.85);font-size:.68rem;padding:3px 8px;border-radius:20px;cursor:pointer;backdrop-filter:blur(6px);transition:all .2s;white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center}
+    .pkm-ai-art-action:hover{background:rgba(255,255,255,.15);color:#fff}
+    .pkm-art-fullscreen{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;cursor:zoom-out;animation:fadeIn .2s ease}
+    .pkm-art-fullscreen img{max-width:92vw;max-height:88vh;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,.8)}
+    .pkm-art-fullscreen-close{position:absolute;top:20px;right:24px;color:rgba(255,255,255,.7);font-size:1.6rem;cursor:pointer}
+    .pkm-art-fullscreen-dl{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;padding:8px 24px;border-radius:24px;cursor:pointer;font-size:.85rem;backdrop-filter:blur(8px);text-decoration:none}
     .pkm-detail-body{padding:1.2rem 1.5rem}
     .pkm-detail-name{font-family:'Noto Serif SC',serif;font-size:1.4rem;font-weight:600;margin-bottom:4px}
     .pkm-detail-meta{font-size:.78rem;color:var(--t2);font-family:'DM Mono',monospace;margin-bottom:10px}
@@ -791,7 +798,7 @@
 <!-- 宝可梦详情弹窗 -->
 <div class="ov" id="ov-pkm" onclick="if(event.target===this)closeOv('ov-pkm')">
   <div class="modal pkm-detail-modal">
-    <div class="pkm-detail-hero"><div class="pkm-detail-bg" id="pkm-detail-bg"></div><div class="pkm-detail-ai-bg" id="pkm-detail-ai-bg"></div><img id="pkm-detail-img" src="" alt="" class="pkm-detail-img"><button class="pkm-ai-art-btn" id="pkm-ai-art-btn" onclick="genPkmAiArt()">✨ AI氛围图</button></div>
+    <div class="pkm-detail-hero"><div class="pkm-detail-bg" id="pkm-detail-bg"></div><div class="pkm-detail-ai-bg" id="pkm-detail-ai-bg" onclick="viewPkmAiArt()" style="cursor:zoom-in"></div><img id="pkm-detail-img" src="" alt="" class="pkm-detail-img"><div class="pkm-ai-art-actions" id="pkm-ai-art-actions" style="display:none"><button class="pkm-ai-art-action" onclick="viewPkmAiArt()">🔍 全屏</button><button class="pkm-ai-art-action" onclick="downloadPkmAiArt()">⬇ 下载</button></div><button class="pkm-ai-art-btn" id="pkm-ai-art-btn" onclick="genPkmAiArt()">✨ AI氛围图</button></div>
     <div class="pkm-detail-body">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
         <div><div class="pkm-today-num" id="pkm-detail-num"></div><div class="pkm-detail-name" id="pkm-detail-name"></div></div>
@@ -1998,15 +2005,83 @@ const PKM_CN_TABLE={1:'妙蛙种子',2:'妙蛙草',3:'妙蛙花',4:'小火龙',5
 1001:'古简蜗',1002:'古剑豹',1003:'古鼎鹿',1004:'古玉鱼',1005:'轰鸣月',1006:'铁武者',1007:'故勒顿',1008:'密勒顿',1009:'波荡水',1010:'铁斑叶',1011:'裹蜜虫',1012:'斯魔茶',1013:'来悲粗茶',1014:'够赞狗',1015:'愿增猿',1016:'吉雉鸡',1017:'厄诡椪',1018:'铝钢桥龙',1019:'蜜集大蛇',1020:'破空焰',
 1021:'猛雷鼓',1022:'铁磐岩',1023:'铁头壳',1024:'太乐巴戈斯',1025:'桃歹郎'};
 
+// 从数据库加载已保存的氛围图
+async function loadPkmAiArtFromDB(pkmId){
+  if(!currentUser)return;
+  try{
+    const {data}=await db.from('pkm_ai_art').select('image_url').eq('pkm_id',pkmId).single();
+    if(data?.image_url){
+      pkmAiArtCache[pkmId]=data.image_url;
+      const aiBg=document.getElementById('pkm-detail-ai-bg');
+      const btn=document.getElementById('pkm-ai-art-btn');
+      const ac=document.getElementById('pkm-ai-art-actions');
+      if(aiBg){aiBg.style.backgroundImage=`url(${data.image_url})`;aiBg.classList.add('loaded');}
+      if(btn){btn.textContent='✨ 重新生成';btn.classList.remove('loading');btn.onclick=()=>deletePkmAiArtFromDB(pkmId).then(()=>genPkmAiArt());}
+      if(ac)ac.style.display='flex';
+    }
+  }catch(e){/* 没有记录是正常的 */}
+}
+
+// 保存氛围图到数据库
+async function savePkmAiArtToDB(pkmId,imageUrl){
+  if(!currentUser)return;
+  try{
+    await db.from('pkm_ai_art').upsert({pkm_id:pkmId,image_url:imageUrl},{onConflict:'pkm_id'});
+  }catch(e){console.log('save art failed',e);}
+}
+
+// 从数据库删除氛围图
+async function deletePkmAiArtFromDB(pkmId){
+  if(!currentUser)return;
+  try{
+    await db.from('pkm_ai_art').delete().eq('pkm_id',pkmId);
+    delete pkmAiArtCache[pkmId];
+  }catch(e){console.log('delete art failed',e);}
+}
+
+// 全屏查看AI氛围图
+function viewPkmAiArt(){
+  if(!currentAiArtPkm||!pkmAiArtCache[currentAiArtPkm.id])return;
+  const url=pkmAiArtCache[currentAiArtPkm.id];
+  const name=currentAiArtPkm.name;
+  const el=document.createElement('div');
+  el.className='pkm-art-fullscreen';
+  el.innerHTML=`<span class="pkm-art-fullscreen-close" title="关闭">✕</span><img src="${url}" alt="${name}"><a class="pkm-art-fullscreen-dl" href="${url}" download="${name}-ai-art.jpg" target="_blank">⬇ 下载图片</a>`;
+  el.querySelector('.pkm-art-fullscreen-close').onclick=e=>{e.stopPropagation();document.body.removeChild(el);};
+  el.onclick=()=>document.body.removeChild(el);
+  el.querySelector('img').onclick=e=>e.stopPropagation();
+  el.querySelector('.pkm-art-fullscreen-dl').onclick=e=>e.stopPropagation();
+  document.body.appendChild(el);
+}
+
+// 下载AI氛围图
+async function downloadPkmAiArt(){
+  if(!currentAiArtPkm||!pkmAiArtCache[currentAiArtPkm.id])return;
+  const url=pkmAiArtCache[currentAiArtPkm.id];
+  const name=currentAiArtPkm.name;
+  try{
+    const res=await fetch(url);
+    const blob=await res.blob();
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=`${name}-ai-art.jpg`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }catch{
+    // 跨域fallback：新标签打开
+    window.open(url,'_blank');
+  }
+}
+
 // AI氛围图（Pollinations.ai）
 const pkmAiArtCache={};
 let currentAiArtPkm=null;
 
-function genPkmAiArt(){
+async function genPkmAiArt(){
   if(!currentAiArtPkm)return;
   const btn=document.getElementById('pkm-ai-art-btn');
   const aiBg=document.getElementById('pkm-detail-ai-bg');
-  const {id,name,types}=currentAiArtPkm;
+  const {id,name,cnName,types,artworkUrl}=currentAiArtPkm;
 
   // 已有缓存直接显示
   if(pkmAiArtCache[id]){
@@ -2014,43 +2089,75 @@ function genPkmAiArt(){
     aiBg.classList.add('loaded');
     btn.textContent='✨ 重新生成';
     btn.classList.remove('loading');
-    btn.onclick=()=>{delete pkmAiArtCache[id];aiBg.classList.remove('loaded');setTimeout(()=>genPkmAiArt(),200);};
+    btn.onclick=()=>{delete pkmAiArtCache[id];aiBg.classList.remove('loaded');const ac=document.getElementById('pkm-ai-art-actions');if(ac)ac.style.display='none';setTimeout(()=>genPkmAiArt(),200);};
+    const ac=document.getElementById('pkm-ai-art-actions');if(ac)ac.style.display='flex';
     return;
   }
 
   btn.classList.add('loading');
-  btn.textContent='生成中(约10s)…';
+  btn.textContent='Step 1/2 描述中…';
 
-  const typeEn=types.join(' ');
-  const prompt=`${name} pokemon, ${typeEn} type, fantasy digital art, dramatic lighting, cinematic background, vibrant colors, detailed environment, no text, no watermark`;
-
-  const controller=new AbortController();
-  const timeoutId=setTimeout(()=>{controller.abort();},90000);
-
-  fetch(IGDB_PROXY,{
-    method:'POST',
-    headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},
-    signal:controller.signal,
-    body:JSON.stringify({sfImage:{prompt}})
-  })
-    .then(r=>r.json())
-    .then(data=>{
-      clearTimeout(timeoutId);
-      const imgUrl=data?.url;
-      if(!imgUrl)throw new Error('no url');
-      pkmAiArtCache[id]=imgUrl;
-      aiBg.style.backgroundImage=`url(${imgUrl})`;
-      aiBg.classList.add('loaded');
-      btn.classList.remove('loading');
-      btn.textContent='✨ 重新生成';
-      btn.onclick=()=>{delete pkmAiArtCache[id];aiBg.classList.remove('loaded');setTimeout(()=>genPkmAiArt(),200);};
-    })
-    .catch(e=>{
-      clearTimeout(timeoutId);
-      btn.classList.remove('loading');
-      btn.textContent='✨ AI氛围图';
-      btn.title=e.name==='AbortError'?'超时，点击重试':'生成失败，点击重试';
+  try{
+    // Step 1: 用 Gemini 看宝可梦图片，生成详细外形描述作为 prompt
+    const geminiBody={
+      contents:[{role:'user',parts:[
+        {inline_data:{mime_type:'image/png',data:await urlToBase64(artworkUrl)}},
+        {text:`You are a professional image generation prompt writer. Look at this Pokemon image carefully.
+Write a detailed English image generation prompt (max 120 words) describing ONLY the visual appearance of this Pokemon:
+- Body shape, size, colors, textures
+- Distinctive features (wings, tail, markings, etc.)
+- Pose and expression
+Then add: "in its natural ${types.join(' ')} type habitat, dramatic cinematic lighting, wide shot, vivid colors, fantasy digital art style, no text, no watermark"
+Output ONLY the prompt text, nothing else.`}
+      ]}],
+      generationConfig:{maxOutputTokens:200,temperature:0.4}
+    };
+    const geminiRes=await fetch(SB_URL+'/functions/v1/gemini-proxy',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},
+      body:JSON.stringify(geminiBody)
     });
+    const geminiData=await geminiRes.json();
+    const imagePrompt=(geminiData.candidates?.[0]?.content?.parts?.[0]?.text||'').trim();
+    if(!imagePrompt)throw new Error('Gemini无响应');
+
+    btn.textContent='Step 2/2 生图中…';
+
+    // Step 2: 用生成的 prompt 调用硅基流动生图
+    const sfRes=await fetch(IGDB_PROXY,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},
+      body:JSON.stringify({sfImage:{prompt:imagePrompt}})
+    });
+    const sfData=await sfRes.json();
+    const imgUrl=sfData?.url;
+    if(!imgUrl)throw new Error('生图失败');
+
+    pkmAiArtCache[id]=imgUrl;
+    aiBg.style.backgroundImage=`url(${imgUrl})`;
+    aiBg.classList.add('loaded');
+    btn.classList.remove('loading');
+    btn.textContent='✨ 重新生成';
+    btn.onclick=()=>deletePkmAiArtFromDB(id).then(()=>{aiBg.classList.remove('loaded');const ac=document.getElementById('pkm-ai-art-actions');if(ac)ac.style.display='none';setTimeout(()=>genPkmAiArt(),200);});
+    const ac=document.getElementById('pkm-ai-art-actions');if(ac)ac.style.display='flex';
+    // 保存到数据库
+    savePkmAiArtToDB(id,imgUrl);
+  }catch(e){
+    btn.classList.remove('loading');
+    btn.textContent='✨ AI氛围图';
+    btn.title='生成失败：'+e.message;
+  }
+}
+
+// 将图片URL转为base64（供Gemini inline_data使用）
+async function urlToBase64(url){
+  const res=await fetch(url);
+  const blob=await res.blob();
+  return new Promise(resolve=>{
+    const reader=new FileReader();
+    reader.onloadend=()=>resolve(reader.result.split(',')[1]);
+    reader.readAsDataURL(blob);
+  });
 }
 
 // 图鉴文字 AI 翻译（带缓存）
@@ -2329,11 +2436,14 @@ async function openPkmDetail(idOrName){
     await loadEvoChain(sp,'pkm-detail-evo');await loadPkmCollection();updateDetailBtns(p.id);
     currentChatPkm={id:p.id,name:cnName,types:p.types.map(t=>t.type.name),species:sp};
     // 重置AI氛围图按钮和背景
-    currentAiArtPkm={id:p.id,name:p.name,types:p.types.map(t=>t.type.name)};// p.name是英文，避免中文导致Pollinations 500
+    currentAiArtPkm={id:p.id,name:p.name,cnName:cnName,types:p.types.map(t=>t.type.name),artworkUrl:img||img2||''};// img=official artwork
     const aiBg=document.getElementById('pkm-detail-ai-bg');
     if(aiBg){aiBg.classList.remove('loaded');aiBg.style.backgroundImage='none';}
     const aiBtn=document.getElementById('pkm-ai-art-btn');
     if(aiBtn){aiBtn.classList.remove('loading');aiBtn.textContent='✨ AI氛围图';aiBtn.onclick=()=>genPkmAiArt();}
+    const aiAc=document.getElementById('pkm-ai-art-actions');if(aiAc)aiAc.style.display='none';
+    // 从数据库加载已保存的氛围图
+    loadPkmAiArtFromDB(p.id);
   }catch(e){document.getElementById('pkm-detail-name').textContent='加载失败';}
 }
 function onPkmSearch(v){
