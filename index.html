@@ -2006,82 +2006,40 @@ function genPkmAiArt(){
   if(!currentAiArtPkm)return;
   const btn=document.getElementById('pkm-ai-art-btn');
   const aiBg=document.getElementById('pkm-detail-ai-bg');
-
-  // 👉 修改点 1：解构时加入 enName (英文名)
-  const {id, enName, name, types}=currentAiArtPkm;
+  const {id,name,types}=currentAiArtPkm;
 
   // 已有缓存直接显示
   if(pkmAiArtCache[id]){
     aiBg.style.backgroundImage=`url(${pkmAiArtCache[id]})`;
     aiBg.classList.add('loaded');
     btn.textContent='✨ 重新生成';
-    btn.classList.remove('loading');
-    btn.onclick=()=>{delete pkmAiArtCache[id];aiBg.classList.remove('loaded');setTimeout(()=>genPkmAiArt(),200);};
     return;
   }
 
   btn.classList.add('loading');
-  btn.textContent='生成中(约15s)…';
+  btn.textContent='生成中…';
 
-  const typeEn=types.join(' ');
-  // 👉 修改点 2：将 prompt 里的 ${name} 替换为 ${enName || name}
-  // 这样如果存了英文名就用英文名，没存就降级用原来的 name
-  const prompt=`${enName || name} pokemon, ${typeEn} type, fantasy digital art, dramatic lighting, cinematic background, detailed environment, no text, no UI`;
-  const seed=Math.floor(Math.random()*99999);
-  const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=600&height=300&seed=${seed}&nologo=true&model=flux`;
-
-  // 用 fetch 检测图片是否真正返回（Pollinations 会等生成完才响应）
-  const controller=new AbortController();
-  const timeoutId=setTimeout(()=>{controller.abort();},60000); // 60秒超时
-
-  fetch(url,{signal:controller.signal})
-    .then(res=>{
-      clearTimeout(timeoutId);
-      if(!res.ok)throw new Error('HTTP '+res.status);
-      pkmAiArtCache[id]=url;
-      aiBg.style.backgroundImage=`url(${url})`;
-      aiBg.classList.add('loaded');
-      btn.classList.remove('loading');
-      btn.textContent='✨ 重新生成';
-      btn.onclick=()=>{delete pkmAiArtCache[id];aiBg.classList.remove('loaded');setTimeout(()=>genPkmAiArt(),200);};
-    })
-    .catch(e=>{
-      clearTimeout(timeoutId);
-      btn.classList.remove('loading');
-      btn.textContent='✨ AI氛围图';
-      btn.title=e.name==='AbortError'?'超时，点击重试':'生成失败，点击重试';
-    });
-}
-
-  btn.classList.add('loading');
-  btn.textContent='生成中(约15s)…';
-
+  // 构建英文 prompt（Pollinations 对英文效果更好）
   const typeEn=types.join(' ');
   const prompt=`${name} pokemon, ${typeEn} type, fantasy digital art, dramatic lighting, cinematic background, detailed environment, no text, no UI`;
   const seed=Math.floor(Math.random()*99999);
-  const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=600&height=300&seed=${seed}&nologo=true&model=flux`;
+  const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=600&height=300&seed=${seed}&nologo=true`;
 
-  // 用 fetch 检测图片是否真正返回（Pollinations 会等生成完才响应）
-  const controller=new AbortController();
-  const timeoutId=setTimeout(()=>{controller.abort();},60000); // 60秒超时
-
-  fetch(url,{signal:controller.signal})
-    .then(res=>{
-      clearTimeout(timeoutId);
-      if(!res.ok)throw new Error('HTTP '+res.status);
-      pkmAiArtCache[id]=url;
-      aiBg.style.backgroundImage=`url(${url})`;
-      aiBg.classList.add('loaded');
-      btn.classList.remove('loading');
-      btn.textContent='✨ 重新生成';
-      btn.onclick=()=>{delete pkmAiArtCache[id];aiBg.classList.remove('loaded');setTimeout(()=>genPkmAiArt(),200);};
-    })
-    .catch(e=>{
-      clearTimeout(timeoutId);
-      btn.classList.remove('loading');
-      btn.textContent='✨ AI氛围图';
-      btn.title=e.name==='AbortError'?'超时，点击重试':'生成失败，点击重试';
-    });
+  const img=new Image();
+  img.onload=()=>{
+    pkmAiArtCache[id]=url;
+    aiBg.style.backgroundImage=`url(${url})`;
+    aiBg.classList.add('loaded');
+    btn.classList.remove('loading');
+    btn.textContent='✨ 重新生成';
+    btn.onclick=()=>{delete pkmAiArtCache[id];aiBg.classList.remove('loaded');setTimeout(()=>genPkmAiArt(),200);};
+  };
+  img.onerror=()=>{
+    btn.classList.remove('loading');
+    btn.textContent='✨ AI氛围图';
+    btn.title='生成失败，点击重试';
+  };
+  img.src=url;
 }
 
 // 图鉴文字 AI 翻译（带缓存）
@@ -2360,7 +2318,7 @@ async function openPkmDetail(idOrName){
     await loadEvoChain(sp,'pkm-detail-evo');await loadPkmCollection();updateDetailBtns(p.id);
     currentChatPkm={id:p.id,name:cnName,types:p.types.map(t=>t.type.name),species:sp};
     // 重置AI氛围图按钮和背景
-    currentAiArtPkm={id:p.id,name:cnName,enName:p.name,types:p.types.map(t=>t.type.name)};
+    currentAiArtPkm={id:p.id,name:cnName,types:p.types.map(t=>t.type.name)};
     const aiBg=document.getElementById('pkm-detail-ai-bg');
     if(aiBg){aiBg.classList.remove('loaded');aiBg.style.backgroundImage='none';}
     const aiBtn=document.getElementById('pkm-ai-art-btn');
