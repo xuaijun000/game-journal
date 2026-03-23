@@ -769,6 +769,7 @@
     <div id="media-sum-box" style="margin:0 1.5rem 10px;display:none"></div>
     <div class="mfoot" style="padding:.8rem 1.5rem">
       <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn btn-d" id="media-del-btn" onclick="delMedia()" style="display:none">删除</button>
         <button class="btn" onclick="toggleMediaChat()" id="media-ai-btn" style="color:var(--acc);border-color:rgba(96,165,250,.3)">⬡ 和 AI 聊聊</button>
         <button class="chat-sum-btn" id="media-sum-btn" onclick="generateMediaSummary()" style="display:none">📋 生成存档</button>
       </div>
@@ -2364,7 +2365,7 @@ function openMediaAdd(type){
   document.getElementById('media-modal-cover').style.display='none';document.getElementById('media-modal-bg').style.backgroundImage='none';
   document.getElementById('media-chat-wrap').style.display='none';document.getElementById('media-ai-btn').style.display='none';
   document.getElementById('media-sum-box').style.display='none';
-  // 清空时间轴挂载点
+  document.getElementById('media-del-btn').style.display='none';
   document.getElementById('media-timeline-slot').innerHTML='';
   setMediaRating(0);document.getElementById('ov-media').classList.add('on');
 }
@@ -2380,6 +2381,7 @@ function openMediaEdit(type,id){
   setMediaRating(m.rating||0);mediaCurrentItem=m;
   document.getElementById('media-ai-btn').style.display='block';document.getElementById('media-ai-btn').textContent='⬡ 和 AI 聊聊';
   document.getElementById('media-chat-wrap').style.display='none';mediaChatOpen=false;mediaChatHistory=[];
+  document.getElementById('media-del-btn').style.display='block';
   // 挂载时间轴
   const tlSlot=document.getElementById('media-timeline-slot');tlSlot.innerHTML='';
   const mtlId='mtl-'+String(id).replace(/[^a-z0-9]/gi,'_');
@@ -2425,7 +2427,17 @@ async function saveMedia(){
   }
   closeOv('ov-media');renderMedia(type);
 }
-function toggleMediaChat(){
+async function delMedia(){
+  if(!editMediaId||!confirm('确认删除这条记录？'))return;
+  const type=currentMediaType;
+  const{data:{session}}=await db.auth.getSession();const user=session?.user;
+  if(user){
+    await db.from(type+'_list').delete().eq('id',editMediaId).eq('user_id',user.id);
+  }
+  mediaData[type]=mediaData[type].filter(m=>(m.id||m._id)!=editMediaId);
+  if(!user)localStorage.setItem(type+'_list',JSON.stringify(mediaData[type]));
+  closeOv('ov-media');renderMedia(type);
+}
   mediaChatOpen=!mediaChatOpen;
   document.getElementById('media-chat-wrap').style.display=mediaChatOpen?'block':'none';
   document.getElementById('media-ai-btn').textContent=mediaChatOpen?'收起 AI 对话':'⬡ 和 AI 聊聊';
