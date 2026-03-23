@@ -363,6 +363,10 @@
     .pkm-detail-name{font-family:'Noto Serif SC',serif;font-size:1.4rem;font-weight:600;margin-bottom:4px}
     .pkm-detail-meta{font-size:.78rem;color:var(--t2);font-family:'DM Mono',monospace;margin-bottom:10px}
     .pkm-detail-desc{font-size:.85rem;color:var(--t2);line-height:1.7;margin-bottom:12px;border-left:2px solid var(--b2);padding-left:10px}
+    .pkm-translate-btn{display:inline-flex;align-items:center;gap:4px;margin-top:6px;padding:3px 10px;font-size:.72rem;background:var(--b2);border:1px solid var(--b3);border-radius:20px;color:var(--t2);cursor:pointer;transition:all .2s}
+    .pkm-translate-btn:hover{background:var(--acc1);color:#fff;border-color:var(--acc1)}
+    .pkm-translate-btn.loading{opacity:.6;pointer-events:none}
+    .pkm-translated-text{margin-top:6px;padding:6px 0 0;border-top:1px dashed var(--b3);color:var(--t1);font-size:.85rem;line-height:1.7}
     .pkm-chat-area{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);overflow:hidden}
     .pkm-chat-hdr{padding:10px 14px;background:var(--bg3);border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between}
     .pkm-chat-title{font-size:.78rem;font-family:'DM Mono',monospace;color:var(--t2)}
@@ -1928,6 +1932,7 @@ const PKM_SERIES=[{id:'red-blue',name:'红/蓝',year:1996},{id:'yellow',name:'�
 let pkmCollection={},todayPkm=null,pkmChatHistory=[],currentChatPkm=null,pkmChatFromModal=false;
 let pkmSearchT=null,genCache={};
 const pkmCNCache={};
+const pkmDescTransCache={}; // 图鉴翻译缓存 {pkmId: '已翻译文字'}
 
 function typeTag(t){const c=TYPE_COLOR[t]||'#888';return`<span class="pkm-type" style="background:${c}22;color:${c};border:1px solid ${c}44">${TYPE_ZH[t]||t}</span>`;}
 function statBar(name,val){const pct=Math.min(100,Math.round(val/255*100));const c=val>=100?'var(--acc2)':val>=60?'var(--acc)':'var(--warn)';return`<div class="pkm-stat-row"><span class="pkm-stat-lbl">${STAT_ZH[name]||name}</span><div class="pkm-stat-bar"><div class="pkm-stat-fill" style="width:${pct}%;background:${c}"></div></div><span class="pkm-stat-val">${val}</span></div>`;}
@@ -1988,6 +1993,30 @@ const PKM_CN_TABLE={1:'妙蛙种子',2:'妙蛙草',3:'妙蛙花',4:'小火龙',5
 1001:'古简蜗',1002:'古剑豹',1003:'古鼎鹿',1004:'古玉鱼',1005:'轰鸣月',1006:'铁武者',1007:'故勒顿',1008:'密勒顿',1009:'波荡水',1010:'铁斑叶',1011:'裹蜜虫',1012:'斯魔茶',1013:'来悲粗茶',1014:'够赞狗',1015:'愿增猿',1016:'吉雉鸡',1017:'厄诡椪',1018:'铝钢桥龙',1019:'蜜集大蛇',1020:'破空焰',
 1021:'猛雷鼓',1022:'铁磐岩',1023:'铁头壳',1024:'太乐巴戈斯',1025:'桃歹郎'};
 
+// 图鉴文字 AI 翻译（带缓存）
+async function translatePkmDesc(pkmId,engText,btnEl,targetEl){
+  if(pkmDescTransCache[pkmId]){targetEl.innerHTML=pkmDescTransCache[pkmId];btnEl.style.display='none';return;}
+  btnEl.classList.add('loading');btnEl.textContent='翻译中…';
+  try{
+    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},
+      body:JSON.stringify({contents:[{role:'user',parts:[{text:'请将以下宝可梦图鉴文字翻译成简体中文，只输出翻译结果，不要加任何解释或符号：\n'+engText}]}],generationConfig:{maxOutputTokens:200,temperature:0.3}})
+    });
+    const d=await res.json();
+    const translated=(d.candidates?.[0]?.content?.parts?.[0]?.text||'').trim();
+    if(translated){
+      const html='<span class="pkm-translated-text">'+translated+'</span>';
+      pkmDescTransCache[pkmId]=html;
+      targetEl.innerHTML=html;
+      btnEl.style.display='none';
+    }else{throw new Error('空响应');}
+  }catch(e){
+    btnEl.classList.remove('loading');
+    btnEl.textContent='🌐 AI翻译';
+    btnEl.title='翻译失败，点击重试';
+  }
+}
 async function getPkmCNName(id,engName){
   // 优先查运行时缓存
   if(pkmCNCache[id])return pkmCNCache[id];
@@ -2156,7 +2185,10 @@ function renderTodayPkm(p,sp,cnName){
       const enEntry=(sp.flavor_text_entries||[]).find(x=>x.language.name==='en');
       const enDesc=enEntry?enEntry.flavor_text.replace(/\f|\n/g,' ').trim():null;
       if(enDesc){
-        descEl.innerHTML=`<span style="color:var(--t3);font-size:.7rem;font-style:normal;margin-bottom:3px;display:block">📖 暂无中文图鉴，以下为英文原文</span><span>${enDesc}</span>`;
+        const todayPkmId=p?.id||0;
+        const todayEngText=enDesc;
+        descEl.innerHTML=`<span style="color:var(--t3);font-size:.7rem;font-style:normal;margin-bottom:3px;display:block">📖 暂无中文图鉴</span><span id="pkm-today-en-text">${todayEngText}</span><div><button class="pkm-translate-btn" id="pkm-today-translate-btn" onclick="translatePkmDesc(${todayPkmId},document.getElementById('pkm-today-en-text').textContent,this,document.getElementById('pkm-today-en-text'))">🌐 AI翻译</button></div>`;
+        if(pkmDescTransCache[todayPkmId]){document.getElementById('pkm-today-en-text').innerHTML=pkmDescTransCache[todayPkmId];const b=document.getElementById('pkm-today-translate-btn');if(b)b.style.display='none';}
         descEl.style.display='block';
       }else{descEl.textContent='';descEl.style.display='none';}
     }else{descEl.textContent='';descEl.style.display='none';}
@@ -2219,7 +2251,11 @@ async function openPkmDetail(idOrName){
     if(zhEntry){
       descEl.innerHTML=`<span>${zhEntry.flavor_text.replace(/\f|\n/g,' ').trim()}</span>`;
     }else if(enEntry){
-      descEl.innerHTML=`<span style="color:var(--t3);font-size:.72rem;display:block;margin-bottom:3px">📖 暂无中文图鉴，以下为英文原文</span><span>${enEntry.flavor_text.replace(/\f|\n/g,' ').trim()}</span>`;
+      const engText=enEntry.flavor_text.replace(/\f|\n/g,' ').trim();
+      const pkmId=p.id;
+      descEl.innerHTML=`<span style="color:var(--t3);font-size:.72rem;display:block;margin-bottom:3px">📖 暂无中文图鉴</span><span id="pkm-en-desc-text">${engText}</span><div><button class="pkm-translate-btn" id="pkm-translate-btn" onclick="translatePkmDesc(${pkmId},document.getElementById('pkm-en-desc-text').textContent,this,document.getElementById('pkm-en-desc-text'))">🌐 AI翻译</button></div>`;
+      // 如果已有缓存，直接显示
+      if(pkmDescTransCache[pkmId]){document.getElementById('pkm-en-desc-text').innerHTML=pkmDescTransCache[pkmId];document.getElementById('pkm-translate-btn').style.display='none';}
     }else{
       descEl.innerHTML=`<span style="color:var(--t3)">暂无图鉴信息</span>`;
     }
