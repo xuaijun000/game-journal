@@ -2007,8 +2007,9 @@ const PKM_CN_TABLE={1:'妙蛙种子',2:'妙蛙草',3:'妙蛙花',4:'小火龙',5
 
 // 从数据库加载已保存的氛围图
 async function loadPkmAiArtFromDB(pkmId){
-  if(!currentUser)return;
   try{
+    const {data:{session}}=await db.auth.getSession();
+    if(!session?.user)return;
     const {data}=await db.from('pkm_ai_art').select('image_url').eq('pkm_id',pkmId).single();
     if(data?.image_url){
       pkmAiArtCache[pkmId]=data.image_url;
@@ -2024,16 +2025,18 @@ async function loadPkmAiArtFromDB(pkmId){
 
 // 保存氛围图到数据库
 async function savePkmAiArtToDB(pkmId,imageUrl){
-  if(!currentUser)return;
   try{
+    const {data:{session}}=await db.auth.getSession();
+    if(!session?.user)return;
     await db.from('pkm_ai_art').upsert({pkm_id:pkmId,image_url:imageUrl},{onConflict:'pkm_id'});
   }catch(e){console.log('save art failed',e);}
 }
 
 // 从数据库删除氛围图
 async function deletePkmAiArtFromDB(pkmId){
-  if(!currentUser)return;
   try{
+    const {data:{session}}=await db.auth.getSession();
+    if(!session?.user)return;
     await db.from('pkm_ai_art').delete().eq('pkm_id',pkmId);
     delete pkmAiArtCache[pkmId];
   }catch(e){console.log('delete art failed',e);}
