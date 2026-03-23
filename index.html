@@ -2019,23 +2019,27 @@ function genPkmAiArt(){
   }
 
   btn.classList.add('loading');
-  btn.textContent='生成中(约15s)…';
+  btn.textContent='生成中(约10s)…';
 
   const typeEn=types.join(' ');
-  const prompt=`${name} pokemon, ${typeEn} type, fantasy digital art, dramatic lighting, cinematic background, detailed environment, no text, no UI`;
-  const seed=Math.floor(Math.random()*99999);
-  const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=600&height=300&seed=${seed}&nologo=true`;
+  const prompt=`${name} pokemon, ${typeEn} type, fantasy digital art, dramatic lighting, cinematic background, vibrant colors, detailed environment, no text, no watermark`;
 
-  // 用 fetch 检测图片是否真正返回（Pollinations 会等生成完才响应）
   const controller=new AbortController();
-  const timeoutId=setTimeout(()=>{controller.abort();},60000); // 60秒超时
+  const timeoutId=setTimeout(()=>{controller.abort();},90000);
 
-  fetch(url,{signal:controller.signal})
-    .then(res=>{
+  fetch(IGDB_PROXY,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},
+    signal:controller.signal,
+    body:JSON.stringify({sfImage:{prompt}})
+  })
+    .then(r=>r.json())
+    .then(data=>{
       clearTimeout(timeoutId);
-      if(!res.ok)throw new Error('HTTP '+res.status);
-      pkmAiArtCache[id]=url;
-      aiBg.style.backgroundImage=`url(${url})`;
+      const imgUrl=data?.url;
+      if(!imgUrl)throw new Error('no url');
+      pkmAiArtCache[id]=imgUrl;
+      aiBg.style.backgroundImage=`url(${imgUrl})`;
       aiBg.classList.add('loaded');
       btn.classList.remove('loading');
       btn.textContent='✨ 重新生成';
