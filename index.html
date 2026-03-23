@@ -2438,6 +2438,7 @@ async function delMedia(){
   if(!user)localStorage.setItem(type+'_list',JSON.stringify(mediaData[type]));
   closeOv('ov-media');renderMedia(type);
 }
+function toggleMediaChat(){
   mediaChatOpen=!mediaChatOpen;
   document.getElementById('media-chat-wrap').style.display=mediaChatOpen?'block':'none';
   document.getElementById('media-ai-btn').textContent=mediaChatOpen?'收起 AI 对话':'⬡ 和 AI 聊聊';
