@@ -357,8 +357,13 @@
     .pkm-detail-modal{max-width:520px}
     .pkm-detail-hero{height:200px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
     .pkm-detail-bg{position:absolute;inset:0;filter:blur(25px);opacity:.35;background-size:cover;background-position:center}
+    .pkm-detail-ai-bg{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity 1s ease}
+    .pkm-detail-ai-bg.loaded{opacity:.55}
     .pkm-detail-img{position:relative;z-index:2;width:150px;height:150px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 6px 16px rgba(0,0,0,.7));transition:transform .3s ease}
     .pkm-detail-img:hover{transform:scale(1.08)}
+    .pkm-ai-art-btn{position:absolute;bottom:8px;right:8px;z-index:5;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.85);font-size:.68rem;padding:3px 8px;border-radius:20px;cursor:pointer;backdrop-filter:blur(6px);transition:all .2s;white-space:nowrap}
+    .pkm-ai-art-btn:hover{background:rgba(255,255,255,.15);color:#fff}
+    .pkm-ai-art-btn.loading{opacity:.6;pointer-events:none}
     .pkm-detail-body{padding:1.2rem 1.5rem}
     .pkm-detail-name{font-family:'Noto Serif SC',serif;font-size:1.4rem;font-weight:600;margin-bottom:4px}
     .pkm-detail-meta{font-size:.78rem;color:var(--t2);font-family:'DM Mono',monospace;margin-bottom:10px}
@@ -786,7 +791,7 @@
 <!-- 宝可梦详情弹窗 -->
 <div class="ov" id="ov-pkm" onclick="if(event.target===this)closeOv('ov-pkm')">
   <div class="modal pkm-detail-modal">
-    <div class="pkm-detail-hero"><div class="pkm-detail-bg" id="pkm-detail-bg"></div><img id="pkm-detail-img" src="" alt="" class="pkm-detail-img"></div>
+    <div class="pkm-detail-hero"><div class="pkm-detail-bg" id="pkm-detail-bg"></div><div class="pkm-detail-ai-bg" id="pkm-detail-ai-bg"></div><img id="pkm-detail-img" src="" alt="" class="pkm-detail-img"><button class="pkm-ai-art-btn" id="pkm-ai-art-btn" onclick="genPkmAiArt()">✨ AI氛围图</button></div>
     <div class="pkm-detail-body">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
         <div><div class="pkm-today-num" id="pkm-detail-num"></div><div class="pkm-detail-name" id="pkm-detail-name"></div></div>
@@ -1993,6 +1998,50 @@ const PKM_CN_TABLE={1:'妙蛙种子',2:'妙蛙草',3:'妙蛙花',4:'小火龙',5
 1001:'古简蜗',1002:'古剑豹',1003:'古鼎鹿',1004:'古玉鱼',1005:'轰鸣月',1006:'铁武者',1007:'故勒顿',1008:'密勒顿',1009:'波荡水',1010:'铁斑叶',1011:'裹蜜虫',1012:'斯魔茶',1013:'来悲粗茶',1014:'够赞狗',1015:'愿增猿',1016:'吉雉鸡',1017:'厄诡椪',1018:'铝钢桥龙',1019:'蜜集大蛇',1020:'破空焰',
 1021:'猛雷鼓',1022:'铁磐岩',1023:'铁头壳',1024:'太乐巴戈斯',1025:'桃歹郎'};
 
+// AI氛围图（Pollinations.ai）
+const pkmAiArtCache={};
+let currentAiArtPkm=null;
+
+function genPkmAiArt(){
+  if(!currentAiArtPkm)return;
+  const btn=document.getElementById('pkm-ai-art-btn');
+  const aiBg=document.getElementById('pkm-detail-ai-bg');
+  const {id,name,types}=currentAiArtPkm;
+
+  // 已有缓存直接显示
+  if(pkmAiArtCache[id]){
+    aiBg.style.backgroundImage=`url(${pkmAiArtCache[id]})`;
+    aiBg.classList.add('loaded');
+    btn.textContent='✨ 重新生成';
+    return;
+  }
+
+  btn.classList.add('loading');
+  btn.textContent='生成中…';
+
+  // 构建英文 prompt（Pollinations 对英文效果更好）
+  const typeEn=types.join(' ');
+  const prompt=`${name} pokemon, ${typeEn} type, fantasy digital art, dramatic lighting, cinematic background, detailed environment, no text, no UI`;
+  const seed=Math.floor(Math.random()*99999);
+  const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=600&height=300&seed=${seed}&nologo=true`;
+
+  const img=new Image();
+  img.onload=()=>{
+    pkmAiArtCache[id]=url;
+    aiBg.style.backgroundImage=`url(${url})`;
+    aiBg.classList.add('loaded');
+    btn.classList.remove('loading');
+    btn.textContent='✨ 重新生成';
+    btn.onclick=()=>{delete pkmAiArtCache[id];aiBg.classList.remove('loaded');setTimeout(()=>genPkmAiArt(),200);};
+  };
+  img.onerror=()=>{
+    btn.classList.remove('loading');
+    btn.textContent='✨ AI氛围图';
+    btn.title='生成失败，点击重试';
+  };
+  img.src=url;
+}
+
 // 图鉴文字 AI 翻译（带缓存）
 async function translatePkmDesc(pkmId,engText,btnEl,targetEl){
   if(pkmDescTransCache[pkmId]){targetEl.innerHTML=pkmDescTransCache[pkmId];btnEl.style.display='none';return;}
@@ -2268,6 +2317,12 @@ async function openPkmDetail(idOrName){
     document.getElementById('pkm-detail-stats').innerHTML=p.stats.map(s=>statBar(s.stat.name,s.base_stat)).join('');
     await loadEvoChain(sp,'pkm-detail-evo');await loadPkmCollection();updateDetailBtns(p.id);
     currentChatPkm={id:p.id,name:cnName,types:p.types.map(t=>t.type.name),species:sp};
+    // 重置AI氛围图按钮和背景
+    currentAiArtPkm={id:p.id,name:cnName,types:p.types.map(t=>t.type.name)};
+    const aiBg=document.getElementById('pkm-detail-ai-bg');
+    if(aiBg){aiBg.classList.remove('loaded');aiBg.style.backgroundImage='none';}
+    const aiBtn=document.getElementById('pkm-ai-art-btn');
+    if(aiBtn){aiBtn.classList.remove('loading');aiBtn.textContent='✨ AI氛围图';aiBtn.onclick=()=>genPkmAiArt();}
   }catch(e){document.getElementById('pkm-detail-name').textContent='加载失败';}
 }
 function onPkmSearch(v){
