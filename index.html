@@ -1948,11 +1948,13 @@ async function loadTodayPkm(random=false){
     document.getElementById('pkm-today-desc').textContent='';
     document.getElementById('pkm-today-locations').innerHTML='';
     const p=await fetchPkm(seed);
-    // 取 species：去掉形态后缀（-standard, -galar, -alola 等）
     const speciesName=p.species?.name||p.name.replace(/-(standard|galar|alola|hisui|paldea|incarnate|aria|baile|midday|solo|red-striped|blue-striped|natural|male|female|plant|sandy|trash|heat|wash|frost|fan|mow|normal|attack|defense|speed|ordinary|overcast|sunshine|land|sky|zen|original|therian|black|white|resolute|ordinary|pirouette|active|shield|blade|confined|unbound|50|complete|10|dusk|dawn|ultra|original|crowned|ice|shadow|hangry|full-belly|gorging|family-of-four|four|nasal|droopy|stretchy|curly|small|large|super|eternal|average|small|large|super|red|orange|yellow|green|blue|indigo|violet|heart|star|diamond|deprived|well-fed|belly-full|hangry|phony|antique|disguised|busted|meteor|core|school|disguised|midday|midnight|dusk|dawn|ultra)$/,'').replace(/-[a-z]+$/,'');
     const sp=await fetchPkmSpecies(speciesName).catch(()=>null)||await fetchPkmSpecies(p.id).catch(()=>null);
     todayPkm={...p,species:sp};
-    renderTodayPkm(p,sp);
+    // 先拿中文名再渲染，保证不显示英文
+    let cnName=getCNName(sp,speciesName);
+    if(!cnName)cnName=await getPkmCNName(p.id,speciesName);
+    renderTodayPkm(p,sp,cnName);
     await loadPkmCollection();
     updateTodayBtns();
     loadPkmEncounters(p.id,p.name);
@@ -2058,20 +2060,23 @@ async function loadPkmEncounters(pkmId,engName){
     locEl.innerHTML=`<div style="font-size:.7rem;color:var(--t3);margin-bottom:6px;font-family:'DM Mono',monospace;letter-spacing:.04em">🗺 各世代获取地点（${sortedGames.length}个版本）</div>${html}`;  }catch(e){if(locEl)locEl.innerHTML='';}
 }
 
-function renderTodayPkm(p,sp){
+function renderTodayPkm(p,sp,cnName){
   const img=p.sprites?.other?.['official-artwork']?.front_default||p.sprites?.front_default||'';
   const img2=p.sprites?.front_default||img;
   document.getElementById('pkm-today-img').src=img2;
   document.getElementById('pkm-today-bg').style.backgroundImage=img?`url(${img})`:'none';
-  // 优先取 species 的中文名，取不到再用 species.name 或 p.name
-  const cnName=getCNName(sp,sp?.name||p.name)||(sp?.name||p.name);
+  const name=cnName||getCNName(sp,sp?.name||p.name)||(sp?.name||p.name);
   document.getElementById('pkm-today-num').textContent=`#${String(p.id).padStart(3,'0')}`;
-  document.getElementById('pkm-today-name').textContent=cnName;
+  document.getElementById('pkm-today-name').textContent=name;
   document.getElementById('pkm-today-types').innerHTML=p.types.map(t=>typeTag(t.type.name)).join('');
   document.getElementById('pkm-today-stats').innerHTML=p.stats.map(s=>statBar(s.stat.name,s.base_stat)).join('');
+  // 图鉴描述（中文）
   const desc=getCNFlavorText(sp);
   const descEl=document.getElementById('pkm-today-desc');
-  if(descEl)descEl.textContent=desc||'';
+  if(descEl){
+    if(desc){descEl.textContent=desc;descEl.style.display='block';}
+    else{descEl.textContent='';descEl.style.display='none';}
+  }
   loadEvoChain(sp,'pkm-today-evo');
 }
 async function loadEvoChain(sp,containerId){
@@ -2161,19 +2166,15 @@ async function loadGen(gen,el){
   const grid=document.getElementById('pkm-gen-grid');grid.innerHTML='<div class="pkm-empty">加载中…</div>';
   if(genCache[gen]){grid.innerHTML=genCache[gen];return;}
   const[start,end]=GEN_RANGE[gen];const ids=Array.from({length:end-start+1},(_,i)=>start+i);
-  grid.innerHTML='';const BATCH=20;let allHtml='';
+  grid.innerHTML='';const BATCH=10;let allHtml=''; // 减小批次，让中文名能及时拿到
   for(let b=0;b<ids.length;b+=BATCH){
     const batch=ids.slice(b,b+BATCH);
     const items=await Promise.all(batch.map(async id=>{
       try{
         const p=await fetchPkm(id);
-        // 优先从缓存拿，没有再查 species
-        let cn=pkmCNCache[p.id];
-        if(!cn){
-          const sp=await fetchPkmSpecies(p.id).catch(()=>null);
-          cn=getCNName(sp,p.name)||p.name;
-          if(cn)pkmCNCache[p.id]=cn;
-        }
+        const speciesName=p.species?.name||p.name;
+        // getPkmCNName 内部会查 species，直接用它
+        const cn=await getPkmCNName(p.id,speciesName);
         const img=p.sprites?.front_default||'';
         const col=pkmCollection[p.id]||{};
         const mark=col.caught?'✓':col.liked?'♥':col.wanted?'★':'';
