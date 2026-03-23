@@ -940,7 +940,6 @@
 <script>
 const SB_URL='https://qbzxfwnosacwbdumkvoz.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFienhmd25vc2Fjd2JkdW1rdm96Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4NjQyMTEsImV4cCI6MjA4OTQ0MDIxMX0.cvREkp0ZmiUuSpMj9TZB0ZGUXv1WMor0jN3yd4HEBwY';
-const SB_PUB_KEY='sb_publishable_m-FvqswdlPrigzfyxrBjJA_F9wzPNb2';
 const IGDB_PROXY='https://qbzxfwnosacwbdumkvoz.supabase.co/functions/v1/dynamic-worker';
 const STEAM_PROXY='https://qbzxfwnosacwbdumkvoz.supabase.co/functions/v1/steam-proxy';
 const{createClient}=supabase;
@@ -2085,7 +2084,7 @@ async function genPkmAiArt(){
   if(!currentAiArtPkm)return;
   const btn=document.getElementById('pkm-ai-art-btn');
   const aiBg=document.getElementById('pkm-detail-ai-bg');
-  const {id,name,cnName,types,artworkUrl}=currentAiArtPkm;
+  const {id,name,cnName,types}=currentAiArtPkm;
 
   // 已有缓存直接显示
   if(pkmAiArtCache[id]){
@@ -2093,45 +2092,22 @@ async function genPkmAiArt(){
     aiBg.classList.add('loaded');
     btn.textContent='✨ 重新生成';
     btn.classList.remove('loading');
-    btn.onclick=()=>{delete pkmAiArtCache[id];aiBg.classList.remove('loaded');const ac=document.getElementById('pkm-ai-art-actions');if(ac)ac.style.display='none';setTimeout(()=>genPkmAiArt(),200);};
+    btn.onclick=()=>deletePkmAiArtFromDB(id).then(()=>{aiBg.classList.remove('loaded');const ac=document.getElementById('pkm-ai-art-actions');if(ac)ac.style.display='none';setTimeout(()=>genPkmAiArt(),200);});
     const ac=document.getElementById('pkm-ai-art-actions');if(ac)ac.style.display='flex';
     return;
   }
 
   btn.classList.add('loading');
-  btn.textContent='Step 1/2 描述中…';
+  btn.textContent='生成中(约10s)…';
+
+  const typeEn=types.join(' ');
+  const prompt=`${name} pokemon, ${typeEn} type, vibrant fantasy digital art, dramatic cinematic lighting, lush ${typeEn} type natural habitat, wide shot, vivid colors, detailed environment, no text, no watermark, no humans`;
 
   try{
-    // Step 1: 用 Gemini 看宝可梦图片，生成详细外形描述作为 prompt
-    const geminiBody={
-      contents:[{role:'user',parts:[
-        {inline_data:{mime_type:'image/png',data:await urlToBase64(artworkUrl)}},
-        {text:`You are a professional image generation prompt writer. Look at this Pokemon image carefully.
-Write a detailed English image generation prompt (max 120 words) describing ONLY the visual appearance of this Pokemon:
-- Body shape, size, colors, textures
-- Distinctive features (wings, tail, markings, etc.)
-- Pose and expression
-Then add: "in its natural ${types.join(' ')} type habitat, dramatic cinematic lighting, wide shot, vivid colors, fantasy digital art style, no text, no watermark"
-Output ONLY the prompt text, nothing else.`}
-      ]}],
-      generationConfig:{maxOutputTokens:200,temperature:0.4}
-    };
-    const geminiRes=await fetch(SB_URL+'/functions/v1/gemini-proxy',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','apikey':SB_PUB_KEY,'Authorization':'Bearer '+SB_PUB_KEY},
-      body:JSON.stringify(geminiBody)
-    });
-    const geminiData=await geminiRes.json();
-    const imagePrompt=(geminiData.candidates?.[0]?.content?.parts?.[0]?.text||'').trim();
-    if(!imagePrompt)throw new Error('Gemini无响应');
-
-    btn.textContent='Step 2/2 生图中…';
-
-    // Step 2: 用生成的 prompt 调用硅基流动生图
     const sfRes=await fetch(IGDB_PROXY,{
       method:'POST',
       headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},
-      body:JSON.stringify({sfImage:{prompt:imagePrompt}})
+      body:JSON.stringify({sfImage:{prompt}})
     });
     const sfData=await sfRes.json();
     const imgUrl=sfData?.url;
@@ -2144,24 +2120,12 @@ Output ONLY the prompt text, nothing else.`}
     btn.textContent='✨ 重新生成';
     btn.onclick=()=>deletePkmAiArtFromDB(id).then(()=>{aiBg.classList.remove('loaded');const ac=document.getElementById('pkm-ai-art-actions');if(ac)ac.style.display='none';setTimeout(()=>genPkmAiArt(),200);});
     const ac=document.getElementById('pkm-ai-art-actions');if(ac)ac.style.display='flex';
-    // 保存到数据库
     savePkmAiArtToDB(id,imgUrl);
   }catch(e){
     btn.classList.remove('loading');
     btn.textContent='✨ AI氛围图';
     btn.title='生成失败：'+e.message;
   }
-}
-
-// 将图片URL转为base64（供Gemini inline_data使用）
-async function urlToBase64(url){
-  const res=await fetch(url);
-  const blob=await res.blob();
-  return new Promise(resolve=>{
-    const reader=new FileReader();
-    reader.onloadend=()=>resolve(reader.result.split(',')[1]);
-    reader.readAsDataURL(blob);
-  });
 }
 
 // 图鉴文字 AI 翻译（带缓存）
@@ -2171,7 +2135,7 @@ async function translatePkmDesc(pkmId,engText,btnEl,targetEl){
   try{
     const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{
       method:'POST',
-      headers:{'Content-Type':'application/json','apikey':SB_PUB_KEY,'Authorization':'Bearer '+SB_PUB_KEY},
+      headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},
       body:JSON.stringify({contents:[{role:'user',parts:[{text:'请将以下宝可梦图鉴文字翻译成简体中文，只输出翻译结果，不要加任何解释或符号：\n'+engText}]}],generationConfig:{maxOutputTokens:200,temperature:0.3}})
     });
     const d=await res.json();
@@ -2573,7 +2537,7 @@ async function sendPkmAIMsg(){
   const g=currentChatPkm;const series=document.getElementById('pkm-series-inp').value.trim();
   const sys=`你是一位精通宝可梦世界的博士级情报员，专精于${g.name}（#${String(g.id).padStart(3,'0')}，${g.types.map(t=>TYPE_ZH[t]||t).join('/')}属性）。你对这只宝可梦了如指掌：进化方式、对战技能、个性搭配、各作品出场方式、相关剧情和冷知识。${series?`玩家当前游玩的系列：${series}，请优先结合该作品中的相关内容来回答。`:''}\n回答要求：中文，400字左右，详细丰富，纯文字不用Markdown符号。`;
   try{
-    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_PUB_KEY,'Authorization':'Bearer '+SB_PUB_KEY},body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:pkmChatHistory,generationConfig:{maxOutputTokens:1000,temperature:1.0}})});
+    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:pkmChatHistory,generationConfig:{maxOutputTokens:1000,temperature:1.0}})});
     if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err?.error?.message||'HTTP '+res.status);}
     const data=await res.json();const reply=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'（AI 暂时离线）';
     const t=document.getElementById('pkm-typing');if(t)t.remove();
@@ -2588,7 +2552,7 @@ async function generatePkmLog(){
   const histText=pkmChatHistory.map(m=>(m.role==='user'?'训练师':'博士')+':'+m.parts[0].text).join('\n');
   const prompt='以下是关于宝可梦'+g.name+'的对话记录：\n\n'+histText+'\n\n请将这段对话中有价值的内容写成一则100-150字的训练师日志。用第一人称，像宝可梦训练师在记录探索日记一样，融入宝可梦世界的氛围。提炼关键信息，纯文字不用Markdown。';
   try{
-    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_PUB_KEY,'Authorization':'Bearer '+SB_PUB_KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:300,temperature:0.8}})});
+    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:300,temperature:0.8}})});
     if(!res.ok)throw new Error('HTTP '+res.status);
     const data=await res.json();const summary=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
     if(!summary)throw new Error('AI 返回为空');
@@ -2649,7 +2613,7 @@ async function sendSeriesAIMsg(){
   const status=document.getElementById('series-save-btn')?.dataset?.status||'none';const hours=document.getElementById('series-hours-inp')?.value||'';const ace=document.getElementById('series-ace-inp')?.value||'';
   const sys='你是宝可梦系列「'+s.name+'」（'+s.year+'年）的专属攻略顾问。玩家状态：'+(status==='cleared'?'已通关':status==='played'?'游玩中':'未游玩')+(hours?'，约'+hours+'小时':'')+(ace?'，王牌：'+ace:'')+'。用中文详细回答（400字左右），纯文字不用Markdown。';
   try{
-    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_PUB_KEY,'Authorization':'Bearer '+SB_PUB_KEY},body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:seriesChatHistory,generationConfig:{maxOutputTokens:1000,temperature:1.0}})});
+    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:seriesChatHistory,generationConfig:{maxOutputTokens:1000,temperature:1.0}})});
     if(!res.ok)throw new Error('HTTP '+res.status);const data=await res.json();const reply=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'（AI 暂时离线）';
     const t=document.getElementById('series-typing');if(t)t.remove();addSeriesBubble(reply,'ai',true);
     seriesChatHistory.push({role:'model',parts:[{text:reply}]});if(seriesChatHistory.length>20)seriesChatHistory=seriesChatHistory.slice(-20);
@@ -2663,7 +2627,7 @@ async function genSeriesLogFromChat(){
   const histText=seriesChatHistory.map(m=>(m.role==='user'?'训练师':'顾问')+':'+m.parts[0].text).join('\n');
   const prompt='以下是关于宝可梦「'+s.name+'」的对话：\n\n'+histText+'\n\n请用第一人称训练师日记口吻，写一段100-130字的游玩日志，提炼有价值的内容，融入游戏氛围，纯文字不用Markdown。';
   try{
-    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_PUB_KEY,'Authorization':'Bearer '+SB_PUB_KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:300,temperature:0.9}})});
+    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:300,temperature:0.9}})});
     if(!res.ok)throw new Error('HTTP '+res.status);const data=await res.json();const text=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();if(!text)throw new Error('返回为空');
     const ta=document.getElementById('series-notes-inp');if(ta){const prev=ta.value.trim();ta.value=(prev?prev+'\n\n':'')+'[AI 日志]\n'+text;}
     const{data:{session}}=await db.auth.getSession();if(session?.user){await db.from('pkm_logs').insert({user_id:session.user.id,pkm_id:0,pkm_name:'📝 '+s.name,summary:text,game_series:s.name});loadPkmLogs();}
@@ -2921,7 +2885,7 @@ async function sendMediaAIMsg(){
   msgs.appendChild(td);msgs.scrollTop=msgs.scrollHeight;
   const sys=`你是精通《${mediaCurrentItem.title}》的专属情报员。请用详细丰富的中文回答（400字左右），纯文字不用Markdown。\n${window._mtlProgressContext||''}`;
   try{
-    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_PUB_KEY,'Authorization':'Bearer '+SB_PUB_KEY},body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:mediaChatHistory,generationConfig:{maxOutputTokens:1200,temperature:1.15}})});
+    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:mediaChatHistory,generationConfig:{maxOutputTokens:1200,temperature:1.15}})});
     if(!res.ok)throw new Error('HTTP '+res.status);const data=await res.json();const reply=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'（AI 暂时离线）';
     document.getElementById('media-typing')?.remove();
     const div=document.createElement('div');div.className='cmsg ai-msg';div.innerHTML=`<div class="cmsg-av ai-av">AI</div><div class="cmsg-bbl"></div>`;msgs.appendChild(div);
