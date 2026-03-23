@@ -2013,33 +2013,40 @@ function genPkmAiArt(){
     aiBg.style.backgroundImage=`url(${pkmAiArtCache[id]})`;
     aiBg.classList.add('loaded');
     btn.textContent='✨ 重新生成';
+    btn.classList.remove('loading');
+    btn.onclick=()=>{delete pkmAiArtCache[id];aiBg.classList.remove('loaded');setTimeout(()=>genPkmAiArt(),200);};
     return;
   }
 
   btn.classList.add('loading');
-  btn.textContent='生成中…';
+  btn.textContent='生成中(约15s)…';
 
-  // 构建英文 prompt（Pollinations 对英文效果更好）
   const typeEn=types.join(' ');
   const prompt=`${name} pokemon, ${typeEn} type, fantasy digital art, dramatic lighting, cinematic background, detailed environment, no text, no UI`;
   const seed=Math.floor(Math.random()*99999);
-  const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=600&height=300&seed=${seed}&nologo=true`;
+  const url=`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=600&height=300&seed=${seed}&nologo=true&model=flux`;
 
-  const img=new Image();
-  img.onload=()=>{
-    pkmAiArtCache[id]=url;
-    aiBg.style.backgroundImage=`url(${url})`;
-    aiBg.classList.add('loaded');
-    btn.classList.remove('loading');
-    btn.textContent='✨ 重新生成';
-    btn.onclick=()=>{delete pkmAiArtCache[id];aiBg.classList.remove('loaded');setTimeout(()=>genPkmAiArt(),200);};
-  };
-  img.onerror=()=>{
-    btn.classList.remove('loading');
-    btn.textContent='✨ AI氛围图';
-    btn.title='生成失败，点击重试';
-  };
-  img.src=url;
+  // 用 fetch 检测图片是否真正返回（Pollinations 会等生成完才响应）
+  const controller=new AbortController();
+  const timeoutId=setTimeout(()=>{controller.abort();},60000); // 60秒超时
+
+  fetch(url,{signal:controller.signal})
+    .then(res=>{
+      clearTimeout(timeoutId);
+      if(!res.ok)throw new Error('HTTP '+res.status);
+      pkmAiArtCache[id]=url;
+      aiBg.style.backgroundImage=`url(${url})`;
+      aiBg.classList.add('loaded');
+      btn.classList.remove('loading');
+      btn.textContent='✨ 重新生成';
+      btn.onclick=()=>{delete pkmAiArtCache[id];aiBg.classList.remove('loaded');setTimeout(()=>genPkmAiArt(),200);};
+    })
+    .catch(e=>{
+      clearTimeout(timeoutId);
+      btn.classList.remove('loading');
+      btn.textContent='✨ AI氛围图';
+      btn.title=e.name==='AbortError'?'超时，点击重试':'生成失败，点击重试';
+    });
 }
 
 // 图鉴文字 AI 翻译（带缓存）
