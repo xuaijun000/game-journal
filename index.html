@@ -480,7 +480,43 @@
     @media(max-width:640px){.stats{grid-template-columns:repeat(3,1fr)}.cg{grid-template-columns:1fr}.row2{grid-template-columns:1fr}.disc-header{flex-direction:column;align-items:flex-start}.disc-tabs{flex-wrap:wrap}}
     #pkm-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:.55}
     main,header{position:relative;z-index:1}
-  </style>
+  
+    /* ===== 游戏时刻记录 ===== */
+    .moment-fab{position:fixed;bottom:24px;right:24px;z-index:800;width:52px;height:52px;border-radius:50%;background:var(--a);border:none;color:#fff;font-size:1.3rem;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;transition:transform .2s,box-shadow .2s}
+    .moment-fab:hover{transform:scale(1.1);box-shadow:0 6px 20px rgba(0,0,0,.5)}
+    .moment-panel{position:fixed;bottom:88px;right:24px;z-index:800;width:320px;background:var(--bg2);border:1px solid var(--b);border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.5);padding:16px;display:none;flex-direction:column;gap:10px;animation:slideUp .2s ease}
+    .moment-panel.open{display:flex}
+    @keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    .moment-panel-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
+    .moment-panel-hdr h3{font-size:.9rem;font-weight:600;color:var(--t1)}
+    .moment-type-row{display:flex;gap:6px;flex-wrap:wrap}
+    .moment-type-btn{padding:4px 10px;border-radius:20px;border:1px solid var(--b);background:var(--bg3);color:var(--t2);font-size:.7rem;cursor:pointer;transition:all .15s}
+    .moment-type-btn.active{background:var(--a);border-color:var(--a);color:#fff}
+    .moment-game-select{width:100%;padding:7px 10px;border-radius:8px;border:1px solid var(--b);background:var(--bg3);color:var(--t1);font-size:.8rem;outline:none}
+    .moment-textarea{width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--b);background:var(--bg3);color:var(--t1);font-size:.82rem;resize:none;outline:none;min-height:72px;font-family:inherit;box-sizing:border-box}
+    .moment-textarea:focus{border-color:var(--a)}
+    .moment-img-row{display:flex;align-items:center;gap:8px}
+    .moment-img-label{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:8px;border:1px solid var(--b);background:var(--bg3);color:var(--t2);font-size:.75rem;cursor:pointer;transition:all .15s}
+    .moment-img-label:hover{border-color:var(--a);color:var(--a)}
+    .moment-img-preview{width:40px;height:40px;object-fit:cover;border-radius:6px;display:none}
+    .moment-submit{padding:8px;border-radius:8px;background:var(--a);border:none;color:#fff;font-size:.82rem;font-weight:600;cursor:pointer;transition:opacity .15s}
+    .moment-submit:disabled{opacity:.5;cursor:default}
+    /* 时刻列表 */
+    .moments-list{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+    .moment-item{background:var(--bg3);border-radius:10px;padding:10px 12px;border:1px solid var(--b);display:flex;flex-direction:column;gap:6px}
+    .moment-item-hdr{display:flex;align-items:center;justify-content:space-between}
+    .moment-item-type{font-size:.65rem;padding:2px 7px;border-radius:10px;font-weight:600}
+    .moment-item-type.highlight{background:rgba(255,200,0,.15);color:#f5c400}
+    .moment-item-type.rant{background:rgba(255,80,80,.15);color:#ff5050}
+    .moment-item-type.idea{background:rgba(100,180,255,.15);color:#64b4ff}
+    .moment-item-type.stuck{background:rgba(180,100,255,.15);color:#b464ff}
+    .moment-item-date{font-size:.65rem;color:var(--t3)}
+    .moment-item-text{font-size:.8rem;color:var(--t1);line-height:1.5}
+    .moment-item-img{width:100%;max-height:180px;object-fit:cover;border-radius:7px;cursor:zoom-in}
+    .moment-item-del{background:none;border:none;color:var(--t3);font-size:.75rem;cursor:pointer;padding:0;margin-left:6px}
+    .moment-item-del:hover{color:#ff5050}
+    .moments-empty{color:var(--t3);font-size:.8rem;text-align:center;padding:16px 0}
+    </style>
 </head>
 <body>
 <canvas id="pkm-canvas"></canvas>
@@ -706,6 +742,7 @@
       <div class="d-rev-box" id="d-rev-box"><div class="d-rev-lbl">评测与高光</div><div id="d-rev-val" class="d-rev-val"></div></div>
       <!-- 游戏时间轴挂载点 -->
       <div id="game-timeline-slot"></div>
+      <div id="game-moments-slot"></div>
       <button class="d-ai-btn" onclick="toggleAIChat()"><span>⬡</span><span id="d-ai-btn-txt">和 AI 聊聊这款游戏</span></button>
       <div id="sum-box" style="display:none" class="sum-box">
         <div class="sum-latest"><div class="sum-latest-hdr"><span class="sum-lbl">⬡ 情报存档</span><span class="sum-date" id="sum-latest-date"></span></div><div class="sum-text" id="sum-latest-text"></div></div>
@@ -1106,6 +1143,10 @@ function openDetail(id){
     if(session?.user)renderGameTimeline(tlId,g,session.user.id);
   });
   document.getElementById('ov-detail').classList.add('on');
+  // 加载游戏时刻
+  loadGameMoments(g.name);
+  // 悬浮面板默认选中当前游戏
+  const mSel=document.getElementById('moment-game-select');if(mSel&&g.name)mSel.value=g.name;
 }
 function openEditFromDetail(){closeOv('ov-detail');openEdit(editId);}
 function openAdd(){
@@ -2756,6 +2797,194 @@ function generateMediaSummary(){}
 
 /* 启动 */
 init();
+
+// ===== 游戏时刻记录 =====
+let momentType = 'highlight';
+let momentImgFile = null;
+
+function toggleMomentPanel(){
+  const panel = document.getElementById('moment-panel');
+  const isOpen = panel.classList.contains('open');
+  if(!isOpen){
+    // 填充游戏列表
+    const sel = document.getElementById('moment-game-select');
+    const current = sel.value;
+    sel.innerHTML = '<option value="">选择游戏…</option>';
+    const names = [...new Set(games.map(g=>g.name))].sort();
+    names.forEach(n=>{
+      const opt = document.createElement('option');
+      opt.value = n; opt.textContent = n;
+      if(n===current) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  }
+  panel.classList.toggle('open');
+}
+
+function setMomentType(btn){
+  document.querySelectorAll('.moment-type-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  momentType = btn.dataset.type;
+}
+
+function onMomentImgSelect(input){
+  const file = input.files[0];
+  if(!file) return;
+  momentImgFile = file;
+  const preview = document.getElementById('moment-img-preview');
+  const name = document.getElementById('moment-img-name');
+  preview.src = URL.createObjectURL(file);
+  preview.style.display = 'block';
+  name.textContent = file.name;
+}
+
+async function submitMoment(){
+  const gameName = document.getElementById('moment-game-select').value;
+  const text = document.getElementById('moment-text').value.trim();
+  if(!gameName){alert('请选择游戏');return;}
+  if(!text && !momentImgFile){alert('请写点内容或上传截图');return;}
+
+  const btn = document.getElementById('moment-submit');
+  btn.disabled = true; btn.textContent = '发布中…';
+
+  try{
+    const {data:{session}} = await db.auth.getSession();
+    if(!session?.user){alert('请先登录');return;}
+
+    let imageUrl = null;
+    if(momentImgFile){
+      const ext = momentImgFile.name.split('.').pop();
+      const path = `${session.user.id}/${Date.now()}.${ext}`;
+      const {error:upErr} = await db.storage.from('moments').upload(path, momentImgFile);
+      if(upErr) throw upErr;
+      const {data:urlData} = db.storage.from('moments').getPublicUrl(path);
+      imageUrl = urlData.publicUrl;
+    }
+
+    const {error} = await db.from('game_moments').insert({
+      user_id: session.user.id,
+      game_name: gameName,
+      content: text,
+      type: momentType,
+      image_url: imageUrl
+    });
+    if(error) throw error;
+
+    // 重置面板
+    document.getElementById('moment-text').value = '';
+    document.getElementById('moment-img-preview').style.display = 'none';
+    document.getElementById('moment-img-name').textContent = '';
+    document.getElementById('moment-img-input').value = '';
+    momentImgFile = null;
+    document.getElementById('moment-panel').classList.remove('open');
+
+    // 如果详情弹窗正好打开着同一款游戏，刷新时刻列表
+    const detailName = document.getElementById('d-name')?.textContent;
+    if(detailName === gameName) loadGameMoments(gameName);
+
+    showToast('时刻已记录 ✓');
+  }catch(e){
+    alert('发布失败：'+e.message);
+  }finally{
+    btn.disabled = false; btn.textContent = '发布时刻';
+  }
+}
+
+// 加载某游戏的时刻列表
+async function loadGameMoments(gameName){
+  const slot = document.getElementById('game-moments-slot');
+  if(!slot) return;
+  try{
+    const {data:{session}} = await db.auth.getSession();
+    if(!session?.user){slot.innerHTML='';return;}
+    const {data,error} = await db.from('game_moments')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .eq('game_name', gameName)
+      .order('created_at', {ascending:false});
+    if(error||!data?.length){slot.innerHTML='';return;}
+
+    const typeLabel = {highlight:'🌟 高光',rant:'💢 吐槽',idea:'💡 想法',stuck:'🧱 卡关'};
+    const typeClass = {highlight:'highlight',rant:'rant',idea:'idea',stuck:'stuck'};
+
+    slot.innerHTML = `<div style="font-size:.8rem;font-weight:600;color:var(--t2);margin:12px 0 6px">📸 游戏时刻 <span style="color:var(--t3);font-weight:400">(${data.length})</span></div>
+    <div class="moments-list">${data.map(m=>`
+      <div class="moment-item" id="moment-item-${m.id}">
+        <div class="moment-item-hdr">
+          <span class="moment-item-type ${typeClass[m.type]||'idea'}">${typeLabel[m.type]||'💡 想法'}</span>
+          <div style="display:flex;align-items:center;gap:4px">
+            <span class="moment-item-date">${new Date(m.created_at).toLocaleDateString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}</span>
+            <button class="moment-item-del" onclick="deleteMoment('${m.id}','${gameName}')" title="删除">✕</button>
+          </div>
+        </div>
+        ${m.content?`<div class="moment-item-text">${m.content}</div>`:''}
+        ${m.image_url?`<img class="moment-item-img" src="${m.image_url}" alt="" onclick="viewMomentImg('${m.image_url}')">`:''}
+      </div>`).join('')}
+    </div>`;
+  }catch(e){slot.innerHTML='';}
+}
+
+async function deleteMoment(id, gameName){
+  if(!confirm('删除这条时刻？'))return;
+  try{
+    // 先查图片URL
+    const {data} = await db.from('game_moments').select('image_url').eq('id',id).single();
+    await db.from('game_moments').delete().eq('id',id);
+    // 删Storage里的图片
+    if(data?.image_url){
+      const path = data.image_url.split('/moments/')[1];
+      if(path) await db.storage.from('moments').remove([path]);
+    }
+    loadGameMoments(gameName);
+  }catch(e){alert('删除失败');}
+}
+
+function viewMomentImg(url){
+  const el = document.createElement('div');
+  el.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;cursor:zoom-out';
+  el.innerHTML=`<img src="${url}" style="max-width:92vw;max-height:90vh;border-radius:8px;object-fit:contain">`;
+  el.onclick=()=>document.body.removeChild(el);
+  document.body.appendChild(el);
+}
+
+function showToast(msg){
+  const t = document.createElement('div');
+  t.style.cssText='position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--a);color:#fff;padding:8px 20px;border-radius:20px;font-size:.82rem;z-index:9999;pointer-events:none;animation:fadeIn .2s ease';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(()=>document.body.removeChild(t), 2000);
+}
+
+// 打开游戏详情时加载时刻
+const _origOpenDetail = openDetail;
+
 </script>
+
+<!-- 游戏时刻记录悬浮按钮 -->
+<button class="moment-fab" id="moment-fab" onclick="toggleMomentPanel()" title="记录游戏时刻">✏️</button>
+<div class="moment-panel" id="moment-panel">
+  <div class="moment-panel-hdr">
+    <h3>📸 记录时刻</h3>
+    <button onclick="toggleMomentPanel()" style="background:none;border:none;color:var(--t3);cursor:pointer;font-size:1rem">✕</button>
+  </div>
+  <select class="moment-game-select" id="moment-game-select">
+    <option value="">选择游戏…</option>
+  </select>
+  <div class="moment-type-row">
+    <button class="moment-type-btn active" data-type="highlight" onclick="setMomentType(this)">🌟 高光</button>
+    <button class="moment-type-btn" data-type="rant" onclick="setMomentType(this)">💢 吐槽</button>
+    <button class="moment-type-btn" data-type="idea" onclick="setMomentType(this)">💡 想法</button>
+    <button class="moment-type-btn" data-type="stuck" onclick="setMomentType(this)">🧱 卡关</button>
+  </div>
+  <textarea class="moment-textarea" id="moment-text" placeholder="写下此刻的想法…" maxlength="500"></textarea>
+  <div class="moment-img-row">
+    <label class="moment-img-label" for="moment-img-input">📷 上传截图
+      <input type="file" id="moment-img-input" accept="image/*" style="display:none" onchange="onMomentImgSelect(this)">
+    </label>
+    <img id="moment-img-preview" class="moment-img-preview" alt="">
+    <span id="moment-img-name" style="font-size:.7rem;color:var(--t3);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+  </div>
+  <button class="moment-submit" id="moment-submit" onclick="submitMoment()">发布时刻</button>
+</div>
 </body>
 </html>
