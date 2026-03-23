@@ -2139,7 +2139,7 @@ function renderTodayPkm(p,sp,cnName){
   const img2=p.sprites?.front_default||img;
   document.getElementById('pkm-today-img').src=img2;
   document.getElementById('pkm-today-bg').style.backgroundImage=img?`url(${img})`:'none';
-  const name=cnName||getCNName(sp,sp?.name||p.name)||(sp?.name||p.name);
+  const name=PKM_CN_TABLE[Number(p.id)]||cnName||getCNName(sp,sp?.name||p.name)||(sp?.name||p.name);
   document.getElementById('pkm-today-num').textContent=`#${String(p.id).padStart(3,'0')}`;
   document.getElementById('pkm-today-name').textContent=name;
   document.getElementById('pkm-today-types').innerHTML=p.types.map(t=>typeTag(t.type.name)).join('');
@@ -2209,14 +2209,27 @@ async function openPkmDetail(idOrName){
   document.getElementById('pkm-detail-name').textContent='加载中…';
   try{
     const p=await fetchPkm(idOrName);const sp=await fetchPkmSpecies(p.species.url.split('/').slice(-2)[0]);
-    const cnName=getCNName(sp,p.name)||p.name;const desc=getCNFlavorText(sp)||'暂无描述';
+    // 名字：优先 PKM_CN_TABLE（覆盖所有世代），再查 API，最后英文兜底
+    const cnName=PKM_CN_TABLE[Number(p.id)]||getCNName(sp,p.name)||(await getPkmCNName(p.id,p.name))||p.name;
+    // 图鉴文字：中文优先，无中文显示英文并标注
+    const entries=sp?.flavor_text_entries||[];
+    const zhEntry=entries.find(x=>x.language.name==='zh-Hans')||entries.find(x=>x.language.name==='zh-Hant');
+    const enEntry=entries.find(x=>x.language.name==='en');
+    const descEl=document.getElementById('pkm-detail-desc');
+    if(zhEntry){
+      descEl.innerHTML=`<span>${zhEntry.flavor_text.replace(/\f|\n/g,' ').trim()}</span>`;
+    }else if(enEntry){
+      descEl.innerHTML=`<span style="color:var(--t3);font-size:.72rem;display:block;margin-bottom:3px">📖 暂无中文图鉴，以下为英文原文</span><span>${enEntry.flavor_text.replace(/\f|\n/g,' ').trim()}</span>`;
+    }else{
+      descEl.innerHTML=`<span style="color:var(--t3)">暂无图鉴信息</span>`;
+    }
     const img=p.sprites?.other?.['official-artwork']?.front_default||p.sprites?.front_default||'';
     const img2=p.sprites?.front_default||img;
     document.getElementById('pkm-detail-img').src=img2;document.getElementById('pkm-detail-bg').style.backgroundImage=img?`url(${img})`:'none';
     document.getElementById('pkm-detail-num').textContent=`#${String(p.id).padStart(3,'0')}`;document.getElementById('pkm-detail-name').textContent=cnName;
     document.getElementById('pkm-detail-types').innerHTML=p.types.map(t=>typeTag(t.type.name)).join('');
     document.getElementById('pkm-detail-meta').textContent=`身高 ${p.height/10}m · 体重 ${p.weight/10}kg`;
-    document.getElementById('pkm-detail-desc').textContent=desc;document.getElementById('pkm-detail-stats').innerHTML=p.stats.map(s=>statBar(s.stat.name,s.base_stat)).join('');
+    document.getElementById('pkm-detail-stats').innerHTML=p.stats.map(s=>statBar(s.stat.name,s.base_stat)).join('');
     await loadEvoChain(sp,'pkm-detail-evo');await loadPkmCollection();updateDetailBtns(p.id);
     currentChatPkm={id:p.id,name:cnName,types:p.types.map(t=>t.type.name),species:sp};
   }catch(e){document.getElementById('pkm-detail-name').textContent='加载失败';}
@@ -2235,7 +2248,7 @@ function onPkmSearch(v){
         let cn=pkmCNCache[p.id];
         if(!cn){
           const sp=await fetchPkmSpecies(p.id).catch(()=>null);
-          cn=getCNName(sp,p.name)||p.name;
+          cn=PKM_CN_TABLE[p.id]||getCNName(sp,p.name)||(await getPkmCNName(p.id,p.name))||p.name;
           if(cn)pkmCNCache[p.id]=cn;
         }
         const img=p.sprites?.front_default||'';
