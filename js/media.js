@@ -98,6 +98,15 @@ function openMediaRankDetail(type,idx){
   document.getElementById('disc-ai-btn').onclick=(e)=>{
     e.stopPropagation();
     // 临时设置context，打开后再聊
+    const prev=discCurrentGame;
+    discCurrentGame=mediaAiCtx;
+    discChatOpen=false; // 强制重新初始化
+    toggleDiscChat();
+    // 聊天关闭时还原（监听一次）
+  };
+
+  document.getElementById('ov-disc').classList.add('on');
+}
 async function addMediaFromRank(type,item,bid){
   const btn=document.getElementById(bid);if(!btn)return;btn.textContent='添加中…';btn.disabled=true;
   const newItem={title:item.title,cover:item.cover,episode_total:item.total||0,episode_current:0,status:type==='anime'?'planned':'planned',rating:0,review:'',genres:item.genres||[]};
@@ -249,7 +258,4 @@ async function sendMediaAIMsg(){
   }catch(e){document.getElementById('media-typing')?.remove();msgs.innerHTML+=`<div class="cmsg ai-msg"><div class="cmsg-av ai-av">AI</div><div class="cmsg-bbl">连接失败：${e.message}</div></div>`;}
 }
 function generateMediaSummary(){}
-
-/* 启动 */
-init();
 

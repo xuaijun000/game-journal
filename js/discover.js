@@ -171,13 +171,3 @@ ${reinject?`【提醒】保持《${g.name}》的世界观气质说话。`:''}
   }catch(e){const t=document.getElementById('disc-typing');if(t)t.remove();addDiscBubble(`连接失败：${e.message}`,'ai',false);}
   snd.disabled=false;inp.focus();
 }
-
-    const prev=discCurrentGame;
-    discCurrentGame=mediaAiCtx;
-    discChatOpen=false; // 强制重新初始化
-    toggleDiscChat();
-    // 聊天关闭时还原（监听一次）
-  };
-
-  document.getElementById('ov-disc').classList.add('on');
-}
