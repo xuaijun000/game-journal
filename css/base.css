@@ -1,0 +1,37 @@
+/* === CSS变量 / reset / 全局排版 / header / nav / stats / toolbar / buttons === */
+:root{--bg:#0f1f3d;--bg2:#162a50;--bg3:#1d3362;--b:rgba(96,165,250,.15);--b2:rgba(96,165,250,.28);--t:#e8f0ff;--t2:#93b4e8;--t3:#5578b0;--acc:#60a5fa;--acc2:#38bdf8;--warn:#fbbf24;--danger:#f87171;--r:10px;--rl:14px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--t);font-family:'Noto Sans SC',sans-serif;font-weight:300;line-height:1.7;min-height:100vh}
+header{position:sticky;top:0;z-index:200;background:rgba(13,14,16,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--b);height:54px;display:flex;align-items:center;padding:0 1.5rem;gap:1rem}
+.logo{font-family:'Noto Serif SC',serif;font-size:1.05rem;font-weight:600;letter-spacing:.05em;white-space:nowrap}
+.logo em{color:var(--acc);font-style:normal}
+nav{display:flex;gap:2px;flex:1}
+nav button{background:none;border:none;cursor:pointer;color:var(--t2);font-size:.83rem;padding:6px 13px;border-radius:8px;font-family:inherit;transition:all .15s}
+nav button:hover{color:var(--t);background:var(--bg3)}
+nav button.on{color:var(--acc);background:rgba(96,165,250,.08)}
+.hdr-r{display:flex;align-items:center;gap:8px;margin-left:auto}
+.av{width:28px;height:28px;border-radius:50%;background:var(--bg3);border:1px solid var(--b2);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--t2);font-family:'DM Mono',monospace}
+.hbtn{background:none;border:1px solid var(--b2);border-radius:8px;padding:5px 13px;color:var(--t2);font-family:inherit;font-size:.82rem;cursor:pointer;transition:all .15s}
+main{max-width:1040px;margin:0 auto;padding:2rem 1.2rem 5rem}
+.pg{display:none}.pg.on{display:block}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:2rem}
+.sc{background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);padding:1rem 1rem .9rem;position:relative;overflow:hidden}
+.sc::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--c,var(--acc))}
+.sn{font-family:'DM Mono',monospace;font-size:1.75rem;font-weight:500;line-height:1;margin-bottom:3px}
+.sl{font-size:.72rem;color:var(--t3);letter-spacing:.06em;text-transform:uppercase}
+.tb{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:1.1rem}
+.tb input,.tb select{background:var(--bg2);border:1px solid var(--b);border-radius:8px;padding:7px 12px;color:var(--t);font-family:inherit;font-size:.85rem;outline:none;transition:border .15s}
+.tb input{flex:1;min-width:150px}
+.btn{padding:7px 16px;border-radius:8px;font-family:inherit;font-size:.85rem;cursor:pointer;border:1px solid var(--b2);background:transparent;color:var(--t);transition:all .15s;white-space:nowrap}
+.btn:hover{background:var(--bg3)}
+.btn-a{background:var(--acc);color:#111;border-color:transparent;font-weight:500}
+.btn-a:hover{background:#93c5fd}
+.btn-sm{padding:4px 10px;font-size:.78rem}
+.btn-d{border-color:rgba(255,85,85,.25);color:var(--danger)}
+.pf-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.1rem}
+.pfchip{padding:4px 12px;border-radius:99px;font-size:.75rem;font-family:'DM Mono',monospace;border:1px solid var(--b);cursor:pointer;transition:all .15s;background:var(--bg2);color:var(--t3)}
+.pfchip.on{border-color:var(--acc);color:var(--acc);background:rgba(96,165,250,.09)}
+.pfchip[data-p="xbox"].on{border-color:#4ec44e;color:#4ec44e;background:rgba(16,124,16,.12)}
+.pfchip[data-p="ps"].on{border-color:#6ea8fe;color:#6ea8fe;background:rgba(0,55,145,.15)}
+.pfchip[data-p="switch"].on{border-color:#ff6e6e;color:#ff6e6e;background:rgba(228,0,15,.1)}
+.pfchip[data-p="steam"].on{border-color:#66c0f4;color:#66c0f4;background:rgba(102,192,244,.08)}
