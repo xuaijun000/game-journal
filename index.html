@@ -576,6 +576,31 @@
     .play-end-session-btn:hover{background:rgba(248,113,113,.2)}
     .play-log-del{float:right;font-size:.65rem;color:var(--t3);cursor:pointer;margin-left:6px;opacity:0;transition:opacity .15s}
     .play-log-item:hover .play-log-del{opacity:1}
+    /* 沉浸式时间线内嵌样式覆写 */
+    #play-tl .gtl-panel{background:none;border:none;padding:0;margin:0}
+    #play-tl .gtl-header{padding:0 0 8px;font-size:.72rem}
+    #play-tl .gtl-header h3{font-size:.78rem;color:var(--t2)}
+    #play-tl .gtl-scroll-wrap{max-height:none;overflow:visible}
+    #play-tl .gtl-timeline{padding-left:18px}
+    #play-tl .gtl-chapter{margin-bottom:10px}
+    #play-tl .gtl-chapter-header{font-size:.75rem}
+    #play-tl .gtl-chapter-num{font-size:.65rem}
+    #play-tl .gtl-chapter-title{font-size:.78rem}
+    #play-tl .gtl-thumb{height:72px;border-radius:6px;margin:4px 0}
+    #play-tl .gtl-thumb img{height:72px}
+    #play-tl .gtl-ph{height:72px;font-size:.7rem}
+    #play-tl .gtl-node{padding:3px 6px;font-size:.72rem}
+    #play-tl .gtl-node-text{font-size:.72rem}
+    #play-tl .gtl-nbadge{font-size:.62rem;padding:1px 6px}
+    #play-tl .gtl-node-ep{font-size:.6rem}
+    #play-tl .gtl-img-row{gap:4px;margin-top:4px}
+    #play-tl .gtl-img-thumb{width:40px;height:40px}
+    #play-tl .gtl-img-add{width:40px;height:40px;font-size:.65rem}
+    #play-tl .gtl-upload-btn{font-size:.6rem;padding:1px 5px}
+    #play-tl .gtl-ai-bar{font-size:.72rem;padding:6px 10px;margin-top:6px}
+    #play-tl .gtl-loading{font-size:.75rem;padding:8px 0}
+    #play-tl .gtl-gen-btn{font-size:.65rem;padding:2px 8px}
+    #play-tl .gtl-prog-pill{font-size:.65rem;padding:1px 7px}
     /* 游戏卡片上的「开始游玩」入口 */
     .gc-play-btn{display:block;width:100%;padding:5px 0;border-radius:0 0 var(--r) var(--r);background:rgba(96,165,250,.1);border:none;border-top:1px solid rgba(96,165,250,.12);color:var(--acc);font-size:.75rem;cursor:pointer;font-family:inherit;transition:background .15s;text-align:center}
     .gc-play-btn:hover{background:rgba(96,165,250,.2)}
@@ -3544,69 +3569,50 @@ async function _deletePlayLog(lid){
   }catch(e){}
 }
 
-/* ---- 时间线（复用现有数据，精简渲染） ---- */
+/* ---- 时间线（完整版，直接内嵌渲染） ---- */
 async function _loadPlayTimeline(){
   const tl = document.getElementById('play-tl');
-  tl.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:4px 0">加载时间线…</div>';
+  tl.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:6px 0">加载时间线…</div>';
   try{
     const {data:{session}} = await db.auth.getSession();
     if(!session?.user){tl.innerHTML='<div style="font-size:.75rem;color:var(--t3)">登录后查看时间线</div>';return;}
     const uid = session.user.id;
-    let saved = null;
+    const containerId = 'play-tl-inner';
+    // 注入挂载容器
+    tl.innerHTML = '<div id="play-tl-inner"></div>';
     if(playState.type==='game'){
-      const gid = String(playState.id);
-      const r = await db.from('game_timelines').select('*').eq('user_id',uid).eq('game_id',gid).maybeSingle();
-      saved = r.data;
+      await renderGameTimeline(containerId, playState.item, uid);
     } else {
-      const r = await db.from('media_timelines').select('*').eq('user_id',uid).eq('media_id',String(playState.id)).eq('media_type',playState.type).maybeSingle();
-      saved = r.data;
+      await renderMediaTimeline(containerId, playState.item, uid, playState.type);
     }
-    if(!saved?.timeline_json){
-      tl.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:4px 0">暂无时间线，在详情页生成后这里会显示</div>';
-      return;
-    }
-    const tlData = saved.timeline_json;
-    const isMedia = playState.type!=='game';
-    const chapters = isMedia ? tlData.arcs : tlData.chapters;
-    const curChIdx = isMedia ? (saved.current_arc_index||0) : (saved.current_chapter_index||0);
-    const curNodeIdx = saved.current_node_index||0;
-
-    // 当前章节快照点
-    const snapName = playState.type==='game'
-      ? `${chapters[curChIdx]?.title||''}` : `${chapters[curChIdx]?.title||''}`;
-
-    let html = '';
-    // 当前位置标记
-    if(snapName){
-      html += `<div class="play-tl-item">
-        <div class="play-tl-dot-col"><div class="play-tl-dot snap"></div><div class="play-tl-line"></div></div>
-        <div class="play-tl-body"><div class="play-tl-label">${esc(snapName)}<span class="play-tl-tag">当前</span></div><div class="play-tl-time">进行中</div></div>
-      </div>`;
-    }
-
-    // 已完成的章节（倒序，最近的在上）
-    const doneChapters = chapters.slice(0, curChIdx).reverse();
-    doneChapters.forEach((ch,i)=>{
-      const isLast = i===doneChapters.length-1;
-      html += `<div class="play-tl-item">
-        <div class="play-tl-dot-col"><div class="play-tl-dot done"></div>${isLast?'':'<div class="play-tl-line"></div>'}</div>
-        <div class="play-tl-body"><div class="play-tl-label">✓ ${esc(ch.title)}</div><div class="play-tl-time">已完成</div></div>
-      </div>`;
-    });
-
-    if(!html) html='<div style="font-size:.75rem;color:var(--t3);padding:4px 0">时间线还没有进度，在详情页推进后会显示</div>';
-    tl.innerHTML = html;
-  }catch(e){tl.innerHTML='<div style="font-size:.75rem;color:var(--t3)">加载失败</div>';}
+    // 渲染完后自动滚动到当前进度节点
+    setTimeout(()=>{
+      const active = tl.querySelector('.gtl-chapter-dot.active, .gtl-node.active');
+      if(active) active.scrollIntoView({behavior:'smooth', block:'center'});
+    }, 300);
+  }catch(e){
+    console.error('时间线加载失败', e);
+    tl.innerHTML='<div style="font-size:.75rem;color:var(--t3)">加载失败，请重试</div>';
+  }
 }
 
-function openTimelineFromPlay(){
-  closePlayMode();
-  // 打开对应的详情/编辑弹窗
-  if(playState.type==='game'){
-    openDetail(playState.id);
-  } else {
-    openMediaEdit(playState.type, playState.id);
-  }
+async function _regenPlayTimeline(){
+  const tl = document.getElementById('play-tl');
+  tl.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:6px 0">重新生成中…</div>';
+  try{
+    const {data:{session}} = await db.auth.getSession();
+    if(!session?.user) return;
+    const containerId = 'play-tl-inner';
+    tl.innerHTML = '<div id="play-tl-inner"></div>';
+    if(playState.type==='game'){
+      // 清除已有时间线数据，触发重新生成
+      await db.from('game_timelines').delete().eq('user_id',session.user.id).eq('game_id',String(playState.id));
+      await renderGameTimeline(containerId, playState.item, session.user.id);
+    } else {
+      await db.from('media_timelines').delete().eq('user_id',session.user.id).eq('media_id',String(playState.id)).eq('media_type',playState.type);
+      await renderMediaTimeline(containerId, playState.item, session.user.id, playState.type);
+    }
+  }catch(e){ document.getElementById('play-tl').innerHTML='<div style="font-size:.75rem;color:var(--t3)">生成失败</div>'; }
 }
 
 /* ---- AI 快捷 ---- */
@@ -3822,9 +3828,9 @@ const _origOpenDetail = openDetail;
         <div class="play-module flex-grow">
           <div class="play-mhdr">
             <span class="play-mlbl">游玩时间线</span>
-            <span class="play-mact" onclick="openTimelineFromPlay()">完整时间线</span>
+            <span class="play-mact" onclick="_regenPlayTimeline()">↻ 重新生成</span>
           </div>
-          <div class="play-tl" id="play-tl"></div>
+          <div class="play-tl" id="play-tl" style="overflow-y:auto;flex:1;min-height:0;-webkit-overflow-scrolling:touch"></div>
         </div>
       </div>
     </div>
