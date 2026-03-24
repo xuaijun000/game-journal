@@ -484,6 +484,90 @@
     /* ===== 游戏时刻记录 ===== */
     .moment-fab{position:fixed;bottom:24px;right:24px;z-index:800;width:52px;height:52px;border-radius:50%;background:var(--a);border:none;color:#fff;font-size:1.3rem;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;transition:transform .2s,box-shadow .2s}
     .moment-fab:hover{transform:scale(1.1);box-shadow:0 6px 20px rgba(0,0,0,.5)}
+    /* ===== 沉浸式游玩模式 ===== */
+    #ov-play{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+    #ov-play.on{opacity:1;pointer-events:all}
+    .play-overlay{width:96vw;max-width:940px;height:92vh;max-height:720px;background:#0d1829;border:1px solid rgba(96,165,250,.18);border-radius:18px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.7)}
+    .play-topbar{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid rgba(96,165,250,.1);background:rgba(13,24,41,.9);flex-shrink:0}
+    .play-cover{width:40px;height:40px;border-radius:8px;object-fit:cover;background:var(--bg3);flex-shrink:0}
+    .play-cover-ph{width:40px;height:40px;border-radius:8px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+    .play-info{flex:1;min-width:0}
+    .play-title{font-size:.92rem;font-weight:500;color:var(--t);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .play-meta{font-size:.72rem;color:var(--t3);margin-top:1px}
+    .play-status-badge{padding:3px 10px;border-radius:20px;font-size:.72rem;font-weight:500;background:rgba(96,165,250,.12);color:var(--acc);border:1px solid rgba(96,165,250,.25);flex-shrink:0}
+    .play-close{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--t3);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s}
+    .play-close:hover{background:rgba(255,255,255,.12)}
+    .play-body{display:grid;grid-template-columns:1fr 1fr;flex:1;overflow:hidden;min-height:0}
+    .play-col{display:flex;flex-direction:column;overflow:hidden}
+    .play-col:first-child{border-right:1px solid rgba(96,165,250,.08)}
+    .play-module{padding:14px 16px;border-bottom:1px solid rgba(96,165,250,.07);flex-shrink:0}
+    .play-module.flex-grow{flex:1;overflow:hidden;display:flex;flex-direction:column}
+    .play-mhdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+    .play-mlbl{font-size:.68rem;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.06em}
+    .play-mact{font-size:.75rem;color:var(--acc);cursor:pointer;transition:opacity .15s}
+    .play-mact:hover{opacity:.75}
+    .play-timer-num{font-size:2.2rem;font-weight:500;color:var(--t);font-variant-numeric:tabular-nums;letter-spacing:-1px;line-height:1}
+    .play-timer-sub{font-size:.72rem;color:var(--t3);margin:4px 0 10px}
+    .play-timer-btns{display:flex;gap:8px}
+    .play-btn-end{flex:1;padding:7px 0;border-radius:8px;font-size:.8rem;font-weight:500;background:var(--acc);color:#0d1829;border:none;cursor:pointer;transition:background .15s;font-family:inherit}
+    .play-btn-end:hover{background:#93c5fd}
+    .play-btn-pause{padding:7px 12px;border-radius:8px;font-size:.8rem;background:rgba(255,255,255,.06);color:var(--t2);border:1px solid rgba(255,255,255,.1);cursor:pointer;font-family:inherit;transition:background .15s}
+    .play-btn-pause:hover{background:rgba(255,255,255,.1)}
+    .play-snap-inp{width:100%;padding:8px 10px;border-radius:8px;font-size:.8rem;background:rgba(255,255,255,.05);border:1px solid rgba(96,165,250,.15);color:var(--t);outline:none;resize:none;font-family:inherit;line-height:1.5;transition:border .15s}
+    .play-snap-inp:focus{border-color:rgba(96,165,250,.4)}
+    .play-snap-row{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+    .play-snap-hint{font-size:.7rem;color:var(--t3)}
+    .play-btn-save{padding:4px 12px;border-radius:6px;font-size:.75rem;font-weight:500;background:rgba(96,165,250,.15);color:var(--acc);border:1px solid rgba(96,165,250,.25);cursor:pointer;font-family:inherit;transition:background .15s}
+    .play-btn-save:hover{background:rgba(96,165,250,.25)}
+    .play-log-list{display:flex;flex-direction:column;gap:6px;overflow-y:auto;flex:1;min-height:0;padding-right:2px}
+    .play-log-item{padding:7px 10px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);flex-shrink:0}
+    .play-log-text{font-size:.8rem;color:var(--t2);line-height:1.5}
+    .play-log-time{font-size:.68rem;color:var(--t3);margin-top:3px}
+    .play-log-inp-row{display:flex;gap:6px;margin-top:8px;flex-shrink:0}
+    .play-log-inp{flex:1;padding:6px 10px;border-radius:8px;font-size:.8rem;background:rgba(255,255,255,.05);border:1px solid rgba(96,165,250,.15);color:var(--t);outline:none;font-family:inherit;transition:border .15s}
+    .play-log-inp:focus{border-color:rgba(96,165,250,.4)}
+    .play-log-inp::placeholder,.play-snap-inp::placeholder{color:var(--t3)}
+    .play-btn-add{padding:6px 12px;border-radius:8px;font-size:.8rem;background:rgba(255,255,255,.06);color:var(--t2);border:1px solid rgba(255,255,255,.1);cursor:pointer;font-family:inherit;flex-shrink:0;transition:background .15s}
+    .play-btn-add:hover{background:rgba(255,255,255,.1)}
+    .play-tl{display:flex;flex-direction:column;overflow-y:auto;flex:1;min-height:0;padding-right:2px}
+    .play-tl-item{display:flex;gap:10px;padding:5px 0}
+    .play-tl-dot-col{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
+    .play-tl-dot{width:8px;height:8px;border-radius:50%;background:var(--acc);margin-top:4px;flex-shrink:0}
+    .play-tl-dot.done{background:var(--acc2)}.play-tl-dot.snap{background:var(--warn)}
+    .play-tl-line{width:1px;flex:1;background:rgba(96,165,250,.1);margin-top:4px;min-height:14px}
+    .play-tl-body{flex:1;padding-bottom:8px}
+    .play-tl-label{font-size:.8rem;color:var(--t2);line-height:1.4}
+    .play-tl-time{font-size:.68rem;color:var(--t3);margin-top:1px}
+    .play-tl-tag{display:inline-block;padding:1px 7px;border-radius:10px;font-size:.65rem;background:rgba(251,191,36,.1);color:var(--warn);border:1px solid rgba(251,191,36,.2);margin-left:5px}
+    .play-ai-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+    .play-chip{padding:4px 10px;border-radius:20px;font-size:.75rem;background:rgba(255,255,255,.05);color:var(--t2);border:1px solid rgba(255,255,255,.1);cursor:pointer;transition:all .15s}
+    .play-chip:hover{background:rgba(96,165,250,.12);color:var(--acc);border-color:rgba(96,165,250,.3)}
+    .play-ai-row{display:flex;gap:6px}
+    .play-ai-inp{flex:1;padding:6px 10px;border-radius:8px;font-size:.8rem;background:rgba(255,255,255,.05);border:1px solid rgba(96,165,250,.15);color:var(--t);outline:none;font-family:inherit;transition:border .15s}
+    .play-ai-inp:focus{border-color:rgba(96,165,250,.4)}
+    .play-ai-inp::placeholder{color:var(--t3)}
+    .play-btn-ai{padding:6px 12px;border-radius:8px;font-size:.8rem;font-weight:500;background:rgba(96,165,250,.2);color:var(--acc);border:1px solid rgba(96,165,250,.3);cursor:pointer;font-family:inherit;flex-shrink:0;transition:background .15s}
+    .play-btn-ai:hover{background:rgba(96,165,250,.3)}
+    .play-ai-resp{margin-top:8px;padding:8px 10px;border-radius:8px;background:rgba(96,165,250,.07);border:1px solid rgba(96,165,250,.12);font-size:.78rem;color:var(--t2);line-height:1.6;display:none;max-height:120px;overflow-y:auto}
+    .play-ai-resp.show{display:block}
+    .play-ai-loading{display:none;font-size:.78rem;color:var(--t3);margin-top:8px}
+    .play-ai-loading.show{display:block}
+    .play-sumbar{display:flex;align-items:center;gap:0;border-top:1px solid rgba(96,165,250,.1);background:rgba(10,16,30,.9);padding:10px 18px;flex-shrink:0}
+    .play-stat-block{flex:1;text-align:center}
+    .play-stat-block+.play-stat-block{border-left:1px solid rgba(96,165,250,.08)}
+    .play-stat-val{font-size:1rem;font-weight:500;color:var(--t)}
+    .play-stat-lbl{font-size:.62rem;color:var(--t3);margin-top:1px;text-transform:uppercase;letter-spacing:.05em}
+    .play-end-session-btn{padding:7px 16px;border-radius:8px;font-size:.78rem;font-weight:500;background:rgba(248,113,113,.12);color:#f87171;border:1px solid rgba(248,113,113,.22);cursor:pointer;flex-shrink:0;margin-left:14px;font-family:inherit;transition:background .15s}
+    .play-end-session-btn:hover{background:rgba(248,113,113,.2)}
+    .play-log-del{float:right;font-size:.65rem;color:var(--t3);cursor:pointer;margin-left:6px;opacity:0;transition:opacity .15s}
+    .play-log-item:hover .play-log-del{opacity:1}
+    /* 游戏卡片上的「开始游玩」入口 */
+    .gc-play-btn{display:block;width:100%;padding:5px 0;border-radius:0 0 var(--r) var(--r);background:rgba(96,165,250,.1);border:none;border-top:1px solid rgba(96,165,250,.12);color:var(--acc);font-size:.75rem;cursor:pointer;font-family:inherit;transition:background .15s;text-align:center}
+    .gc-play-btn:hover{background:rgba(96,165,250,.2)}
+    @media(max-width:640px){.play-body{grid-template-columns:1fr}.play-col:first-child{border-right:none;border-bottom:1px solid rgba(96,165,250,.08)}.play-col{max-height:50%}}
+    /* 动漫/漫画 媒体卡片的游玩入口 */
+    .mc-play-btn{display:block;width:100%;padding:4px 0;border-radius:0 0 8px 8px;background:rgba(96,165,250,.08);border:none;border-top:1px solid rgba(96,165,250,.1);color:var(--acc);font-size:.72rem;cursor:pointer;font-family:inherit;transition:background .15s;text-align:center}
+    .mc-play-btn:hover{background:rgba(96,165,250,.18)}
     .moment-panel{position:fixed;bottom:88px;right:24px;z-index:800;width:320px;background:var(--bg2);border:1px solid var(--b);border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.5);padding:16px;display:none;flex-direction:column;gap:10px;animation:slideUp .2s ease}
     .moment-panel.open{display:flex}
     @keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
@@ -1037,7 +1121,9 @@ function render(){
         <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">${pft}${gnt}</div>
         ${g.review?`<div class="gc-rev">${esc(g.review)}</div>`:''}
         <div class="gc-foot"><div class="stars">${'★'.repeat(g.rating||0)}${'☆'.repeat(5-(g.rating||0))}</div><div style="display:flex;align-items:center;gap:10px">${g.hours?`<span class="htxt">${g.hours}h</span>`:''}<span class="stxt ${STCLS[g.status]||''}">${STMAP[g.status]||''}</span></div></div>
-      </div></div>`;
+      </div>
+      <button class="gc-play-btn" onclick="event.stopPropagation();openPlayMode('game','${g.id||g._id}')">▶ 开始游玩</button>
+      </div>`;
   }).join('');
 }
 
@@ -2674,7 +2760,9 @@ function renderMedia(type){
         :`<div class="mc-cover-ph">${type==='anime'?'🎬':'📖'}</div>`}
       <div class="mc-body"><div class="mc-title">${esc(m.title)}</div>
       <div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div><div class="prog-txt">${progTxt}</div></div>
-      <div class="mc-foot"><div class="stars">${'★'.repeat(m.rating||0)}${'☆'.repeat(5-(m.rating||0))}</div><span class="stxt ${stCls}">${stText}</span></div></div></div>`;
+      <div class="mc-foot"><div class="stars">${'★'.repeat(m.rating||0)}${'☆'.repeat(5-(m.rating||0))}</div><span class="stxt ${stCls}">${stText}</span></div></div>
+      <button class="mc-play-btn" onclick="event.stopPropagation();openPlayMode('${type}','${m.id||m._id}')">▶ ${type==='anime'?'开始观看':'开始阅读'}</button>
+      </div>`;
   }).join('');
 }
 function openMediaAdd(type){
@@ -2955,6 +3043,454 @@ function showToast(msg){
   setTimeout(()=>document.body.removeChild(t), 2000);
 }
 
+// ===== 沉浸式游玩模式 =====
+let playState = {
+  open: false,
+  type: 'game',      // 'game' | 'anime' | 'manga'
+  id: null,
+  item: null,        // 游戏/媒体对象
+  sessionStart: null,
+  sessionSeconds: 0,
+  timerRunning: false,
+  timerInterval: null,
+  logs: [],          // { id, text, ts }
+  sessionId: null    // 本次 play_sessions 记录 id（Supabase）
+};
+
+/* ---- 工具函数 ---- */
+function _playPad(n){return String(n).padStart(2,'0');}
+function _playFmtSec(s){
+  const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;
+  return h>0?`${_playPad(h)}:${_playPad(m)}:${_playPad(sec)}`:`${_playPad(m)}:${_playPad(sec)}`;
+}
+function _playFmtMin(s){
+  const h=Math.floor(s/3600),m=Math.floor((s%3600)/60);
+  if(h>0)return `${h}h ${m}min`;
+  return `${m}min`;
+}
+function _playNow(){return new Date().toISOString();}
+function _playTsLabel(iso){
+  const d=new Date(iso),now=new Date();
+  const diff=now-d;
+  if(diff<60000)return '刚刚';
+  if(diff<3600000)return Math.floor(diff/60000)+'分钟前';
+  if(diff<86400000)return '今天 '+d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');
+  return (d.getMonth()+1)+'/'+d.getDate();
+}
+
+/* ---- 打开 ---- */
+async function openPlayMode(type, id){
+  // 找到对应数据
+  let item = null;
+  if(type==='game'){
+    item = games.find(x=>(x.id||x._id)==id);
+  } else {
+    item = (mediaData[type]||[]).find(x=>(x.id||x._id)==id);
+  }
+  if(!item) return;
+
+  // 初始化状态
+  playState.type = type;
+  playState.id = id;
+  playState.item = item;
+  playState.sessionStart = new Date();
+  playState.sessionSeconds = 0;
+  playState.timerRunning = true;
+  playState.logs = [];
+  playState.sessionId = null;
+  clearInterval(playState.timerInterval);
+
+  // 填充顶栏
+  const name = type==='game' ? item.name : item.title;
+  const cover = item.cover || null;
+  document.getElementById('play-title').textContent = name;
+
+  // 封面
+  const cw = document.getElementById('play-cover-wrap');
+  if(cover){
+    cw.innerHTML = `<img class="play-cover" src="${esc(cover)}" alt="" onerror="this.outerHTML='<div class=play-cover-ph>${type==='anime'?'🎬':type==='manga'?'📖':'🎮'}</div>'">`;
+  } else {
+    cw.innerHTML = `<div class="play-cover-ph">${type==='anime'?'🎬':type==='manga'?'📖':'🎮'}</div>`;
+  }
+
+  // meta
+  let meta = '';
+  if(type==='game'){
+    const pf = (item.platforms||[]).map(p=>PFMAP[p]||p).join(' · ');
+    meta = [pf, item.year].filter(Boolean).join(' · ');
+  } else {
+    meta = type==='anime'?'动漫':'漫画';
+  }
+  document.getElementById('play-meta').textContent = meta;
+
+  // 状态徽章
+  const stMap = type==='game'
+    ? {playing:'游玩中',done:'已通关',wishlist:'想玩',dropped:'放弃'}
+    : {watching:'观看中',reading:'阅读中',completed:'已完成',planned:'想看',paused:'暂停',dropped:'放弃'};
+  const badge = document.getElementById('play-status-badge');
+  badge.textContent = stMap[item.status]||'进行中';
+
+  // 累计时长
+  const totalH = type==='game' ? (item.hours||0) : (item.episode_current||0);
+  const totalLabel = type==='game' ? `累计总时长：${totalH}h` : `已看/读：${totalH}集`;
+  document.getElementById('play-timer-total').textContent = totalLabel;
+
+  // 底部统计
+  document.getElementById('play-sum-total').textContent = type==='game' ? `${totalH}h` : `${totalH}集`;
+  const cpMap={main:'主线',side:'主+支',full:'全收集',partial:'部分',dropped:'放弃'};
+  document.getElementById('play-sum-cp').textContent = type==='game' ? (cpMap[item.completion]||'—') : '—';
+  document.getElementById('play-sum-logs').textContent = '0';
+
+  // 最近快照
+  document.getElementById('play-snap-inp').value = '';
+  await _loadPlaySnapshot();
+
+  // AI 快捷问题
+  _initPlayAIChips(type, name);
+
+  // 清空 AI 回复
+  const resp = document.getElementById('play-ai-resp');
+  resp.textContent=''; resp.classList.remove('show');
+  document.getElementById('play-ai-loading').classList.remove('show');
+  document.getElementById('play-ai-inp').value='';
+
+  // 加载日志
+  await _loadPlayLogs();
+
+  // 加载时间线（仅游戏）
+  await _loadPlayTimeline();
+
+  // 启动计时器
+  document.getElementById('play-timer-display').textContent = '00:00:00';
+  document.getElementById('play-timer-toggle').textContent = '暂停';
+  document.getElementById('play-pause-btn').textContent = '⏸';
+  playState.timerInterval = setInterval(_playTick, 1000);
+
+  // 在 Supabase 创建 session 记录
+  _createPlaySession();
+
+  document.getElementById('ov-play').classList.add('on');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePlayMode(){
+  clearInterval(playState.timerInterval);
+  playState.timerRunning = false;
+  document.getElementById('ov-play').classList.remove('on');
+  document.body.style.overflow = '';
+  playState.open = false;
+}
+
+/* ---- 计时器 ---- */
+function _playTick(){
+  if(!playState.timerRunning) return;
+  playState.sessionSeconds++;
+  const s = playState.sessionSeconds;
+  document.getElementById('play-timer-display').textContent = _playFmtSec(s);
+  // 底部统计同步
+  document.getElementById('play-sum-time').textContent = _playFmtMin(s);
+}
+
+function togglePlayTimer(){
+  playState.timerRunning = !playState.timerRunning;
+  const lbl = playState.timerRunning;
+  document.getElementById('play-timer-toggle').textContent = lbl ? '暂停' : '继续';
+  document.getElementById('play-pause-btn').textContent = lbl ? '⏸' : '▶';
+}
+
+/* ---- 结束游玩 ---- */
+async function endPlaySession(){
+  clearInterval(playState.timerInterval);
+  playState.timerRunning = false;
+  const secs = playState.sessionSeconds;
+  const hrs = parseFloat((secs/3600).toFixed(2));
+
+  // 更新 Supabase play_sessions
+  await _endPlaySessionDB(hrs);
+
+  // 如果是游戏，自动累加 hours 到 games 表
+  if(playState.type==='game' && hrs>0){
+    const g = playState.item;
+    const gid = g.id||g._id;
+    const newHours = parseFloat(((g.hours||0)+hrs).toFixed(1));
+    try{
+      const {data:{session}} = await db.auth.getSession();
+      if(session?.user){
+        await db.from('games').update({hours:newHours}).eq('id',gid).eq('user_id',session.user.id);
+        // 本地同步
+        const gi = games.findIndex(x=>(x.id||x._id)==gid);
+        if(gi>=0) games[gi].hours = newHours;
+      }
+    }catch(e){}
+  }
+
+  const m = Math.round(secs/60);
+  const msg = secs<60 ? '本次游玩时间太短，未记录时长。' : `本次游玩 ${_playFmtMin(secs)} 已记录！${playState.type==='game'&&hrs>0?'\n时长已自动累加到游戏记录。':''}`;
+  alert(msg);
+  closePlayMode();
+  render(); // 刷新卡片
+}
+
+/* ---- Supabase：会话记录 ---- */
+async function _createPlaySession(){
+  try{
+    const {data:{session}} = await db.auth.getSession();
+    if(!session?.user) return;
+    const uid = session.user.id;
+    const payload = {
+      user_id: uid,
+      ref_type: playState.type,
+      ref_id: String(playState.id),
+      ref_name: playState.type==='game' ? playState.item.name : playState.item.title,
+      started_at: _playNow(),
+      ended_at: null,
+      duration_hours: null
+    };
+    const {data,error} = await db.from('play_sessions').insert(payload).select('id').single();
+    if(!error && data) playState.sessionId = data.id;
+  }catch(e){}
+}
+
+async function _endPlaySessionDB(hrs){
+  try{
+    if(!playState.sessionId) return;
+    await db.from('play_sessions').update({ended_at:_playNow(),duration_hours:hrs}).eq('id',playState.sessionId);
+  }catch(e){}
+}
+
+/* ---- 快照 ---- */
+async function _loadPlaySnapshot(){
+  try{
+    const {data:{session}} = await db.auth.getSession();
+    if(!session?.user) return;
+    const {data} = await db.from('play_snapshots')
+      .select('snapshot_text')
+      .eq('user_id',session.user.id)
+      .eq('ref_type',playState.type)
+      .eq('ref_id',String(playState.id))
+      .order('created_at',{ascending:false})
+      .limit(1)
+      .maybeSingle();
+    if(data?.snapshot_text){
+      document.getElementById('play-snap-inp').value = data.snapshot_text;
+    }
+  }catch(e){}
+}
+
+async function savePlaySnapshot(){
+  const text = document.getElementById('play-snap-inp').value.trim();
+  if(!text){alert('请先输入当前进度内容');return;}
+  const btn = document.querySelector('.play-btn-save');
+  btn.textContent='保存中…';btn.disabled=true;
+  try{
+    const {data:{session}} = await db.auth.getSession();
+    if(!session?.user){alert('请先登录');btn.textContent='保存快照';btn.disabled=false;return;}
+    await db.from('play_snapshots').insert({
+      user_id: session.user.id,
+      ref_type: playState.type,
+      ref_id: String(playState.id),
+      ref_name: playState.type==='game'?playState.item.name:playState.item.title,
+      snapshot_text: text,
+      created_at: _playNow()
+    });
+    btn.textContent='✓ 已保存';
+    setTimeout(()=>{btn.textContent='保存快照';btn.disabled=false;},1800);
+  }catch(e){
+    alert('保存失败：'+e.message);
+    btn.textContent='保存快照';btn.disabled=false;
+  }
+}
+
+/* ---- 即时日志 ---- */
+async function _loadPlayLogs(){
+  const list = document.getElementById('play-log-list');
+  list.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:4px 0">加载中…</div>';
+  try{
+    const {data:{session}} = await db.auth.getSession();
+    if(!session?.user){list.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:4px 0">登录后可查看历史日志</div>';return;}
+    const {data} = await db.from('play_logs')
+      .select('*')
+      .eq('user_id',session.user.id)
+      .eq('ref_type',playState.type)
+      .eq('ref_id',String(playState.id))
+      .order('created_at',{ascending:false})
+      .limit(20);
+    playState.logs = data||[];
+    _renderPlayLogs();
+  }catch(e){list.innerHTML='<div style="font-size:.75rem;color:var(--t3)">加载失败</div>';}
+}
+
+function _renderPlayLogs(){
+  const list = document.getElementById('play-log-list');
+  if(!playState.logs.length){
+    list.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:4px 0">还没有日志，记录第一条吧</div>';
+    document.getElementById('play-sum-logs').textContent='0';
+    return;
+  }
+  // 今日日志数
+  const todayStr = new Date().toDateString();
+  const todayCount = playState.logs.filter(l=>new Date(l.created_at).toDateString()===todayStr).length;
+  document.getElementById('play-sum-logs').textContent = String(todayCount);
+  document.getElementById('play-log-count').textContent = `共 ${playState.logs.length} 条`;
+
+  list.innerHTML = playState.logs.map(l=>`
+    <div class="play-log-item">
+      <span class="play-log-del" onclick="_deletePlayLog('${l.id}')">✕</span>
+      <div class="play-log-text">${esc(l.log_text)}</div>
+      <div class="play-log-time">${_playTsLabel(l.created_at)}</div>
+    </div>`).join('');
+}
+
+async function addPlayLog(){
+  const inp = document.getElementById('play-log-inp');
+  const text = inp.value.trim();
+  if(!text) return;
+  inp.value='';
+  try{
+    const {data:{session}} = await db.auth.getSession();
+    if(!session?.user){alert('请先登录');return;}
+    const {data,error} = await db.from('play_logs').insert({
+      user_id: session.user.id,
+      ref_type: playState.type,
+      ref_id: String(playState.id),
+      ref_name: playState.type==='game'?playState.item.name:playState.item.title,
+      log_text: text,
+      created_at: _playNow()
+    }).select('*').single();
+    if(!error && data){
+      playState.logs.unshift(data);
+      _renderPlayLogs();
+    }
+  }catch(e){inp.value=text;alert('记录失败：'+e.message);}
+}
+
+async function _deletePlayLog(lid){
+  if(!confirm('删除这条日志？')) return;
+  try{
+    const {data:{session}} = await db.auth.getSession();
+    if(!session?.user) return;
+    await db.from('play_logs').delete().eq('id',lid).eq('user_id',session.user.id);
+    playState.logs = playState.logs.filter(l=>l.id!=lid);
+    _renderPlayLogs();
+  }catch(e){}
+}
+
+/* ---- 时间线（复用现有数据，精简渲染） ---- */
+async function _loadPlayTimeline(){
+  const tl = document.getElementById('play-tl');
+  tl.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:4px 0">加载时间线…</div>';
+  try{
+    const {data:{session}} = await db.auth.getSession();
+    if(!session?.user){tl.innerHTML='<div style="font-size:.75rem;color:var(--t3)">登录后查看时间线</div>';return;}
+    const uid = session.user.id;
+    let saved = null;
+    if(playState.type==='game'){
+      const gid = String(playState.id);
+      const r = await db.from('game_timelines').select('*').eq('user_id',uid).eq('game_id',gid).maybeSingle();
+      saved = r.data;
+    } else {
+      const r = await db.from('media_timelines').select('*').eq('user_id',uid).eq('media_id',String(playState.id)).eq('media_type',playState.type).maybeSingle();
+      saved = r.data;
+    }
+    if(!saved?.timeline_json){
+      tl.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:4px 0">暂无时间线，在详情页生成后这里会显示</div>';
+      return;
+    }
+    const tlData = saved.timeline_json;
+    const isMedia = playState.type!=='game';
+    const chapters = isMedia ? tlData.arcs : tlData.chapters;
+    const curChIdx = isMedia ? (saved.current_arc_index||0) : (saved.current_chapter_index||0);
+    const curNodeIdx = saved.current_node_index||0;
+
+    // 当前章节快照点
+    const snapName = playState.type==='game'
+      ? `${chapters[curChIdx]?.title||''}` : `${chapters[curChIdx]?.title||''}`;
+
+    let html = '';
+    // 当前位置标记
+    if(snapName){
+      html += `<div class="play-tl-item">
+        <div class="play-tl-dot-col"><div class="play-tl-dot snap"></div><div class="play-tl-line"></div></div>
+        <div class="play-tl-body"><div class="play-tl-label">${esc(snapName)}<span class="play-tl-tag">当前</span></div><div class="play-tl-time">进行中</div></div>
+      </div>`;
+    }
+
+    // 已完成的章节（倒序，最近的在上）
+    const doneChapters = chapters.slice(0, curChIdx).reverse();
+    doneChapters.forEach((ch,i)=>{
+      const isLast = i===doneChapters.length-1;
+      html += `<div class="play-tl-item">
+        <div class="play-tl-dot-col"><div class="play-tl-dot done"></div>${isLast?'':'<div class="play-tl-line"></div>'}</div>
+        <div class="play-tl-body"><div class="play-tl-label">✓ ${esc(ch.title)}</div><div class="play-tl-time">已完成</div></div>
+      </div>`;
+    });
+
+    if(!html) html='<div style="font-size:.75rem;color:var(--t3);padding:4px 0">时间线还没有进度，在详情页推进后会显示</div>';
+    tl.innerHTML = html;
+  }catch(e){tl.innerHTML='<div style="font-size:.75rem;color:var(--t3)">加载失败</div>';}
+}
+
+function openTimelineFromPlay(){
+  closePlayMode();
+  // 打开对应的详情/编辑弹窗
+  if(playState.type==='game'){
+    openDetail(playState.id);
+  } else {
+    openMediaEdit(playState.type, playState.id);
+  }
+}
+
+/* ---- AI 快捷 ---- */
+function _initPlayAIChips(type, name){
+  const chips = type==='game'
+    ? ['我卡关了','Boss 弱点','隐藏要素','剧情梳理','收集攻略']
+    : type==='anime'
+    ? ['剧情总结','下一集讲什么','人物关系','主题解析','彩蛋有哪些']
+    : ['剧情总结','人物关系','原著改编了什么','下一话内容','隐藏伏笔'];
+  document.getElementById('play-ai-chips').innerHTML = chips.map(c=>
+    `<span class="play-chip" onclick="_setPlayAIInput('${c}')">${c}</span>`
+  ).join('');
+}
+
+function _setPlayAIInput(text){
+  document.getElementById('play-ai-inp').value = text;
+  document.getElementById('play-ai-inp').focus();
+}
+
+async function sendPlayAI(){
+  const inp = document.getElementById('play-ai-inp');
+  const q = inp.value.trim();
+  if(!q) return;
+  inp.value='';
+  const loading = document.getElementById('play-ai-loading');
+  const resp = document.getElementById('play-ai-resp');
+  loading.classList.add('show');
+  resp.classList.remove('show');
+
+  const name = playState.type==='game' ? playState.item.name : playState.item.title;
+  const typeLabel = playState.type==='game'?'游戏':playState.type==='anime'?'动漫':'漫画';
+  const sys = `你是《${name}》这部${typeLabel}的专家情报员。用户正在游玩/观看/阅读中，请简洁直接地回答（200字以内），不需要废话，直接给出最有用的信息。`;
+  try{
+    const res = await fetch(`${SB_URL}/functions/v1/gemini-proxy`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`},
+      body:JSON.stringify({
+        system_instruction:{parts:[{text:sys}]},
+        contents:[{role:'user',parts:[{text:q}]}],
+        generationConfig:{maxOutputTokens:400,temperature:0.9}
+      })
+    });
+    const d = await res.json();
+    const txt = d?.candidates?.[0]?.content?.parts?.[0]?.text || d?.error?.message || '暂时无法回答';
+    resp.textContent = txt;
+    resp.classList.add('show');
+  }catch(e){
+    resp.textContent='连接失败，请稍后再试';
+    resp.classList.add('show');
+  }
+  loading.classList.remove('show');
+}
+
 // 打开游戏详情时加载时刻
 const _origOpenDetail = openDetail;
 
@@ -2985,6 +3521,114 @@ const _origOpenDetail = openDetail;
     <span id="moment-img-name" style="font-size:.7rem;color:var(--t3);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
   </div>
   <button class="moment-submit" id="moment-submit" onclick="submitMoment()">发布时刻</button>
+</div>
+
+<!-- ===== 沉浸式游玩模式 Overlay ===== -->
+<div id="ov-play">
+  <div class="play-overlay">
+    <!-- 顶栏 -->
+    <div class="play-topbar">
+      <div id="play-cover-wrap"></div>
+      <div class="play-info">
+        <div class="play-title" id="play-title">—</div>
+        <div class="play-meta" id="play-meta"></div>
+      </div>
+      <div class="play-status-badge" id="play-status-badge">游玩中</div>
+      <button class="play-close" onclick="closePlayMode()">✕</button>
+    </div>
+
+    <!-- 主体双栏 -->
+    <div class="play-body">
+      <!-- 左栏 -->
+      <div class="play-col">
+        <!-- 计时器 -->
+        <div class="play-module">
+          <div class="play-mhdr">
+            <span class="play-mlbl">本次会话计时</span>
+            <span class="play-mact" id="play-timer-toggle" onclick="togglePlayTimer()">暂停</span>
+          </div>
+          <div class="play-timer-num" id="play-timer-display">00:00:00</div>
+          <div class="play-timer-sub" id="play-timer-total">累计总时长：—</div>
+          <div class="play-timer-btns">
+            <button class="play-btn-end" onclick="endPlaySession()">结束本次游玩</button>
+            <button class="play-btn-pause" onclick="togglePlayTimer()" id="play-pause-btn">⏸</button>
+          </div>
+        </div>
+
+        <!-- 进度快照 -->
+        <div class="play-module">
+          <div class="play-mhdr">
+            <span class="play-mlbl">当前进度快照</span>
+          </div>
+          <textarea class="play-snap-inp" id="play-snap-inp" rows="2" placeholder="现在玩到哪了？记录当前进度…"></textarea>
+          <div class="play-snap-row">
+            <span class="play-snap-hint">将显示在游戏卡片上</span>
+            <button class="play-btn-save" onclick="savePlaySnapshot()">保存快照</button>
+          </div>
+        </div>
+
+        <!-- AI 情报员快捷 -->
+        <div class="play-module flex-grow">
+          <div class="play-mhdr">
+            <span class="play-mlbl">AI 情报员</span>
+          </div>
+          <div class="play-ai-chips" id="play-ai-chips"></div>
+          <div class="play-ai-row">
+            <input class="play-ai-inp" id="play-ai-inp" placeholder="快速问点什么…" onkeydown="if(event.key==='Enter')sendPlayAI()">
+            <button class="play-btn-ai" onclick="sendPlayAI()">发送</button>
+          </div>
+          <div class="play-ai-loading" id="play-ai-loading">AI 思考中…</div>
+          <div class="play-ai-resp" id="play-ai-resp"></div>
+        </div>
+      </div>
+
+      <!-- 右栏 -->
+      <div class="play-col">
+        <!-- 即时日志 -->
+        <div class="play-module" style="flex-shrink:0">
+          <div class="play-mhdr">
+            <span class="play-mlbl">即时游戏日志</span>
+            <span class="play-mact" id="play-log-count"></span>
+          </div>
+          <div class="play-log-list" id="play-log-list" style="max-height:140px"></div>
+          <div class="play-log-inp-row">
+            <input class="play-log-inp" id="play-log-inp" placeholder="记录当前想法、心得…" onkeydown="if(event.key==='Enter')addPlayLog()">
+            <button class="play-btn-add" onclick="addPlayLog()">+ 记录</button>
+          </div>
+        </div>
+
+        <!-- 游玩时间线（复用现有时间线数据） -->
+        <div class="play-module flex-grow">
+          <div class="play-mhdr">
+            <span class="play-mlbl">游玩时间线</span>
+            <span class="play-mact" onclick="openTimelineFromPlay()">完整时间线</span>
+          </div>
+          <div class="play-tl" id="play-tl"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部统计栏 -->
+    <div class="play-sumbar">
+      <div class="play-stat-block">
+        <div class="play-stat-val" id="play-sum-time">0min</div>
+        <div class="play-stat-lbl">本次时长</div>
+      </div>
+      <div class="play-stat-block">
+        <div class="play-stat-val" id="play-sum-logs">0</div>
+        <div class="play-stat-lbl">今日日志</div>
+      </div>
+      <div class="play-stat-block">
+        <div class="play-stat-val" id="play-sum-total">—</div>
+        <div class="play-stat-lbl">累计时长</div>
+      </div>
+      <div class="play-stat-block">
+        <div class="play-stat-val" id="play-sum-cp">—</div>
+        <div class="play-stat-lbl">完成度</div>
+      </div>
+      <button class="play-end-session-btn" onclick="endPlaySession()">结束游玩</button>
+    </div>
+  </div>
 </div>
 </body>
 </html>
