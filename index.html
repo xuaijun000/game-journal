@@ -3417,11 +3417,8 @@ async function _showSnapHistory(){
       .order('created_at',{ascending:false})
       .limit(5);
     if(!data?.length){alert('还没有历史快照');return;}
-    const lines = data.map((d,i)=>`${i+1}. [${_playTsLabel(d.created_at)}] ${d.snapshot_text||'(无文字)'}${d.image_url?' 📷':''}`).join('
-');
-    alert('最近快照记录：
-
-'+lines);
+    const lines = data.map((d,i)=>String(i+1)+'. ['+_playTsLabel(d.created_at)+'] '+(d.snapshot_text||'(无文字)')+(d.image_url?' [图]':'')).join('\n');
+    alert('最近快照记录：\n\n'+lines);
   }catch(e){}
 }
 
@@ -3663,29 +3660,27 @@ async function sendPlayAI(){
     if(item.episode_total) contextLines.push(`总集数：${item.episode_total}话`);
     if(item.review) contextLines.push(`观后感：${item.review}`);
   }
-  const gameCtx = contextLines.join('
-');
+  const gameCtx = contextLines.join('\n');
 
-  const sys = `你是专为游戏旅途 App 服务的 AI 情报员，精通各类${typeLabel}内容。
-当前用户正在${playState.type==='game'?'游玩':'观看/阅读'}的作品信息如下：
-${gameCtx}
-
-你的职责：
-- 提供精准、简洁的游戏/动漫/漫画情报，优先回答用户当前遇到的实际问题
-- 攻略类问题（卡关、Boss打法、隐藏要素）：给出具体步骤，不啰嗦
-- 剧情类问题：尊重用户进度，主动询问是否需要剧透
-- 世界观/设定类：有深度但不过于学术
-- 回复保持在 250 字以内，如需要可用简短列表
-- 用中文回复，语气专业但亲切，像一个了解这部作品的朋友`;
+  const sys = '你是专为游戏旅途 App 服务的 AI 情报员，精通各类'+typeLabel+'内容。\n'
+    +'当前用户正在'+(playState.type==='game'?'游玩':'观看/阅读')+'的作品信息如下：\n'
+    +gameCtx+'\n\n'
+    +'你的职责：\n'
+    +'- 提供精准、简洁的游戏/动漫/漫画情报，优先回答用户当前遇到的实际问题\n'
+    +'- 攻略类问题（卡关、Boss打法、隐藏要素）：给出具体步骤，不啰嗦\n'
+    +'- 剧情类问题：尊重用户进度，主动询问是否需要剧透\n'
+    +'- 世界观/设定类：有深度但不过于学术\n'
+    +'- 回复保持在 250 字以内，如需要可用简短列表\n'
+    +'- 用中文回复，语气专业但亲切，像一个了解这部作品的朋友';
 
   // 多轮对话历史
   _playAiHistory.push({role:'user',parts:[{text:q}]});
   if(_playAiHistory.length > 10) _playAiHistory = _playAiHistory.slice(-10);
 
   try{
-    const res = await fetch(`${SB_URL}/functions/v1/gemini-proxy`,{
+    const res = await fetch(SB_URL+'/functions/v1/gemini-proxy',{
       method:'POST',
-      headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`},
+      headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},
       body:JSON.stringify({
         system_instruction:{parts:[{text:sys}]},
         contents:_playAiHistory,
