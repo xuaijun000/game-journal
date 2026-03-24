@@ -2855,9 +2855,9 @@ async function submitMoment(){
     if(momentImgFile){
       const ext = momentImgFile.name.split('.').pop();
       const path = `${session.user.id}/${Date.now()}.${ext}`;
-      const {error:upErr} = await db.storage.from('moments').upload(path, momentImgFile);
+      const {error:upErr} = await db.storage.from('game-screenshots').upload(path, momentImgFile);
       if(upErr) throw upErr;
-      const {data:urlData} = db.storage.from('moments').getPublicUrl(path);
+      const {data:urlData} = db.storage.from('game-screenshots').getPublicUrl(path);
       imageUrl = urlData.publicUrl;
     }
 
@@ -2933,7 +2933,7 @@ async function deleteMoment(id, gameName){
     // 删Storage里的图片
     if(data?.image_url){
       const path = data.image_url.split('/moments/')[1];
-      if(path) await db.storage.from('moments').remove([path]);
+      if(path) await db.storage.from('game-screenshots').remove([path]);
     }
     loadGameMoments(gameName);
   }catch(e){alert('删除失败');}
