@@ -577,30 +577,37 @@
     .play-log-del{float:right;font-size:.65rem;color:var(--t3);cursor:pointer;margin-left:6px;opacity:0;transition:opacity .15s}
     .play-log-item:hover .play-log-del{opacity:1}
     /* 沉浸式时间线内嵌样式覆写 */
-    #play-tl .gtl-panel{background:none;border:none;padding:0;margin:0}
-    #play-tl .gtl-header{padding:0 0 8px;font-size:.72rem}
-    #play-tl .gtl-header h3{font-size:.78rem;color:var(--t2)}
-    #play-tl .gtl-scroll-wrap{max-height:none;overflow:visible}
-    #play-tl .gtl-timeline{padding-left:18px}
-    #play-tl .gtl-chapter{margin-bottom:10px}
-    #play-tl .gtl-chapter-header{font-size:.75rem}
-    #play-tl .gtl-chapter-num{font-size:.65rem}
-    #play-tl .gtl-chapter-title{font-size:.78rem}
-    #play-tl .gtl-thumb{height:72px;border-radius:6px;margin:4px 0}
-    #play-tl .gtl-thumb img{height:72px}
-    #play-tl .gtl-ph{height:72px;font-size:.7rem}
-    #play-tl .gtl-node{padding:3px 6px;font-size:.72rem}
-    #play-tl .gtl-node-text{font-size:.72rem}
-    #play-tl .gtl-nbadge{font-size:.62rem;padding:1px 6px}
-    #play-tl .gtl-node-ep{font-size:.6rem}
-    #play-tl .gtl-img-row{gap:4px;margin-top:4px}
-    #play-tl .gtl-img-thumb{width:40px;height:40px}
-    #play-tl .gtl-img-add{width:40px;height:40px;font-size:.65rem}
-    #play-tl .gtl-upload-btn{font-size:.6rem;padding:1px 5px}
-    #play-tl .gtl-ai-bar{font-size:.72rem;padding:6px 10px;margin-top:6px}
-    #play-tl .gtl-loading{font-size:.75rem;padding:8px 0}
-    #play-tl .gtl-gen-btn{font-size:.65rem;padding:2px 8px}
-    #play-tl .gtl-prog-pill{font-size:.65rem;padding:1px 7px}
+    #play-tl .gtl-panel{background:none!important;border:none!important;padding:0!important;margin:0!important}
+    #play-tl .gtl-header{padding:0 0 6px!important;margin-bottom:6px!important}
+    #play-tl .gtl-header h3{font-size:.75rem!important;color:var(--t2)}
+    #play-tl .gtl-prog-pill{font-size:.62rem!important;padding:1px 6px!important}
+    #play-tl .gtl-gen-btn{font-size:.62rem!important;padding:2px 7px!important}
+    /* 关键：去掉固定高度容器，让父容器滚动 */
+    #play-tl .gtl-scroll-wrap{height:auto!important;max-height:none!important;overflow:visible!important;border:none!important;background:none!important;padding:0!important;margin-bottom:4px!important}
+    #play-tl .gtl-timeline{padding-left:20px!important}
+    #play-tl .gtl-chapter{margin-bottom:10px!important}
+    #play-tl .gtl-chapter-dot{left:-17px!important;top:3px!important;width:11px!important;height:11px!important}
+    #play-tl .gtl-chapter-header{margin-bottom:5px!important;gap:5px!important}
+    #play-tl .gtl-chapter-num{font-size:.6rem!important;padding:1px 4px!important}
+    #play-tl .gtl-chapter-title{font-size:.75rem!important}
+    #play-tl .gtl-chapter-eps{font-size:.62rem!important}
+    #play-tl .gtl-thumb{height:64px!important;border-radius:6px!important;margin-bottom:5px!important}
+    #play-tl .gtl-thumb img{height:64px!important;object-fit:cover}
+    #play-tl .gtl-thumb-name{font-size:.65rem!important}
+    #play-tl .gtl-ph{height:64px!important;font-size:.65rem!important}
+    #play-tl .gtl-upload-btn{font-size:.58rem!important;padding:1px 5px!important}
+    #play-tl .gtl-nodes{gap:3px!important;margin-bottom:4px!important}
+    #play-tl .gtl-node{padding:4px 8px!important;border-radius:6px!important}
+    #play-tl .gtl-node-icon{font-size:.7rem!important;width:12px!important}
+    #play-tl .gtl-node-text{font-size:.72rem!important;line-height:1.35!important}
+    #play-tl .gtl-node-text.locked{font-size:.72rem!important}
+    #play-tl .gtl-node-ep{font-size:.6rem!important}
+    #play-tl .gtl-nbadge{font-size:.6rem!important;padding:1px 5px!important}
+    #play-tl .gtl-img-row{gap:3px!important;margin-top:3px!important;flex-wrap:wrap}
+    #play-tl .gtl-img-thumb{width:36px!important;height:36px!important;border-radius:4px!important}
+    #play-tl .gtl-img-add{width:36px!important;height:36px!important;font-size:.6rem!important;border-radius:4px!important}
+    #play-tl .gtl-ai-bar{display:none!important}
+    #play-tl .gtl-loading{font-size:.73rem!important;padding:6px 0!important}
     /* 游戏卡片上的「开始游玩」入口 */
     .gc-play-btn{display:block;width:100%;padding:5px 0;border-radius:0 0 var(--r) var(--r);background:rgba(96,165,250,.1);border:none;border-top:1px solid rgba(96,165,250,.12);color:var(--acc);font-size:.75rem;cursor:pointer;font-family:inherit;transition:background .15s;text-align:center}
     .gc-play-btn:hover{background:rgba(96,165,250,.2)}
