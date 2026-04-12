@@ -432,7 +432,7 @@ function openSeriesDetail(el){
   document.getElementById('series-modal-title').textContent=s.name;document.getElementById('series-modal-year').textContent=s.year+' 年发行';
   document.getElementById('series-start-inp').value=log.start_date||'';document.getElementById('series-end-inp').value=log.end_date||'';
   document.getElementById('series-hours-inp').value=log.play_hours||'';document.getElementById('series-ace-inp').value=log.ace_pokemon||'';
-  document.getElementById('series-notes-inp').value=log.notes||'';document.getElementById('series-save-btn').dataset.sid=seriesId;
+  document.getElementById('series-save-btn').dataset.sid=seriesId;
   seriesChatHistory=[];seriesChatOpen=false;
   const sw=document.getElementById('series-chat-wrap');if(sw)sw.style.display='none';
   const sab=document.getElementById('series-ai-btn');if(sab)sab.textContent='⬡ 和 AI 聊聊这部作品';
@@ -448,7 +448,7 @@ async function saveSeriesDetail(){
   const btn=document.getElementById('series-save-btn');const sid=btn.dataset.sid;
   const{data:{session}}=await db.auth.getSession();if(!session?.user){alert('请先登录');return;}
   btn.textContent='保存中…';btn.disabled=true;
-  const payload={user_id:session.user.id,series_id:sid,status:btn.dataset.status||'none',start_date:document.getElementById('series-start-inp').value||null,end_date:document.getElementById('series-end-inp').value||null,play_hours:parseInt(document.getElementById('series-hours-inp').value)||0,ace_pokemon:document.getElementById('series-ace-inp').value.trim()||null,notes:document.getElementById('series-notes-inp').value.trim()||null,updated_at:new Date().toISOString()};
+  const payload={user_id:session.user.id,series_id:sid,status:btn.dataset.status||'none',start_date:document.getElementById('series-start-inp').value||null,end_date:document.getElementById('series-end-inp').value||null,play_hours:parseInt(document.getElementById('series-hours-inp').value)||0,ace_pokemon:document.getElementById('series-ace-inp').value.trim()||null,updated_at:new Date().toISOString()};
   const{error}=await db.from('pkm_series_log').upsert(payload,{onConflict:'user_id,series_id'});
   if(error){alert('保存失败：'+error.message);btn.textContent='保存';btn.disabled=false;return;}
   pkmSeriesLogs[sid]={...payload};renderSeries();btn.textContent='✓ 已保存';
