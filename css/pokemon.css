@@ -391,15 +391,209 @@
   to{opacity:1;transform:translateY(0);}
 }
 
-/* 狩猎卡片新增"进入狩猎"按钮样式 */
-.hunt-enter-btn{
-  padding:6px 14px;border-radius:var(--r);
-  background:linear-gradient(135deg,rgba(200,144,64,.15),rgba(200,144,64,.08));
-  border:1px solid rgba(200,144,64,.4);
-  color:var(--acc);font-size:.78rem;font-family:'DM Mono',monospace;
-  cursor:pointer;transition:all .15s;white-space:nowrap;
+/* ─── 狩猎 Tab：地点 + 分布 ─── */
+.hunt-section-lbl{font-size:.65rem;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
+.hunt-loc-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.hunt-loc-chip{
+  padding:5px 13px;border-radius:20px;
+  font-size:.72rem;font-family:'DM Mono',monospace;
+  border:1px solid var(--b2);background:var(--bg3);color:var(--t3);
+  cursor:pointer;transition:all .15s;letter-spacing:.04em;
 }
-.hunt-enter-btn:hover{background:rgba(200,144,64,.25);box-shadow:0 0 12px rgba(200,144,64,.2);}
+.hunt-loc-chip:hover{border-color:var(--acc2);color:var(--acc2);}
+.hunt-loc-chip.on{border-color:var(--acc2);color:var(--acc2);background:rgba(90,184,154,.1);}
+
+/* ─── 训练模式 ─── */
+/* 队伍精灵选择 */
+.train-pkm-slots{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.train-pkm-slot{
+  display:flex;flex-direction:column;align-items:center;
+  width:70px;padding:8px 4px 6px;border-radius:var(--r);
+  background:var(--bg3);border:1px solid var(--b2);cursor:pointer;transition:all .15s;
+}
+.train-pkm-slot:hover{border-color:rgba(200,144,64,.4);transform:translateY(-2px);}
+.train-pkm-slot.selected{border-color:var(--acc);background:rgba(200,144,64,.1);}
+.train-pkm-slot img{width:50px;height:50px;object-fit:contain;image-rendering:pixelated;display:block}
+.train-pkm-slot-name{font-size:.62rem;color:var(--t2);margin-top:2px;text-align:center;line-height:1.2}
+.train-pkm-slot-nick{font-size:.55rem;color:var(--acc);font-family:'DM Mono',monospace}
+.train-pkm-slot-lv{font-size:.55rem;color:var(--t3);font-family:'DM Mono',monospace}
+
+/* EV 面板 */
+.train-ev-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.train-ev-bars{display:flex;flex-direction:column;gap:6px;margin-bottom:6px}
+.train-ev-row{display:flex;align-items:center;gap:8px}
+.train-ev-lbl{font-size:.68rem;color:var(--t3);font-family:'DM Mono',monospace;width:28px;flex-shrink:0;text-align:right}
+.train-ev-bar-wrap{flex:1;height:7px;background:rgba(255,255,255,.05);border-radius:4px;overflow:hidden}
+.train-ev-bar-fill{height:100%;border-radius:4px;transition:width .35s ease}
+.train-ev-val{font-size:.72rem;font-family:'DM Mono',monospace;width:55px;flex-shrink:0;text-align:right}
+.train-ev-total{font-size:.78rem;font-family:'DM Mono',monospace;text-align:right;margin-bottom:6px;padding-top:4px;border-top:1px solid var(--b)}
+.train-ev-total-num{font-size:1.1rem;font-weight:600}
+
+/* 训练精灵分布 */
+.train-dist-note{font-size:.62rem;color:var(--t3);font-family:'DM Mono',monospace;margin-bottom:8px;padding:4px 8px;background:rgba(90,184,154,.05);border:1px solid rgba(90,184,154,.15);border-radius:var(--r)}
+.train-dist-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;margin-bottom:10px}
+.train-dist-card{
+  background:var(--bg3);border:1px solid var(--b2);border-radius:var(--r);
+  padding:10px 6px 8px;text-align:center;cursor:pointer;
+  transition:all .18s;position:relative;overflow:hidden;
+  animation:distCardIn .3s ease-out both;
+}
+.train-dist-card:hover{border-color:rgba(200,144,64,.4);transform:translateY(-2px);background:var(--bg2);}
+.train-dist-card.beat-flash{animation:beatFlash .35s ease-out!important;}
+@keyframes beatFlash{0%{background:rgba(200,144,64,.35);transform:scale(1.06);}100%{background:var(--bg3);transform:scale(1);}}
+.train-dist-card img{width:56px;height:56px;object-fit:contain;image-rendering:pixelated;display:block;margin:0 auto}
+.train-dist-name{font-size:.65rem;color:var(--t2);margin-top:4px;font-weight:500}
+.train-ev-chips{display:flex;flex-wrap:wrap;gap:3px;justify-content:center;margin-top:4px}
+.train-ev-chip{
+  font-size:.52rem;font-family:'DM Mono',monospace;
+  padding:1px 5px;border-radius:2px;border:1px solid;
+  white-space:nowrap;line-height:1.5;
+}
+
+/* AI 培养建议框 */
+.train-ai-rec-box{
+  background:linear-gradient(135deg,rgba(200,144,64,.06),rgba(90,184,154,.04));
+  border:1px solid rgba(200,144,64,.22);border-radius:var(--rl);
+  padding:12px 14px;font-size:.83rem;color:var(--t2);line-height:1.85;
+  white-space:pre-wrap;margin-top:8px;font-family:'Noto Serif SC',serif;
+}
+
+/* ─── 地区地图 ─── */
+.series-map-link{font-size:.65rem;color:var(--acc);font-family:'DM Mono',monospace;text-decoration:none;letter-spacing:.04em}
+.series-map-link:hover{color:var(--t)}
+.series-map-wrap{border:1px solid var(--b2);border-radius:var(--r);overflow:hidden;background:var(--bg3);min-height:80px;display:flex;align-items:center;justify-content:center}
+.series-map-img{width:100%;max-height:320px;object-fit:contain;display:block;transition:opacity .3s}
+.series-map-fallback{flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:0}
+
+/* 精灵分布格 */
+.hunt-dist-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:8px;margin-bottom:14px}
+.hunt-dist-card{
+  background:var(--bg3);border:1px solid var(--b2);border-radius:var(--r);
+  padding:8px 4px 7px;text-align:center;cursor:pointer;
+  transition:all .18s;position:relative;overflow:hidden;
+  animation:distCardIn .3s ease-out both;
+}
+.hunt-dist-card:hover{border-color:rgba(90,184,154,.5);transform:translateY(-2px);background:var(--bg2);}
+.hunt-dist-card.selected{border-color:var(--acc2);background:rgba(90,184,154,.1);}
+.hunt-dist-card img{width:54px;height:54px;object-fit:contain;image-rendering:pixelated;display:block;margin:0 auto}
+.hunt-dist-name{font-size:.65rem;color:var(--t2);margin-top:3px;line-height:1.2}
+.hunt-dist-rate{font-size:.55rem;font-family:'DM Mono',monospace;margin-top:1px}
+.rate-hi{color:var(--acc)}.rate-md{color:var(--t3)}.rate-lo{color:var(--t3);opacity:.6}
+.hunt-dist-sel-mark{
+  position:absolute;top:3px;right:3px;width:15px;height:15px;border-radius:50%;
+  background:var(--acc2);display:none;align-items:center;justify-content:center;
+  font-size:.5rem;color:#0c0b09;
+}
+.hunt-dist-card.selected .hunt-dist-sel-mark{display:flex}
+@keyframes distCardIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* 狩猎卡片重设计 */
+.hunt-card{
+  display:flex;align-items:center;gap:10px;
+  background:var(--bg2);border:1px solid var(--b2);border-radius:var(--r);
+  padding:10px 12px;margin-bottom:6px;
+}
+.hunt-card.done-card{opacity:.5}
+.hunt-card-img{width:44px;height:44px;object-fit:contain;image-rendering:pixelated;flex-shrink:0}
+.hunt-card-info{flex:1;min-width:0}
+.hunt-card-name{font-size:.85rem;font-weight:500;line-height:1.3}
+.hunt-card-loc{font-size:.62rem;color:var(--t3);font-family:'DM Mono',monospace;margin-top:1px}
+.hunt-card-count{font-size:.72rem;color:var(--t3);font-family:'DM Mono',monospace;margin-top:2px}
+.hunt-card-count b{color:var(--t);font-weight:600}
+.hunt-card-actions{display:flex;flex-direction:column;gap:5px;align-items:flex-end;flex-shrink:0}
+.hunt-group-lbl{font-size:.62rem;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase;padding:4px 0 6px}
+.hunt-done-badge{font-size:.68rem;color:var(--acc2);font-family:'DM Mono',monospace}
+.hunt-enter-btn{
+  padding:5px 12px;border-radius:var(--r);
+  background:linear-gradient(135deg,rgba(200,144,64,.15),rgba(200,144,64,.08));
+  border:1px solid rgba(200,144,64,.4);color:var(--acc);
+  font-size:.72rem;font-family:'DM Mono',monospace;cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+.hunt-enter-btn:hover{background:rgba(200,144,64,.28);box-shadow:0 0 10px rgba(200,144,64,.2);}
+.hunt-del-btn{
+  background:none;border:none;color:var(--t3);cursor:pointer;font-size:.72rem;padding:0;transition:color .12s;
+}
+.hunt-del-btn:hover{color:var(--danger)}
+
+/* ─── 沉浸界面新增元素 ─── */
+/* 位置标签 */
+.hunt-imm-loc-badge{
+  position:absolute;top:16px;left:16px;z-index:10;
+  padding:4px 12px;border-radius:20px;
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);
+  color:rgba(255,255,255,.55);font-size:.7rem;font-family:'DM Mono',monospace;letter-spacing:.05em;
+}
+/* 遭遇标签 */
+.hunt-imm-encounter-label{
+  font-size:.78rem;color:rgba(255,255,255,.45);
+  font-family:'Noto Serif SC',serif;letter-spacing:.06em;
+  animation:narrateIn .5s ease-out;
+}
+/* 粒子背景 */
+.hunt-imm-particles{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:1;}
+.hunt-particle{
+  position:absolute;border-radius:50%;
+  animation:particleDrift linear forwards;
+}
+@keyframes particleDrift{
+  0%{transform:translateY(0) translateX(0) scale(1);opacity:1;}
+  100%{transform:translateY(-110px) translateX(var(--pdx,20px)) scale(0);opacity:0;}
+}
+
+/* ─── 战斗按钮组 ─── */
+.hunt-battle-actions{
+  position:relative;z-index:2;
+  display:flex;gap:10px;
+  width:calc(100% - 40px);max-width:380px;
+  padding-bottom:env(safe-area-inset-bottom,12px);
+}
+.hunt-action-btn{
+  flex:1;padding:16px 6px 12px;border-radius:14px;
+  font-size:.72rem;font-family:'Noto Serif SC',serif;font-weight:600;
+  cursor:pointer;transition:all .15s;letter-spacing:.06em;
+  border:1px solid;display:flex;flex-direction:column;align-items:center;gap:4px;
+  line-height:1;
+}
+.hunt-action-btn > :first-child{font-size:1.3rem}
+.hunt-action-fight{
+  background:linear-gradient(160deg,rgba(217,85,85,.22),rgba(217,85,85,.1));
+  border-color:rgba(217,85,85,.45);color:#ee8888;
+}
+.hunt-action-fight:hover{background:rgba(217,85,85,.38);box-shadow:0 0 18px rgba(217,85,85,.3);}
+.hunt-action-fight:active{transform:scale(.95);}
+.hunt-action-run{
+  background:linear-gradient(160deg,rgba(160,160,160,.16),rgba(100,100,100,.08));
+  border-color:rgba(200,200,200,.25);color:rgba(210,210,210,.7);
+}
+.hunt-action-run:hover{background:rgba(180,180,180,.22);}
+.hunt-action-run:active{transform:scale(.95);}
+.hunt-action-catch{
+  background:linear-gradient(160deg,rgba(90,184,154,.22),rgba(90,184,154,.1));
+  border-color:rgba(90,184,154,.45);color:var(--acc2);
+}
+.hunt-action-catch:hover{background:rgba(90,184,154,.38);box-shadow:0 0 18px rgba(90,184,154,.28);}
+.hunt-action-catch:active{transform:scale(.95);}
+
+/* ─── 精灵战斗动画 ─── */
+.hunt-imm-sprite.fight-hit{animation:fightShake .38s ease-out!important;}
+@keyframes fightShake{
+  0%,100%{transform:translateX(0);}15%{transform:translateX(-10px);}35%{transform:translateX(10px);}55%{transform:translateX(-6px);}75%{transform:translateX(6px);}
+}
+.hunt-imm-sprite.run-away{animation:runAway .4s ease-in forwards!important;}
+@keyframes runAway{0%{transform:translateX(0);opacity:1;}100%{transform:translateX(160%);opacity:0;}}
+.hunt-imm-sprite.enter-new{animation:enterNew .46s cubic-bezier(.25,.46,.45,.94)!important;}
+@keyframes enterNew{0%{transform:translateX(-120%);opacity:0;}100%{transform:translateX(0);opacity:1;}}
+
+/* 战斗红闪 */
+.hunt-screen-flash-red{
+  position:absolute;inset:0;z-index:18;pointer-events:none;
+  background:rgba(217,85,85,.28);animation:flashRed .26s ease-out forwards;
+}
+@keyframes flashRed{0%{opacity:1;}100%{opacity:0;}}
+
+/* 去掉原先的 cursor:pointer（不再是整体点击区域）*/
+.hunt-imm-ov{cursor:default;}
+.hunt-imm-ov .hunt-imm-body{pointer-events:none;}
 
 /* ── ① 冒险日记 ── */
 .adventure-diary-box{
@@ -568,3 +762,74 @@
 .pkm-catch-card-nature.up-spa{background:rgba(160,100,220,.1);border-color:rgba(160,100,220,.3);color:#b890ee;}
 .pkm-catch-card-nature.up-def,.pkm-catch-card-nature.up-spd2{background:rgba(90,150,230,.1);border-color:rgba(90,150,230,.3);color:#90aaee;}
 .pkm-catch-empty{color:var(--t3);font-size:.8rem;padding:1.2rem;text-align:center}
+
+/* ── 首页卡片：性格光晕 ── */
+.pkm-catch-card{--aura:rgba(200,144,64,.18);}
+.pkm-catch-card.up-atk{--aura:rgba(217,85,85,.5);}
+.pkm-catch-card.up-def,.pkm-catch-card.up-spd2{--aura:rgba(90,150,230,.5);}
+.pkm-catch-card.up-spa{--aura:rgba(160,100,220,.5);}
+.pkm-catch-card.up-spd{--aura:rgba(90,184,154,.5);}
+.pkm-catch-card::after{
+  content:'';position:absolute;inset:0;border-radius:inherit;
+  box-shadow:inset 0 0 10px var(--aura);
+  animation:auraPulse 2.4s ease-in-out infinite alternate;
+  pointer-events:none;
+}
+@keyframes auraPulse{
+  from{box-shadow:inset 0 0 6px var(--aura),0 0 0 transparent;}
+  to{box-shadow:inset 0 0 22px var(--aura),0 3px 20px var(--aura);}
+}
+
+/* ── 打字机光标 ── */
+.tw-active{position:relative;}
+.tw-active::after{content:'▌';opacity:.65;animation:twBlink .65s step-end infinite;font-size:.8em;margin-left:1px;}
+@keyframes twBlink{0%,100%{opacity:.65;}50%{opacity:0;}}
+
+/* ── 闪光精灵 ── */
+.hunt-imm-sprite.shiny{
+  filter:drop-shadow(0 0 28px #ffd700) sepia(1) saturate(6) hue-rotate(8deg) brightness(1.7)!important;
+  animation:huntFloat 3s ease-in-out infinite,shinyGlow .9s ease-in-out infinite alternate!important;
+}
+@keyframes shinyGlow{
+  from{filter:drop-shadow(0 0 18px #ffd700) sepia(1) saturate(5) hue-rotate(8deg) brightness(1.7);}
+  to{filter:drop-shadow(0 0 40px #fff200) sepia(1) saturate(9) hue-rotate(18deg) brightness(2.2);}
+}
+
+/* ── 捕获光束 ── */
+.capture-beam{
+  position:absolute;left:50%;top:0;bottom:0;
+  transform:translateX(-50%);
+  width:4px;
+  background:linear-gradient(to bottom,transparent 0%,rgba(90,184,154,.8) 35%,rgba(255,255,255,1) 50%,rgba(90,184,154,.8) 65%,transparent 100%);
+  animation:beamSweep .75s ease-out forwards;
+  pointer-events:none;z-index:15;
+}
+@keyframes beamSweep{
+  0%{opacity:0;width:4px;filter:blur(2px);}
+  25%{opacity:1;width:60px;filter:blur(8px);}
+  55%{opacity:.85;width:20px;filter:blur(3px);}
+  100%{opacity:0;width:4px;filter:blur(1px);}
+}
+
+/* ── 进度打卡粒子 ── */
+.cp-spark{
+  position:fixed;width:5px;height:5px;border-radius:50%;
+  animation:cpBurst .6s ease-out forwards;
+  pointer-events:none;z-index:9999;
+}
+@keyframes cpBurst{
+  0%{transform:translate(0,0) scale(1);opacity:1;}
+  100%{transform:translate(var(--dx),var(--dy)) scale(0);opacity:0;}
+}
+
+/* ── 通关彩带 ── */
+.confetti-piece{
+  position:fixed;top:-12px;
+  animation:confettiFall linear forwards;
+  pointer-events:none;z-index:9999;border-radius:2px;
+  opacity:.92;
+}
+@keyframes confettiFall{
+  0%{transform:translateY(0) rotate(0deg);opacity:.92;}
+  100%{transform:translateY(112vh) rotate(800deg);opacity:0;}
+}

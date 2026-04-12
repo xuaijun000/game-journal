@@ -387,6 +387,7 @@
       <button class="stab on" onclick="switchSeriesTab(this,'overview')">概览</button>
       <button class="stab" onclick="switchSeriesTab(this,'party')">队伍</button>
       <button class="stab" onclick="switchSeriesTab(this,'progress')">进度</button>
+      <button class="stab" onclick="switchSeriesTab(this,'training')">训练</button>
       <button class="stab" onclick="switchSeriesTab(this,'explore')">探索</button>
       <button class="stab" onclick="switchSeriesTab(this,'hunting')">狩猎</button>
       <button class="stab" onclick="switchSeriesTab(this,'catches')">图鉴录入</button>
@@ -423,6 +424,21 @@
           <button class="series-ai-btn" id="series-ai-btn" onclick="toggleSeriesChat()">⬡ 和 AI 聊聊这部作品</button>
           <button class="btn btn-a" id="series-save-btn" onclick="saveSeriesDetail()" style="white-space:nowrap">保存记录</button>
         </div>
+        <!-- 地区地图 -->
+        <div id="series-map-section" style="margin-top:12px;display:none">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <span class="hunt-section-lbl" style="margin-bottom:0" id="series-map-region">🗺 地区地图</span>
+            <a id="series-map-link" href="#" target="_blank" rel="noopener" class="series-map-link">在 Bulbapedia 查看 ↗</a>
+          </div>
+          <div class="series-map-wrap" id="series-map-wrap">
+            <img id="series-map-img" src="" alt="" class="series-map-img"
+              onerror="this.style.display='none';document.getElementById('series-map-fallback').style.display='flex'">
+            <div id="series-map-fallback" style="display:none" class="series-map-fallback">
+              <span style="font-size:.8rem;color:var(--t3)">地图图片加载失败</span>
+              <a id="series-map-link2" href="#" target="_blank" rel="noopener" class="btn btn-sm" style="margin-top:8px">🗺 前往查看地图</a>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -443,6 +459,49 @@
       <div class="series-body">
         <div id="gym-briefing-panel" class="gym-brief-panel" style="display:none"></div>
         <div id="progress-list"></div>
+      </div>
+    </div>
+
+    <!-- 训练 -->
+    <div class="stab-panel" id="stab-training">
+      <div class="series-body">
+        <!-- 训练对象 -->
+        <div class="hunt-section-lbl">🎯 训练对象（从队伍中选择）</div>
+        <div id="train-pkm-slots" class="train-pkm-slots"></div>
+        <!-- EV 面板 -->
+        <div id="train-ev-panel" style="display:none">
+          <div class="train-ev-header">
+            <span class="hunt-section-lbl" style="margin-bottom:0">📊 努力值 EV</span>
+            <div style="display:flex;gap:6px;align-items:center">
+              <select id="train-boost-sel" class="series-inp" style="font-size:.72rem;padding:4px 8px" onchange="renderTrainEVs()">
+                <option value="1">基础 ×1</option>
+                <option value="2b">力量腰带 ×2</option>
+                <option value="2p">传染病毒 ×2</option>
+                <option value="4">腰带+病毒 ×4</option>
+              </select>
+              <button class="btn btn-sm btn-d" style="padding:3px 10px;font-size:.7rem" onclick="resetTrainEVs()">重置</button>
+            </div>
+          </div>
+          <div id="train-ev-bars" class="train-ev-bars"></div>
+          <div id="train-ev-total" class="train-ev-total"></div>
+          <button class="series-ai-btn" id="train-ai-btn" onclick="getTrainRec()" style="width:100%;margin-top:8px">✦ AI 培养方向建议</button>
+          <div id="train-ai-result" class="train-ai-rec-box" style="display:none"></div>
+        </div>
+        <!-- 刷练地点 -->
+        <div style="margin-top:12px">
+          <div class="hunt-section-lbl">📍 选择刷练地点</div>
+          <div id="train-loc-chips" class="hunt-loc-row"></div>
+          <div id="train-no-loc" style="display:none;font-size:.75rem;color:var(--t3);padding:4px 0 8px">该版本暂无预设地点。</div>
+        </div>
+        <!-- 精灵分布 + 努力值 -->
+        <div id="train-dist-section" style="display:none">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span class="hunt-section-lbl" style="margin-bottom:0">💪 <span id="train-dist-title">精灵分布 &amp; 努力值</span></span>
+            <button class="btn btn-sm" id="train-dist-btn" onclick="loadTrainDistribution()" style="font-size:.72rem">✦ 获取</button>
+          </div>
+          <div class="train-dist-note">努力值数据来源：PokéAPI 官方数据，点击精灵即可累计 EV</div>
+          <div id="train-dist-grid" class="train-dist-grid"></div>
+        </div>
       </div>
     </div>
 
@@ -486,22 +545,22 @@
     <!-- 狩猎 -->
     <div class="stab-panel" id="stab-hunting">
       <div class="series-body">
-        <div class="hunt-add-form">
-          <div style="font-size:.7rem;color:var(--t3);margin-bottom:8px;font-family:'DM Mono',monospace;letter-spacing:.05em">TARGET — 添加目标精灵</div>
-          <div style="position:relative;margin-bottom:6px">
-            <input id="hunt-search-inp" class="series-inp" placeholder="搜索目标精灵…" oninput="searchHuntPkm(this.value)" autocomplete="off">
-            <div id="hunt-search-results" class="pkm-inline-results"></div>
-          </div>
-          <div id="hunt-pkm-preview" style="display:none" class="hunt-pkm-preview"></div>
-          <div style="display:flex;gap:6px;margin-bottom:8px">
-            <select id="hunt-nature" class="series-inp" style="flex:1"></select>
-            <input id="hunt-iv" class="series-inp" placeholder="目标V数 如6V/5V" style="flex:1">
-          </div>
-          <div style="display:flex;justify-content:flex-end">
-            <button class="btn btn-a btn-sm" onclick="addHuntTarget()">+ 添加目标</button>
-          </div>
+        <!-- 地点选择 -->
+        <div id="hunt-phase-loc">
+          <div class="hunt-section-lbl">📍 选择捕猎地点</div>
+          <div id="hunt-loc-chips" class="hunt-loc-row"></div>
+          <div id="hunt-no-loc" style="display:none;font-size:.75rem;color:var(--t3);padding:4px 0 10px">该版本暂无预设地点，请直接从下方添加目标精灵。</div>
         </div>
-        <div id="hunt-list" style="margin-top:12px"></div>
+        <!-- 精灵分布 -->
+        <div id="hunt-phase-dist" style="display:none">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <div class="hunt-section-lbl" style="margin-bottom:0">🎯 <span id="hunt-dist-title">精灵分布</span></div>
+            <button class="btn btn-sm" id="hunt-dist-btn" onclick="loadHuntDistribution()" style="font-size:.72rem">✦ 获取分布</button>
+          </div>
+          <div id="hunt-dist-grid" class="hunt-dist-grid"></div>
+        </div>
+        <!-- 狩猎目标列表 -->
+        <div id="hunt-list" style="margin-top:4px"></div>
       </div>
     </div>
 
@@ -533,23 +592,32 @@
   </div>
 </div>
 <!-- 沉浸式狩猎界面 -->
-<div id="ov-hunt-imm" class="hunt-imm-ov" onclick="huntImmTap(event)">
+<div id="ov-hunt-imm" class="hunt-imm-ov">
+  <!-- 背景模糊层 -->
   <div class="hunt-imm-bg-blur" id="hunt-imm-bg"></div>
-  <button class="hunt-imm-close" onclick="event.stopPropagation();closeImmHunt()">✕</button>
+  <!-- 漂浮粒子层 -->
+  <div class="hunt-imm-particles" id="hunt-imm-particles"></div>
+  <!-- 关闭 + 位置 -->
+  <button class="hunt-imm-close" onclick="closeImmHunt()">✕</button>
+  <div class="hunt-imm-loc-badge" id="hunt-imm-loc">📍 野外</div>
+  <!-- 精灵展示区 -->
   <div class="hunt-imm-body">
     <div class="hunt-imm-target-badge" id="hunt-imm-target"></div>
+    <div class="hunt-imm-encounter-label" id="hunt-imm-encounter-label">野生精灵出现了！</div>
     <img class="hunt-imm-sprite" id="hunt-imm-sprite" src="" alt="">
     <div class="hunt-imm-name" id="hunt-imm-name"></div>
-    <div class="hunt-imm-counter" id="hunt-imm-counter">
+    <div class="hunt-imm-counter">
       <span class="hunt-imm-num" id="hunt-imm-num">0</span>
       <span class="hunt-imm-unit">次遭遇</span>
     </div>
-    <div class="hunt-imm-hint">轻触任意处 · 记录一次遭遇</div>
     <div class="hunt-imm-narration" id="hunt-imm-narration" style="display:none"></div>
   </div>
-  <button class="hunt-imm-catch-btn" onclick="event.stopPropagation();confirmImmCatch()">
-    <span>捕获成功！</span>
-  </button>
+  <!-- 战斗动作按钮 -->
+  <div class="hunt-battle-actions" id="hunt-battle-actions">
+    <button class="hunt-action-btn hunt-action-fight" onclick="huntActionFight()">⚔️<br><span>战斗</span></button>
+    <button class="hunt-action-btn hunt-action-run"  onclick="huntActionRun()">💨<br><span>逃跑</span></button>
+    <button class="hunt-action-btn hunt-action-catch" onclick="huntActionCatch()">⚫<br><span>捕捉</span></button>
+  </div>
   <!-- 捕获成功动画层 -->
   <div class="hunt-imm-success" id="hunt-imm-success" style="display:none">
     <div class="hunt-success-sparks" id="hunt-success-sparks"></div>
