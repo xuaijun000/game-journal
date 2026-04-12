@@ -111,6 +111,14 @@
     </div>
   </div>
   <div class="pg" id="pg-pkm">
+    <div id="pkm-active-catches" style="display:none" class="pkm-active-catches-box">
+      <div class="pkm-active-catches-hdr">
+        <span class="pkm-active-catches-title">▶ 当前游玩 · 捕获记录</span>
+        <span class="pkm-active-catches-count" id="pkm-active-count"></span>
+        <span class="pkm-active-catches-game" id="pkm-active-game"></span>
+      </div>
+      <div class="pkm-active-catches-row" id="pkm-active-catches-row"></div>
+    </div>
     <div class="pkm-layout">
       <div class="pkm-today">
         <div class="pkm-today-hero"><div class="pkm-today-bg" id="pkm-today-bg"></div><img id="pkm-today-img" src="" alt="" class="pkm-today-img"></div>
@@ -440,11 +448,37 @@
     <!-- 探索 -->
     <div class="stab-panel" id="stab-explore">
       <div class="series-body">
-        <div style="display:flex;gap:6px;margin-bottom:10px">
-          <input id="explore-loc-inp" class="series-inp" placeholder="输入当前地图位置（如：常磐道路）" style="flex:1" onkeydown="if(event.key==='Enter')exploreLocation()">
-          <button class="btn btn-a btn-sm" onclick="exploreLocation()">查看</button>
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+          <input id="explore-loc-inp" class="series-inp" placeholder="地图位置（如：常磐道路，留空则从截图识别）" style="flex:1" onkeydown="if(event.key==='Enter')exploreLocation()">
+          <button class="btn btn-a btn-sm" onclick="exploreLocation()" id="explore-btn">探索</button>
         </div>
+        <div class="explore-ctx-row">
+          <select id="explore-weather" class="series-inp explore-ctx-sel">
+            <option value="">☁️ 天气（可选）</option>
+            <option value="晴天">☀️ 晴天</option>
+            <option value="雨天">🌧 雨天</option>
+            <option value="沙暴">🌪 沙暴</option>
+            <option value="冰雪">❄️ 冰雪</option>
+            <option value="大雾">🌫 大雾</option>
+            <option value="打雷">⚡ 打雷</option>
+          </select>
+          <select id="explore-time" class="series-inp explore-ctx-sel">
+            <option value="">🕐 时间（可选）</option>
+            <option value="早晨">🌅 早晨</option>
+            <option value="白天">🌞 白天</option>
+            <option value="傍晚">🌇 傍晚</option>
+            <option value="夜晚">🌙 夜晚</option>
+          </select>
+          <label class="explore-img-label" for="explore-img-inp" id="explore-img-lbl">📷 截图</label>
+          <input type="file" id="explore-img-inp" accept="image/*" style="display:none" onchange="onExploreImgChange(this)">
+        </div>
+        <div id="explore-img-preview" style="display:none" class="explore-img-preview"></div>
         <div id="explore-result" style="display:none" class="explore-result-box"></div>
+        <div id="explore-save-row" style="display:none" class="explore-save-row">
+          <button class="btn btn-sm" onclick="saveExploreRecord()">📌 保存到探索日志</button>
+          <span id="explore-save-ok" style="display:none;font-size:.72rem;color:var(--acc2);font-family:'DM Mono',monospace">✓ 已保存</span>
+        </div>
+        <div id="explore-history" style="margin-top:14px"></div>
       </div>
     </div>
 

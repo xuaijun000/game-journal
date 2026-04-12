@@ -420,7 +420,7 @@ let pkmSeriesLogs={};
 async function loadSeriesData(){
   const{data:{session}}=await db.auth.getSession();if(!session?.user)return;
   const{data}=await db.from('pkm_series_log').select('*').eq('user_id',session.user.id);
-  pkmSeriesLogs={};(data||[]).forEach(r=>pkmSeriesLogs[r.series_id]=r);renderSeries();
+  pkmSeriesLogs={};(data||[]).forEach(r=>pkmSeriesLogs[r.series_id]=r);renderSeries();renderActiveCatches();
 }
 function renderSeries(){
   const grid=document.getElementById('pkm-series-grid');
@@ -590,7 +590,7 @@ async function genSeriesLogFromChat(){
     if(btn){btn.textContent='✓ 已保存到日志';setTimeout(()=>{btn.disabled=false;btn.textContent='📋 生成游玩日志';},2000);}
   }catch(e){alert('生成失败：'+e.message);if(btn){btn.disabled=false;btn.textContent='📋 生成游玩日志';}}
 }
-async function initPkm(){Object.keys(genCache).forEach(k=>delete genCache[k]);await loadSeriesData();await loadTodayPkm();await loadPkmCollection();updateTodayBtns();loadGen(1,document.querySelector('.pkm-gen-tab'));await loadPkmLogs();}
+async function initPkm(){Object.keys(genCache).forEach(k=>delete genCache[k]);await loadSeriesData();await loadTodayPkm();await loadPkmCollection();updateTodayBtns();loadGen(1,document.querySelector('.pkm-gen-tab'));await loadPkmLogs();renderActiveCatches();}
 
 
 /* ================================================================
@@ -934,6 +934,48 @@ async function delExploreRecord(id){
 }
 
 /* ============================
+   🏠 首页：当前游玩版本捕获展示
+   ============================ */
+// 性格 → 上升属性分类（用于卡片颜色）
+const NATURE_UP_CLASS={
+  attack:'up-atk',defense:'up-def','special-attack':'up-spa',
+  'special-defense':'up-spd2',speed:'up-spd'
+};
+function renderActiveCatches(){
+  const box=document.getElementById('pkm-active-catches');
+  const row=document.getElementById('pkm-active-catches-row');
+  const gameEl=document.getElementById('pkm-active-game');
+  const countEl=document.getElementById('pkm-active-count');
+  if(!box||!row)return;
+  // 找正在游玩的系列
+  const playingEntry=Object.entries(pkmSeriesLogs).find(([,v])=>v.status==='played');
+  if(!playingEntry){box.style.display='none';return;}
+  const[sid,log]=playingEntry;
+  const s=PKM_SERIES.find(x=>x.id===sid);
+  const catches=lsGet('pkm_catches_'+sid)||[];
+  if(!catches.length){box.style.display='none';return;}
+  box.style.display='block';
+  if(gameEl)gameEl.textContent=s?.name||sid;
+  if(countEl)countEl.textContent=catches.length+' 只';
+  row.innerHTML=catches.map((c,i)=>{
+    const nat=NATURES.find(n=>n.id===c.nature);
+    const natCls=nat?.up?NATURE_UP_CLASS[nat.up]||'':'';
+    const delay=(i*60)+'ms';
+    return`<div class="pkm-catch-card" style="animation-delay:${delay}" onclick="openSeriesDetailById('${sid}')">
+      <img src="${c.img||''}" alt="${esc(c.name)}" style="animation-delay:${(i*200)%1600}ms" onerror="this.style.display='none'">
+      <div class="pkm-catch-card-name">${esc(c.name)}</div>
+      ${c.nick?`<div class="pkm-catch-card-nick">「${esc(c.nick)}」</div>`:''}
+      <div class="pkm-catch-card-nature ${natCls}">${nat?.zh||c.nature}</div>
+    </div>`;
+  }).join('');
+}
+
+function openSeriesDetailById(sid){
+  const el=document.querySelector(`.pkm-series-card[data-sid="${sid}"]`);
+  if(el)openSeriesDetail(el);
+}
+
+/* ============================
    🎯 狩猎：目标精灵 + 遭遇计数
    ============================ */
 let _huntSelectedPkm=null,_huntSearchT=null;
@@ -1132,6 +1174,7 @@ function saveCatch(){
   document.getElementById('catch-form-body').style.display='none';
   if(aiBox)aiBox.style.display='none';
   renderCatchList(sid);
+  renderActiveCatches();
   showToast('已保存到图鉴录入');
 }
 
@@ -1300,6 +1343,7 @@ function confirmImmCatch(){
   setTimeout(()=>{
     closeImmHunt();
     renderHuntList(_immSid);
+    renderActiveCatches();
     showToast('恭喜捕获 '+t.name+'！共遭遇 '+t.count+' 次');
   },2500);
 }

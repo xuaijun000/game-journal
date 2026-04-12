@@ -344,8 +344,12 @@
 .hunt-imm-success{
   position:absolute;inset:0;z-index:20;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
-  background:radial-gradient(ellipse at center,rgba(90,184,154,.25) 0%,rgba(8,7,6,.96) 70%);
+  background:rgba(8,7,6,.98);
   animation:successFadeIn .4s ease-out;
+}
+.hunt-imm-success::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse at center,rgba(90,184,154,.22) 0%,transparent 62%);
 }
 @keyframes successFadeIn{from{opacity:0;transform:scale(.96);}to{opacity:1;transform:scale(1);}}
 .hunt-success-sparks{
@@ -498,3 +502,69 @@
 .explore-hist-body{background:var(--bg)}
 .explore-hist-latest{border-color:rgba(200,144,64,.35)}
 .explore-hist-new{padding:1px 7px;border-radius:2px;background:rgba(200,144,64,.15);border:1px solid rgba(200,144,64,.35);color:var(--acc);font-size:.6rem;font-family:'DM Mono',monospace;white-space:nowrap}
+
+/* ── 首页捕获展示 ── */
+.pkm-active-catches-box{
+  margin-bottom:1.6rem;
+  background:var(--bg2);border:1px solid var(--b2);border-radius:var(--rl);
+  overflow:hidden;
+  animation:catchBoxIn .5s ease-out both;
+}
+@keyframes catchBoxIn{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+.pkm-active-catches-hdr{
+  display:flex;align-items:center;gap:10px;
+  padding:.7rem 1.1rem .5rem;
+  border-bottom:1px solid var(--b);
+}
+.pkm-active-catches-title{
+  font-size:.68rem;color:var(--t3);font-family:'DM Mono',monospace;
+  letter-spacing:.1em;text-transform:uppercase;
+}
+.pkm-active-catches-game{
+  font-size:.78rem;color:var(--acc);font-family:'DM Mono',monospace;
+  margin-left:auto;
+}
+.pkm-active-catches-count{
+  font-size:.65rem;color:var(--t3);font-family:'DM Mono',monospace;
+}
+.pkm-active-catches-row{
+  display:flex;gap:10px;padding:.8rem 1rem 1rem;
+  overflow-x:auto;scrollbar-width:none;
+}
+.pkm-active-catches-row::-webkit-scrollbar{display:none}
+.pkm-catch-card{
+  flex-shrink:0;width:90px;
+  background:var(--bg3);border:1px solid var(--b2);border-radius:var(--r);
+  padding:10px 6px 8px;text-align:center;
+  position:relative;overflow:hidden;
+  cursor:pointer;transition:border-color .15s,transform .15s;
+  animation:catchCardIn .45s ease-out both;
+}
+.pkm-catch-card:hover{transform:translateY(-3px);border-color:rgba(200,144,64,.4);}
+@keyframes catchCardIn{
+  from{opacity:0;transform:translateY(14px);}
+  to{opacity:1;transform:translateY(0);}
+}
+.pkm-catch-card img{
+  width:64px;height:64px;object-fit:contain;image-rendering:pixelated;
+  display:block;margin:0 auto;
+  animation:catchFloat 3.2s ease-in-out infinite;
+}
+@keyframes catchFloat{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-5px);}
+}
+.pkm-catch-card-name{font-size:.68rem;color:var(--t);margin-top:4px;line-height:1.2;font-weight:500}
+.pkm-catch-card-nick{font-size:.6rem;color:var(--acc);font-family:'DM Mono',monospace;margin-top:1px}
+.pkm-catch-card-nature{
+  display:inline-block;margin-top:4px;
+  padding:1px 6px;border-radius:2px;
+  font-size:.55rem;font-family:'DM Mono',monospace;
+  background:rgba(200,144,64,.12);border:1px solid rgba(200,144,64,.25);
+  color:var(--acc);
+}
+.pkm-catch-card-nature.up-spd{background:rgba(90,184,154,.1);border-color:rgba(90,184,154,.3);color:var(--acc2);}
+.pkm-catch-card-nature.up-atk{background:rgba(217,85,85,.1);border-color:rgba(217,85,85,.3);color:var(--danger);}
+.pkm-catch-card-nature.up-spa{background:rgba(160,100,220,.1);border-color:rgba(160,100,220,.3);color:#b890ee;}
+.pkm-catch-card-nature.up-def,.pkm-catch-card-nature.up-spd2{background:rgba(90,150,230,.1);border-color:rgba(90,150,230,.3);color:#90aaee;}
+.pkm-catch-empty{color:var(--t3);font-size:.8rem;padding:1.2rem;text-align:center}
