@@ -446,6 +446,11 @@ function openSeriesDetail(el){
   const colors={none:'linear-gradient(135deg,#1b1d21,#141518)',played:'linear-gradient(135deg,rgba(56,189,248,.15),rgba(13,14,16,1))',cleared:'linear-gradient(135deg,rgba(96,165,250,.15),rgba(13,14,16,1))'};
   document.getElementById('series-hero').style.background=colors[log.status||'none'];
   document.getElementById('ov-series').classList.add('on');
+  // 从 Supabase 数据填充本地内存
+  if(log.notes!=null)  lsSet('pkm_notes_'+seriesId,  log.notes);
+  if(log.party!=null)  lsSet('pkm_party_'+seriesId,  log.party);
+  if(log.progress!=null) lsSet('pkm_progress_'+seriesId, log.progress);
+  if(log.hunts!=null)  lsSet('pkm_hunt_'+seriesId,   log.hunts);
   renderQuickNotes(seriesId);
 }
 function setSeriesStatus(st){setSeriesStatusUI(st);const colors={none:'linear-gradient(135deg,#1b1d21,#141518)',played:'linear-gradient(135deg,rgba(56,189,248,.15),rgba(13,14,16,1))',cleared:'linear-gradient(135deg,rgba(96,165,250,.15),rgba(13,14,16,1))'};document.getElementById('series-hero').style.background=colors[st];document.getElementById('series-save-btn').dataset.status=st;}
@@ -656,6 +661,20 @@ const _lsMem={};
 function lsGet(k){try{const v=localStorage.getItem(k);return v!=null?JSON.parse(v):(_lsMem[k]??null);}catch{return _lsMem[k]??null;}}
 function lsSet(k,v){_lsMem[k]=v;try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
 
+/* 把单个 jsonb 字段写回 pkm_series_log（fire-and-forget） */
+async function syncSeriesField(sid,field,value){
+  const{data:{session}}=await db.auth.getSession();if(!session?.user)return;
+  if(pkmSeriesLogs[sid]){
+    await db.from('pkm_series_log').update({[field]:value}).eq('user_id',session.user.id).eq('series_id',sid);
+  }else{
+    await db.from('pkm_series_log').upsert({user_id:session.user.id,series_id:sid,status:'none',[field]:value},{onConflict:'user_id,series_id'});
+    if(!pkmSeriesLogs[sid])pkmSeriesLogs[sid]={status:'none'};
+  }
+  if(pkmSeriesLogs[sid])pkmSeriesLogs[sid][field]=value;
+}
+let _huntSyncTimer=null;
+function debounceSyncHunts(sid,list){clearTimeout(_huntSyncTimer);_huntSyncTimer=setTimeout(()=>syncSeriesField(sid,'hunts',list),1500);}
+
 /* ── 当前系列 ID ── */
 let _curSid='';
 
@@ -684,6 +703,7 @@ function addQuickNote(){
   lsSet('pkm_notes_'+_curSid,notes);
   inp.value='';
   renderQuickNotes(_curSid);
+  syncSeriesField(_curSid,'notes',notes);
 }
 function renderQuickNotes(sid){
   const list=document.getElementById('quicknote-list');if(!list)return;
@@ -696,7 +716,7 @@ function renderQuickNotes(sid){
   }).join('');
 }
 function delQuickNote(sid,idx){
-  const notes=lsGet('pkm_notes_'+sid)||[];notes.splice(idx,1);lsSet('pkm_notes_'+sid,notes);renderQuickNotes(sid);
+  const notes=lsGet('pkm_notes_'+sid)||[];notes.splice(idx,1);lsSet('pkm_notes_'+sid,notes);renderQuickNotes(sid);syncSeriesField(sid,'notes',notes);
 }
 
 /* ============================
@@ -725,7 +745,7 @@ function renderPartySlots(sid){
 function focusPartySearch(){document.getElementById('party-search-inp')?.focus();}
 function removeFromParty(sid,idx){
   const party=lsGet('pkm_party_'+sid)||Array(6).fill(null);
-  party[idx]=null;lsSet('pkm_party_'+sid,party);renderPartySlots(sid);
+  party[idx]=null;lsSet('pkm_party_'+sid,party);renderPartySlots(sid);syncSeriesField(sid,'party',party);
 }
 let _partySearchT=null;
 function searchPartyPkm(v){
@@ -745,6 +765,7 @@ function addToParty(sid,pkm){
   document.getElementById('party-search-inp').value='';
   document.getElementById('party-search-results').classList.remove('open');
   renderPartySlots(sid);
+  syncSeriesField(sid,'party',party);
 }
 
 /* ============================
@@ -776,7 +797,7 @@ function renderProgress(sid){
 function toggleCheckpoint(sid,idx){
   const done=lsGet('pkm_progress_'+sid)||{};
   if(done[idx])delete done[idx];else done[idx]={ts:Date.now()};
-  lsSet('pkm_progress_'+sid,done);renderProgress(sid);
+  lsSet('pkm_progress_'+sid,done);renderProgress(sid);syncSeriesField(sid,'progress',done);
 }
 
 /* ============================
@@ -1006,6 +1027,7 @@ function addHuntTarget(){
   document.getElementById('hunt-iv').value='';
   document.getElementById('hunt-pkm-preview').style.display='none';
   renderHuntList(sid);
+  syncSeriesField(sid,'hunts',list);
   showToast('已添加狩猎目标');
 }
 function renderHuntList(sid){
@@ -1046,11 +1068,12 @@ function huntCaught(sid,idx){
   list[idx].done=true;
   lsSet('pkm_hunt_'+sid,list);
   renderHuntList(sid);
+  syncSeriesField(sid,'hunts',list);
   showToast(`恭喜捕获 ${list[idx].name}！共遭遇 ${list[idx].count} 次`);
 }
 function huntDel(sid,idx){
   if(!confirm('删除这个狩猎目标？'))return;
-  const list=lsGet('pkm_hunt_'+sid)||[];list.splice(idx,1);lsSet('pkm_hunt_'+sid,list);renderHuntList(sid);
+  const list=lsGet('pkm_hunt_'+sid)||[];list.splice(idx,1);lsSet('pkm_hunt_'+sid,list);renderHuntList(sid);syncSeriesField(sid,'hunts',list);
 }
 
 /* ============================
@@ -1330,6 +1353,7 @@ function huntImmTap(e){
   void numEl.offsetWidth;
   numEl.classList.add('pop');
   if(HUNT_MILESTONE_TEXT[cnt])showHuntNarration(HUNT_MILESTONE_TEXT[cnt]);
+  debounceSyncHunts(_immSid,list);
 }
 
 function spawnBall(x,y){
@@ -1354,6 +1378,7 @@ function confirmImmCatch(){
   const t=list[_immIdx];if(!t)return;
   t.done=true;
   lsSet('pkm_hunt_'+_immSid,list);
+  syncSeriesField(_immSid,'hunts',list);
 
   // 显示成功动画层
   const suc=document.getElementById('hunt-imm-success');
