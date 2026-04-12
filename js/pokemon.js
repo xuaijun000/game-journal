@@ -447,10 +447,16 @@ function openSeriesDetail(el){
   document.getElementById('series-hero').style.background=colors[log.status||'none'];
   document.getElementById('ov-series').classList.add('on');
   // 从 Supabase 数据填充本地内存
-  if(log.notes!=null)  lsSet('pkm_notes_'+seriesId,  log.notes);
-  if(log.party!=null)  lsSet('pkm_party_'+seriesId,  log.party);
-  if(log.progress!=null) lsSet('pkm_progress_'+seriesId, log.progress);
-  if(log.hunts!=null)  lsSet('pkm_hunt_'+seriesId,   log.hunts);
+  if(log.notes!=null)       lsSet('pkm_notes_'+seriesId,    log.notes);
+  if(log.party!=null)       lsSet('pkm_party_'+seriesId,    log.party);
+  if(log.progress!=null)    lsSet('pkm_progress_'+seriesId, log.progress);
+  if(log.hunts!=null)       lsSet('pkm_hunt_'+seriesId,     log.hunts);
+  // 训练 EV：{pkmId: {hp,attack,...}} → 逐只写入内存
+  if(log.training_evs!=null){
+    Object.entries(log.training_evs).forEach(([pkmId,evs])=>{
+      lsSet('pkm_train_ev_'+seriesId+'_'+pkmId,evs);
+    });
+  }
   renderQuickNotes(seriesId);
   initSeriesMap(seriesId);
   // 清理上一个版本的冒险日记，避免串号
@@ -678,6 +684,18 @@ async function syncSeriesField(sid,field,value){
 }
 let _huntSyncTimer=null;
 function debounceSyncHunts(sid,list){clearTimeout(_huntSyncTimer);_huntSyncTimer=setTimeout(()=>syncSeriesField(sid,'hunts',list),1500);}
+
+let _trainEVSyncTimer=null;
+function debounceSyncTrainEVs(sid){
+  clearTimeout(_trainEVSyncTimer);
+  _trainEVSyncTimer=setTimeout(()=>{
+    // 把当前 series 所有精灵的 EV 汇总成一个 object 存回 Supabase
+    const prefix='pkm_train_ev_'+sid+'_';
+    const evObj={};
+    Object.entries(_lsMem).forEach(([k,v])=>{if(k.startsWith(prefix))evObj[k.slice(prefix.length)]=v;});
+    syncSeriesField(sid,'training_evs',evObj);
+  },1200);
+}
 
 /* ── 当前系列 ID ── */
 let _curSid='';
@@ -1762,6 +1780,7 @@ function resetTrainEVs(){
   if(!_trainPkmData)return;
   _trainEVs={hp:0,attack:0,defense:0,'special-attack':0,'special-defense':0,speed:0};
   lsSet('pkm_train_ev_'+_trainSid+'_'+_trainPkmData.id,_trainEVs);
+  debounceSyncTrainEVs(_trainSid);
   renderTrainEVs();showToast('EV 已重置');
 }
 
@@ -1788,6 +1807,7 @@ function beatPokemon(idx){
   }
   if(!added){showToast('EV 容量已满');return;}
   lsSet('pkm_train_ev_'+_trainSid+'_'+_trainPkmData.id,_trainEVs);
+  debounceSyncTrainEVs(_trainSid);
   renderTrainEVs();
   // 动画反馈
   const card=document.getElementById('train-card-'+idx);
