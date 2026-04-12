@@ -1114,13 +1114,6 @@ function closeImmHunt(){
   ov.classList.remove('on');
   document.body.style.overflow='';
 }
-// 覆盖 closeOv 兼容
-const _origCloseOv=typeof closeOv==='function'?closeOv:null;
-function closeOv(id){
-  if(id==='ov-hunt-imm'){closeImmHunt();return;}
-  if(_origCloseOv)_origCloseOv(id);
-  else{const el=document.getElementById(id);if(el)el.classList.remove('on');}
-}
 
 function huntImmTap(e){
   // 不响应按钮点击冒泡
