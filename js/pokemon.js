@@ -85,6 +85,73 @@ const PKM_CN_TABLE={1:'妙蛙种子',2:'妙蛙草',3:'妙蛙花',4:'小火龙',5
 1021:'猛雷鼓',1022:'铁磐岩',1023:'铁头壳',1024:'太乐巴戈斯',1025:'桃歹郎'};
 
 
+// ── 52poke 中文图鉴抓取 ──
+async function fetch52PokeDesc(cnName,pkmId){
+  if(!cnName)return null;
+  try{
+    const ctrl=new AbortController();const timer=setTimeout(()=>ctrl.abort(),6000);
+    const base='https://wiki.52poke.com/api.php';
+    // Step 1: 获取章节列表，找到图鉴描述章节编号
+    const sectUrl=`${base}?action=parse&page=${encodeURIComponent(cnName)}&prop=sections&format=json&origin=*`;
+    const sr=await fetch(sectUrl,{signal:ctrl.signal});
+    if(!sr.ok){clearTimeout(timer);return null;}
+    const sd=await sr.json();clearTimeout(timer);
+    const sections=sd?.parse?.sections||[];
+    const descSect=sections.find(s=>/图鉴/.test(s.line||''));
+    if(!descSect)return null;
+    // Step 2: 获取该章节的 wikitext
+    const ctrl2=new AbortController();const timer2=setTimeout(()=>ctrl2.abort(),6000);
+    const wtUrl=`${base}?action=parse&page=${encodeURIComponent(cnName)}&prop=wikitext&section=${descSect.index}&format=json&origin=*`;
+    const wr=await fetch(wtUrl,{signal:ctrl2.signal});
+    if(!wr.ok){clearTimeout(timer2);return null;}
+    const wd=await wr.json();clearTimeout(timer2);
+    const wikitext=wd?.parse?.wikitext?.['*']||'';
+    if(!wikitext)return null;
+    // Step 3: 从 wikitext 提取中文描述文字
+    // 处理：移除引用标签、解析器函数、HTML注释
+    const cleaned=wikitext
+      .replace(/<ref[^>]*>[\s\S]*?<\/ref>/g,'')
+      .replace(/<!--[\s\S]*?-->/g,'')
+      .replace(/\{\{#[^}]+\}\}/g,'');
+    // 收集所有含汉字、长度合适的候选文本
+    const candidates=[];
+    // 匹配 | 参数名 = 值 或 | 值（模板参数）
+    for(const m of cleaned.matchAll(/\|[^|={}\n]{0,20}[=|]\s*([^\n|}{<]{12,300})/g)){
+      const raw=m[1].trim();
+      const txt=raw
+        .replace(/\[\[(?:[^\]|]*\|)?([^\]]+)\]\]/g,'$2')  // [[链接|显示]] → 显示
+        .replace(/\[\[([^\]]+)\]\]/g,'$1')                  // [[链接]] → 链接
+        .replace(/'{2,}/g,'')                                // 粗体/斜体标记
+        .replace(/<[^>]+>/g,'')                              // HTML标签
+        .replace(/\{\{[^}]+\}\}/g,'')                        // 残余模板
+        .trim();
+      if(txt.length>=12&&txt.length<=300&&/[\u4e00-\u9fa5]{8,}/.test(txt))
+        candidates.push(txt);
+    }
+    if(!candidates.length)return null;
+    // 取最长的描述（通常最完整）
+    return candidates.sort((a,b)=>b.length-a.length)[0];
+  }catch(e){return null;}
+}
+
+// ── 图鉴描述降级渲染：52poke → AI翻译 ──
+// enTextId/btnId 用于区分首页卡片和详情弹窗
+async function renderDescFallback(descEl,engText,pkmId,cnName,enTextId,btnId){
+  if(pkmDescTransCache[pkmId]){descEl.innerHTML=pkmDescTransCache[pkmId];return;}
+  // 尝试 52poke
+  descEl.innerHTML='<span class="desc-seeking">从 52poke 获取中文图鉴…</span>';
+  const wiki=await fetch52PokeDesc(cnName,pkmId);
+  if(wiki){
+    const html=`<span>${esc(wiki)}</span><span class="desc-src-tag">52poke 官方中文</span>`;
+    pkmDescTransCache[pkmId]=html;
+    descEl.innerHTML=html;
+    return;
+  }
+  // 52poke 无结果 → 显示英文 + AI翻译按钮
+  descEl.innerHTML=`<span style="color:var(--t3);font-size:.7rem;font-style:normal;margin-bottom:3px;display:block">📖 暂无中文图鉴</span><span id="${enTextId}">${esc(engText)}</span><div><button class="pkm-translate-btn" id="${btnId}" onclick="translatePkmDesc(${pkmId},document.getElementById('${enTextId}').textContent,this,document.getElementById('${enTextId}'))">🌐 AI翻译</button></div>`;
+  if(pkmDescTransCache[pkmId]){const t=document.getElementById(enTextId);if(t)t.innerHTML=pkmDescTransCache[pkmId];const b=document.getElementById(btnId);if(b)b.style.display='none';}
+}
+
 // 图鉴文字 AI 翻译（带缓存）
 async function translatePkmDesc(pkmId,engText,btnEl,targetEl){
   if(pkmDescTransCache[pkmId]){targetEl.innerHTML=pkmDescTransCache[pkmId];btnEl.style.display='none';return;}
@@ -98,7 +165,7 @@ async function translatePkmDesc(pkmId,engText,btnEl,targetEl){
     const d=await res.json();
     const translated=(d.candidates?.[0]?.content?.parts?.[0]?.text||'').trim();
     if(translated){
-      const html='<span class="pkm-translated-text">'+translated+'</span>';
+      const html='<span class="pkm-translated-text">'+translated+'</span><span class="desc-src-tag desc-src-ai">AI翻译</span>';
       pkmDescTransCache[pkmId]=html;
       targetEl.innerHTML=html;
       btnEl.style.display='none';
@@ -273,15 +340,14 @@ function renderTodayPkm(p,sp,cnName){
       descEl.innerHTML=`<span>${zhDesc}</span>`;
       descEl.style.display='block';
     }else if(sp){
-      // 无中文图鉴：尝试取英文描述并标注
+      // 无中文图鉴：先查 52poke，再回退 AI
       const enEntry=(sp.flavor_text_entries||[]).find(x=>x.language.name==='en');
       const enDesc=enEntry?enEntry.flavor_text.replace(/\f|\n/g,' ').trim():null;
       if(enDesc){
         const todayPkmId=p?.id||0;
-        const todayEngText=enDesc;
-        descEl.innerHTML=`<span style="color:var(--t3);font-size:.7rem;font-style:normal;margin-bottom:3px;display:block">📖 暂无中文图鉴</span><span id="pkm-today-en-text">${todayEngText}</span><div><button class="pkm-translate-btn" id="pkm-today-translate-btn" onclick="translatePkmDesc(${todayPkmId},document.getElementById('pkm-today-en-text').textContent,this,document.getElementById('pkm-today-en-text'))">🌐 AI翻译</button></div>`;
-        if(pkmDescTransCache[todayPkmId]){document.getElementById('pkm-today-en-text').innerHTML=pkmDescTransCache[todayPkmId];const b=document.getElementById('pkm-today-translate-btn');if(b)b.style.display='none';}
+        const todayCnName=PKM_CN_TABLE[todayPkmId]||name;
         descEl.style.display='block';
+        renderDescFallback(descEl,enDesc,todayPkmId,todayCnName,'pkm-today-en-text','pkm-today-translate-btn');
       }else{descEl.textContent='';descEl.style.display='none';}
     }else{descEl.textContent='';descEl.style.display='none';}
   }
@@ -345,9 +411,8 @@ async function openPkmDetail(idOrName){
     }else if(enEntry){
       const engText=enEntry.flavor_text.replace(/\f|\n/g,' ').trim();
       const pkmId=p.id;
-      descEl.innerHTML=`<span style="color:var(--t3);font-size:.72rem;display:block;margin-bottom:3px">📖 暂无中文图鉴</span><span id="pkm-en-desc-text">${engText}</span><div><button class="pkm-translate-btn" id="pkm-translate-btn" onclick="translatePkmDesc(${pkmId},document.getElementById('pkm-en-desc-text').textContent,this,document.getElementById('pkm-en-desc-text'))">🌐 AI翻译</button></div>`;
-      // 如果已有缓存，直接显示
-      if(pkmDescTransCache[pkmId]){document.getElementById('pkm-en-desc-text').innerHTML=pkmDescTransCache[pkmId];document.getElementById('pkm-translate-btn').style.display='none';}
+      // 先查 52poke，查不到再显示 AI翻译按钮
+      renderDescFallback(descEl,engText,pkmId,cnName,'pkm-en-desc-text','pkm-translate-btn');
     }else{
       descEl.innerHTML=`<span style="color:var(--t3)">暂无图鉴信息</span>`;
     }

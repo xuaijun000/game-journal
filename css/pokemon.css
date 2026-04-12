@@ -57,6 +57,12 @@
 .pkm-translate-btn:hover{background:var(--acc);color:#0c0b09;border-color:var(--acc)}
 .pkm-translate-btn.loading{opacity:.6;pointer-events:none}
 .pkm-translated-text{margin-top:6px;padding:6px 0 0;border-top:1px dashed var(--b2);color:var(--t);font-size:.85rem;line-height:1.7}
+/* 图鉴来源标签 */
+.desc-src-tag{display:inline-block;font-size:.58rem;font-family:'DM Mono',monospace;letter-spacing:.06em;padding:1px 6px;border-radius:2px;margin-left:6px;vertical-align:middle;background:rgba(90,184,154,.12);border:1px solid rgba(90,184,154,.3);color:var(--acc2)}
+.desc-src-ai{background:rgba(200,144,64,.08);border-color:rgba(200,144,64,.25);color:var(--acc)}
+/* 52poke 获取中状态 */
+.desc-seeking{font-size:.7rem;color:var(--t3);font-family:'DM Mono',monospace;font-style:italic;animation:seekingPulse 1.2s ease-in-out infinite}
+@keyframes seekingPulse{0%,100%{opacity:.5}50%{opacity:1}}
 .pkm-chat-area{background:var(--bg2);border:1px solid var(--b2);border-radius:var(--rl);overflow:hidden}
 .pkm-chat-hdr{padding:10px 14px;background:var(--bg3);border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between}
 .pkm-chat-title{font-size:.78rem;font-family:'DM Mono',monospace;color:var(--t2)}
