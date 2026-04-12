@@ -668,7 +668,7 @@ function switchSeriesTab(el,tab){
   if(tab==='party')renderPartySlots(_curSid);
   if(tab==='progress')renderProgress(_curSid);
   if(tab==='hunting'){initNatureSelect('hunt-nature');renderHuntList(_curSid);}
-  if(tab==='catches'){initNatureSelect('catch-nature');renderCatchList(_curSid);}
+  if(tab==='catches'){initNatureSelect('catch-nature');loadCatchList(_curSid);}
   if(tab==='explore'){document.getElementById('explore-result').style.display='none';const sr=document.getElementById('explore-save-row');if(sr)sr.style.display='none';loadExploreHistory(_curSid);}
 }
 
@@ -941,30 +941,30 @@ const NATURE_UP_CLASS={
   attack:'up-atk',defense:'up-def','special-attack':'up-spa',
   'special-defense':'up-spd2',speed:'up-spd'
 };
-function renderActiveCatches(){
+async function renderActiveCatches(){
   const box=document.getElementById('pkm-active-catches');
   const row=document.getElementById('pkm-active-catches-row');
   const gameEl=document.getElementById('pkm-active-game');
   const countEl=document.getElementById('pkm-active-count');
   if(!box||!row)return;
-  // 找正在游玩的系列
   const playingEntry=Object.entries(pkmSeriesLogs).find(([,v])=>v.status==='played');
   if(!playingEntry){box.style.display='none';return;}
-  const[sid,log]=playingEntry;
+  const[sid]=playingEntry;
   const s=PKM_SERIES.find(x=>x.id===sid);
-  const catches=lsGet('pkm_catches_'+sid)||[];
-  if(!catches.length){box.style.display='none';return;}
+  const{data:{session}}=await db.auth.getSession();
+  if(!session?.user){box.style.display='none';return;}
+  const{data:catches}=await db.from('pkm_catch_log').select('id,pkm_name,img,nickname,nature').eq('user_id',session.user.id).eq('series_id',sid).order('created_at',{ascending:false});
+  if(!catches?.length){box.style.display='none';return;}
   box.style.display='block';
   if(gameEl)gameEl.textContent=s?.name||sid;
   if(countEl)countEl.textContent=catches.length+' 只';
   row.innerHTML=catches.map((c,i)=>{
     const nat=NATURES.find(n=>n.id===c.nature);
     const natCls=nat?.up?NATURE_UP_CLASS[nat.up]||'':'';
-    const delay=(i*60)+'ms';
-    return`<div class="pkm-catch-card" style="animation-delay:${delay}" onclick="openSeriesDetailById('${sid}')">
-      <img src="${c.img||''}" alt="${esc(c.name)}" style="animation-delay:${(i*200)%1600}ms" onerror="this.style.display='none'">
-      <div class="pkm-catch-card-name">${esc(c.name)}</div>
-      ${c.nick?`<div class="pkm-catch-card-nick">「${esc(c.nick)}」</div>`:''}
+    return`<div class="pkm-catch-card" style="animation-delay:${i*60}ms" onclick="openSeriesDetailById('${sid}')">
+      <img src="${c.img||''}" alt="${esc(c.pkm_name)}" style="animation-delay:${(i*200)%1600}ms" onerror="this.style.display='none'">
+      <div class="pkm-catch-card-name">${esc(c.pkm_name)}</div>
+      ${c.nickname?`<div class="pkm-catch-card-nick">「${esc(c.nickname)}」</div>`:''}
       <div class="pkm-catch-card-nature ${natCls}">${nat?.zh||c.nature}</div>
     </div>`;
   }).join('');
@@ -1159,48 +1159,71 @@ async function getCatchAIRec(){
   btn.disabled=false;btn.textContent='✦ AI推荐性格 + 努力值';
 }
 
-function saveCatch(){
+async function saveCatch(){
   if(!_catchSelectedPkm){showToast('请先选择宝可梦');return;}
+  const{data:{session}}=await db.auth.getSession();
+  if(!session?.user){showToast('请先登录');return;}
   const sid=_curSid;
   const nature=document.getElementById('catch-nature')?.value||'serious';
   const nick=document.getElementById('catch-nickname')?.value?.trim()||'';
   const aiBox=document.getElementById('catch-ai-result');
   const aiRec=(aiBox&&aiBox.style.display!=='none')?aiBox.textContent:'';
-  const list=lsGet('pkm_catches_'+sid)||[];
-  list.unshift({pkmId:_catchSelectedPkm.id,name:_catchSelectedPkm.name,img:_catchSelectedPkm.img,nick,nature,baseStats:_catchBaseStats,evYields:_catchEvYields,aiRec,ts:Date.now()});
-  lsSet('pkm_catches_'+sid,list);
+  const saveBtn=document.querySelector('#stab-catches .btn-a');
+  if(saveBtn){saveBtn.disabled=true;saveBtn.textContent='保存中…';}
+  const{error}=await db.from('pkm_catch_log').insert({
+    user_id:session.user.id,series_id:sid,
+    pkm_id:_catchSelectedPkm.id,pkm_name:_catchSelectedPkm.name,
+    img:_catchSelectedPkm.img||null,nickname:nick||null,nature,
+    base_stats:_catchBaseStats||null,ev_yields:_catchEvYields||null,
+    ai_rec:aiRec||null
+  });
+  if(saveBtn){saveBtn.disabled=false;saveBtn.textContent='保存记录';}
+  if(error){showToast('保存失败：'+error.message);return;}
   _catchSelectedPkm=null;_catchBaseStats=null;_catchEvYields=null;
   document.getElementById('catch-search-inp').value='';
   document.getElementById('catch-form-body').style.display='none';
   if(aiBox)aiBox.style.display='none';
-  renderCatchList(sid);
+  loadCatchList(sid);
   renderActiveCatches();
   showToast('已保存到图鉴录入');
 }
 
-function renderCatchList(sid){
+async function loadCatchList(sid){
   const el=document.getElementById('catch-list');if(!el)return;
-  const list=lsGet('pkm_catches_'+sid)||[];
-  if(!list.length){el.innerHTML='<div style="font-size:.8rem;color:var(--t3);text-align:center;padding:16px 0">还没有录入记录，抓到好精灵快来记录吧</div>';return;}
-  el.innerHTML=list.map((c,i)=>{
+  el.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:8px 0">加载中…</div>';
+  const{data:{session}}=await db.auth.getSession();
+  if(!session?.user){el.innerHTML='';return;}
+  const{data,error}=await db.from('pkm_catch_log').select('*').eq('user_id',session.user.id).eq('series_id',sid).order('created_at',{ascending:false});
+  if(error||!data){el.innerHTML='';return;}
+  renderCatchList(data);
+}
+
+function renderCatchList(records){
+  const el=document.getElementById('catch-list');if(!el)return;
+  if(!records.length){el.innerHTML='<div style="font-size:.8rem;color:var(--t3);text-align:center;padding:16px 0">还没有录入记录，抓到好精灵快来记录吧</div>';return;}
+  el.innerHTML=records.map(c=>{
     const natZh=getNatureZh(c.nature);
-    const d=new Date(c.ts);const ts=`${d.getMonth()+1}/${d.getDate()}`;
-    const evStr=c.evYields?.length?c.evYields.map(x=>`${STAT_ZH[x.stat.name]||x.stat.name}+${x.effort}`).join(' '):'—';
+    const d=new Date(c.created_at);const ts=`${d.getMonth()+1}/${d.getDate()}`;
+    const evStr=c.ev_yields?.length?c.ev_yields.map(x=>`${STAT_ZH[x.stat.name]||x.stat.name}+${x.effort}`).join(' '):'—';
     return`<div class="catch-card">
-      <img src="${c.img}" alt="" onerror="this.style.display='none'">
+      <img src="${c.img||''}" alt="" onerror="this.style.display='none'">
       <div class="catch-card-body">
-        <div class="catch-card-name">${esc(c.name)}${c.nick?` <span style="color:var(--acc);font-size:.78rem">「${esc(c.nick)}」</span>`:''}</div>
+        <div class="catch-card-name">${esc(c.pkm_name)}${c.nickname?` <span style="color:var(--acc);font-size:.78rem">「${esc(c.nickname)}」</span>`:''}</div>
         <div class="catch-card-nature">${natZh}性格</div>
         <div class="catch-card-meta">EV产出 ${evStr} · ${ts}</div>
-        ${c.aiRec?`<details style="margin-top:4px"><summary style="font-size:.7rem;color:var(--t3);cursor:pointer;font-family:'DM Mono',monospace">查看AI推荐方案</summary><div style="font-size:.75rem;color:var(--t2);white-space:pre-wrap;margin-top:4px;padding:6px;background:var(--bg);border-radius:3px;line-height:1.7">${esc(c.aiRec)}</div></details>`:''}
+        ${c.ai_rec?`<details style="margin-top:4px"><summary style="font-size:.7rem;color:var(--t3);cursor:pointer;font-family:'DM Mono',monospace">查看AI推荐方案</summary><div style="font-size:.75rem;color:var(--t2);white-space:pre-wrap;margin-top:4px;padding:6px;background:var(--bg);border-radius:3px;line-height:1.7">${esc(c.ai_rec)}</div></details>`:''}
       </div>
-      <button class="catch-card-del" onclick="delCatch('${sid}',${i})">✕</button>
+      <button class="catch-card-del" onclick="delCatch('${c.id}')">✕</button>
     </div>`;
   }).join('');
 }
-function delCatch(sid,idx){
+
+async function delCatch(id){
   if(!confirm('删除这条录入？'))return;
-  const list=lsGet('pkm_catches_'+sid)||[];list.splice(idx,1);lsSet('pkm_catches_'+sid,list);renderCatchList(sid);
+  const{data:{session}}=await db.auth.getSession();if(!session?.user)return;
+  await db.from('pkm_catch_log').delete().eq('id',id).eq('user_id',session.user.id);
+  loadCatchList(_curSid);
+  renderActiveCatches();
 }
 
 /* ============================
