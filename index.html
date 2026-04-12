@@ -373,27 +373,122 @@
       </div>
       <button class="btn btn-sm" onclick="closeOv('ov-series')" style="position:absolute;top:10px;right:10px;z-index:3">✕</button>
     </div>
-    <div class="series-body">
-      <div class="series-grid2">
-        <div class="series-inp-group"><span class="series-inp-label">📅 开始日期</span><input type="date" id="series-start-inp" class="series-inp"></div>
-        <div class="series-inp-group"><span class="series-inp-label">🏁 通关日期</span><input type="date" id="series-end-inp" class="series-inp"></div>
-        <div class="series-inp-group"><span class="series-inp-label">⏱ 游玩时长（小时）</span><input type="number" id="series-hours-inp" class="series-inp" placeholder="例：40" min="0" max="9999"></div>
-        <div class="series-inp-group"><span class="series-inp-label">🏆 王牌宝可梦</span><input type="text" id="series-ace-inp" class="series-inp" placeholder="例：妙蛙花" autocomplete="off"></div>
-      </div>
-      <div class="series-inp-group" style="margin-bottom:0"><span class="series-inp-label">📝 游玩笔记</span><textarea id="series-notes-inp" class="series-textarea" placeholder="记录感受…"></textarea></div>
-      <div id="series-chat-wrap" style="margin-top:10px;border:1px solid var(--b);border-radius:10px;overflow:hidden;display:none">
-        <div style="padding:8px 12px;background:var(--bg3);border-bottom:1px solid var(--b);display:flex;align-items:center;gap:8px"><div class="ai-pulse"></div><span style="font-size:.75rem;font-family:'DM Mono',monospace;color:var(--t2)">AI 游玩顾问 · <em id="series-chat-game-name" style="color:var(--acc);font-style:normal"></em></span></div>
-        <div id="series-chat-msgs" style="height:200px;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px;background:var(--bg)"></div>
-        <div style="padding:4px 10px 8px;display:flex;gap:6px;flex-wrap:wrap;background:var(--bg)" id="series-quick-qs"></div>
-        <div style="display:flex;gap:6px;padding:6px 10px 10px;background:var(--bg);border-top:1px solid var(--b)">
-          <input id="series-chat-inp" style="flex:1;background:var(--bg3);border:1px solid var(--b);border-radius:8px;padding:6px 10px;color:var(--t);font-family:inherit;font-size:.82rem;outline:none" placeholder="和 AI 聊聊这部作品…" onkeydown="if(event.key==='Enter'){sendSeriesAIMsg();}">
-          <button onclick="sendSeriesAIMsg()" style="padding:6px 12px;border-radius:8px;background:rgba(96,165,250,.12);border:1px solid rgba(96,165,250,.3);color:var(--acc);font-size:.78rem;cursor:pointer;font-family:'DM Mono',monospace" id="series-ai-snd">发送</button>
+    <!-- Tab 导航 -->
+    <div class="series-tab-bar">
+      <button class="stab on" onclick="switchSeriesTab(this,'overview')">概览</button>
+      <button class="stab" onclick="switchSeriesTab(this,'party')">队伍</button>
+      <button class="stab" onclick="switchSeriesTab(this,'progress')">进度</button>
+      <button class="stab" onclick="switchSeriesTab(this,'explore')">探索</button>
+      <button class="stab" onclick="switchSeriesTab(this,'hunting')">狩猎</button>
+      <button class="stab" onclick="switchSeriesTab(this,'catches')">图鉴录入</button>
+    </div>
+
+    <!-- 概览 -->
+    <div class="stab-panel on" id="stab-overview">
+      <div class="series-body">
+        <div class="series-grid2">
+          <div class="series-inp-group"><span class="series-inp-label">📅 开始日期</span><input type="date" id="series-start-inp" class="series-inp"></div>
+          <div class="series-inp-group"><span class="series-inp-label">🏁 通关日期</span><input type="date" id="series-end-inp" class="series-inp"></div>
+          <div class="series-inp-group"><span class="series-inp-label">⏱ 游玩时长（小时）</span><input type="number" id="series-hours-inp" class="series-inp" placeholder="例：40" min="0" max="9999"></div>
+          <div class="series-inp-group"><span class="series-inp-label">🏆 王牌宝可梦</span><input type="text" id="series-ace-inp" class="series-inp" placeholder="例：妙蛙花" autocomplete="off"></div>
         </div>
-        <div style="padding:4px 10px 8px;display:flex;justify-content:flex-end;background:var(--bg)"><button onclick="genSeriesLogFromChat()" class="chat-sum-btn" id="series-log-btn">📋 生成游玩日志</button></div>
+        <div class="series-inp-label" style="margin-bottom:5px">⚡ 游玩快记</div>
+        <div style="display:flex;gap:6px;margin-bottom:6px">
+          <input id="quicknote-inp" class="series-inp" placeholder="随手记录当前进展…" style="flex:1" onkeydown="if(event.key==='Enter')addQuickNote()">
+          <button class="btn btn-sm" onclick="addQuickNote()">记录</button>
+        </div>
+        <div id="quicknote-list" class="quicknote-list"></div>
+        <div id="series-chat-wrap" style="margin-top:10px;border:1px solid var(--b);border-radius:10px;overflow:hidden;display:none">
+          <div style="padding:8px 12px;background:var(--bg3);border-bottom:1px solid var(--b);display:flex;align-items:center;gap:8px"><div class="ai-pulse"></div><span style="font-size:.75rem;font-family:'DM Mono',monospace;color:var(--t2)">AI 游玩顾问 · <em id="series-chat-game-name" style="color:var(--acc);font-style:normal"></em></span></div>
+          <div id="series-chat-msgs" style="height:200px;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px;background:var(--bg)"></div>
+          <div style="padding:4px 10px 8px;display:flex;gap:6px;flex-wrap:wrap;background:var(--bg)" id="series-quick-qs"></div>
+          <div style="display:flex;gap:6px;padding:6px 10px 10px;background:var(--bg);border-top:1px solid var(--b)">
+            <input id="series-chat-inp" style="flex:1;background:var(--bg3);border:1px solid var(--b);border-radius:8px;padding:6px 10px;color:var(--t);font-family:inherit;font-size:.82rem;outline:none" placeholder="和 AI 聊聊这部作品…" onkeydown="if(event.key==='Enter'){sendSeriesAIMsg();}">
+            <button onclick="sendSeriesAIMsg()" style="padding:6px 12px;border-radius:8px;background:rgba(96,165,250,.12);border:1px solid rgba(96,165,250,.3);color:var(--acc);font-size:.78rem;cursor:pointer;font-family:'DM Mono',monospace" id="series-ai-snd">发送</button>
+          </div>
+          <div style="padding:4px 10px 8px;display:flex;justify-content:flex-end;background:var(--bg)"><button onclick="genSeriesLogFromChat()" class="chat-sum-btn" id="series-log-btn">📋 生成游玩日志</button></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="series-ai-btn" id="series-ai-btn" onclick="toggleSeriesChat()">⬡ 和 AI 聊聊这部作品</button>
+          <button class="btn btn-a" id="series-save-btn" onclick="saveSeriesDetail()" style="white-space:nowrap">保存记录</button>
+        </div>
       </div>
-      <div style="display:flex;gap:8px;margin-top:10px">
-        <button class="series-ai-btn" id="series-ai-btn" onclick="toggleSeriesChat()">⬡ 和 AI 聊聊这部作品</button>
-        <button class="btn btn-a" id="series-save-btn" onclick="saveSeriesDetail()" style="white-space:nowrap">保存记录</button>
+    </div>
+
+    <!-- 队伍 -->
+    <div class="stab-panel" id="stab-party">
+      <div class="series-body">
+        <div class="party-slots" id="party-slots"></div>
+        <div style="margin-top:12px;position:relative">
+          <input id="party-search-inp" class="series-inp" placeholder="搜索宝可梦加入队伍…" oninput="searchPartyPkm(this.value)" autocomplete="off">
+          <div id="party-search-results" class="pkm-inline-results"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 进度 -->
+    <div class="stab-panel" id="stab-progress">
+      <div class="series-body">
+        <div id="progress-list"></div>
+      </div>
+    </div>
+
+    <!-- 探索 -->
+    <div class="stab-panel" id="stab-explore">
+      <div class="series-body">
+        <div style="display:flex;gap:6px;margin-bottom:10px">
+          <input id="explore-loc-inp" class="series-inp" placeholder="输入当前地图位置（如：常磐道路）" style="flex:1" onkeydown="if(event.key==='Enter')exploreLocation()">
+          <button class="btn btn-a btn-sm" onclick="exploreLocation()">查看</button>
+        </div>
+        <div id="explore-result" style="display:none" class="explore-result-box"></div>
+      </div>
+    </div>
+
+    <!-- 狩猎 -->
+    <div class="stab-panel" id="stab-hunting">
+      <div class="series-body">
+        <div class="hunt-add-form">
+          <div style="font-size:.7rem;color:var(--t3);margin-bottom:8px;font-family:'DM Mono',monospace;letter-spacing:.05em">TARGET — 添加目标精灵</div>
+          <div style="position:relative;margin-bottom:6px">
+            <input id="hunt-search-inp" class="series-inp" placeholder="搜索目标精灵…" oninput="searchHuntPkm(this.value)" autocomplete="off">
+            <div id="hunt-search-results" class="pkm-inline-results"></div>
+          </div>
+          <div id="hunt-pkm-preview" style="display:none" class="hunt-pkm-preview"></div>
+          <div style="display:flex;gap:6px;margin-bottom:8px">
+            <select id="hunt-nature" class="series-inp" style="flex:1"></select>
+            <input id="hunt-iv" class="series-inp" placeholder="目标V数 如6V/5V" style="flex:1">
+          </div>
+          <div style="display:flex;justify-content:flex-end">
+            <button class="btn btn-a btn-sm" onclick="addHuntTarget()">+ 添加目标</button>
+          </div>
+        </div>
+        <div id="hunt-list" style="margin-top:12px"></div>
+      </div>
+    </div>
+
+    <!-- 图鉴录入 -->
+    <div class="stab-panel" id="stab-catches">
+      <div class="series-body">
+        <div style="position:relative;margin-bottom:8px">
+          <input id="catch-search-inp" class="series-inp" placeholder="搜索抓到的宝可梦…" oninput="searchCatchPkm(this.value)" autocomplete="off">
+          <div id="catch-search-results" class="pkm-inline-results"></div>
+        </div>
+        <div id="catch-form-body" style="display:none">
+          <div id="catch-pkm-preview" class="catch-pkm-header"></div>
+          <div class="series-grid2" style="margin-top:8px">
+            <div class="series-inp-group"><span class="series-inp-label">昵称</span><input id="catch-nickname" class="series-inp" placeholder="可选"></div>
+            <div class="series-inp-group"><span class="series-inp-label">性格</span><select id="catch-nature" class="series-inp" onchange="updateCatchNatureHint()"></select></div>
+          </div>
+          <div id="catch-nature-hint" class="nature-hint"></div>
+          <div id="catch-basestats" class="catch-stats-block"></div>
+          <div id="catch-ev-yields" class="catch-ev-yields"></div>
+          <div style="display:flex;gap:6px;margin-bottom:8px">
+            <button class="series-ai-btn" onclick="getCatchAIRec()" id="catch-ai-btn">✦ AI推荐性格 + 努力值</button>
+            <button class="btn btn-a btn-sm" onclick="saveCatch()" style="white-space:nowrap">保存记录</button>
+          </div>
+          <div id="catch-ai-result" style="display:none" class="catch-ai-box"></div>
+        </div>
+        <div id="catch-list" style="margin-top:10px"></div>
       </div>
     </div>
   </div>

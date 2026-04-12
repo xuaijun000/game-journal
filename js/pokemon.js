@@ -586,3 +586,496 @@ async function genSeriesLogFromChat(){
 }
 async function initPkm(){Object.keys(genCache).forEach(k=>delete genCache[k]);await loadSeriesData();await loadTodayPkm();await loadPkmCollection();updateTodayBtns();loadGen(1,document.querySelector('.pkm-gen-tab'));await loadPkmLogs();}
 
+
+/* ================================================================
+   新功能：系列弹窗 Tabs / 快记 / 队伍 / 进度 / 探索 / 狩猎 / 图鉴录入
+   ================================================================ */
+
+/* ── 常量：性格表 ── */
+const NATURES=[
+  {id:'hardy',zh:'坚毅',up:null,down:null},
+  {id:'lonely',zh:'孤僻',up:'attack',down:'defense'},
+  {id:'brave',zh:'勇敢',up:'attack',down:'speed'},
+  {id:'adamant',zh:'固执',up:'attack',down:'special-attack'},
+  {id:'naughty',zh:'淘气',up:'attack',down:'special-defense'},
+  {id:'bold',zh:'温顺',up:'defense',down:'attack'},
+  {id:'docile',zh:'悠闲',up:null,down:null},
+  {id:'relaxed',zh:'乐天',up:'defense',down:'speed'},
+  {id:'impish',zh:'皮皮',up:'defense',down:'special-attack'},
+  {id:'lax',zh:'大大咧咧',up:'defense',down:'special-defense'},
+  {id:'timid',zh:'胆小',up:'speed',down:'attack'},
+  {id:'hasty',zh:'急躁',up:'speed',down:'defense'},
+  {id:'serious',zh:'认真',up:null,down:null},
+  {id:'jolly',zh:'爽朗',up:'speed',down:'special-attack'},
+  {id:'naive',zh:'天真',up:'speed',down:'special-defense'},
+  {id:'modest',zh:'内敛',up:'special-attack',down:'attack'},
+  {id:'mild',zh:'温和',up:'special-attack',down:'defense'},
+  {id:'quiet',zh:'冷静',up:'special-attack',down:'speed'},
+  {id:'rash',zh:'马虎',up:'special-attack',down:'special-defense'},
+  {id:'calm',zh:'沉稳',up:'special-defense',down:'attack'},
+  {id:'gentle',zh:'温柔',up:'special-defense',down:'defense'},
+  {id:'sassy',zh:'自大',up:'special-defense',down:'speed'},
+  {id:'careful',zh:'慎重',up:'special-defense',down:'special-attack'},
+  {id:'quirky',zh:'浮躁',up:null,down:null},
+  {id:'bashful',zh:'害羞',up:null,down:null},
+];
+function getNatureZh(id){return NATURES.find(n=>n.id===id)?.zh||id;}
+
+/* ── 常量：各作品进度节点 ── */
+const SERIES_CHECKPOINTS={
+  'red-blue':['🏅 小刚道馆','🏅 小霞道馆','🏅 苏珊娜道馆','🏅 阿洛道馆','🏅 娜汪道馆','🏅 陈伟道馆','🏅 卡丽娜道馆','🏅 松原道馆','🔴 击败火箭队','⚔️ 四天王','🏆 冠军小茂'],
+  'yellow':['🏅 小刚道馆','🏅 小霞道馆','🏅 苏珊娜道馆','🏅 阿洛道馆','🏅 娜汪道馆','🏅 陈伟道馆','🏅 卡丽娜道馆','🏅 松原道馆','🔴 击败火箭队','⚔️ 四天王','🏆 冠军小茂'],
+  'gold-silver':['🏅 芙蓉道馆','🏅 藤树道馆','🏅 月桂道馆','🏅 毛利道馆','🏅 麻子道馆','🏅 雷光道馆','🏅 雪诺道馆','🏅 白金道馆','⚔️ 四天王','🏆 冠军','🗺 关都道馆×8','🏆 再战小茂'],
+  'crystal':['🏅 芙蓉道馆','🏅 藤树道馆','🏅 月桂道馆','🏅 毛利道馆','🏅 麻子道馆','🏅 雷光道馆','🏅 雪诺道馆','🏅 白金道馆','⚔️ 四天王','🏆 冠军','🗺 关都道馆×8','🏆 再战小茂'],
+  'ruby-sapphire':['🏅 楼舟道馆','🏅 月见道馆','🏅 常磐道馆','🏅 水镜道馆','🏅 仙台道馆','🏅 金木道馆','🏅 绿岭道馆','🏅 雄山道馆','🔴 击败水队/炎队','⚔️ 四天王','🏆 冠军'],
+  'firered-leafgreen':['🏅 小刚道馆','🏅 小霞道馆','🏅 苏珊娜道馆','🏅 阿洛道馆','🏅 娜汪道馆','🏅 陈伟道馆','🏅 卡丽娜道馆','🏅 松原道馆','🔴 击败火箭队','⚔️ 四天王','🏆 冠军小茂'],
+  'emerald':['🏅 楼舟道馆','🏅 月见道馆','🏅 常磐道馆','🏅 水镜道馆','🏅 仙台道馆','🏅 金木道馆','🏅 绿岭道馆','🏅 雄山道馆','🔴 击败水队&炎队','⚔️ 四天王','🏆 冠军'],
+  'diamond-pearl':['🏅 随意城道馆','🏅 勾玉道馆','🏅 镜水道馆','🏅 芙蓉道馆','🏅 幸福道馆','🏅 白金道馆','🏅 冰雪道馆','🏅 电光道馆','🔴 击败银河队','⚔️ 四天王','🏆 冠军赤'],
+  'platinum':['🏅 随意城道馆','🏅 勾玉道馆','🏅 镜水道馆','🏅 芙蓉道馆','🏅 幸福道馆','🏅 白金道馆','🏅 冰雪道馆','🏅 电光道馆','🔴 击败银河队','⚔️ 四天王','🏆 冠军赤'],
+  'heartgold-soulsilver':['🏅 芙蓉道馆','🏅 藤树道馆','🏅 月桂道馆','🏅 毛利道馆','🏅 麻子道馆','🏅 雷光道馆','🏅 雪诺道馆','🏅 白金道馆','⚔️ 四天王','🏆 冠军','🗺 关都道馆×8','🏆 再战小茂'],
+  'black-white':['🏅 杖城道馆','🏅 瓶城道馆','🏅 格城道馆','🏅 粗城道馆','🏅 白城道馆','🏅 黑城道馆','🏅 冰城道馆','🏅 辉城道馆','🔴 击败等离子队','⚔️ 四天王','🔮 决战N','🏆 冠军阿戟'],
+  'black2-white2':['🏅 杖城道馆','🏅 瓶城道馆','🏅 格城道馆','🏅 黑市道馆','🏅 白城道馆','🏅 黑城道馆','🏅 冰城道馆','🏅 辉城道馆','⚔️ 四天王','🏆 冠军','🌀 黑白塔'],
+  'x-y':['🏅 紫堇市道馆','🏅 月桂市道馆','🏅 霓虹市道馆','🏅 石英道馆','🏅 卡洛斯道馆','🏅 花村道馆','🏅 岩城道馆','🏅 冻原道馆','🔴 击败闪焰队','⚔️ 四天王','🏆 冠军'],
+  'oras':['🏅 楼舟道馆','🏅 月见道馆','🏅 常磐道馆','🏅 水镜道馆','🏅 仙台道馆','🏅 金木道馆','🏅 绿岭道馆','🏅 雄山道馆','🔴 击败水队/炎队','⚔️ 四天王','🏆 冠军','🌌 传说之戒'],
+  'sun-moon':['🌺 伊利马大试练','🔥 卡赫利大试练','🔮 鲁扎米尼大试练','🌊 苏菲大试练','👊 马罗大试练','💎 奥利维亚岛王','👻 纳纳米大试练','🌿 阿卡拉岛王','⚡ 麦勒史蒂芬大试练','🏝 帕尼帕尼岛王','🔴 击败亚力山大','🏆 成为冠军'],
+  'usum':['🌺 伊利马大试练','🔥 卡赫利大试练','🔮 鲁扎米尼大试练','🌊 苏菲大试练','👊 马罗大试练','💎 奥利维亚岛王','👻 纳纳米大试练','🌿 阿卡拉岛王','⚡ 帕尼帕尼大试练','🔴 击败亚力山大','🏆 成为冠军','🚀 彩虹火箭队'],
+  'sword-shield':['🏅 图特菲尔德道馆','🏅 霍尔斯比道馆','🏅 图尔菲尔德道馆','🏅 斯托海德道馆','🏅 塞奇尔道馆','🏅 西彩德道馆','🏅 斯帕罗特道馆','🏅 黑斯尔道馆','⚔️ 半决赛','🏆 冠军战','🔴 击败罗斯'],
+  'bdsp':['🏅 随意城道馆','🏅 勾玉道馆','🏅 镜水道馆','🏅 芙蓉道馆','🏅 幸福道馆','🏅 白金道馆','🏅 冰雪道馆','🏅 电光道馆','🔴 击败银河队','⚔️ 四天王','🏆 冠军赤'],
+  'legends-arceus':['🌿 翠玉部落','❄️ 月桂部落','🌾 黄金部落','🪨 水岸部落','🌋 钻石部落','🔴 vs 氏族决战','🌀 捕获超古代','✨ 捕获阿尔宙斯'],
+  'scarlet-violet':['🗺 南路线探索','🗺 西路线探索','🗺 东路线探索','🗺 北路线探索','🏅 道馆全通','⭐ 传说强者之路','🔴 星队扫荡','🏆 终章通关','💜 零之秘宝'],
+  'legends-za':['📖 序章','🏙 卢米奥斯改造','⚔️ 首次大型战斗','🌀 中盘转折','🏆 终章通关'],
+};
+
+function lsGet(k){try{return JSON.parse(localStorage.getItem(k));}catch{return null;}}
+function lsSet(k,v){localStorage.setItem(k,JSON.stringify(v));}
+
+/* ── 当前系列 ID ── */
+let _curSid='';
+
+/* ── Tab 切换 ── */
+function switchSeriesTab(el,tab){
+  document.querySelectorAll('.stab').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.stab-panel').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  const panel=document.getElementById('stab-'+tab);if(panel)panel.classList.add('on');
+  if(tab==='party')renderPartySlots(_curSid);
+  if(tab==='progress')renderProgress(_curSid);
+  if(tab==='hunting'){initNatureSelect('hunt-nature');renderHuntList(_curSid);}
+  if(tab==='catches'){initNatureSelect('catch-nature');renderCatchList(_curSid);}
+  if(tab==='explore'){document.getElementById('explore-result').style.display='none';}
+}
+
+/* ── openSeriesDetail 包装：设置 _curSid，重置 Tab ── */
+const _origOpenSeriesDetail=openSeriesDetail;
+function openSeriesDetail(el){
+  _curSid=el.dataset.sid;
+  document.querySelectorAll('.stab').forEach((b,i)=>b.classList.toggle('on',i===0));
+  document.querySelectorAll('.stab-panel').forEach((p,i)=>p.classList.toggle('on',i===0));
+  const qinp=document.getElementById('quicknote-inp');if(qinp)qinp.value='';
+  _origOpenSeriesDetail(el);
+  renderQuickNotes(_curSid);
+}
+
+/* ============================
+   ⚡ 快记
+   ============================ */
+function addQuickNote(){
+  const inp=document.getElementById('quicknote-inp');
+  const text=inp?.value?.trim();if(!text)return;
+  const notes=lsGet('pkm_notes_'+_curSid)||[];
+  notes.unshift({text,ts:Date.now()});
+  lsSet('pkm_notes_'+_curSid,notes);
+  inp.value='';
+  renderQuickNotes(_curSid);
+}
+function renderQuickNotes(sid){
+  const list=document.getElementById('quicknote-list');if(!list)return;
+  const notes=lsGet('pkm_notes_'+sid)||[];
+  if(!notes.length){list.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:4px 0">还没有快记，边玩边记吧～</div>';return;}
+  list.innerHTML=notes.map((n,i)=>{
+    const d=new Date(n.ts);
+    const ts=`${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+    return`<div class="quicknote-item"><span class="quicknote-ts">${ts}</span><span class="quicknote-text">${esc(n.text)}</span><button class="quicknote-del" onclick="delQuickNote('${sid}',${i})">✕</button></div>`;
+  }).join('');
+}
+function delQuickNote(sid,idx){
+  const notes=lsGet('pkm_notes_'+sid)||[];notes.splice(idx,1);lsSet('pkm_notes_'+sid,notes);renderQuickNotes(sid);
+}
+
+/* ============================
+   👥 队伍追踪
+   ============================ */
+function renderPartySlots(sid){
+  const wrap=document.getElementById('party-slots');if(!wrap)return;
+  const party=lsGet('pkm_party_'+sid)||Array(6).fill(null);
+  wrap.innerHTML=party.map((p,i)=>{
+    if(p){
+      return`<div class="party-slot filled">
+        <button class="party-slot-del" onclick="removeFromParty('${sid}',${i});event.stopPropagation()">✕</button>
+        <img src="${p.img||''}" alt="" onerror="this.style.display='none'">
+        <div class="party-slot-name">${esc(p.name)}</div>
+        ${p.nick?`<div class="party-slot-nick">${esc(p.nick)}</div>`:''}
+        <div class="party-slot-lv">${p.lv?'Lv.'+p.lv:''}</div>
+      </div>`;
+    }
+    return`<div class="party-slot" onclick="focusPartySearch()">
+      <div class="party-slot-empty-icon">+</div>
+      <div class="party-slot-empty-lbl">空位</div>
+    </div>`;
+  }).join('');
+}
+function focusPartySearch(){document.getElementById('party-search-inp')?.focus();}
+function removeFromParty(sid,idx){
+  const party=lsGet('pkm_party_'+sid)||Array(6).fill(null);
+  party[idx]=null;lsSet('pkm_party_'+sid,party);renderPartySlots(sid);
+}
+let _partySearchT=null;
+function searchPartyPkm(v){
+  clearTimeout(_partySearchT);
+  const res=document.getElementById('party-search-results');
+  if(!v.trim()){res.classList.remove('open');return;}
+  _partySearchT=setTimeout(()=>doInlineSearch(v,res,'party'),400);
+}
+function addToParty(sid,pkm){
+  const party=lsGet('pkm_party_'+sid)||Array(6).fill(null);
+  const emptyIdx=party.findIndex(p=>p===null);
+  if(emptyIdx<0){showToast('队伍已满（最多6只）');return;}
+  const nick=prompt(`给 ${pkm.name} 起个昵称？（回车跳过）`,'')||'';
+  const lv=prompt('当前等级？（回车跳过）','')||'';
+  party[emptyIdx]={pkmId:pkm.id,name:pkm.name,img:pkm.img,nick,lv};
+  lsSet('pkm_party_'+sid,party);
+  document.getElementById('party-search-inp').value='';
+  document.getElementById('party-search-results').classList.remove('open');
+  renderPartySlots(sid);
+}
+
+/* ============================
+   🏁 进度打卡
+   ============================ */
+function renderProgress(sid){
+  const list=document.getElementById('progress-list');if(!list)return;
+  const checkpoints=SERIES_CHECKPOINTS[sid];
+  if(!checkpoints){list.innerHTML='<div style="color:var(--t3);font-size:.82rem;padding:8px 0">该作品暂无预设进度节点</div>';return;}
+  const done=lsGet('pkm_progress_'+sid)||{};
+  const total=checkpoints.length;const doneCount=Object.keys(done).length;
+  const pct=Math.round(doneCount/total*100);
+  list.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+    <span style="font-size:.72rem;color:var(--t3);font-family:'DM Mono',monospace">${doneCount}/${total} 节点完成</span>
+    <span style="font-size:.72rem;color:var(--acc);font-family:'DM Mono',monospace">${pct}%</span>
+  </div>
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%"></div></div>`
+  +checkpoints.map((cp,i)=>{
+    const isDone=!!done[i];const ts=done[i]?.ts;
+    const tsStr=ts?new Date(ts).toLocaleDateString('zh-CN',{month:'numeric',day:'numeric'}):'';
+    return`<div class="progress-item${isDone?' done':''}" onclick="toggleCheckpoint('${sid}',${i})">
+      <div class="progress-check">${isDone?'✓':''}</div>
+      <span class="progress-label">${cp}</span>
+      ${tsStr?`<span class="progress-ts">${tsStr}</span>`:''}
+    </div>`;
+  }).join('');
+}
+function toggleCheckpoint(sid,idx){
+  const done=lsGet('pkm_progress_'+sid)||{};
+  if(done[idx])delete done[idx];else done[idx]={ts:Date.now()};
+  lsSet('pkm_progress_'+sid,done);renderProgress(sid);
+}
+
+/* ============================
+   🗺 探索：位置 + AI精灵分布
+   ============================ */
+async function exploreLocation(){
+  const loc=document.getElementById('explore-loc-inp').value.trim();if(!loc)return;
+  const sid=_curSid;const s=PKM_SERIES.find(x=>x.id===sid);
+  const box=document.getElementById('explore-result');
+  box.style.display='block';
+  box.innerHTML=`<div class="explore-result-header"><span class="explore-loc-name">🗺 ${esc(loc)}</span><span style="font-size:.72rem;color:var(--t3);margin-left:8px">AI查询中…</span></div>`;
+  const prompt=`你是宝可梦世界的全知导游。
+玩家正在游玩「${s?.name||sid}」（${s?.year||''}年），当前位置：「${loc}」。
+请按以下格式回复（纯文字，不用Markdown符号）：
+
+【风景描述】50字以内，描绘该地点在游戏中的氛围和画面感。
+
+【可遇精灵】列出在该作品「${loc}」中可以遇到的宝可梦，格式：精灵名 (遭遇率：高/中/低，出现条件如时间/天气)，每行一只，最多10只。
+
+【探索提示】30字以内，该地点的特殊隐藏要素或注意事项。`;
+  try{
+    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:600,temperature:0.85}})});
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const data=await res.json();const reply=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'（AI暂时无法响应）';
+    box.innerHTML=`<div class="explore-result-header">
+      <span style="font-size:1.1rem">🗺</span>
+      <span class="explore-loc-name">${esc(loc)}</span>
+      <span style="font-size:.68rem;color:var(--t3);font-family:'DM Mono',monospace;margin-left:auto">${s?.name||''}</span>
+    </div>
+    <div class="explore-body">${esc(reply)}</div>`;
+  }catch(e){box.innerHTML=`<div class="explore-body" style="color:var(--danger)">查询失败：${e.message}</div>`;}
+}
+
+/* ============================
+   🎯 狩猎：目标精灵 + 遭遇计数
+   ============================ */
+let _huntSelectedPkm=null,_huntSearchT=null;
+function searchHuntPkm(v){
+  clearTimeout(_huntSearchT);
+  const res=document.getElementById('hunt-search-results');
+  if(!v.trim()){res.classList.remove('open');return;}
+  _huntSearchT=setTimeout(()=>doInlineSearch(v,res,'hunt'),400);
+}
+function selectHuntPkm(pkm){
+  _huntSelectedPkm=pkm;
+  document.getElementById('hunt-search-inp').value=pkm.name;
+  document.getElementById('hunt-search-results').classList.remove('open');
+  const prev=document.getElementById('hunt-pkm-preview');
+  prev.style.display='flex';
+  prev.innerHTML=`<img src="${pkm.img}" alt="" onerror="this.style.display='none'"><div><div class="hunt-pkm-preview-name">${esc(pkm.name)}</div><div style="font-size:.68rem;color:var(--t3);font-family:'DM Mono',monospace">#${String(pkm.id).padStart(3,'0')}</div></div>`;
+}
+function addHuntTarget(){
+  if(!_huntSelectedPkm){showToast('请先搜索并选择目标精灵');return;}
+  const nature=document.getElementById('hunt-nature').value;
+  const iv=document.getElementById('hunt-iv').value.trim()||'—';
+  const sid=_curSid;
+  const list=lsGet('pkm_hunt_'+sid)||[];
+  list.push({pkmId:_huntSelectedPkm.id,name:_huntSelectedPkm.name,img:_huntSelectedPkm.img,nature,iv,count:0,done:false,ts:Date.now()});
+  lsSet('pkm_hunt_'+sid,list);
+  _huntSelectedPkm=null;
+  document.getElementById('hunt-search-inp').value='';
+  document.getElementById('hunt-iv').value='';
+  document.getElementById('hunt-pkm-preview').style.display='none';
+  renderHuntList(sid);
+  showToast('已添加狩猎目标');
+}
+function renderHuntList(sid){
+  const el=document.getElementById('hunt-list');if(!el)return;
+  const list=lsGet('pkm_hunt_'+sid)||[];
+  if(!list.length){el.innerHTML='<div style="font-size:.8rem;color:var(--t3);text-align:center;padding:16px 0">还没有目标精灵，开始狩猎吧！</div>';return;}
+  el.innerHTML=list.map((t,i)=>{
+    const natZh=getNatureZh(t.nature);
+    return`<div class="hunt-card${t.done?' done-card':' active'}">
+      <div class="hunt-card-header">
+        <img class="hunt-card-img" src="${t.img}" alt="" onerror="this.style.display='none'">
+        <div class="hunt-card-info">
+          <div class="hunt-card-name">${esc(t.name)}${t.done?' ✓':''}</div>
+          <div class="hunt-card-target">目标：${natZh}性格 · ${esc(t.iv)}</div>
+        </div>
+        <div class="hunt-card-actions">
+          ${!t.done?`<button class="hunt-caught-btn" onclick="huntCaught('${sid}',${i})">捕获！</button>`:'<span style="font-size:.72rem;color:var(--acc2);font-family:\'DM Mono\',monospace">已捕获</span>'}
+          <button class="hunt-del-btn" onclick="huntDel('${sid}',${i})">删除</button>
+        </div>
+      </div>
+      ${!t.done?`<div class="hunt-counter">
+        <div>
+          <div class="hunt-count-num">${t.count}</div>
+          <div class="hunt-count-lbl">次遭遇</div>
+        </div>
+        <button class="hunt-inc-btn" onclick="huntInc('${sid}',${i})" title="记录一次遭遇">+</button>
+        <span style="font-size:.68rem;color:var(--t3)">每次遇到目标点 +</span>
+      </div>`:`<div style="font-size:.72rem;color:var(--t3);font-family:'DM Mono',monospace">共遭遇 ${t.count} 次后捕获</div>`}
+    </div>`;
+  }).join('');
+}
+function huntInc(sid,idx){
+  const list=lsGet('pkm_hunt_'+sid)||[];
+  list[idx].count=(list[idx].count||0)+1;
+  lsSet('pkm_hunt_'+sid,list);
+  renderHuntList(sid);
+}
+function huntCaught(sid,idx){
+  const list=lsGet('pkm_hunt_'+sid)||[];
+  list[idx].done=true;
+  lsSet('pkm_hunt_'+sid,list);
+  renderHuntList(sid);
+  showToast(`恭喜捕获 ${list[idx].name}！共遭遇 ${list[idx].count} 次`);
+}
+function huntDel(sid,idx){
+  if(!confirm('删除这个狩猎目标？'))return;
+  const list=lsGet('pkm_hunt_'+sid)||[];list.splice(idx,1);lsSet('pkm_hunt_'+sid,list);renderHuntList(sid);
+}
+
+/* ============================
+   📖 图鉴录入：种族值 + 性格 + 努力值AI推荐
+   ============================ */
+let _catchSelectedPkm=null,_catchSearchT=null,_catchBaseStats=null,_catchEvYields=null;
+
+function initNatureSelect(id){
+  const sel=document.getElementById(id);if(!sel||sel.options.length>1)return;
+  sel.innerHTML=NATURES.map(n=>{
+    const hint=n.up?`+${STAT_ZH[n.up]||n.up}/-${STAT_ZH[n.down]||n.down}`:'中性';
+    return`<option value="${n.id}">${n.zh}（${hint}）</option>`;
+  }).join('');
+  sel.value='timid';
+}
+
+function searchCatchPkm(v){
+  clearTimeout(_catchSearchT);
+  const res=document.getElementById('catch-search-results');
+  if(!v.trim()){res.classList.remove('open');return;}
+  _catchSearchT=setTimeout(()=>doInlineSearch(v,res,'catch'),400);
+}
+
+async function selectCatchPkm(pkm){
+  _catchSelectedPkm=pkm;
+  document.getElementById('catch-search-inp').value=pkm.name;
+  document.getElementById('catch-search-results').classList.remove('open');
+  document.getElementById('catch-form-body').style.display='block';
+  document.getElementById('catch-ai-result').style.display='none';
+  document.getElementById('catch-pkm-preview').innerHTML=
+    `<img src="${pkm.img}" alt="" onerror="this.style.display='none'">
+     <div><div class="catch-pkm-header-name">${esc(pkm.name)}</div>
+     <div class="catch-pkm-header-num">#${String(pkm.id).padStart(3,'0')}</div></div>`;
+  document.getElementById('catch-basestats').innerHTML='<div style="font-size:.75rem;color:var(--t3)">加载种族值中…</div>';
+  document.getElementById('catch-ev-yields').innerHTML='';
+  try{
+    const p=await fetchPkm(pkm.id);
+    _catchBaseStats=p.stats;
+    _catchEvYields=p.stats.filter(s=>s.effort>0);
+    renderCatchBaseStats(p.stats,document.getElementById('catch-nature')?.value||null);
+    const evText=_catchEvYields.length
+      ?'击败该精灵可获得：'+_catchEvYields.map(s=>`${STAT_ZH[s.stat.name]||s.stat.name} +${s.effort}`).join('、')
+      :'（该精灵无努力值产出）';
+    document.getElementById('catch-ev-yields').textContent='EV产出 · '+evText;
+  }catch(e){document.getElementById('catch-basestats').innerHTML='<div style="color:var(--danger);font-size:.8rem">种族值加载失败</div>';}
+  updateCatchNatureHint();
+}
+
+function renderCatchBaseStats(stats,nature){
+  const n=NATURES.find(x=>x.id===nature);
+  document.getElementById('catch-basestats').innerHTML=
+    `<div class="catch-stats-title">种族值（含性格修正）</div>`+
+    stats.map(s=>{
+      const val=s.base_stat;
+      const isUp=n&&n.up===s.stat.name;const isDown=n&&n.down===s.stat.name;
+      const eff=isUp?Math.floor(val*1.1):isDown?Math.floor(val*0.9):val;
+      return statBar(s.stat.name,val)+(isUp||isDown?`<div style="font-size:.62rem;color:${isUp?'var(--acc2)':'var(--danger)'};font-family:'DM Mono',monospace;margin:-3px 0 3px 40px">${isUp?'▲':'▼'} 实际约${eff}</div>`:'');
+    }).join('');
+}
+
+function updateCatchNatureHint(){
+  if(!_catchBaseStats)return;
+  const nature=document.getElementById('catch-nature')?.value;
+  const n=NATURES.find(x=>x.id===nature);
+  const hint=document.getElementById('catch-nature-hint');
+  if(!hint)return;
+  if(n&&n.up){
+    hint.innerHTML=`<span style="color:var(--acc2)">▲ ${STAT_ZH[n.up]||n.up} +10%</span>&emsp;<span style="color:var(--danger)">▼ ${STAT_ZH[n.down]||n.down} -10%</span>`;
+  }else{
+    hint.innerHTML='<span style="color:var(--t3)">无增减（中性性格）</span>';
+  }
+  renderCatchBaseStats(_catchBaseStats,nature);
+}
+
+async function getCatchAIRec(){
+  if(!_catchSelectedPkm||!_catchBaseStats){showToast('请先选择宝可梦');return;}
+  const btn=document.getElementById('catch-ai-btn');btn.disabled=true;btn.textContent='AI分析中…';
+  const sid=_curSid;const s=PKM_SERIES.find(x=>x.id===sid);
+  const nature=document.getElementById('catch-nature').value;
+  const natZh=getNatureZh(nature);
+  const statsText=_catchBaseStats.map(st=>`${STAT_ZH[st.stat.name]||st.stat.name}:${st.base_stat}`).join(' / ');
+  const evText=_catchEvYields?.length?_catchEvYields.map(x=>`${STAT_ZH[x.stat.name]||x.stat.name}+${x.effort}`).join('、'):'无产出';
+  const prompt=`你是宝可梦培育专家。
+精灵：${_catchSelectedPkm.name}（当前选择性格：${natZh}）
+种族值：${statsText}
+自身EV产出：${evText}
+游戏版本：${s?.name||sid}（${s?.year||''}年）
+
+请给出以下内容（纯文字，每段标题加【】）：
+
+【PvE推荐性格】最适合通关的性格名 + 简要理由（30字内）
+【PvE努力值方案】具体分配如HP252 速度252 特防6，说明思路（40字内）
+【PvE刷值指南】在「${s?.name||'该版本'}」中，推荐去哪里刷哪些精灵来快速获得上述努力值（精灵名+产出能力+数量，列出2-4个）
+
+【PvP推荐性格】主流对战性格 + 简要理由（30字内）
+【PvP努力值方案】具体分配 + 思路（40字内）
+【PvP刷值指南】在「${s?.name||'该版本'}」中的推荐刷值地点和精灵`;
+  const box=document.getElementById('catch-ai-result');
+  box.style.display='block';box.textContent='AI 分析中，请稍候…';
+  try{
+    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:900,temperature:0.7}})});
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const data=await res.json();const reply=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'（AI暂时无法响应）';
+    box.textContent=reply;
+  }catch(e){box.textContent='获取失败：'+e.message;}
+  btn.disabled=false;btn.textContent='✦ AI推荐性格 + 努力值';
+}
+
+function saveCatch(){
+  if(!_catchSelectedPkm){showToast('请先选择宝可梦');return;}
+  const sid=_curSid;
+  const nature=document.getElementById('catch-nature')?.value||'serious';
+  const nick=document.getElementById('catch-nickname')?.value?.trim()||'';
+  const aiBox=document.getElementById('catch-ai-result');
+  const aiRec=(aiBox&&aiBox.style.display!=='none')?aiBox.textContent:'';
+  const list=lsGet('pkm_catches_'+sid)||[];
+  list.unshift({pkmId:_catchSelectedPkm.id,name:_catchSelectedPkm.name,img:_catchSelectedPkm.img,nick,nature,baseStats:_catchBaseStats,evYields:_catchEvYields,aiRec,ts:Date.now()});
+  lsSet('pkm_catches_'+sid,list);
+  _catchSelectedPkm=null;_catchBaseStats=null;_catchEvYields=null;
+  document.getElementById('catch-search-inp').value='';
+  document.getElementById('catch-form-body').style.display='none';
+  if(aiBox)aiBox.style.display='none';
+  renderCatchList(sid);
+  showToast('已保存到图鉴录入');
+}
+
+function renderCatchList(sid){
+  const el=document.getElementById('catch-list');if(!el)return;
+  const list=lsGet('pkm_catches_'+sid)||[];
+  if(!list.length){el.innerHTML='<div style="font-size:.8rem;color:var(--t3);text-align:center;padding:16px 0">还没有录入记录，抓到好精灵快来记录吧</div>';return;}
+  el.innerHTML=list.map((c,i)=>{
+    const natZh=getNatureZh(c.nature);
+    const d=new Date(c.ts);const ts=`${d.getMonth()+1}/${d.getDate()}`;
+    const evStr=c.evYields?.length?c.evYields.map(x=>`${STAT_ZH[x.stat.name]||x.stat.name}+${x.effort}`).join(' '):'—';
+    return`<div class="catch-card">
+      <img src="${c.img}" alt="" onerror="this.style.display='none'">
+      <div class="catch-card-body">
+        <div class="catch-card-name">${esc(c.name)}${c.nick?` <span style="color:var(--acc);font-size:.78rem">「${esc(c.nick)}」</span>`:''}</div>
+        <div class="catch-card-nature">${natZh}性格</div>
+        <div class="catch-card-meta">EV产出 ${evStr} · ${ts}</div>
+        ${c.aiRec?`<details style="margin-top:4px"><summary style="font-size:.7rem;color:var(--t3);cursor:pointer;font-family:'DM Mono',monospace">查看AI推荐方案</summary><div style="font-size:.75rem;color:var(--t2);white-space:pre-wrap;margin-top:4px;padding:6px;background:var(--bg);border-radius:3px;line-height:1.7">${esc(c.aiRec)}</div></details>`:''}
+      </div>
+      <button class="catch-card-del" onclick="delCatch('${sid}',${i})">✕</button>
+    </div>`;
+  }).join('');
+}
+function delCatch(sid,idx){
+  if(!confirm('删除这条录入？'))return;
+  const list=lsGet('pkm_catches_'+sid)||[];list.splice(idx,1);lsSet('pkm_catches_'+sid,list);renderCatchList(sid);
+}
+
+/* ============================
+   🔍 通用内联宝可梦搜索
+   ============================ */
+async function doInlineSearch(v,resEl,mode){
+  resEl.classList.add('open');
+  resEl.innerHTML='<div class="pkm-inline-item" style="color:var(--t3);font-size:.78rem">搜索中…</div>';
+  try{
+    const q=v.trim().toLowerCase();
+    let ids=[];
+    // 中文名匹配
+    const cnMatches=Object.entries(PKM_CN_TABLE).filter(([,name])=>name.includes(q)).slice(0,8);
+    ids=cnMatches.map(([id])=>parseInt(id));
+    // 英文名兜底
+    if(!ids.length){
+      const r=await fetch(`${POKEAPI}/pokemon?limit=2000`);const d=await r.json();
+      ids=d.results.filter(x=>x.name.includes(q)).slice(0,8).map(x=>parseInt(x.url.split('/').slice(-2)[0]));
+    }
+    if(!ids.length){resEl.innerHTML='<div class="pkm-inline-item" style="color:var(--t3)">未找到匹配精灵</div>';return;}
+    const items=await Promise.all(ids.map(async id=>{
+      const p=await fetchPkm(id);
+      const cn=PKM_CN_TABLE[id]||(await getPkmCNName(id,p.name))||p.name;
+      const img=p.sprites?.front_default||'';
+      return{id,name:cn,img};
+    }));
+    resEl.innerHTML=items.map(it=>{
+      const safeJson=JSON.stringify(JSON.stringify(it));
+      return`<div class="pkm-inline-item" onclick="selectInlinePkm(${safeJson},'${mode}')">
+        <img src="${it.img}" alt="" onerror="this.style.display='none'">
+        <div><div class="pkm-inline-item-name">${esc(it.name)}</div><div class="pkm-inline-item-num">#${String(it.id).padStart(3,'0')}</div></div>
+      </div>`;
+    }).join('');
+  }catch(e){resEl.innerHTML=`<div class="pkm-inline-item" style="color:var(--danger)">搜索失败</div>`;}
+}
+function selectInlinePkm(jsonStr,mode){
+  const pkm=JSON.parse(jsonStr);
+  if(mode==='party')addToParty(_curSid,pkm);
+  else if(mode==='hunt')selectHuntPkm(pkm);
+  else if(mode==='catch')selectCatchPkm(pkm);
+}
