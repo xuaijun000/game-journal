@@ -63,6 +63,13 @@
 /* 52poke 获取中状态 */
 .desc-seeking{font-size:.7rem;color:var(--t3);font-family:'DM Mono',monospace;font-style:italic;animation:seekingPulse 1.2s ease-in-out infinite}
 @keyframes seekingPulse{0%,100%{opacity:.5}50%{opacity:1}}
+/* 特性标签 */
+.pkm-abilities-row{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.pkm-ability-lbl{font-size:.65rem;color:var(--t3);font-family:'DM Mono',monospace;flex-shrink:0;margin-right:2px}
+.pkm-ability-tag{font-size:.68rem;font-family:'DM Mono',monospace;padding:2px 8px;border-radius:2px;border:1px solid rgba(96,165,250,.3);background:rgba(96,165,250,.07);color:rgba(160,210,255,.9);cursor:default;transition:background .15s}
+.pkm-ability-tag:hover{background:rgba(96,165,250,.14)}
+.pkm-ability-hidden{border-color:rgba(200,144,64,.3);background:rgba(200,144,64,.06);color:var(--acc)}
+.pkm-ability-hidden-mark{font-size:.5rem;opacity:.65;margin-left:3px;vertical-align:super}
 .pkm-chat-area{background:var(--bg2);border:1px solid var(--b2);border-radius:var(--rl);overflow:hidden}
 .pkm-chat-hdr{padding:10px 14px;background:var(--bg3);border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between}
 .pkm-chat-title{font-size:.78rem;font-family:'DM Mono',monospace;color:var(--t2)}

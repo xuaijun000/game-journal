@@ -24,6 +24,7 @@ let pkmCollection={},todayPkm=null,pkmChatHistory=[],currentChatPkm=null,pkmChat
 let pkmSearchT=null,genCache={};
 const pkmCNCache={};
 const pkmDescTransCache={}; // 图鉴翻译缓存 {pkmId: '已翻译文字'}
+const _52pokeInfoCache={}; // 52poke 精灵信息缓存 {cnName: {abilities,hiddenAbility,evYields}}
 
 function typeTag(t){const c=TYPE_COLOR[t]||'#888';return`<span class="pkm-type" style="background:${c}22;color:${c};border:1px solid ${c}44">${TYPE_ZH[t]||t}</span>`;}
 function statBar(name,val){const pct=Math.min(100,Math.round(val/255*100));const c=val>=100?'var(--acc2)':val>=60?'var(--acc)':'var(--warn)';return`<div class="pkm-stat-row"><span class="pkm-stat-lbl">${STAT_ZH[name]||name}</span><div class="pkm-stat-bar"><div class="pkm-stat-fill" style="width:${pct}%;background:${c}"></div></div><span class="pkm-stat-val">${val}</span></div>`;}
@@ -124,6 +125,102 @@ async function fetch52PokeDesc(cnName,pkmId){
     if(!candidates.length)return null;
     // 取最长的描述（通常最完整）
     return candidates.sort((a,b)=>b.length-a.length)[0];
+  }catch(e){return null;}
+}
+
+// ── 52poke 精灵信息抓取（特性 + 努力值）──
+async function fetch52PokePkmInfo(cnName){
+  if(!cnName)return null;
+  if(_52pokeInfoCache[cnName])return _52pokeInfoCache[cnName];
+  try{
+    const ctrl=new AbortController();const t=setTimeout(()=>ctrl.abort(),8000);
+    const url=`https://wiki.52poke.com/api.php?action=parse&page=${encodeURIComponent(cnName)}&prop=text&format=json&origin=*&variant=zh-hans`;
+    const r=await fetch(url,{signal:ctrl.signal});clearTimeout(t);
+    if(!r.ok)return null;
+    const d=await r.json();
+    if(d?.error||!d?.parse)return null;
+    const html=d?.parse?.text?.['*'];if(!html)return null;
+    const doc=new DOMParser().parseFromString(html,'text/html');
+    const result={abilities:[],hiddenAbility:'',evYields:{}};
+    doc.querySelectorAll('th').forEach(th=>{
+      const label=th.textContent.trim();
+      const row=th.closest('tr');if(!row)return;
+      const td=row.querySelector('td');if(!td)return;
+      if(label==='特性'){
+        const links=[...td.querySelectorAll('a')].map(a=>a.textContent.trim()).filter(Boolean);
+        if(links.length){result.abilities=links;}
+        else{result.abilities=td.textContent.trim().split(/[\/\n]/).map(s=>s.replace(/（.*?）/g,'').trim()).filter(Boolean);}
+        // 标记隐藏特性（梦境特性/隐藏特性通常是最后一个）
+        const innerHtml=td.innerHTML;
+        if(/梦境特性|隐藏特性/.test(innerHtml)&&result.abilities.length>0){
+          result.hiddenAbility=result.abilities[result.abilities.length-1];
+          result.abilities=result.abilities.slice(0,-1);
+        }
+      }
+      if(label==='努力值'){
+        const text=td.textContent.trim();
+        const statMap={'HP':'hp','攻击':'attack','防御':'defense','特攻':'special-attack','特防':'special-defense','速度':'speed'};
+        for(const[zh,key] of Object.entries(statMap)){
+          const m=text.match(new RegExp(zh+'\\s*[+＋](\\d+)'));
+          if(m)result.evYields[key]=parseInt(m[1]);
+        }
+      }
+    });
+    if(result.abilities.length||Object.keys(result.evYields).length){
+      _52pokeInfoCache[cnName]=result;return result;
+    }
+    return null;
+  }catch(e){return null;}
+}
+
+// ── 渲染特性标签 ──
+function renderPkmAbilities(info,elId){
+  const el=document.getElementById(elId);if(!el)return;
+  if(!info?.abilities?.length){el.innerHTML='';return;}
+  const tags=info.abilities.map(a=>`<span class="pkm-ability-tag">${esc(a)}</span>`).join('');
+  const hidden=info.hiddenAbility?`<span class="pkm-ability-tag pkm-ability-hidden">${esc(info.hiddenAbility)}<span class="pkm-ability-hidden-mark">隐</span></span>`:'';
+  el.innerHTML=`<div class="pkm-abilities-row"><span class="pkm-ability-lbl">特性</span>${tags}${hidden}</div>`;
+}
+
+// ── 52poke 地点精灵分布抓取 ──
+async function fetch52PokeLocDistribution(locName){
+  try{
+    const ctrl=new AbortController();const t=setTimeout(()=>ctrl.abort(),10000);
+    const url=`https://wiki.52poke.com/api.php?action=parse&page=${encodeURIComponent(locName)}&prop=text&format=json&origin=*&variant=zh-hans`;
+    const r=await fetch(url,{signal:ctrl.signal});clearTimeout(t);
+    if(!r.ok)return null;
+    const d=await r.json();
+    if(d?.error||!d?.parse)return null;
+    const html=d?.parse?.text?.['*'];if(!html)return null;
+    const doc=new DOMParser().parseFromString(html,'text/html');
+    const rev=getPkmCnRev();
+    const found=new Map();
+    // 从 wiki 链接中提取精灵名
+    doc.querySelectorAll('a[href]').forEach(a=>{
+      const href=a.getAttribute('href')||'';
+      const name=a.textContent.trim();
+      if(href.includes('/wiki/')&&rev[name]&&!found.has(name))found.set(name,rev[name]);
+    });
+    // 补充：表格单元格纯文本
+    if(found.size<3){
+      doc.querySelectorAll('td').forEach(td=>{
+        const text=td.textContent.trim();
+        if(rev[text]&&!found.has(text))found.set(text,rev[text]);
+      });
+    }
+    if(!found.size)return null;
+    const items=[];
+    for(const[name,id] of [...found].slice(0,15)){
+      try{
+        const p=await fetchPkm(id);
+        const img=p.sprites?.other?.['official-artwork']?.front_default||p.sprites?.front_default||'';
+        const evYields={};
+        for(const st of(p.stats||[])){if(st.effort>0)evYields[st.stat.name]=st.effort;}
+        if(!Object.keys(evYields).length)evYields['hp']=1;
+        items.push({id,name,img,evYields,official:true,rate:'中'});
+      }catch(e){}
+    }
+    return items.length?items:null;
   }catch(e){return null;}
 }
 
@@ -325,6 +422,12 @@ function renderTodayPkm(p,sp,cnName){
   document.getElementById('pkm-today-name').textContent=name;
   document.getElementById('pkm-today-types').innerHTML=p.types.map(t=>typeTag(t.type.name)).join('');
   document.getElementById('pkm-today-stats').innerHTML=p.stats.map(s=>statBar(s.stat.name,s.base_stat)).join('');
+  // 特性（52poke 异步获取）
+  const todayAbEl=document.getElementById('pkm-today-abilities');
+  if(todayAbEl){
+    todayAbEl.innerHTML='<span style="font-size:.62rem;color:var(--t3);font-family:\'DM Mono\',monospace">特性查询中…</span>';
+    fetch52PokePkmInfo(name).then(info=>renderPkmAbilities(info,'pkm-today-abilities')).catch(()=>{if(todayAbEl)todayAbEl.innerHTML='';});
+  }
   // 图鉴描述（中文优先，无中文则显示英文并标注）
   const descEl=document.getElementById('pkm-today-desc');
   if(descEl){
@@ -416,6 +519,12 @@ async function openPkmDetail(idOrName){
     document.getElementById('pkm-detail-types').innerHTML=p.types.map(t=>typeTag(t.type.name)).join('');
     document.getElementById('pkm-detail-meta').textContent=`身高 ${p.height/10}m · 体重 ${p.weight/10}kg`;
     document.getElementById('pkm-detail-stats').innerHTML=p.stats.map(s=>statBar(s.stat.name,s.base_stat)).join('');
+    // 特性（52poke 异步获取）
+    const detailAbEl=document.getElementById('pkm-detail-abilities');
+    if(detailAbEl){
+      detailAbEl.innerHTML='<span style="font-size:.62rem;color:var(--t3);font-family:\'DM Mono\',monospace">特性查询中…</span>';
+      fetch52PokePkmInfo(cnName).then(info=>renderPkmAbilities(info,'pkm-detail-abilities')).catch(()=>{if(detailAbEl)detailAbEl.innerHTML='';});
+    }
     await loadEvoChain(sp,'pkm-detail-evo');await loadPkmCollection();updateDetailBtns(p.id);
     currentChatPkm={id:p.id,name:cnName,types:p.types.map(t=>t.type.name),species:sp};
     // 重置AI氛围图按钮和背景
@@ -1351,17 +1460,17 @@ async function loadHuntDistribution(){
   const btn=document.getElementById('hunt-dist-btn');
   const grid=document.getElementById('hunt-dist-grid');
   if(btn){btn.disabled=true;btn.textContent='获取中…';}
-  if(grid)grid.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:8px 0;font-family:\'DM Mono\',monospace">正在从 PokéAPI 读取「'+loc+'」官方遭遇数据…</div>';
-  // 优先官方数据
-  const official=await fetchOfficialDistribution(sid,loc);
-  if(official){
-    _huntDistCache[cacheKey]=official;
-    renderHuntDist(official,true);
+  if(grid)grid.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:8px 0;font-family:\'DM Mono\',monospace">正在从 52poke 读取「'+loc+'」精灵分布…</div>';
+  // 优先 52poke
+  const wiki52=await fetch52PokeLocDistribution(loc);
+  if(wiki52){
+    _huntDistCache[cacheKey]=wiki52;
+    renderHuntDist(wiki52,true);
     if(btn)btn.style.display='none';
     return;
   }
   // 回退 AI
-  if(grid)grid.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:8px 0;font-family:\'DM Mono\',monospace">官方数据暂无覆盖，AI 分析中…</div>';
+  if(grid)grid.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:8px 0;font-family:\'DM Mono\',monospace">52poke 暂无数据，AI 分析中…</div>';
   const s=PKM_SERIES.find(x=>x.id===sid);
   const prompt=`宝可梦游戏「${s?.name||sid}」中「${loc}」可以遇到的精灵，请列出10只，每行一只，格式：
 精灵中文名 · 高/中/低
@@ -1404,7 +1513,7 @@ function renderHuntDist(items,isOfficial){
   _huntLocPkm=items;
   const grid=document.getElementById('hunt-dist-grid');if(!grid)return;
   const srcBadge=isOfficial
-    ?`<div class="dist-src-badge dist-src-official">PokéAPI 官方</div>`
+    ?`<div class="dist-src-badge dist-src-official">52poke 官方</div>`
     :`<div class="dist-src-badge dist-src-ai">AI 参考</div>`;
   grid.innerHTML=srcBadge+items.map((it,i)=>{
     let rateHtml;
@@ -2273,17 +2382,17 @@ async function loadTrainDistribution(){
   const btn=document.getElementById('train-dist-btn');
   const grid=document.getElementById('train-dist-grid');
   if(btn){btn.disabled=true;btn.textContent='获取中…';}
-  if(grid)grid.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:8px 0;font-family:\'DM Mono\',monospace">正在从 PokéAPI 读取「'+loc+'」官方遭遇数据…</div>';
-  // 优先官方数据
-  const official=await fetchOfficialDistribution(sid,loc);
-  if(official){
-    _trainDistCache[cacheKey]=official;
-    renderTrainDist(official,true);
+  if(grid)grid.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:8px 0;font-family:\'DM Mono\',monospace">正在从 52poke 读取「'+loc+'」精灵分布…</div>';
+  // 优先 52poke
+  const wiki52t=await fetch52PokeLocDistribution(loc);
+  if(wiki52t){
+    _trainDistCache[cacheKey]=wiki52t;
+    renderTrainDist(wiki52t,true);
     if(btn)btn.style.display='none';
     return;
   }
   // 回退 AI（名单 → PokéAPI 努力值）
-  if(grid)grid.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:8px 0;font-family:\'DM Mono\',monospace">官方数据暂无覆盖，AI 生成名单并读取努力值…</div>';
+  if(grid)grid.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:8px 0;font-family:\'DM Mono\',monospace">52poke 暂无数据，AI 生成名单并读取努力值…</div>';
   const s=PKM_SERIES.find(x=>x.id===sid);
   const prompt=`宝可梦游戏「${s?.name||sid}」中「${loc}」可以遇到的精灵，请列出10只，每行一只，只写精灵中文名，不要编号不要其他内容。`;
   try{
@@ -2446,7 +2555,7 @@ function renderTrainDist(items,isOfficial){
   _trainLocPkm=items;
   const grid=document.getElementById('train-dist-grid');if(!grid)return;
   const srcBadge=isOfficial
-    ?`<div class="dist-src-badge dist-src-official">PokéAPI 官方 · 遭遇率数据</div>`
+    ?`<div class="dist-src-badge dist-src-official">52poke 官方 · 精灵分布</div>`
     :`<div class="dist-src-badge dist-src-ai">AI 参考 · 努力值来自 PokéAPI</div>`;
   grid.innerHTML=srcBadge+items.map((it,i)=>{
     const evStr=Object.entries(it.evYields||{}).map(([k,v])=>{
