@@ -2004,21 +2004,54 @@ const SERIES_MAPS={
   'scarlet-violet':{region:'帕底亚地区',file:'Paldea_concept_artwork.png',link:'https://bulbapedia.bulbagarden.net/wiki/Paldea'},
   'legends-za':  {region:'卡洛斯地区',file:'Kalos_LZA_concept_artwork.png',link:'https://bulbapedia.bulbagarden.net/wiki/Kalos'},
 };
-// 从 52poke wiki 获取地区地图图片 URL
-async function fetch52PokeMapUrl(regionName){
+/* ================================================================
+   🗺 地图图片多源策略
+   优先级：52poke pageimages缩略图 → Bulbapedia imageinfo直链 → 显示外链按钮
+   ================================================================ */
+
+// 用 AbortController 替代 AbortSignal.timeout（兼容性更好）
+function fetchWithTimeout(url,ms=6000){
+  const ctrl=new AbortController();
+  const t=setTimeout(()=>ctrl.abort(),ms);
+  return fetch(url,{signal:ctrl.signal}).finally(()=>clearTimeout(t));
+}
+
+// 策略1：52poke prop=pageimages → 直接返回缩略图 CDN URL，无需重定向
+async function fetch52PokeThumb(regionName){
   try{
-    const base='https://wiki.52poke.com/api.php';
-    const r=await fetch(`${base}?action=query&titles=${encodeURIComponent(regionName)}&prop=images&format=json&origin=*&variant=zh-hans`,{signal:AbortSignal.timeout(6000)});
+    const url=`https://wiki.52poke.com/api.php?action=query&titles=${encodeURIComponent(regionName)}&prop=pageimages&pithumbsize=700&format=json&origin=*&variant=zh-hans`;
+    const r=await fetchWithTimeout(url,6000);
     if(!r.ok)return null;
     const d=await r.json();
     const page=Object.values(d?.query?.pages||{})[0];
-    const imgs=page?.images||[];
-    // 优先含"地图"的图片，过滤 logo/icon 等小图
-    const mapImg=imgs.find(i=>/地图|Map/i.test(i.title)&&!/icon|logo|badge/i.test(i.title));
-    if(!mapImg)return null;
-    const filename=mapImg.title.replace(/^(File|文件):/,'');
-    return`https://wiki.52poke.com/wiki/Special:FilePath/${encodeURIComponent(filename)}`;
+    // thumbnail.source 是已生成的缩略图直链，无需重定向
+    return page?.thumbnail?.source||null;
   }catch{return null;}
+}
+
+// 策略2：Bulbapedia imageinfo API → 拿到真实直链（跳过 Special:FilePath 重定向）
+async function fetchBulbaImageUrl(filename){
+  try{
+    const url=`https://bulbapedia.bulbagarden.net/w/api.php?action=query&titles=File:${encodeURIComponent(filename)}&prop=imageinfo&iiprop=url&format=json&origin=*`;
+    const r=await fetchWithTimeout(url,6000);
+    if(!r.ok)return null;
+    const d=await r.json();
+    const page=Object.values(d?.query?.pages||{})[0];
+    return page?.imageinfo?.[0]?.url||null;
+  }catch{return null;}
+}
+
+// 尝试多个 URL 直到有一个加载成功（img.onerror 链式回退）
+function tryLoadImg(imgEl,urls,onAllFail){
+  const queue=[...urls].filter(Boolean);
+  function tryNext(){
+    if(!queue.length){onAllFail();return;}
+    const src=queue.shift();
+    imgEl.onerror=null;
+    imgEl.src=src;
+    imgEl.onerror=()=>tryNext();
+  }
+  tryNext();
 }
 
 async function initSeriesMap(sid){
@@ -2036,19 +2069,27 @@ async function initSeriesMap(sid){
   if(link2El)link2El.href=m.link;
   if(fallback)fallback.style.display='none';
   if(imgEl){imgEl.src='';imgEl.style.display='';}
-  // 先尝试 52poke，再回退 Bulbapedia
-  const wiki52=await fetch52PokeMapUrl(m.region);
-  if(wiki52&&imgEl){
-    imgEl.src=wiki52;
-    imgEl.onerror=()=>{
-      imgEl.onerror=null;
-      imgEl.src=`https://bulbapedia.bulbagarden.net/wiki/Special:FilePath/${m.file}`;
-      imgEl.onerror=()=>{imgEl.style.display='none';if(fallback)fallback.style.display='flex';};
-    };
-  }else if(imgEl){
-    imgEl.src=`https://bulbapedia.bulbagarden.net/wiki/Special:FilePath/${m.file}`;
-    imgEl.onerror=()=>{imgEl.style.display='none';if(fallback)fallback.style.display='flex';};
+
+  // 并行获取两个源的直链
+  const [thumb52, bulbaUrl]=await Promise.all([
+    fetch52PokeThumb(m.region),
+    fetchBulbaImageUrl(m.file)
+  ]);
+
+  // 按优先级排列候选 URL
+  const candidates=[
+    thumb52,                          // 52poke 缩略图直链（最佳）
+    bulbaUrl,                         // Bulbapedia 直链
+    `https://bulbapedia.bulbagarden.net/wiki/Special:FilePath/${m.file}`, // 重定向备用
+  ].filter(Boolean);
+
+  if(!imgEl)return;
+  if(!candidates.length){
+    imgEl.style.display='none';if(fallback)fallback.style.display='flex';return;
   }
+  tryLoadImg(imgEl,candidates,()=>{
+    imgEl.style.display='none';if(fallback)fallback.style.display='flex';
+  });
 }
 
 /* ================================================================
