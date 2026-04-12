@@ -490,6 +490,10 @@
         <!-- 刷练地点 -->
         <div style="margin-top:12px">
           <div class="hunt-section-lbl">📍 选择刷练地点</div>
+          <div class="loc-custom-row">
+            <input id="train-custom-loc" class="series-inp" placeholder="输入地点名称（如：茂岩山、101号道路…）" onkeydown="if(event.key==='Enter')loadCustomLocDist('train')">
+            <button class="btn btn-sm btn-a" onclick="loadCustomLocDist('train')">获取分布</button>
+          </div>
           <div id="train-loc-chips" class="hunt-loc-row"></div>
           <div id="train-no-loc" style="display:none;font-size:.75rem;color:var(--t3);padding:4px 0 8px">该版本暂无预设地点。</div>
         </div>
@@ -549,6 +553,10 @@
         <!-- 地点选择 -->
         <div id="hunt-phase-loc">
           <div class="hunt-section-lbl">📍 选择捕猎地点</div>
+          <div class="loc-custom-row">
+            <input id="hunt-custom-loc" class="series-inp" placeholder="输入地点名称（如：茂岩山、101号道路…）" onkeydown="if(event.key==='Enter')loadCustomLocDist('hunt')">
+            <button class="btn btn-sm btn-a" onclick="loadCustomLocDist('hunt')">获取分布</button>
+          </div>
           <div id="hunt-loc-chips" class="hunt-loc-row"></div>
           <div id="hunt-no-loc" style="display:none;font-size:.75rem;color:var(--t3);padding:4px 0 10px">该版本暂无预设地点，请直接从下方添加目标精灵。</div>
         </div>
@@ -594,17 +602,14 @@
 </div>
 <!-- 沉浸式狩猎界面 -->
 <div id="ov-hunt-imm" class="hunt-imm-ov">
-  <!-- 背景模糊层 -->
   <div class="hunt-imm-bg-blur" id="hunt-imm-bg"></div>
-  <!-- 漂浮粒子层 -->
   <div class="hunt-imm-particles" id="hunt-imm-particles"></div>
-  <!-- 关闭 + 位置 -->
   <button class="hunt-imm-close" onclick="closeImmHunt()">✕</button>
   <div class="hunt-imm-loc-badge" id="hunt-imm-loc">📍 野外</div>
-  <!-- 精灵展示区 -->
-  <div class="hunt-imm-body">
+
+  <!-- 目标精灵（居中大图） -->
+  <div class="hunt-imm-hero">
     <div class="hunt-imm-target-badge" id="hunt-imm-target"></div>
-    <div class="hunt-imm-encounter-label" id="hunt-imm-encounter-label">野生精灵出现了！</div>
     <img class="hunt-imm-sprite" id="hunt-imm-sprite" src="" alt="">
     <div class="hunt-imm-name" id="hunt-imm-name"></div>
     <div class="hunt-imm-counter">
@@ -613,12 +618,20 @@
     </div>
     <div class="hunt-imm-narration" id="hunt-imm-narration" style="display:none"></div>
   </div>
-  <!-- 战斗动作按钮 -->
+
+  <!-- 区域精灵分布（点击=遭遇到了那只） -->
+  <div class="hunt-area-section" id="hunt-area-section" style="display:none">
+    <div class="hunt-area-label">遇到了哪只？点击它</div>
+    <div class="hunt-area-grid" id="hunt-area-grid"></div>
+  </div>
+
+  <!-- 无分布时：传统战斗按钮 -->
   <div class="hunt-battle-actions" id="hunt-battle-actions">
     <button class="hunt-action-btn hunt-action-fight" onclick="huntActionFight()">⚔️<br><span>战斗</span></button>
     <button class="hunt-action-btn hunt-action-run"  onclick="huntActionRun()">💨<br><span>逃跑</span></button>
     <button class="hunt-action-btn hunt-action-catch" onclick="huntActionCatch()">⚫<br><span>捕捉</span></button>
   </div>
+
   <!-- 性格确认层 -->
   <div class="hunt-nature-pick" id="hunt-nature-pick" style="display:none">
     <div class="hunt-np-title">捕获到了！选择性格</div>
@@ -626,7 +639,8 @@
     <div class="hunt-np-grid" id="hunt-np-grid"></div>
     <button class="hunt-np-cancel" onclick="cancelHuntNaturePick()">✕ 没捕到，继续</button>
   </div>
-  <!-- 捕获成功动画层 -->
+
+  <!-- 捕获成功层 -->
   <div class="hunt-imm-success" id="hunt-imm-success" style="display:none">
     <div class="hunt-success-sparks" id="hunt-success-sparks"></div>
     <img class="hunt-success-sprite" id="hunt-success-sprite" src="" alt="">
@@ -635,21 +649,24 @@
     <div class="hunt-success-count" id="hunt-success-count"></div>
   </div>
 </div>
+
 <!-- 沉浸式训练界面 -->
 <div id="ov-train-imm" class="hunt-imm-ov">
   <div class="hunt-imm-bg-blur" id="train-imm-bg"></div>
   <div class="hunt-imm-particles" id="train-imm-particles"></div>
   <button class="hunt-imm-close" onclick="closeImmTrain()">✕</button>
-  <!-- 左侧：训练精灵 + EV 条 -->
-  <div class="tim-left">
+
+  <!-- 顶部：训练精灵（居中大图）+ EV 条 -->
+  <div class="tim-hero">
     <img class="tim-sprite" id="train-imm-sprite" src="" alt="">
     <div class="tim-name" id="train-imm-name"></div>
-    <div class="tim-ev-list" id="train-imm-ev-bars"></div>
+    <div class="tim-ev-compact" id="train-imm-ev-bars"></div>
     <div class="tim-ev-total" id="train-imm-ev-total"></div>
   </div>
-  <!-- 右侧：刷练目标精灵 -->
-  <div class="tim-right">
-    <div class="tim-section-lbl">点击精灵 +EV</div>
+
+  <!-- 底部：刷练目标精灵（图片网格） -->
+  <div class="tim-grid-section">
+    <div class="tim-section-lbl">击败以下精灵 获取 EV → 点击它</div>
     <div class="tim-dist-grid" id="train-imm-dist-grid"></div>
   </div>
 </div>

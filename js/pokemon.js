@@ -1291,6 +1291,31 @@ function initHuntTab(sid){
   }
 }
 
+// 自定义地点输入 → 获取分布（hunt / train 通用）
+async function loadCustomLocDist(type){
+  const sid=_curSid;
+  const inp=document.getElementById(type==='hunt'?'hunt-custom-loc':'train-custom-loc');
+  const loc=inp?.value?.trim();
+  if(!loc){showToast('请输入地点名称');return;}
+  if(type==='hunt'){
+    _huntSelLoc=sid+'|'+loc;
+    document.querySelectorAll('#hunt-loc-chips .hunt-loc-chip').forEach(c=>c.classList.remove('on'));
+    const distSection=document.getElementById('hunt-phase-dist');
+    const distTitle=document.getElementById('hunt-dist-title');
+    if(distSection)distSection.style.display='block';
+    if(distTitle)distTitle.textContent=loc+' 精灵分布';
+    await loadHuntDistribution();
+  }else{
+    _trainSelLoc=sid+'|'+loc;
+    document.querySelectorAll('#train-loc-chips .hunt-loc-chip').forEach(c=>c.classList.remove('on'));
+    const distSec=document.getElementById('train-dist-section');
+    const distTitle=document.getElementById('train-dist-title');
+    if(distSec)distSec.style.display='block';
+    if(distTitle)distTitle.textContent=loc+' 精灵分布 & 努力值';
+    await loadTrainDistribution();
+  }
+}
+
 function selectHuntLoc(loc){
   const sid=_curSid;
   _huntSelLoc=sid+'|'+loc;
@@ -1668,12 +1693,16 @@ async function openImmHunt(sid,idx){
   if(locBadge)locBadge.textContent='📍 '+(t.loc||'野外');
 
   document.getElementById('hunt-imm-name').textContent=t.name;
-  document.getElementById('hunt-imm-target').textContent=natZh==='—'?t.name+'  野生精灵':natZh+'性格';
+  document.getElementById('hunt-imm-target').textContent=
+    NATURES.some(n=>n.id===t.nature)?natZh+'性格 目标':'🎯 '+t.name;
   document.getElementById('hunt-imm-num').textContent=t.count;
   document.getElementById('hunt-imm-sprite').src=t.img||'';
   document.getElementById('hunt-imm-bg').style.backgroundImage=`url(${t.img||''})`;
   document.getElementById('hunt-imm-success').style.display='none';
-  document.getElementById('hunt-battle-actions').style.display='flex';
+  document.getElementById('hunt-nature-pick').style.display='none';
+
+  // 填充区域精灵分布网格
+  renderHuntAreaGrid(t);
 
   // 入场动画
   const sp=document.getElementById('hunt-imm-sprite');
@@ -1693,6 +1722,57 @@ async function openImmHunt(sid,idx){
     document.getElementById('hunt-imm-bg').style.backgroundImage=`url(${art})`;
     document.getElementById('hunt-success-sprite').src=art;
   }catch(e){}
+}
+
+// 填充狩猎沉浸区域精灵网格
+function renderHuntAreaGrid(t){
+  const areaEl=document.getElementById('hunt-area-section');
+  const grid=document.getElementById('hunt-area-grid');
+  const actions=document.getElementById('hunt-battle-actions');
+  if(!grid)return;
+  if(!_huntLocPkm.length){
+    // 无分布数据 → 显示传统按钮
+    if(areaEl)areaEl.style.display='none';
+    if(actions)actions.style.display='flex';
+    return;
+  }
+  if(areaEl)areaEl.style.display='flex';
+  if(actions)actions.style.display='none';  // 有分布则隐藏传统按钮
+  grid.innerHTML=_huntLocPkm.map((pkm,i)=>{
+    const isTarget=pkm.id===t.pkmId||pkm.name===t.name;
+    return`<div class="hunt-area-card${isTarget?' hunt-area-target':''}" onclick="huntEncounterFromGrid(${i})" title="${esc(pkm.name)}">
+      <img src="${pkm.img||''}" alt="${esc(pkm.name)}" onerror="this.style.opacity='.3'">
+      <div class="hunt-area-card-name">${esc(pkm.name)}</div>
+      ${isTarget?'<div class="hunt-area-target-ring"></div>':''}
+    </div>`;
+  }).join('');
+}
+
+// 点击区域精灵：目标 → 准备捕获；非目标 → 逃跑
+function huntEncounterFromGrid(idx){
+  if(_huntActionsLocked)return;
+  const list=lsGet('pkm_hunt_'+_immSid)||[];
+  const t=list[_immIdx];if(!t||t.done)return;
+  const pkm=_huntLocPkm[idx];if(!pkm)return;
+  const isTarget=pkm.id===t.pkmId||pkm.name===t.name;
+
+  if(isTarget){
+    // 遭遇目标精灵！计数 + 直接进入捕获性格选择
+    _huntActionsLocked=true;
+    const ov=document.getElementById('ov-hunt-imm');
+    const fl=document.createElement('div');fl.className='hunt-screen-flash-red';ov.appendChild(fl);setTimeout(()=>fl.remove(),280);
+    const sp=document.getElementById('hunt-imm-sprite');
+    sp.classList.remove('fight-hit','run-away','shiny');void sp.offsetWidth;sp.classList.add('fight-hit');
+    _huntCountUp();_checkShiny();
+    setTimeout(()=>{sp.classList.remove('fight-hit');_huntActionsLocked=false;showHuntNaturePick();},420);
+  }else{
+    // 非目标 → 一闪而过，逃跑
+    _huntActionsLocked=true;
+    const card=document.querySelectorAll('.hunt-area-card')[idx];
+    if(card){card.classList.add('hunt-area-flash');setTimeout(()=>card.classList.remove('hunt-area-flash'),350);}
+    showHuntNarration('不是目标，逃跑了……');
+    setTimeout(()=>{_huntActionsLocked=false;},380);
+  }
 }
 
 function closeImmHunt(){
@@ -1924,7 +2004,24 @@ const SERIES_MAPS={
   'scarlet-violet':{region:'帕底亚地区',file:'Paldea_concept_artwork.png',link:'https://bulbapedia.bulbagarden.net/wiki/Paldea'},
   'legends-za':  {region:'卡洛斯地区',file:'Kalos_LZA_concept_artwork.png',link:'https://bulbapedia.bulbagarden.net/wiki/Kalos'},
 };
-function initSeriesMap(sid){
+// 从 52poke wiki 获取地区地图图片 URL
+async function fetch52PokeMapUrl(regionName){
+  try{
+    const base='https://wiki.52poke.com/api.php';
+    const r=await fetch(`${base}?action=query&titles=${encodeURIComponent(regionName)}&prop=images&format=json&origin=*&variant=zh-hans`,{signal:AbortSignal.timeout(6000)});
+    if(!r.ok)return null;
+    const d=await r.json();
+    const page=Object.values(d?.query?.pages||{})[0];
+    const imgs=page?.images||[];
+    // 优先含"地图"的图片，过滤 logo/icon 等小图
+    const mapImg=imgs.find(i=>/地图|Map/i.test(i.title)&&!/icon|logo|badge/i.test(i.title));
+    if(!mapImg)return null;
+    const filename=mapImg.title.replace(/^(File|文件):/,'');
+    return`https://wiki.52poke.com/wiki/Special:FilePath/${encodeURIComponent(filename)}`;
+  }catch{return null;}
+}
+
+async function initSeriesMap(sid){
   const mapSec=document.getElementById('series-map-section');if(!mapSec)return;
   const m=SERIES_MAPS[sid];
   if(!m){mapSec.style.display='none';return;}
@@ -1935,11 +2032,23 @@ function initSeriesMap(sid){
   const link2El=document.getElementById('series-map-link2');
   const fallback=document.getElementById('series-map-fallback');
   if(regionEl)regionEl.textContent='🗺 '+m.region;
-  const imgUrl=`https://bulbapedia.bulbagarden.net/wiki/Special:FilePath/${m.file}`;
-  if(imgEl){imgEl.src=imgUrl;imgEl.style.display='';}
+  if(linkEl)linkEl.href=m.link;
+  if(link2El)link2El.href=m.link;
   if(fallback)fallback.style.display='none';
-  if(linkEl){linkEl.href=m.link;}
-  if(link2El){link2El.href=m.link;}
+  if(imgEl){imgEl.src='';imgEl.style.display='';}
+  // 先尝试 52poke，再回退 Bulbapedia
+  const wiki52=await fetch52PokeMapUrl(m.region);
+  if(wiki52&&imgEl){
+    imgEl.src=wiki52;
+    imgEl.onerror=()=>{
+      imgEl.onerror=null;
+      imgEl.src=`https://bulbapedia.bulbagarden.net/wiki/Special:FilePath/${m.file}`;
+      imgEl.onerror=()=>{imgEl.style.display='none';if(fallback)fallback.style.display='flex';};
+    };
+  }else if(imgEl){
+    imgEl.src=`https://bulbapedia.bulbagarden.net/wiki/Special:FilePath/${m.file}`;
+    imgEl.onerror=()=>{imgEl.style.display='none';if(fallback)fallback.style.display='flex';};
+  }
 }
 
 /* ================================================================
@@ -2206,14 +2315,18 @@ function closeImmTrain(){
 function renderTrainImmGrid(){
   const grid=document.getElementById('train-imm-dist-grid');if(!grid)return;
   grid.innerHTML=_trainLocPkm.map((it,i)=>{
-    const evStr=Object.entries(it.evYields||{}).map(([k,v])=>{
+    const evColors=Object.entries(it.evYields||{}).filter(([,v])=>v>0).map(([k,v])=>{
       const s=EV_STATS.find(x=>x.key===k);
-      return`<span class="tim-ev-chip" style="border-color:${s?.color||'var(--acc)'}66;color:${s?.color||'var(--acc)'}">${s?.zh||k}+${v}</span>`;
+      return`<span class="tim-ev-dot" style="background:${s?.color||'#aaa'}" title="${s?.zh||k}+${v}"></span>`;
     }).join('');
+    const evLabel=Object.entries(it.evYields||{}).filter(([,v])=>v>0).map(([k,v])=>{
+      const s=EV_STATS.find(x=>x.key===k);return`${s?.zh||k}+${v}`;
+    }).join(' ');
     return`<div class="tim-pkm-card" id="tim-card-${i}" onclick="trainImmBeat(${i})">
-      <img src="${it.img||''}" alt="" onerror="this.style.display='none'">
+      <img src="${it.img||''}" alt="${esc(it.name)}" onerror="this.style.opacity='.4'">
       <div class="tim-pkm-name">${esc(it.name)}</div>
-      <div class="tim-ev-chips">${evStr}</div>
+      <div class="tim-ev-dots">${evColors}</div>
+      <div class="tim-ev-label">${evLabel}</div>
     </div>`;
   }).join('');
 }
@@ -2222,16 +2335,15 @@ function renderTrainImmEVs(){
   const bars=document.getElementById('train-imm-ev-bars');if(!bars)return;
   const totalUsed=Object.values(_trainEVs).reduce((a,b)=>a+b,0);
   bars.innerHTML=EV_STATS.map(s=>{
-    const v=_trainEVs[s.key]||0;
-    const pct=Math.min(100,v/EV_MAX_STAT*100);
+    const v=_trainEVs[s.key]||0;const pct=Math.min(100,v/EV_MAX_STAT*100);
     return`<div class="tim-ev-row">
-      <div class="tim-ev-lbl">${s.zh}</div>
+      <div class="tim-ev-lbl" style="color:${s.color}">${s.zh}</div>
       <div class="tim-ev-bar-wrap"><div class="tim-ev-bar-fill" style="width:${pct}%;background:${s.color}"></div></div>
-      <div class="tim-ev-val" style="color:${v>=EV_MAX_STAT?s.color:'rgba(255,255,255,.7)'}">${v}</div>
+      <div class="tim-ev-val" style="color:${v>=EV_MAX_STAT?s.color:'rgba(255,255,255,.6)'}">${v}</div>
     </div>`;
   }).join('');
   const tot=document.getElementById('train-imm-ev-total');
-  if(tot)tot.innerHTML=`<span style="color:${totalUsed>=510?'var(--acc2)':'rgba(255,255,255,.8)'};font-size:1.1rem;font-family:'DM Mono',monospace;font-weight:700">${totalUsed}</span><span style="color:rgba(255,255,255,.4);font-size:.75rem"> / 510</span>`;
+  if(tot)tot.innerHTML=`<span style="color:${totalUsed>=510?'var(--acc2)':'rgba(255,255,255,.75)'};font-size:.9rem;font-family:'DM Mono',monospace;font-weight:700">${totalUsed}/510</span>`;
 }
 
 function trainImmBeat(idx){
