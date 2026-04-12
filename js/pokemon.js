@@ -428,6 +428,10 @@ function renderSeries(){
 }
 function openSeriesDetail(el){
   const seriesId=el.dataset.sid;const s=PKM_SERIES.find(x=>x.id===seriesId);if(!s)return;
+  _curSid=seriesId;
+  // 重置 Tab 到概览
+  document.querySelectorAll('.stab').forEach((b,i)=>b.classList.toggle('on',i===0));
+  document.querySelectorAll('.stab-panel').forEach((p,i)=>p.classList.toggle('on',i===0));
   const log=pkmSeriesLogs[seriesId]||{};
   document.getElementById('series-modal-title').textContent=s.name;document.getElementById('series-modal-year').textContent=s.year+' 年发行';
   document.getElementById('series-start-inp').value=log.start_date||'';document.getElementById('series-end-inp').value=log.end_date||'';
@@ -437,10 +441,12 @@ function openSeriesDetail(el){
   const sw=document.getElementById('series-chat-wrap');if(sw)sw.style.display='none';
   const sab=document.getElementById('series-ai-btn');if(sab)sab.textContent='⬡ 和 AI 聊聊这部作品';
   const scm=document.getElementById('series-chat-msgs');if(scm)scm.innerHTML='';
+  const qinp=document.getElementById('quicknote-inp');if(qinp)qinp.value='';
   setSeriesStatusUI(log.status||'none');
   const colors={none:'linear-gradient(135deg,#1b1d21,#141518)',played:'linear-gradient(135deg,rgba(56,189,248,.15),rgba(13,14,16,1))',cleared:'linear-gradient(135deg,rgba(96,165,250,.15),rgba(13,14,16,1))'};
   document.getElementById('series-hero').style.background=colors[log.status||'none'];
   document.getElementById('ov-series').classList.add('on');
+  renderQuickNotes(seriesId);
 }
 function setSeriesStatus(st){setSeriesStatusUI(st);const colors={none:'linear-gradient(135deg,#1b1d21,#141518)',played:'linear-gradient(135deg,rgba(56,189,248,.15),rgba(13,14,16,1))',cleared:'linear-gradient(135deg,rgba(96,165,250,.15),rgba(13,14,16,1))'};document.getElementById('series-hero').style.background=colors[st];document.getElementById('series-save-btn').dataset.status=st;}
 function setSeriesStatusUI(st){['none','played','cleared'].forEach(s=>{const el=document.getElementById('spill-'+s);if(!el)return;el.className='series-pill'+(s===st?' active-'+s:'');});document.getElementById('series-save-btn').dataset.status=st;}
@@ -665,16 +671,6 @@ function switchSeriesTab(el,tab){
   if(tab==='explore'){document.getElementById('explore-result').style.display='none';}
 }
 
-/* ── openSeriesDetail 包装：设置 _curSid，重置 Tab ── */
-const _origOpenSeriesDetail=openSeriesDetail;
-function openSeriesDetail(el){
-  _curSid=el.dataset.sid;
-  document.querySelectorAll('.stab').forEach((b,i)=>b.classList.toggle('on',i===0));
-  document.querySelectorAll('.stab-panel').forEach((p,i)=>p.classList.toggle('on',i===0));
-  const qinp=document.getElementById('quicknote-inp');if(qinp)qinp.value='';
-  _origOpenSeriesDetail(el);
-  renderQuickNotes(_curSid);
-}
 
 /* ============================
    ⚡ 快记
