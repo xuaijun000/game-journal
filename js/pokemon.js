@@ -498,7 +498,7 @@ function openSeriesDetail(el){
   document.getElementById('series-hero').style.background=colors[log.status||'none'];
   document.getElementById('ov-series').classList.add('on');
   // 从 Supabase 数据填充本地内存
-  if(log.notes!=null)       lsSet('pkm_notes_'+seriesId,    log.notes);
+  if(log.notes!=null)       lsSet('pkm_notes_'+seriesId,    Array.isArray(log.notes)?log.notes:[]);
   if(log.party!=null)       lsSet('pkm_party_'+seriesId,    log.party);
   if(log.progress!=null)    lsSet('pkm_progress_'+seriesId, log.progress);
   if(log.hunts!=null)       lsSet('pkm_hunt_'+seriesId,     log.hunts);
@@ -772,7 +772,7 @@ function switchSeriesTab(el,tab){
 function addQuickNote(){
   const inp=document.getElementById('quicknote-inp');
   const text=inp?.value?.trim();if(!text)return;
-  const notes=lsGet('pkm_notes_'+_curSid)||[];
+  let notes=lsGet('pkm_notes_'+_curSid)||[];if(!Array.isArray(notes))notes=[];
   notes.unshift({text,ts:Date.now()});
   lsSet('pkm_notes_'+_curSid,notes);
   inp.value='';
@@ -781,7 +781,8 @@ function addQuickNote(){
 }
 function renderQuickNotes(sid){
   const list=document.getElementById('quicknote-list');if(!list)return;
-  const notes=lsGet('pkm_notes_'+sid)||[];
+  let notes=lsGet('pkm_notes_'+sid)||[];
+  if(!Array.isArray(notes))notes=[];
   if(!notes.length){list.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:4px 0">还没有快记，边玩边记吧～</div>';return;}
   list.innerHTML=notes.map((n,i)=>{
     const d=new Date(n.ts);
@@ -790,7 +791,7 @@ function renderQuickNotes(sid){
   }).join('');
 }
 function delQuickNote(sid,idx){
-  const notes=lsGet('pkm_notes_'+sid)||[];notes.splice(idx,1);lsSet('pkm_notes_'+sid,notes);renderQuickNotes(sid);syncSeriesField(sid,'notes',notes);
+  let notes=lsGet('pkm_notes_'+sid)||[];if(!Array.isArray(notes))notes=[];notes.splice(idx,1);lsSet('pkm_notes_'+sid,notes);renderQuickNotes(sid);syncSeriesField(sid,'notes',notes);
 }
 
 /* ============================
@@ -2379,7 +2380,7 @@ function spawnConfetti(){
 /* ── ① 冒险日记 ── */
 async function genAdventureLog(){
   const sid=_curSid;
-  const notes=lsGet('pkm_notes_'+sid)||[];
+  let notes=lsGet('pkm_notes_'+sid)||[];if(!Array.isArray(notes))notes=[];
   if(!notes.length){showToast('先记一条快记，再生成日记～');return;}
   const btn=document.getElementById('gen-diary-btn');
   const box=document.getElementById('adventure-diary');
