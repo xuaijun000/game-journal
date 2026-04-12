@@ -214,3 +214,185 @@
 .catch-card-nature{font-size:.7rem;color:var(--acc);font-family:'DM Mono',monospace}
 .catch-card-del{background:none;border:none;color:var(--t3);cursor:pointer;font-size:.72rem;padding:0;flex-shrink:0}
 .catch-card-del:hover{color:var(--danger)}
+
+/* ── 沉浸式狩猎覆盖层 ── */
+.hunt-imm-ov{
+  position:fixed;inset:0;z-index:1000;
+  display:none;flex-direction:column;align-items:center;justify-content:space-between;
+  padding:env(safe-area-inset-top,20px) 0 env(safe-area-inset-bottom,20px);
+  background:rgba(8,7,6,.92);
+  cursor:pointer;
+  user-select:none;
+  -webkit-user-select:none;
+}
+.hunt-imm-ov.on{display:flex;}
+
+.hunt-imm-bg-blur{
+  position:absolute;inset:0;
+  background-size:cover;background-position:center;
+  filter:blur(40px) brightness(.3) saturate(1.4);
+  opacity:.7;
+  pointer-events:none;
+}
+
+.hunt-imm-close{
+  position:absolute;top:16px;right:16px;z-index:10;
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);
+  border-radius:50%;width:36px;height:36px;
+  color:#fff;font-size:.9rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s;
+}
+.hunt-imm-close:hover{background:rgba(255,255,255,.22);}
+
+.hunt-imm-body{
+  display:flex;flex-direction:column;align-items:center;
+  flex:1;justify-content:center;gap:10px;
+  position:relative;z-index:2;pointer-events:none;
+}
+
+.hunt-imm-target-badge{
+  padding:4px 16px;border-radius:20px;
+  background:rgba(200,144,64,.15);border:1px solid rgba(200,144,64,.35);
+  color:var(--acc);font-size:.78rem;font-family:'DM Mono',monospace;letter-spacing:.06em;
+}
+
+.hunt-imm-sprite{
+  width:200px;height:200px;object-fit:contain;
+  image-rendering:pixelated;
+  filter:drop-shadow(0 8px 32px rgba(0,0,0,.8));
+  animation:huntFloat 3s ease-in-out infinite;
+}
+@keyframes huntFloat{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-12px);}
+}
+
+.hunt-imm-name{
+  font-family:'Noto Serif SC',serif;font-size:1.6rem;font-weight:600;
+  color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.8);
+  letter-spacing:.04em;
+}
+
+.hunt-imm-counter{
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  margin-top:4px;
+}
+.hunt-imm-num{
+  font-family:'DM Mono',monospace;font-size:4rem;font-weight:700;
+  color:#fff;line-height:1;
+  transition:transform .1s;
+}
+.hunt-imm-num.pop{animation:numPop .25s cubic-bezier(.36,.07,.19,.97);}
+@keyframes numPop{
+  0%{transform:scale(1);}
+  40%{transform:scale(1.35);}
+  100%{transform:scale(1);}
+}
+.hunt-imm-unit{
+  font-size:.8rem;color:rgba(255,255,255,.5);
+  font-family:'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase;
+}
+
+.hunt-imm-hint{
+  font-size:.72rem;color:rgba(255,255,255,.3);
+  font-family:'DM Mono',monospace;letter-spacing:.08em;
+  margin-top:8px;animation:hintBlink 2.5s ease-in-out infinite;
+}
+@keyframes hintBlink{0%,100%{opacity:.3;}50%{opacity:.7;}}
+
+/* 捕获按钮 */
+.hunt-imm-catch-btn{
+  position:relative;z-index:2;
+  width:calc(100% - 48px);max-width:360px;
+  padding:14px;border-radius:12px;
+  background:linear-gradient(135deg,rgba(90,184,154,.25),rgba(90,184,154,.12));
+  border:1px solid rgba(90,184,154,.5);
+  color:var(--acc2);font-size:1rem;font-family:'Noto Serif SC',serif;font-weight:600;
+  cursor:pointer;letter-spacing:.1em;
+  transition:all .2s;
+  text-shadow:0 0 20px rgba(90,184,154,.6);
+}
+.hunt-imm-catch-btn:hover{
+  background:linear-gradient(135deg,rgba(90,184,154,.4),rgba(90,184,154,.25));
+  box-shadow:0 0 24px rgba(90,184,154,.3);
+}
+.hunt-imm-catch-btn:active{transform:scale(.97);}
+
+/* Pokeball 点击涟漪 */
+.hunt-ball{
+  position:fixed;z-index:1001;pointer-events:none;
+  width:40px;height:40px;margin:-20px 0 0 -20px;
+  font-size:28px;line-height:40px;text-align:center;
+  animation:ballPop .55s ease-out forwards;
+}
+@keyframes ballPop{
+  0%{transform:scale(.2);opacity:1;}
+  60%{transform:scale(1.4);opacity:.8;}
+  100%{transform:scale(2.2);opacity:0;}
+}
+
+/* 屏幕闪光 */
+.hunt-flash{
+  position:fixed;inset:0;z-index:1002;pointer-events:none;
+  background:rgba(255,255,255,.18);
+  animation:flash .2s ease-out forwards;
+}
+@keyframes flash{0%{opacity:1;}100%{opacity:0;}}
+
+/* 捕获成功层 */
+.hunt-imm-success{
+  position:absolute;inset:0;z-index:20;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+  background:radial-gradient(ellipse at center,rgba(90,184,154,.25) 0%,rgba(8,7,6,.96) 70%);
+  animation:successFadeIn .4s ease-out;
+}
+@keyframes successFadeIn{from{opacity:0;transform:scale(.96);}to{opacity:1;transform:scale(1);}}
+.hunt-success-sparks{
+  position:absolute;inset:0;pointer-events:none;overflow:hidden;
+}
+.spark{
+  position:absolute;width:6px;height:6px;border-radius:50%;
+  animation:sparkFly 1s ease-out forwards;
+}
+@keyframes sparkFly{
+  0%{transform:translate(0,0) scale(1);opacity:1;}
+  100%{transform:translate(var(--dx),var(--dy)) scale(0);opacity:0;}
+}
+.hunt-success-sprite{
+  width:180px;height:180px;object-fit:contain;image-rendering:pixelated;
+  animation:successBounce .6s cubic-bezier(.36,.07,.19,.97);
+  filter:drop-shadow(0 0 32px rgba(90,184,154,.8));
+}
+@keyframes successBounce{
+  0%{transform:scale(0) rotate(-10deg);}
+  60%{transform:scale(1.15) rotate(3deg);}
+  100%{transform:scale(1) rotate(0deg);}
+}
+.hunt-success-title{
+  font-family:'Noto Serif SC',serif;font-size:2rem;font-weight:600;
+  color:var(--acc2);text-shadow:0 0 30px rgba(90,184,154,.8);
+  animation:successSlideUp .5s .1s ease-out both;
+}
+.hunt-success-name{
+  font-size:1.2rem;color:#fff;font-family:'Noto Serif SC',serif;
+  animation:successSlideUp .5s .2s ease-out both;
+}
+.hunt-success-count{
+  font-size:.85rem;color:rgba(255,255,255,.5);font-family:'DM Mono',monospace;
+  animation:successSlideUp .5s .3s ease-out both;
+}
+@keyframes successSlideUp{
+  from{opacity:0;transform:translateY(16px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+/* 狩猎卡片新增"进入狩猎"按钮样式 */
+.hunt-enter-btn{
+  padding:6px 14px;border-radius:var(--r);
+  background:linear-gradient(135deg,rgba(200,144,64,.15),rgba(200,144,64,.08));
+  border:1px solid rgba(200,144,64,.4);
+  color:var(--acc);font-size:.78rem;font-family:'DM Mono',monospace;
+  cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+.hunt-enter-btn:hover{background:rgba(200,144,64,.25);box-shadow:0 0 12px rgba(200,144,64,.2);}

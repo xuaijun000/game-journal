@@ -853,20 +853,18 @@ function renderHuntList(sid){
         <div class="hunt-card-info">
           <div class="hunt-card-name">${esc(t.name)}${t.done?' ✓':''}</div>
           <div class="hunt-card-target">目标：${natZh}性格 · ${esc(t.iv)}</div>
+          ${t.done?`<div style="font-size:.68rem;color:var(--t3);font-family:'DM Mono',monospace;margin-top:2px">共遭遇 ${t.count} 次后捕获</div>`:''}
         </div>
         <div class="hunt-card-actions">
-          ${!t.done?`<button class="hunt-caught-btn" onclick="huntCaught('${sid}',${i})">捕获！</button>`:'<span style="font-size:.72rem;color:var(--acc2);font-family:\'DM Mono\',monospace">已捕获</span>'}
+          ${!t.done?`<button class="hunt-enter-btn" onclick="openImmHunt('${sid}',${i})">进入狩猎</button>`:'<span style="font-size:.72rem;color:var(--acc2);font-family:\'DM Mono\',monospace">已捕获</span>'}
           <button class="hunt-del-btn" onclick="huntDel('${sid}',${i})">删除</button>
         </div>
       </div>
-      ${!t.done?`<div class="hunt-counter">
-        <div>
-          <div class="hunt-count-num">${t.count}</div>
-          <div class="hunt-count-lbl">次遭遇</div>
-        </div>
-        <button class="hunt-inc-btn" onclick="huntInc('${sid}',${i})" title="记录一次遭遇">+</button>
-        <span style="font-size:.68rem;color:var(--t3)">每次遇到目标点 +</span>
-      </div>`:`<div style="font-size:.72rem;color:var(--t3);font-family:'DM Mono',monospace">共遭遇 ${t.count} 次后捕获</div>`}
+      ${!t.done?`<div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+        <span style="font-size:.72rem;color:var(--t3)">遭遇次数</span>
+        <span style="font-family:'DM Mono',monospace;font-size:1rem;font-weight:600;color:var(--t)">${t.count}</span>
+        <button class="hunt-inc-btn" onclick="huntInc('${sid}',${i})" title="快速+1">+</button>
+      </div>`:''}
     </div>`;
   }).join('');
 }
@@ -1075,4 +1073,136 @@ function selectInlinePkm(idx,mode){
   if(mode==='party')addToParty(_curSid,pkm);
   else if(mode==='hunt')selectHuntPkm(pkm);
   else if(mode==='catch')selectCatchPkm(pkm);
+}
+
+/* ============================
+   🎯 沉浸式狩猎界面
+   ============================ */
+let _immSid='',_immIdx=-1;
+
+async function openImmHunt(sid,idx){
+  const list=lsGet('pkm_hunt_'+sid)||[];
+  const t=list[idx];if(!t||t.done)return;
+  _immSid=sid;_immIdx=idx;
+
+  // 填入基本信息（先用已有 sprite 快速显示）
+  const natZh=getNatureZh(t.nature);
+  document.getElementById('hunt-imm-name').textContent=t.name;
+  document.getElementById('hunt-imm-target').textContent=natZh+'性格 · '+t.iv;
+  document.getElementById('hunt-imm-num').textContent=t.count;
+  document.getElementById('hunt-imm-sprite').src=t.img;
+  document.getElementById('hunt-imm-bg').style.backgroundImage=`url(${t.img})`;
+  document.getElementById('hunt-imm-success').style.display='none';
+
+  // 打开overlay
+  const ov=document.getElementById('ov-hunt-imm');
+  ov.classList.add('on');
+  document.body.style.overflow='hidden';
+
+  // 后台拉取高清官方图
+  try{
+    const p=await fetchPkm(t.pkmId);
+    const art=p.sprites?.other?.['official-artwork']?.front_default||p.sprites?.front_default||t.img;
+    document.getElementById('hunt-imm-sprite').src=art;
+    document.getElementById('hunt-imm-bg').style.backgroundImage=`url(${art})`;
+    document.getElementById('hunt-success-sprite').src=art;
+  }catch(e){}
+}
+
+function closeImmHunt(){
+  const ov=document.getElementById('ov-hunt-imm');
+  ov.classList.remove('on');
+  document.body.style.overflow='';
+}
+// 覆盖 closeOv 兼容
+const _origCloseOv=typeof closeOv==='function'?closeOv:null;
+function closeOv(id){
+  if(id==='ov-hunt-imm'){closeImmHunt();return;}
+  if(_origCloseOv)_origCloseOv(id);
+  else{const el=document.getElementById(id);if(el)el.classList.remove('on');}
+}
+
+function huntImmTap(e){
+  // 不响应按钮点击冒泡
+  if(e.target.closest('button'))return;
+  const success=document.getElementById('hunt-imm-success');
+  if(success&&success.style.display!=='none')return;
+
+  // Pokeball 动效
+  spawnBall(e.clientX,e.clientY);
+  spawnFlash();
+
+  // 更新计数
+  const list=lsGet('pkm_hunt_'+_immSid)||[];
+  if(!list[_immIdx]||list[_immIdx].done)return;
+  list[_immIdx].count++;
+  lsSet('pkm_hunt_'+_immSid,list);
+
+  // 数字跳动
+  const numEl=document.getElementById('hunt-imm-num');
+  numEl.textContent=list[_immIdx].count;
+  numEl.classList.remove('pop');
+  void numEl.offsetWidth;
+  numEl.classList.add('pop');
+}
+
+function spawnBall(x,y){
+  const el=document.createElement('div');
+  el.className='hunt-ball';
+  el.style.left=x+'px';
+  el.style.top=y+'px';
+  el.textContent='⚫';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),600);
+}
+
+function spawnFlash(){
+  const el=document.createElement('div');
+  el.className='hunt-flash';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),200);
+}
+
+function confirmImmCatch(){
+  const list=lsGet('pkm_hunt_'+_immSid)||[];
+  const t=list[_immIdx];if(!t)return;
+  t.done=true;
+  lsSet('pkm_hunt_'+_immSid,list);
+
+  // 显示成功动画层
+  const suc=document.getElementById('hunt-imm-success');
+  document.getElementById('hunt-success-name').textContent=t.name;
+  document.getElementById('hunt-success-count').textContent='共遭遇 '+t.count+' 次';
+  spawnSparks();
+  suc.style.display='flex';
+
+  // 2.5秒后关闭
+  setTimeout(()=>{
+    closeImmHunt();
+    renderHuntList(_immSid);
+    showToast('恭喜捕获 '+t.name+'！共遭遇 '+t.count+' 次');
+  },2500);
+}
+
+function spawnSparks(){
+  const container=document.getElementById('hunt-success-sparks');
+  container.innerHTML='';
+  const colors=['#f0c040','#5ab89a','#a0c8f0','#ff80ab','#c890ff','#ffffff'];
+  const cx=window.innerWidth/2,cy=window.innerHeight/2;
+  for(let i=0;i<40;i++){
+    const el=document.createElement('div');
+    el.className='spark';
+    const angle=Math.random()*Math.PI*2;
+    const dist=80+Math.random()*200;
+    el.style.cssText=`
+      left:${cx}px;top:${cy}px;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      --dx:${Math.cos(angle)*dist}px;
+      --dy:${Math.sin(angle)*dist}px;
+      animation-delay:${Math.random()*0.3}s;
+      animation-duration:${0.6+Math.random()*0.6}s;
+      width:${4+Math.random()*6}px;height:${4+Math.random()*6}px;
+    `;
+    container.appendChild(el);
+  }
 }

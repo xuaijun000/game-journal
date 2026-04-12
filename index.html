@@ -493,6 +493,32 @@
     </div>
   </div>
 </div>
+<!-- 沉浸式狩猎界面 -->
+<div id="ov-hunt-imm" class="hunt-imm-ov" onclick="huntImmTap(event)">
+  <div class="hunt-imm-bg-blur" id="hunt-imm-bg"></div>
+  <button class="hunt-imm-close" onclick="event.stopPropagation();closeOv('ov-hunt-imm')">✕</button>
+  <div class="hunt-imm-body">
+    <div class="hunt-imm-target-badge" id="hunt-imm-target"></div>
+    <img class="hunt-imm-sprite" id="hunt-imm-sprite" src="" alt="">
+    <div class="hunt-imm-name" id="hunt-imm-name"></div>
+    <div class="hunt-imm-counter" id="hunt-imm-counter">
+      <span class="hunt-imm-num" id="hunt-imm-num">0</span>
+      <span class="hunt-imm-unit">次遭遇</span>
+    </div>
+    <div class="hunt-imm-hint">轻触任意处 · 记录一次遭遇</div>
+  </div>
+  <button class="hunt-imm-catch-btn" onclick="event.stopPropagation();confirmImmCatch()">
+    <span>捕获成功！</span>
+  </button>
+  <!-- 捕获成功动画层 -->
+  <div class="hunt-imm-success" id="hunt-imm-success" style="display:none">
+    <div class="hunt-success-sparks" id="hunt-success-sparks"></div>
+    <img class="hunt-success-sprite" id="hunt-success-sprite" src="" alt="">
+    <div class="hunt-success-title">捕获成功！</div>
+    <div class="hunt-success-name" id="hunt-success-name"></div>
+    <div class="hunt-success-count" id="hunt-success-count"></div>
+  </div>
+</div>
 <!-- 发现页详情弹窗 -->
 <div class="ov" id="ov-disc" onclick="if(event.target===this)closeOv('ov-disc')">
   <div class="modal disc-modal">
