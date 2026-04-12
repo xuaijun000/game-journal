@@ -713,6 +713,7 @@ function renderPartySlots(sid){
         <div class="party-slot-name">${esc(p.name)}</div>
         ${p.nick?`<div class="party-slot-nick">${esc(p.nick)}</div>`:''}
         <div class="party-slot-lv">${p.lv?'Lv.'+p.lv:''}</div>
+        <button class="party-speak-btn" onclick="speakPartyMember('${sid}',${i});event.stopPropagation()">💬 说话</button>
       </div>`;
     }
     return`<div class="party-slot" onclick="focusPartySearch()">
@@ -768,6 +769,7 @@ function renderProgress(sid){
       <div class="progress-check">${isDone?'✓':''}</div>
       <span class="progress-label">${cp}</span>
       ${tsStr?`<span class="progress-ts">${tsStr}</span>`:''}
+      ${!isDone?`<button class="gym-brief-btn" onclick="getBriefing('${sid}',${i});event.stopPropagation()" title="战前动员">⚔️</button>`:''}
     </div>`;
   }).join('');
 }
@@ -786,15 +788,15 @@ async function exploreLocation(){
   const box=document.getElementById('explore-result');
   box.style.display='block';
   box.innerHTML=`<div class="explore-result-header"><span class="explore-loc-name">🗺 ${esc(loc)}</span><span style="font-size:.72rem;color:var(--t3);margin-left:8px">AI查询中…</span></div>`;
-  const prompt=`你是宝可梦世界的全知导游。
-玩家正在游玩「${s?.name||sid}」（${s?.year||''}年），当前位置：「${loc}」。
-请按以下格式回复（纯文字，不用Markdown符号）：
+  const prompt=`你是一位用文字旅行的宝可梦训练师。
+正在游玩「${s?.name||sid}」（${s?.year||''}年），此刻踏上了「${loc}」。
 
-【风景描述】50字以内，描绘该地点在游戏中的氛围和画面感。
-
-【可遇精灵】列出在该作品「${loc}」中可以遇到的宝可梦，格式：精灵名 (遭遇率：高/中/低，出现条件如时间/天气)，每行一只，最多10只。
-
-【探索提示】30字以内，该地点的特殊隐藏要素或注意事项。`;
+请以训练师第一人称视角，写一段150字左右的沉浸式旅行文字：
+自然融入这个地点的地貌风光、空气质感、时间氛围，
+以及游戏中在这里会遇到的宝可梦（用"隐约看见""草丛里传来"等方式自然带入，不要列表），
+还有在这个地方可能发现的隐藏角落或旅途感受。
+文字要有散文游记的画面感和情绪，结尾带一点属于训练师的感慨或期待。
+纯文字，不用Markdown，不要分段标题，一气呵成。`;
   try{
     const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:600,temperature:0.85}})});
     if(!res.ok)throw new Error('HTTP '+res.status);
@@ -804,7 +806,7 @@ async function exploreLocation(){
       <span class="explore-loc-name">${esc(loc)}</span>
       <span style="font-size:.68rem;color:var(--t3);font-family:'DM Mono',monospace;margin-left:auto">${s?.name||''}</span>
     </div>
-    <div class="explore-body">${esc(reply)}</div>`;
+    <div class="explore-body explore-narrative">${esc(reply)}</div>`;
   }catch(e){box.innerHTML=`<div class="explore-body" style="color:var(--danger)">查询失败：${e.message}</div>`;}
 }
 
@@ -1133,10 +1135,12 @@ function huntImmTap(e){
 
   // 数字跳动
   const numEl=document.getElementById('hunt-imm-num');
-  numEl.textContent=list[_immIdx].count;
+  const cnt=list[_immIdx].count;
+  numEl.textContent=cnt;
   numEl.classList.remove('pop');
   void numEl.offsetWidth;
   numEl.classList.add('pop');
+  if(HUNT_MILESTONE_TEXT[cnt])showHuntNarration(HUNT_MILESTONE_TEXT[cnt]);
 }
 
 function spawnBall(x,y){
@@ -1198,4 +1202,110 @@ function spawnSparks(){
     `;
     container.appendChild(el);
   }
+}
+
+/* ================================================================
+   AI 沉浸系统
+   ================================================================ */
+
+/* ── ① 冒险日记 ── */
+async function genAdventureLog(){
+  const sid=_curSid;
+  const notes=lsGet('pkm_notes_'+sid)||[];
+  if(!notes.length){showToast('先记几条快记，再生成日记～');return;}
+  const btn=document.getElementById('gen-diary-btn');
+  const box=document.getElementById('adventure-diary');
+  btn.disabled=true;btn.textContent='AI 书写中…';
+  box.style.display='block';box.textContent='…';
+  const s=PKM_SERIES.find(x=>x.id===sid);
+  const status=document.getElementById('series-save-btn')?.dataset?.status||'none';
+  const hours=document.getElementById('series-hours-inp')?.value||'';
+  const ace=document.getElementById('series-ace-inp')?.value||'';
+  const notesText=notes.map(n=>n.text).join('、');
+  const stStr={none:'尚未开始',played:'正在游玩',cleared:'已通关'}[status]||'';
+  const prompt=`你是宝可梦训练师日记的润色师。
+游戏：「${s?.name||sid}」（${stStr}${hours?'，已游玩'+hours+'小时':''}${ace?'，王牌'+ace:''}）
+训练师快记：${notesText}
+
+请将以上零散记录润色成一段120-160字的训练师冒险日记，要求：
+- 用第一人称叙事，像在记录真实的宝可梦旅途
+- 自然融入「${s?.name||''}」这部作品的世界观和氛围
+- 把快记内容串联成有情节感的叙述，不要逐条翻译
+- 文字有温度和细节，结尾带一点期待或感慨
+纯文字，不用Markdown，不用标题。`;
+  try{
+    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:400,temperature:0.9}})});
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const data=await res.json();const reply=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'（AI暂时无法响应）';
+    box.textContent=reply;
+    const{data:{session}}=await db.auth.getSession();
+    if(session?.user){await db.from('pkm_logs').insert({user_id:session.user.id,pkm_id:0,pkm_name:'📖 '+(s?.name||sid),summary:reply,game_series:s?.name||sid});loadPkmLogs();}
+  }catch(e){box.textContent='生成失败：'+e.message;}
+  btn.disabled=false;btn.textContent='✦ AI 润色成冒险日记';
+}
+
+/* ── ② 宝可梦对话 ── */
+async function speakPartyMember(sid,idx){
+  const party=lsGet('pkm_party_'+sid)||Array(6).fill(null);
+  const p=party[idx];if(!p)return;
+  const resultEl=document.getElementById('party-speak-result');
+  resultEl.style.display='block';
+  resultEl.innerHTML='<span style="color:var(--t3);font-size:.78rem">…</span>';
+  const s=PKM_SERIES.find(x=>x.id===sid);
+  const prompt=`你是宝可梦「${p.name}」${p.nick?'（训练师叫它「'+p.nick+'」）':''}，等级${p.lv||'?'}，正在跟随训练师冒险于「${s?.name||'宝可梦世界'}」。
+用第一人称说一句20-35字的话，体现这只宝可梦的性格和对训练师的感情。语气要有灵性，像真实的宝可梦在说话，自然不做作。纯文字。`;
+  try{
+    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:80,temperature:1.2}})});
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const data=await res.json();const reply=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'……';
+    resultEl.innerHTML=`<span style="font-size:.68rem;color:var(--acc);font-family:'DM Mono',monospace">${esc(p.name)}${p.nick?'「'+esc(p.nick)+'」':''}</span><br><span>${esc(reply)}</span>`;
+  }catch(e){resultEl.textContent='连接失败';}
+}
+
+/* ── ③ 狩猎旁白里程碑 ── */
+const HUNT_MILESTONE_TEXT={
+  1:'草丛轻轻颤动……它出现了。',
+  5:'第五次遭遇，它似乎还不愿配合。',
+  10:'十次了，你深吸一口气。',
+  20:'二十次。汗水打湿了发梢，眼神却更加坚定。',
+  30:'三十次。日落了，你还没有放弃。',
+  50:'五十次。这已经是意志的考验。',
+  75:'七十五次。你几乎认识了它的每一个习惯。',
+  100:'一百次——它依然没有出现。但你没有放弃。',
+  150:'一百五十次。这条路上你已走过无数次。',
+  200:'两百次，你已经记不清多少个日落了……',
+  300:'三百次，仿佛整个世界只剩下这片草丛。',
+  500:'五百次。传说中，最执着的训练师终将遇见命运。',
+};
+let _narrationTimer=null;
+function showHuntNarration(text){
+  const el=document.getElementById('hunt-imm-narration');if(!el)return;
+  el.style.display='block';el.textContent=text;
+  el.style.animation='none';void el.offsetWidth;el.style.animation='';
+  clearTimeout(_narrationTimer);
+  _narrationTimer=setTimeout(()=>{if(el)el.style.display='none';},3200);
+}
+
+/* ── ④ 道馆战前动员 ── */
+async function getBriefing(sid,idx){
+  const checkpoints=SERIES_CHECKPOINTS[sid];
+  const cpName=checkpoints?.[idx]||'';if(!cpName)return;
+  const panel=document.getElementById('gym-briefing-panel');if(!panel)return;
+  panel.style.display='block';
+  panel.innerHTML=`<div class="gym-brief-hdr">⚔️ BATTLE READY · 加载中…</div>`;
+  const s=PKM_SERIES.find(x=>x.id===sid);
+  const hours=document.getElementById('series-hours-inp')?.value||'';
+  const ace=document.getElementById('series-ace-inp')?.value||'';
+  const prompt=`你是宝可梦训练师的内心旁白专员。
+玩家正在游玩「${s?.name||sid}」，即将挑战：「${cpName}」。
+${ace?'训练师的王牌是'+ace+'。':''}${hours?'已经历了'+hours+'小时的旅途。':''}
+
+请用第一人称写一段60-80字的战前动员：结合「${s?.name||''}」这部作品的剧情氛围，描写训练师此刻的心情、眼前的场景、以及即将出击的决心。
+文字要有沉浸感，像游戏内心独白，纯文字不用Markdown。`;
+  try{
+    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:200,temperature:0.9}})});
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    const data=await res.json();const reply=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'（AI离线）';
+    panel.innerHTML=`<div class="gym-brief-hdr">⚔️ BATTLE READY · ${esc(cpName)}</div><div>${esc(reply)}</div>`;
+  }catch(e){panel.innerHTML=`<div class="gym-brief-hdr" style="color:var(--danger)">连接失败：${e.message}</div>`;}
 }

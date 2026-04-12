@@ -396,3 +396,63 @@
   cursor:pointer;transition:all .15s;white-space:nowrap;
 }
 .hunt-enter-btn:hover{background:rgba(200,144,64,.25);box-shadow:0 0 12px rgba(200,144,64,.2);}
+
+/* ── ① 冒险日记 ── */
+.adventure-diary-box{
+  background:linear-gradient(135deg,rgba(200,144,64,.06),rgba(90,184,154,.04));
+  border:1px solid rgba(200,144,64,.25);border-radius:var(--rl);
+  padding:12px 14px;font-size:.85rem;color:var(--t2);line-height:1.9;
+  white-space:pre-wrap;margin-top:8px;
+  font-family:'Noto Serif SC',serif;position:relative;
+}
+.adventure-diary-box::before{content:'📖';position:absolute;top:10px;right:12px;font-size:.9rem;opacity:.4;}
+
+/* ── ② 宝可梦对话 ── */
+.party-speak-btn{
+  position:absolute;bottom:3px;left:50%;transform:translateX(-50%);
+  background:rgba(200,144,64,.12);border:1px solid rgba(200,144,64,.3);
+  border-radius:10px;padding:1px 6px;font-size:.55rem;color:var(--acc);
+  cursor:pointer;opacity:0;transition:opacity .15s;white-space:nowrap;pointer-events:auto;
+}
+.party-slot.filled:hover .party-speak-btn{opacity:1;}
+.party-speak-result{
+  margin-top:10px;padding:10px 12px;
+  background:var(--bg3);border:1px solid rgba(200,144,64,.2);border-radius:var(--r);
+  font-size:.84rem;color:var(--t2);line-height:1.75;position:relative;
+}
+.party-speak-result::before{
+  content:'';position:absolute;top:-6px;left:24px;
+  border-left:6px solid transparent;border-right:6px solid transparent;
+  border-bottom:6px solid rgba(200,144,64,.2);
+}
+
+/* ── ③ 狩猎旁白 ── */
+.hunt-imm-narration{
+  position:relative;z-index:2;pointer-events:none;
+  text-align:center;padding:0 40px;
+  font-family:'Noto Serif SC',serif;font-size:.9rem;
+  color:rgba(255,255,255,.6);line-height:1.7;letter-spacing:.03em;
+  animation:narrateIn .5s ease-out;
+}
+@keyframes narrateIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* ── ④ 战前动员 ── */
+.gym-brief-panel{
+  background:linear-gradient(135deg,rgba(200,144,64,.07),rgba(90,184,154,.04));
+  border:1px solid rgba(200,144,64,.28);border-radius:var(--rl);
+  padding:12px 14px;margin-bottom:10px;
+  font-family:'Noto Serif SC',serif;font-size:.85rem;color:var(--t2);line-height:1.8;
+}
+.gym-brief-hdr{font-size:.65rem;color:var(--acc);font-family:'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
+.gym-brief-btn{
+  background:none;border:none;cursor:pointer;
+  font-size:.72rem;padding:0 0 0 4px;color:var(--t3);
+  margin-left:auto;flex-shrink:0;transition:color .15s;
+}
+.gym-brief-btn:hover{color:var(--acc);}
+
+/* ── ⑤ 探索旁白 ── */
+.explore-narrative{
+  font-family:'Noto Serif SC',serif;font-size:.88rem;
+  color:var(--t);line-height:2;letter-spacing:.02em;
+}
