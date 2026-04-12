@@ -479,6 +479,12 @@
 .hunt-dist-name{font-size:.65rem;color:var(--t2);margin-top:3px;line-height:1.2}
 .hunt-dist-rate{font-size:.55rem;font-family:'DM Mono',monospace;margin-top:1px}
 .rate-hi{color:var(--acc)}.rate-md{color:var(--t3)}.rate-lo{color:var(--t3);opacity:.6}
+/* 数据来源徽章 */
+.dist-src-badge{grid-column:1/-1;font-size:.6rem;font-family:'DM Mono',monospace;letter-spacing:.06em;padding:3px 8px;border-radius:2px;display:inline-block;margin-bottom:6px;width:fit-content}
+.dist-src-official{background:rgba(90,184,154,.12);border:1px solid rgba(90,184,154,.3);color:var(--acc2)}
+.dist-src-ai{background:rgba(200,144,64,.08);border:1px solid rgba(200,144,64,.2);color:var(--t3)}
+/* 训练遭遇率角标 */
+.train-dist-chance{position:absolute;top:3px;left:3px;font-size:.5rem;font-family:'DM Mono',monospace;color:var(--acc2);background:rgba(90,184,154,.15);border-radius:2px;padding:1px 4px}
 .hunt-dist-sel-mark{
   position:absolute;top:3px;right:3px;width:15px;height:15px;border-radius:50%;
   background:var(--acc2);display:none;align-items:center;justify-content:center;

@@ -1028,6 +1028,150 @@ function openSeriesDetailById(sid){
    🎯 新版狩猎系统：地点选择 → AI精灵分布 → 沉浸式战斗
    ================================================================ */
 
+/* ── 版本→PokéAPI版本名 ── */
+const SERIES_VERSIONS={
+  'red-blue':['red','blue'],'yellow':['yellow'],
+  'gold-silver':['gold','silver'],'crystal':['crystal'],
+  'ruby-sapphire':['ruby','sapphire'],'emerald':['emerald'],
+  'firered-leafgreen':['firered','leafgreen'],
+  'diamond-pearl':['diamond','pearl'],'platinum':['platinum'],
+  'heartgold-soulsilver':['heartgold','soulsilver'],
+  'black-white':['black','white'],'black2-white2':['black-2','white-2'],
+  'x-y':['x','y'],'oras':['omega-ruby','alpha-sapphire'],
+  'sun-moon':['sun','moon'],'usum':['ultra-sun','ultra-moon'],
+  'sword-shield':[],'bdsp':['brilliant-diamond','shining-pearl'],
+  'legends-arceus':[],'scarlet-violet':[],'legends-za':[],
+};
+
+/* ── 中文地点→PokéAPI location名（按游戏版本）── */
+const LOCATION_API_MAP={
+  'red-blue':{
+    '1号道路':'route-1','2号道路':'route-2','月亮山':'mt-moon',
+    '无名小径':'cerulean-cave','赤铁岛':'kanto-pokemon-mansion',
+    '常盘森林':'viridian-forest','水流岛':'seafoam-islands','胜利道路':'kanto-victory-road'
+  },
+  'yellow':{
+    '1号道路':'route-1','2号道路':'route-2','月亮山':'mt-moon',
+    '无名小径':'cerulean-cave','赤铁岛':'kanto-pokemon-mansion',
+    '常盘森林':'viridian-forest','胜利道路':'kanto-victory-road'
+  },
+  'firered-leafgreen':{
+    '1号道路':'route-1','2号道路':'route-2','月亮山':'mt-moon',
+    '赤铁岛':'kanto-pokemon-mansion','常盘森林':'viridian-forest',
+    '水流岛':'seafoam-islands','胜利道路':'kanto-victory-road'
+  },
+  'gold-silver':{
+    '29号道路':'route-29','31号道路':'route-31','迷雾山':'mt-mortar',
+    '冰川小道':'ice-path','苹果树森林':'ilex-forest',
+    '喷火龙岛':'whirl-islands','银岩山':'mt-silver','胜利道路':'johto-victory-road'
+  },
+  'crystal':{
+    '29号道路':'route-29','31号道路':'route-31','迷雾山':'mt-mortar',
+    '冰川小道':'ice-path','苹果树森林':'ilex-forest',
+    '喷火龙岛':'whirl-islands','胜利道路':'johto-victory-road'
+  },
+  'heartgold-soulsilver':{
+    '29号道路':'route-29','迷雾山':'mt-mortar','冰川小道':'ice-path',
+    '苹果树森林':'ilex-forest','喷火龙岛':'whirl-islands',
+    '银岩山':'mt-silver','胜利道路':'johto-victory-road'
+  },
+  'ruby-sapphire':{
+    '101号道路':'route-101','102号道路':'route-102','幻影岛':'petalburg-woods',
+    '天气研究所':'route-119','流星瀑布':'meteor-falls',
+    '沙漠遗迹':'route-111','胜利道路':'hoenn-victory-road'
+  },
+  'emerald':{
+    '101号道路':'route-101','102号道路':'route-102','幻影岛':'petalburg-woods',
+    '天气研究所':'route-119','流星瀑布':'meteor-falls','胜利道路':'hoenn-victory-road'
+  },
+  'oras':{
+    '101号道路':'route-101','102号道路':'route-102','幻影岛':'petalburg-woods',
+    '天气研究所':'route-119','流星瀑布':'meteor-falls','胜利道路':'hoenn-victory-road'
+  },
+  'diamond-pearl':{
+    '201号道路':'route-201','202号道路':'route-202','永远森林':'eterna-forest',
+    '溺水城湖畔':'route-208','崩落山道':'mt-coronet','挑战道路':'route-210','大雪山':'route-216'
+  },
+  'platinum':{
+    '201号道路':'route-201','202号道路':'route-202','永远森林':'eterna-forest',
+    '旅人道路':'route-206','挑战道路':'route-210','日暮地':'wayward-cave','大雪山':'route-216'
+  },
+  'bdsp':{
+    '201号道路':'route-201','202号道路':'route-202','永远森林':'eterna-forest',
+    '崩落山道':'mt-coronet','挑战道路':'route-210','大雪山':'route-216','地下大迷宫':null
+  },
+  'black-white':{
+    '1号道路':'unova-route-1','深沉森林':'pinwheel-forest','冰洞':'twist-mountain',
+    '荒凉通道':'route-7','胜利道路':'unova-victory-road','白之遗迹':'relic-castle'
+  },
+  'black2-white2':{
+    '19号道路':'route-19','20号道路':'route-20','黑暗草地':null,
+    '游乐园遗迹':'relic-passage','胜利道路':'unova-victory-road','白之遗迹':'relic-castle'
+  },
+  'x-y':{
+    '1号道路':'kalos-route-2','2号道路':'kalos-route-3','蔷薇大道':'kalos-route-3',
+    '结晶岩窟':'reflecting-cave','倒扣杯湖':'kalos-route-14',
+    '冠军道路':'pokemon-league-x-y','碧之洞窟':'sea-spirit-den'
+  },
+  'sun-moon':{
+    '阿卡拉大草原':'akala-outskirts','梅雷梅雷草地':'melemele-meadow',
+    '波海帕帕河':'brooklet-hill','哈纳岛草地':'ula-ula-meadow',
+    '大莫库峰':'mount-lanakila','奈菲留斯岛':'poni-plains'
+  },
+  'usum':{
+    '阿卡拉大草原':'akala-outskirts','梅雷梅雷草地':'melemele-meadow',
+    '大莫库峰':'mount-lanakila','奈菲留斯岛':'poni-plains','超时空之洞':null
+  },
+};
+
+/* ── 官方精灵分布（PokéAPI location-area）── */
+async function fetchOfficialDistribution(sid,loc){
+  const versions=SERIES_VERSIONS[sid]||[];
+  const apiLoc=(LOCATION_API_MAP[sid]||{})[loc];
+  if(!apiLoc||!versions.length)return null;
+  try{
+    const locRes=await fetch(`https://pokeapi.co/api/v2/location/${apiLoc}/`);
+    if(!locRes.ok)return null;
+    const locData=await locRes.json();
+    const areas=locData.areas||[];
+    if(!areas.length)return null;
+    const areaResults=await Promise.all(areas.map(a=>
+      fetch(a.url).then(r=>r.ok?r.json():null).catch(()=>null)
+    ));
+    // 汇总遭遇率（取各版本最大值）
+    const pkmMap={};
+    for(const areaData of areaResults){
+      if(!areaData)continue;
+      for(const enc of(areaData.pokemon_encounters||[])){
+        const pkmName=enc.pokemon.name;
+        for(const vd of(enc.version_details||[])){
+          if(versions.includes(vd.version.name)){
+            const chance=vd.max_chance||0;
+            pkmMap[pkmName]=Math.max(pkmMap[pkmName]||0,chance);
+          }
+        }
+      }
+    }
+    const entries=Object.entries(pkmMap).sort((a,b)=>b[1]-a[1]);
+    if(!entries.length)return null;
+    // 获取前12只精灵数据
+    const items=[];
+    for(const[name,chance] of entries.slice(0,12)){
+      try{
+        const p=await fetchPkm(name);
+        const id=p.id;
+        const cnName=PKM_CN_TABLE[id]||p.name;
+        const img=p.sprites?.other?.['official-artwork']?.front_default||p.sprites?.front_default||'';
+        const evYields={};
+        for(const st of(p.stats||[])){if(st.effort>0)evYields[st.stat.name]=st.effort;}
+        if(!Object.keys(evYields).length)evYields['hp']=1;
+        items.push({id,name:cnName,img,evYields,chance,official:true,rate:chance>=30?'高':chance>=10?'中':'低'});
+      }catch(e){}
+    }
+    return items.length?items:null;
+  }catch(e){return null;}
+}
+
 /* ── 各版本地点表 ── */
 const SERIES_LOCATIONS={
   'red-blue':['1号道路','2号道路','月亮山','无名小径','赤铁岛','常盘森林','水流岛','胜利道路'],
@@ -1089,7 +1233,7 @@ function initHuntTab(sid){
     const chip=locRow.querySelector(`[data-loc="${prevLoc}"]`);
     if(chip){chip.classList.add('on');if(distSection)distSection.style.display='block';}
     const cacheKey=prevKey;
-    if(_huntDistCache[cacheKey]){renderHuntDist(_huntDistCache[cacheKey]);const btn=document.getElementById('hunt-dist-btn');if(btn)btn.style.display='none';}
+    if(_huntDistCache[cacheKey]){const cached=_huntDistCache[cacheKey];renderHuntDist(cached,cached[0]?.official===true);const btn=document.getElementById('hunt-dist-btn');if(btn)btn.style.display='none';}
   } else {
     if(distSection)distSection.style.display='none';
   }
@@ -1106,7 +1250,8 @@ function selectHuntLoc(loc){
   if(distTitle)distTitle.textContent=loc+' 精灵分布';
   const cacheKey=_huntSelLoc;
   if(_huntDistCache[cacheKey]){
-    renderHuntDist(_huntDistCache[cacheKey]);
+    const cached=_huntDistCache[cacheKey];
+    renderHuntDist(cached,cached[0]?.official===true);
     const btn=document.getElementById('hunt-dist-btn');if(btn)btn.style.display='none';
   } else {
     if(distGrid)distGrid.innerHTML='';
@@ -1121,8 +1266,18 @@ async function loadHuntDistribution(){
   const[sid,loc]=cacheKey.split('|');
   const btn=document.getElementById('hunt-dist-btn');
   const grid=document.getElementById('hunt-dist-grid');
-  if(btn){btn.disabled=true;btn.textContent='AI分析中…';}
-  if(grid)grid.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:8px 0;font-family:\'DM Mono\',monospace">正在分析「'+loc+'」的精灵分布…</div>';
+  if(btn){btn.disabled=true;btn.textContent='获取中…';}
+  if(grid)grid.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:8px 0;font-family:\'DM Mono\',monospace">正在从 PokéAPI 读取「'+loc+'」官方遭遇数据…</div>';
+  // 优先官方数据
+  const official=await fetchOfficialDistribution(sid,loc);
+  if(official){
+    _huntDistCache[cacheKey]=official;
+    renderHuntDist(official,true);
+    if(btn)btn.style.display='none';
+    return;
+  }
+  // 回退 AI
+  if(grid)grid.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:8px 0;font-family:\'DM Mono\',monospace">官方数据暂无覆盖，AI 分析中…</div>';
   const s=PKM_SERIES.find(x=>x.id===sid);
   const prompt=`宝可梦游戏「${s?.name||sid}」中「${loc}」可以遇到的精灵，请列出10只，每行一只，格式：
 精灵中文名 · 高/中/低
@@ -1142,7 +1297,9 @@ async function loadHuntDistribution(){
       try{
         const p=await fetchPkm(id);
         const img=p.sprites?.other?.['official-artwork']?.front_default||p.sprites?.front_default||'';
-        items.push({id,name:cnName,img,rate});
+        const evYields={};for(const st of(p.stats||[])){if(st.effort>0)evYields[st.stat.name]=st.effort;}
+        if(!Object.keys(evYields).length)evYields['hp']=1;
+        items.push({id,name:cnName,img,rate,evYields,official:false});
       }catch(e){}
     }
     if(!items.length){
@@ -1151,7 +1308,7 @@ async function loadHuntDistribution(){
       return;
     }
     _huntDistCache[cacheKey]=items;
-    renderHuntDist(items);
+    renderHuntDist(items,false);
     if(btn)btn.style.display='none';
   }catch(e){
     if(grid)grid.innerHTML=`<div style="font-size:.75rem;color:var(--danger)">获取失败：${e.message}</div>`;
@@ -1159,16 +1316,28 @@ async function loadHuntDistribution(){
   }
 }
 
-function renderHuntDist(items){
+function renderHuntDist(items,isOfficial){
   _huntLocPkm=items;
   const grid=document.getElementById('hunt-dist-grid');if(!grid)return;
-  grid.innerHTML=items.map((it,i)=>`
-    <div class="hunt-dist-card" id="hunt-dist-${i}" onclick="selectDistPkm(${i})" style="animation-delay:${i*35}ms">
+  const srcBadge=isOfficial
+    ?`<div class="dist-src-badge dist-src-official">PokéAPI 官方</div>`
+    :`<div class="dist-src-badge dist-src-ai">AI 参考</div>`;
+  grid.innerHTML=srcBadge+items.map((it,i)=>{
+    let rateHtml;
+    if(it.official&&it.chance!=null){
+      const cls=it.chance>=30?'rate-hi':it.chance>=10?'rate-md':'rate-lo';
+      rateHtml=`<div class="hunt-dist-rate ${cls}">● ${it.chance}%</div>`;
+    }else{
+      const cls=it.rate==='高'?'rate-hi':it.rate==='低'?'rate-lo':'rate-md';
+      rateHtml=`<div class="hunt-dist-rate ${cls}">● ${it.rate}</div>`;
+    }
+    return`<div class="hunt-dist-card" id="hunt-dist-${i}" onclick="selectDistPkm(${i})" style="animation-delay:${i*35}ms">
       <div class="hunt-dist-sel-mark">✓</div>
       <img src="${it.img||''}" alt="" onerror="this.style.display='none'">
       <div class="hunt-dist-name">${esc(it.name)}</div>
-      <div class="hunt-dist-rate ${it.rate==='高'?'rate-hi':it.rate==='低'?'rate-lo':'rate-md'}">● ${it.rate}</div>
-    </div>`).join('');
+      ${rateHtml}
+    </div>`;
+  }).join('');
 }
 
 function selectDistPkm(idx){
@@ -1732,7 +1901,7 @@ function initTrainTab(sid){
   if(_trainSelLoc.startsWith(sid+'|')&&_trainDistCache[_trainSelLoc]){
     const distSec=document.getElementById('train-dist-section');
     if(distSec)distSec.style.display='block';
-    renderTrainDist(_trainDistCache[_trainSelLoc]);
+    const cachedT=_trainDistCache[_trainSelLoc];renderTrainDist(cachedT,cachedT[0]?.official===true);
     const btn=document.getElementById('train-dist-btn');if(btn)btn.style.display='none';
     const title=document.getElementById('train-dist-title');
     if(title)title.textContent=_trainSelLoc.split('|')[1]+' 精灵分布 & 努力值';
@@ -1829,7 +1998,7 @@ function selectTrainLoc(loc){
   if(distTitle)distTitle.textContent=loc+' 精灵分布 & 努力值';
   const cacheKey=_trainSelLoc;
   if(_trainDistCache[cacheKey]){
-    renderTrainDist(_trainDistCache[cacheKey]);
+    const cachedTL=_trainDistCache[cacheKey];renderTrainDist(cachedTL,cachedTL[0]?.official===true);
     const btn=document.getElementById('train-dist-btn');if(btn)btn.style.display='none';
   } else {
     const grid=document.getElementById('train-dist-grid');if(grid)grid.innerHTML='';
@@ -1844,7 +2013,17 @@ async function loadTrainDistribution(){
   const btn=document.getElementById('train-dist-btn');
   const grid=document.getElementById('train-dist-grid');
   if(btn){btn.disabled=true;btn.textContent='获取中…';}
-  if(grid)grid.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:8px 0;font-family:\'DM Mono\',monospace">AI 生成精灵名单，然后从 PokéAPI 读取准确努力值…</div>';
+  if(grid)grid.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:8px 0;font-family:\'DM Mono\',monospace">正在从 PokéAPI 读取「'+loc+'」官方遭遇数据…</div>';
+  // 优先官方数据
+  const official=await fetchOfficialDistribution(sid,loc);
+  if(official){
+    _trainDistCache[cacheKey]=official;
+    renderTrainDist(official,true);
+    if(btn)btn.style.display='none';
+    return;
+  }
+  // 回退 AI（名单 → PokéAPI 努力值）
+  if(grid)grid.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:8px 0;font-family:\'DM Mono\',monospace">官方数据暂无覆盖，AI 生成名单并读取努力值…</div>';
   const s=PKM_SERIES.find(x=>x.id===sid);
   const prompt=`宝可梦游戏「${s?.name||sid}」中「${loc}」可以遇到的精灵，请列出10只，每行一只，只写精灵中文名，不要编号不要其他内容。`;
   try{
@@ -1854,19 +2033,16 @@ async function loadTrainDistribution(){
     const names=txt.split('\n').map(l=>l.trim().replace(/^[\d\.\-、]+/,'')).filter(Boolean).slice(0,12);
     const rev=getPkmCnRev();
     const items=[];
-    if(grid)grid.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:8px 0;font-family:\'DM Mono\',monospace">正在从 PokéAPI 读取努力值数据（'+names.length+' 只）…</div>';
+    if(grid)grid.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:8px 0;font-family:\'DM Mono\',monospace">从 PokéAPI 读取努力值（'+names.length+' 只）…</div>';
     for(const cnName of names){
       const id=rev[cnName];if(!id)continue;
       try{
         const p=await fetchPkm(id);
         const img=p.sprites?.front_default||'';
-        // 从 PokéAPI stats[].effort 获取努力值（100% 可靠）
         const evYields={};
-        for(const st of(p.stats||[])){
-          if(st.effort>0)evYields[st.stat.name]=st.effort;
-        }
-        if(Object.keys(evYields).length===0)evYields['hp']=1; // 兜底
-        items.push({id,name:cnName,img,evYields});
+        for(const st of(p.stats||[])){if(st.effort>0)evYields[st.stat.name]=st.effort;}
+        if(!Object.keys(evYields).length)evYields['hp']=1;
+        items.push({id,name:cnName,img,evYields,official:false});
       }catch(e){}
     }
     if(!items.length){
@@ -1875,7 +2051,7 @@ async function loadTrainDistribution(){
       return;
     }
     _trainDistCache[cacheKey]=items;
-    renderTrainDist(items);
+    renderTrainDist(items,false);
     if(btn)btn.style.display='none';
   }catch(e){
     if(grid)grid.innerHTML=`<div style="font-size:.75rem;color:var(--danger)">获取失败：${e.message}</div>`;
@@ -1883,15 +2059,21 @@ async function loadTrainDistribution(){
   }
 }
 
-function renderTrainDist(items){
+function renderTrainDist(items,isOfficial){
   _trainLocPkm=items;
   const grid=document.getElementById('train-dist-grid');if(!grid)return;
-  grid.innerHTML=items.map((it,i)=>{
-    const evStr=Object.entries(it.evYields).map(([k,v])=>{
+  const srcBadge=isOfficial
+    ?`<div class="dist-src-badge dist-src-official">PokéAPI 官方 · 遭遇率数据</div>`
+    :`<div class="dist-src-badge dist-src-ai">AI 参考 · 努力值来自 PokéAPI</div>`;
+  grid.innerHTML=srcBadge+items.map((it,i)=>{
+    const evStr=Object.entries(it.evYields||{}).map(([k,v])=>{
       const s=EV_STATS.find(x=>x.key===k);
       return`<span class="train-ev-chip" style="background:${s?.color||'var(--acc)'}22;border-color:${s?.color||'var(--acc)'}55;color:${s?.color||'var(--acc)'}">${s?.zh||k} +${v}</span>`;
     }).join('');
+    const chanceHtml=it.official&&it.chance!=null
+      ?`<div class="train-dist-chance">${it.chance}%</div>`:'';
     return`<div class="train-dist-card" id="train-card-${i}" onclick="beatPokemon(${i})" style="animation-delay:${i*35}ms">
+      ${chanceHtml}
       <img src="${it.img||''}" alt="" onerror="this.style.display='none'">
       <div class="train-dist-name">${esc(it.name)}</div>
       <div class="train-ev-chips">${evStr}</div>
