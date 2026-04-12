@@ -669,7 +669,7 @@ function switchSeriesTab(el,tab){
   if(tab==='progress')renderProgress(_curSid);
   if(tab==='hunting'){initNatureSelect('hunt-nature');renderHuntList(_curSid);}
   if(tab==='catches'){initNatureSelect('catch-nature');renderCatchList(_curSid);}
-  if(tab==='explore'){document.getElementById('explore-result').style.display='none';}
+  if(tab==='explore'){document.getElementById('explore-result').style.display='none';const sr=document.getElementById('explore-save-row');if(sr)sr.style.display='none';loadExploreHistory(_curSid);}
 }
 
 
@@ -780,34 +780,157 @@ function toggleCheckpoint(sid,idx){
 }
 
 /* ============================
-   🗺 探索：位置 + AI精灵分布
+   🗺 探索：位置 + 截图 + AI分析
    ============================ */
-async function exploreLocation(){
-  const loc=document.getElementById('explore-loc-inp').value.trim();if(!loc)return;
-  const sid=_curSid;const s=PKM_SERIES.find(x=>x.id===sid);
-  const box=document.getElementById('explore-result');
-  box.style.display='block';
-  box.innerHTML=`<div class="explore-result-header"><span class="explore-loc-name">🗺 ${esc(loc)}</span><span style="font-size:.72rem;color:var(--t3);margin-left:8px">AI查询中…</span></div>`;
-  const prompt=`你是一位用文字旅行的宝可梦训练师。
-正在游玩「${s?.name||sid}」（${s?.year||''}年），此刻踏上了「${loc}」。
+let _exploreImgData=null,_exploreImgMime=null,_lastExploreResult=null;
 
-请以训练师第一人称视角，写一段150字左右的沉浸式旅行文字：
-自然融入这个地点的地貌风光、空气质感、时间氛围，
-以及游戏中在这里会遇到的宝可梦（用"隐约看见""草丛里传来"等方式自然带入，不要列表），
-还有在这个地方可能发现的隐藏角落或旅途感受。
-文字要有散文游记的画面感和情绪，结尾带一点属于训练师的感慨或期待。
-纯文字，不用Markdown，不要分段标题，一气呵成。`;
+function onExploreImgChange(inp){
+  const file=inp.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const dataUrl=e.target.result;
+    const comma=dataUrl.indexOf(',');
+    _exploreImgData=dataUrl.slice(comma+1);
+    _exploreImgMime=file.type||'image/jpeg';
+    const preview=document.getElementById('explore-img-preview');
+    preview.style.display='block';
+    preview.innerHTML=`<div class="explore-img-thumb-wrap"><img src="${dataUrl}" class="explore-img-thumb" alt="截图预览"><button class="explore-img-clear" onclick="clearExploreImg()">✕</button></div>`;
+    const lbl=document.getElementById('explore-img-lbl');
+    if(lbl){lbl.textContent='📷 '+(file.name.length>12?file.name.slice(0,12)+'…':file.name);lbl.classList.add('active');}
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearExploreImg(){
+  _exploreImgData=null;_exploreImgMime=null;
+  const preview=document.getElementById('explore-img-preview');if(preview)preview.style.display='none';
+  const inp=document.getElementById('explore-img-inp');if(inp)inp.value='';
+  const lbl=document.getElementById('explore-img-lbl');if(lbl){lbl.textContent='📷 截图';lbl.classList.remove('active');}
+}
+
+async function exploreLocation(){
+  const loc=document.getElementById('explore-loc-inp')?.value.trim()||'';
+  if(!loc&&!_exploreImgData){showToast('请输入地图位置或上传截图');return;}
+  const sid=_curSid;const s=PKM_SERIES.find(x=>x.id===sid);
+  const weather=document.getElementById('explore-weather')?.value||'';
+  const time=document.getElementById('explore-time')?.value||'';
+  const box=document.getElementById('explore-result');
+  const saveRow=document.getElementById('explore-save-row');
+  const saveOk=document.getElementById('explore-save-ok');
+  box.style.display='block';if(saveRow)saveRow.style.display='none';if(saveOk)saveOk.style.display='none';
+  box.innerHTML=`<div class="explore-result-header"><span class="explore-loc-name">🗺 ${esc(loc||'识别截图中…')}</span><span style="font-size:.72rem;color:var(--t3);margin-left:8px">AI分析中…</span></div>`;
+  const btn=document.getElementById('explore-btn');if(btn){btn.disabled=true;btn.textContent='…';}
+  const ctxStr=[weather?'天气：'+weather:'',time?'时间：'+time:''].filter(Boolean).join('，');
+  const locCtx=loc?`当前位置：「${loc}」`:'请先从截图识别当前所在位置，然后再进行分析';
+  const promptText=`你是宝可梦世界的旅行作家兼精灵生态学家。
+玩家正在游玩「${s?.name||sid}」（${s?.year||''}年），${locCtx}${ctxStr?'，'+ctxStr:''}。
+
+请严格按照以下三段格式输出（每个【标题】独占一行）：
+
+【旅途印象】
+以训练师第一人称，写60-80字沉浸式旅行散文：融合该地点的地形风光${weather?'、'+weather+'天气的氛围':''}${time?'、'+time+'的时间感':''}，精灵的存在感自然渗透在叙述中，有画面感和情绪，结尾带一点旅人的感慨。
+
+【精灵分布】
+列出在「${s?.name||'该作品'}」${loc?'「'+loc+'」':'此地'}可遇到的宝可梦，每行一只，格式：
+精灵名 · 遭遇率：高/中/低 · 条件：出现的时间/天气/地形/特殊要求
+（8-12只，涵盖常见与稀有${time?'，优先标注'+time+'可遇':''}${weather?'，标注'+weather+'天气特有':''}）
+
+【探索提示】
+20-30字，该地点的隐藏道具、特殊事件或值得注意的攻略技巧。
+
+纯文字，不用Markdown，不用额外符号。`;
+  const parts=[];
+  if(_exploreImgData)parts.push({inline_data:{mime_type:_exploreImgMime||'image/jpeg',data:_exploreImgData}});
+  parts.push({text:promptText});
   try{
-    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:600,temperature:0.85}})});
+    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts}],generationConfig:{maxOutputTokens:800,temperature:0.85}})});
     if(!res.ok)throw new Error('HTTP '+res.status);
     const data=await res.json();const reply=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'（AI暂时无法响应）';
+    const displayLoc=loc||(_exploreImgData?'截图位置':'未知位置');
+    _lastExploreResult={loc:displayLoc,weather,time,text:reply,ts:Date.now(),sid};
     box.innerHTML=`<div class="explore-result-header">
       <span style="font-size:1.1rem">🗺</span>
-      <span class="explore-loc-name">${esc(loc)}</span>
+      <span class="explore-loc-name">${esc(displayLoc)}</span>
+      ${weather?`<span class="explore-ctx-tag">${esc(weather)}</span>`:''}
+      ${time?`<span class="explore-ctx-tag">${esc(time)}</span>`:''}
       <span style="font-size:.68rem;color:var(--t3);font-family:'DM Mono',monospace;margin-left:auto">${s?.name||''}</span>
-    </div>
-    <div class="explore-body explore-narrative">${esc(reply)}</div>`;
+    </div>${renderExploreSections(reply)}`;
+    if(saveRow)saveRow.style.display='flex';
   }catch(e){box.innerHTML=`<div class="explore-body" style="color:var(--danger)">查询失败：${e.message}</div>`;}
+  if(btn){btn.disabled=false;btn.textContent='探索';}
+}
+
+function renderExploreSections(text){
+  const parts=text.split(/(?=【[^】]+】)/);
+  return parts.map(part=>{
+    const m=part.match(/^【([^】]+)】\n?([\s\S]*)/);
+    if(!m)return`<div class="explore-body explore-narrative">${esc(part.trim())}</div>`;
+    const[,title,body]=m;
+    const cls=title==='旅途印象'?'explore-section-imm':title==='精灵分布'?'explore-section-pkm':'explore-section-tip';
+    const icon=title==='旅途印象'?'✦':title==='精灵分布'?'◈':'⚑';
+    return`<div class="explore-section ${cls}"><div class="explore-section-title">${icon} ${esc(title)}</div><div class="explore-section-body">${esc(body.trim())}</div></div>`;
+  }).join('');
+}
+
+async function saveExploreRecord(){
+  if(!_lastExploreResult)return;
+  const btn=document.querySelector('#explore-save-row .btn');if(btn){btn.disabled=true;btn.textContent='保存中…';}
+  const{data:{session}}=await db.auth.getSession();
+  if(!session?.user){showToast('请先登录');if(btn){btn.disabled=false;btn.textContent='📌 保存到探索日志';}return;}
+  const r=_lastExploreResult;
+  const{error}=await db.from('pkm_explore_log').insert({
+    user_id:session.user.id,series_id:r.sid,
+    location:r.loc,weather:r.weather||null,time_of_day:r.time||null,content:r.text
+  });
+  if(btn){btn.disabled=false;btn.textContent='📌 保存到探索日志';}
+  if(error){showToast('保存失败：'+error.message);return;}
+  const saveOk=document.getElementById('explore-save-ok');
+  if(saveOk){saveOk.style.display='inline';setTimeout(()=>{saveOk.style.display='none';},2000);}
+  loadExploreHistory(r.sid);
+}
+
+async function loadExploreHistory(sid){
+  const el=document.getElementById('explore-history');if(!el)return;
+  el.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:6px 0">加载中…</div>';
+  const{data:{session}}=await db.auth.getSession();
+  if(!session?.user){el.innerHTML='';return;}
+  const{data,error}=await db.from('pkm_explore_log').select('*').eq('user_id',session.user.id).eq('series_id',sid).order('created_at',{ascending:false});
+  if(error||!data?.length){el.innerHTML='';return;}
+  renderExploreHistory(data);
+}
+
+function renderExploreHistory(records){
+  const el=document.getElementById('explore-history');if(!el)return;
+  if(!records.length){el.innerHTML='';return;}
+  el.innerHTML=`<div class="explore-hist-hdr"><span style="font-size:.65rem;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.08em">探索日志 · ${records.length} 条记录</span></div>`
+    +records.map((r,i)=>{
+      const d=new Date(r.created_at);
+      const ts=`${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+      const tags=[r.weather,r.time_of_day].filter(Boolean).map(t=>`<span class="explore-ctx-tag">${esc(t)}</span>`).join('');
+      const safeId=r.id.replace(/-/g,'_');
+      const isFirst=i===0;
+      return`<div class="explore-hist-item${isFirst?' explore-hist-latest':''}">
+        <div class="explore-hist-header" onclick="toggleExploreRecord('${safeId}')">
+          <span class="explore-hist-loc">🗺 ${esc(r.location)}</span>
+          ${tags}
+          ${isFirst?'<span class="explore-hist-new">最新</span>':''}
+          <span class="explore-hist-ts">${ts}</span>
+          <button class="explore-hist-del" onclick="delExploreRecord('${r.id}');event.stopPropagation()">✕</button>
+        </div>
+        <div class="explore-hist-body" id="explore-hist-body-${safeId}" style="display:${isFirst?'block':'none'}">${renderExploreSections(r.content)}</div>
+      </div>`;
+    }).join('');
+}
+
+function toggleExploreRecord(safeId){
+  const el=document.getElementById('explore-hist-body-'+safeId);if(el)el.style.display=el.style.display==='none'?'block':'none';
+}
+
+async function delExploreRecord(id){
+  if(!confirm('删除这条探索记录？'))return;
+  const{data:{session}}=await db.auth.getSession();if(!session?.user)return;
+  await db.from('pkm_explore_log').delete().eq('id',id).eq('user_id',session.user.id);
+  loadExploreHistory(_curSid);
 }
 
 /* ============================
