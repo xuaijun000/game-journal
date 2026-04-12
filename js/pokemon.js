@@ -107,15 +107,22 @@ async function fetch52PokeDesc(cnName,pkmId){
     const wd=await wr.json();clearTimeout(timer2);
     const html=wd?.parse?.text?.['*']||'';
     if(!html)return null;
-    // Step 3: 用 DOMParser 解析 HTML，提取有效中文段落
+    // Step 3: 用 DOMParser 解析 HTML，提取有效中文描述
+    // 图鉴描述在 52poke 里是表格 <td> 格式，不能移除 table
     const doc=new DOMParser().parseFromString(html,'text/html');
-    // 移除注释、编辑按钮、引用上标等噪音元素
-    doc.querySelectorAll('.mw-editsection,sup,.reference,table').forEach(el=>el.remove());
-    const candidates=[...doc.querySelectorAll('p,li,dd')]
+    doc.querySelectorAll('.mw-editsection,sup,.reference,.sortkey').forEach(el=>el.remove());
+    // 同时查 td（图鉴表格）和 p/li/dd（段落文字）
+    const candidates=[...doc.querySelectorAll('td,p,li,dd')]
       .map(el=>el.textContent.replace(/\s+/g,' ').trim())
-      .filter(t=>t.length>=12&&t.length<=400&&/[\u4e00-\u9fa5]{8,}/.test(t));
+      .filter(t=>{
+        if(t.length<15||t.length>500)return false;
+        if(!/[\u4e00-\u9fa5]{10,}/.test(t))return false;  // 至少10个连续汉字
+        // 排除版本名、纯标题等极短/无意义条目
+        if(/^(红|蓝|黄|金|银|晶|火红|叶绿|红宝石|蓝宝石|翡翠|钻石|珍珠|白金|心金|魂银|黑|白|X|Y|太阳|月亮|剑|盾|朱|紫|图鉴号|分类|身高|体重|特性|捕获率|性别比例|蛋组|精灵图鉴)$/.test(t))return false;
+        return true;
+      });
     if(!candidates.length)return null;
-    // 取最长的段落（通常是完整描述）
+    // 取最长的描述（通常最完整）
     return candidates.sort((a,b)=>b.length-a.length)[0];
   }catch(e){return null;}
 }
@@ -2065,8 +2072,9 @@ async function initSeriesMap(sid){
   const link2El=document.getElementById('series-map-link2');
   const fallback=document.getElementById('series-map-fallback');
   if(regionEl)regionEl.textContent='🗺 '+m.region;
-  if(linkEl)linkEl.href=m.link;
-  if(link2El)link2El.href=m.link;
+  const wiki52Link=`https://wiki.52poke.com/wiki/${encodeURIComponent(m.region)}`;
+  if(linkEl)linkEl.href=wiki52Link;
+  if(link2El)link2El.href=wiki52Link;
   if(fallback)fallback.style.display='none';
   if(imgEl){imgEl.src='';imgEl.style.display='';}
 
