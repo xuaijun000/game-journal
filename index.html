@@ -498,6 +498,7 @@
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
             <span class="hunt-section-lbl" style="margin-bottom:0">💪 <span id="train-dist-title">精灵分布 &amp; 努力值</span></span>
             <button class="btn btn-sm" id="train-dist-btn" onclick="loadTrainDistribution()" style="font-size:.72rem">✦ 获取</button>
+            <button class="btn btn-sm btn-a" onclick="openImmTrain()" style="font-size:.72rem;margin-left:auto">⚡ 沉浸训练</button>
           </div>
           <div class="train-dist-note">努力值数据来源：PokéAPI 官方数据，点击精灵即可累计 EV</div>
           <div id="train-dist-grid" class="train-dist-grid"></div>
@@ -618,6 +619,13 @@
     <button class="hunt-action-btn hunt-action-run"  onclick="huntActionRun()">💨<br><span>逃跑</span></button>
     <button class="hunt-action-btn hunt-action-catch" onclick="huntActionCatch()">⚫<br><span>捕捉</span></button>
   </div>
+  <!-- 性格确认层 -->
+  <div class="hunt-nature-pick" id="hunt-nature-pick" style="display:none">
+    <div class="hunt-np-title">捕获到了！选择性格</div>
+    <div class="hunt-np-target" id="hunt-np-target"></div>
+    <div class="hunt-np-grid" id="hunt-np-grid"></div>
+    <button class="hunt-np-cancel" onclick="cancelHuntNaturePick()">✕ 没捕到，继续</button>
+  </div>
   <!-- 捕获成功动画层 -->
   <div class="hunt-imm-success" id="hunt-imm-success" style="display:none">
     <div class="hunt-success-sparks" id="hunt-success-sparks"></div>
@@ -625,6 +633,24 @@
     <div class="hunt-success-title">捕获成功！</div>
     <div class="hunt-success-name" id="hunt-success-name"></div>
     <div class="hunt-success-count" id="hunt-success-count"></div>
+  </div>
+</div>
+<!-- 沉浸式训练界面 -->
+<div id="ov-train-imm" class="hunt-imm-ov">
+  <div class="hunt-imm-bg-blur" id="train-imm-bg"></div>
+  <div class="hunt-imm-particles" id="train-imm-particles"></div>
+  <button class="hunt-imm-close" onclick="closeImmTrain()">✕</button>
+  <!-- 左侧：训练精灵 + EV 条 -->
+  <div class="tim-left">
+    <img class="tim-sprite" id="train-imm-sprite" src="" alt="">
+    <div class="tim-name" id="train-imm-name"></div>
+    <div class="tim-ev-list" id="train-imm-ev-bars"></div>
+    <div class="tim-ev-total" id="train-imm-ev-total"></div>
+  </div>
+  <!-- 右侧：刷练目标精灵 -->
+  <div class="tim-right">
+    <div class="tim-section-lbl">点击精灵 +EV</div>
+    <div class="tim-dist-grid" id="train-imm-dist-grid"></div>
   </div>
 </div>
 <!-- 发现页详情弹窗 -->

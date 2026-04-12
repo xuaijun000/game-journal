@@ -85,51 +85,37 @@ const PKM_CN_TABLE={1:'妙蛙种子',2:'妙蛙草',3:'妙蛙花',4:'小火龙',5
 1021:'猛雷鼓',1022:'铁磐岩',1023:'铁头壳',1024:'太乐巴戈斯',1025:'桃歹郎'};
 
 
-// ── 52poke 中文图鉴抓取 ──
+// ── 52poke 中文图鉴抓取（简体中文）──
 async function fetch52PokeDesc(cnName,pkmId){
   if(!cnName)return null;
   try{
     const ctrl=new AbortController();const timer=setTimeout(()=>ctrl.abort(),6000);
     const base='https://wiki.52poke.com/api.php';
-    // Step 1: 获取章节列表，找到图鉴描述章节编号
-    const sectUrl=`${base}?action=parse&page=${encodeURIComponent(cnName)}&prop=sections&format=json&origin=*`;
+    // Step 1: 获取章节列表，找到图鉴描述章节编号（variant=zh-hans 转为简体）
+    const sectUrl=`${base}?action=parse&page=${encodeURIComponent(cnName)}&prop=sections&format=json&origin=*&variant=zh-hans`;
     const sr=await fetch(sectUrl,{signal:ctrl.signal});
     if(!sr.ok){clearTimeout(timer);return null;}
     const sd=await sr.json();clearTimeout(timer);
     const sections=sd?.parse?.sections||[];
     const descSect=sections.find(s=>/图鉴/.test(s.line||''));
     if(!descSect)return null;
-    // Step 2: 获取该章节的 wikitext
+    // Step 2: 获取该章节的渲染 HTML（variant=zh-hans 强制简体输出）
     const ctrl2=new AbortController();const timer2=setTimeout(()=>ctrl2.abort(),6000);
-    const wtUrl=`${base}?action=parse&page=${encodeURIComponent(cnName)}&prop=wikitext&section=${descSect.index}&format=json&origin=*`;
-    const wr=await fetch(wtUrl,{signal:ctrl2.signal});
+    const htUrl=`${base}?action=parse&page=${encodeURIComponent(cnName)}&prop=text&section=${descSect.index}&format=json&origin=*&variant=zh-hans`;
+    const wr=await fetch(htUrl,{signal:ctrl2.signal});
     if(!wr.ok){clearTimeout(timer2);return null;}
     const wd=await wr.json();clearTimeout(timer2);
-    const wikitext=wd?.parse?.wikitext?.['*']||'';
-    if(!wikitext)return null;
-    // Step 3: 从 wikitext 提取中文描述文字
-    // 处理：移除引用标签、解析器函数、HTML注释
-    const cleaned=wikitext
-      .replace(/<ref[^>]*>[\s\S]*?<\/ref>/g,'')
-      .replace(/<!--[\s\S]*?-->/g,'')
-      .replace(/\{\{#[^}]+\}\}/g,'');
-    // 收集所有含汉字、长度合适的候选文本
-    const candidates=[];
-    // 匹配 | 参数名 = 值 或 | 值（模板参数）
-    for(const m of cleaned.matchAll(/\|[^|={}\n]{0,20}[=|]\s*([^\n|}{<]{12,300})/g)){
-      const raw=m[1].trim();
-      const txt=raw
-        .replace(/\[\[(?:[^\]|]*\|)?([^\]]+)\]\]/g,'$2')  // [[链接|显示]] → 显示
-        .replace(/\[\[([^\]]+)\]\]/g,'$1')                  // [[链接]] → 链接
-        .replace(/'{2,}/g,'')                                // 粗体/斜体标记
-        .replace(/<[^>]+>/g,'')                              // HTML标签
-        .replace(/\{\{[^}]+\}\}/g,'')                        // 残余模板
-        .trim();
-      if(txt.length>=12&&txt.length<=300&&/[\u4e00-\u9fa5]{8,}/.test(txt))
-        candidates.push(txt);
-    }
+    const html=wd?.parse?.text?.['*']||'';
+    if(!html)return null;
+    // Step 3: 用 DOMParser 解析 HTML，提取有效中文段落
+    const doc=new DOMParser().parseFromString(html,'text/html');
+    // 移除注释、编辑按钮、引用上标等噪音元素
+    doc.querySelectorAll('.mw-editsection,sup,.reference,table').forEach(el=>el.remove());
+    const candidates=[...doc.querySelectorAll('p,li,dd')]
+      .map(el=>el.textContent.replace(/\s+/g,' ').trim())
+      .filter(t=>t.length>=12&&t.length<=400&&/[\u4e00-\u9fa5]{8,}/.test(t));
     if(!candidates.length)return null;
-    // 取最长的描述（通常最完整）
+    // 取最长的段落（通常是完整描述）
     return candidates.sort((a,b)=>b.length-a.length)[0];
   }catch(e){return null;}
 }
@@ -1772,7 +1758,57 @@ function huntActionRun(){
 
 function huntActionCatch(){
   if(_huntActionsLocked)return;
-  confirmImmCatch();
+  _huntActionsLocked=true;
+  showHuntNaturePick();
+}
+
+function showHuntNaturePick(){
+  const list=lsGet('pkm_hunt_'+_immSid)||[];
+  const t=list[_immIdx];if(!t)return;
+  const pick=document.getElementById('hunt-nature-pick');if(!pick)return;
+  const targetEl=document.getElementById('hunt-np-target');
+  const hasNature=t.nature&&t.nature!=='any'&&t.nature!=='—'&&NATURES.some(n=>n.id===t.nature);
+  if(targetEl)targetEl.textContent=hasNature?'目标性格：'+getNatureZh(t.nature):'无特定性格目标';
+  // 渲染性格网格
+  const grid=document.getElementById('hunt-np-grid');
+  if(grid){
+    grid.innerHTML=NATURES.map(n=>{
+      const hint=n.up?`+${STAT_ZH[n.up]||n.up}`:'中性';
+      const isTarget=hasNature&&n.id===t.nature;
+      return`<div class="hunt-np-btn${isTarget?' hunt-np-target-nat':''}" onclick="huntSelectNature('${n.id}')">${n.zh}<span class="hunt-np-hint">${hint}</span></div>`;
+    }).join('');
+  }
+  document.getElementById('hunt-battle-actions').style.display='none';
+  pick.style.display='flex';
+}
+
+function cancelHuntNaturePick(){
+  document.getElementById('hunt-nature-pick').style.display='none';
+  document.getElementById('hunt-battle-actions').style.display='flex';
+  _huntActionsLocked=false;
+}
+
+function huntSelectNature(natId){
+  const list=lsGet('pkm_hunt_'+_immSid)||[];
+  const t=list[_immIdx];if(!t)return;
+  const hasNature=t.nature&&t.nature!=='any'&&t.nature!=='—'&&NATURES.some(n=>n.id===t.nature);
+  document.getElementById('hunt-nature-pick').style.display='none';
+  if(!hasNature||natId===t.nature){
+    // 性格匹配（或无目标性格）→ 捕获成功
+    confirmImmCatch();
+  } else {
+    // 性格不对 → 继续狩猎
+    _huntCountUp();
+    document.getElementById('hunt-battle-actions').style.display='flex';
+    _huntActionsLocked=false;
+    const natZh=getNatureZh(natId);
+    const targetZh=getNatureZh(t.nature);
+    showHuntNarration(`${natZh}性格……不是目标${targetZh}，继续！`);
+    // 新精灵入场动画
+    const sp=document.getElementById('hunt-imm-sprite');
+    sp.classList.remove('fight-hit','run-away','shiny');void sp.offsetWidth;
+    sp.classList.add('enter-new');setTimeout(()=>sp.classList.remove('enter-new'),500);
+  }
 }
 
 /* ── 粒子背景 ── */
@@ -2122,6 +2158,126 @@ async function loadTrainDistribution(){
     if(grid)grid.innerHTML=`<div style="font-size:.75rem;color:var(--danger)">获取失败：${e.message}</div>`;
     if(btn){btn.disabled=false;btn.textContent='↺ 重试';}
   }
+}
+
+/* ============================
+   ⚡ 沉浸式训练界面
+   ============================ */
+let _trainImmParticleTimer=null;
+
+function openImmTrain(){
+  if(!_trainPkmData){showToast('请先选择训练对象');return;}
+  if(!_trainLocPkm.length){showToast('请先加载地点精灵分布');return;}
+  const ov=document.getElementById('ov-train-imm');if(!ov)return;
+
+  // 填入训练精灵信息
+  const art=document.getElementById('train-imm-sprite');
+  if(art){art.src=_trainPkmData.img||'';art.classList.remove('train-imm-beat');void art.offsetWidth;}
+  const bg=document.getElementById('train-imm-bg');
+  if(bg)bg.style.backgroundImage=`url(${_trainPkmData.img||''})`;
+  document.getElementById('train-imm-name').textContent=_trainPkmData.name+(_trainPkmData.nick?`「${_trainPkmData.nick}」`:'');
+
+  // 渲染训练目标精灵网格
+  renderTrainImmGrid();
+  // 渲染 EV 进度条
+  renderTrainImmEVs();
+
+  // 后台拉高清图
+  fetchPkm(_trainPkmData.id).then(p=>{
+    const hd=p.sprites?.other?.['official-artwork']?.front_default||p.sprites?.front_default||_trainPkmData.img;
+    if(art)art.src=hd;
+    if(bg)bg.style.backgroundImage=`url(${hd})`;
+  }).catch(()=>{});
+
+  ov.classList.add('on');
+  document.body.style.overflow='hidden';
+  startTrainImmParticles();
+}
+
+function closeImmTrain(){
+  stopTrainImmParticles();
+  const ov=document.getElementById('ov-train-imm');if(ov)ov.classList.remove('on');
+  document.body.style.overflow='';
+  // 同步回主 tab
+  renderTrainEVs();
+}
+
+function renderTrainImmGrid(){
+  const grid=document.getElementById('train-imm-dist-grid');if(!grid)return;
+  grid.innerHTML=_trainLocPkm.map((it,i)=>{
+    const evStr=Object.entries(it.evYields||{}).map(([k,v])=>{
+      const s=EV_STATS.find(x=>x.key===k);
+      return`<span class="tim-ev-chip" style="border-color:${s?.color||'var(--acc)'}66;color:${s?.color||'var(--acc)'}">${s?.zh||k}+${v}</span>`;
+    }).join('');
+    return`<div class="tim-pkm-card" id="tim-card-${i}" onclick="trainImmBeat(${i})">
+      <img src="${it.img||''}" alt="" onerror="this.style.display='none'">
+      <div class="tim-pkm-name">${esc(it.name)}</div>
+      <div class="tim-ev-chips">${evStr}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderTrainImmEVs(){
+  const bars=document.getElementById('train-imm-ev-bars');if(!bars)return;
+  const totalUsed=Object.values(_trainEVs).reduce((a,b)=>a+b,0);
+  bars.innerHTML=EV_STATS.map(s=>{
+    const v=_trainEVs[s.key]||0;
+    const pct=Math.min(100,v/EV_MAX_STAT*100);
+    return`<div class="tim-ev-row">
+      <div class="tim-ev-lbl">${s.zh}</div>
+      <div class="tim-ev-bar-wrap"><div class="tim-ev-bar-fill" style="width:${pct}%;background:${s.color}"></div></div>
+      <div class="tim-ev-val" style="color:${v>=EV_MAX_STAT?s.color:'rgba(255,255,255,.7)'}">${v}</div>
+    </div>`;
+  }).join('');
+  const tot=document.getElementById('train-imm-ev-total');
+  if(tot)tot.innerHTML=`<span style="color:${totalUsed>=510?'var(--acc2)':'rgba(255,255,255,.8)'};font-size:1.1rem;font-family:'DM Mono',monospace;font-weight:700">${totalUsed}</span><span style="color:rgba(255,255,255,.4);font-size:.75rem"> / 510</span>`;
+}
+
+function trainImmBeat(idx){
+  const pkm=_trainLocPkm[idx];if(!pkm||!_trainPkmData)return;
+  const mult=getBoostMultiplier();
+  const totalBefore=Object.values(_trainEVs).reduce((a,b)=>a+b,0);
+  if(totalBefore>=EV_MAX_TOTAL){showToast('EV 已满 510！');return;}
+  let added=false;
+  for(const [stat,ev] of Object.entries(pkm.evYields)){
+    if(!ev)continue;
+    const gain=ev*mult;
+    const curTotal=Object.values(_trainEVs).reduce((a,b)=>a+b,0);
+    const actualGain=Math.min(gain,EV_MAX_TOTAL-curTotal,EV_MAX_STAT-(_trainEVs[stat]||0));
+    if(actualGain>0){_trainEVs[stat]=(_trainEVs[stat]||0)+actualGain;added=true;}
+  }
+  if(!added){showToast('EV 容量已满');return;}
+  lsSet('pkm_train_ev_'+_trainSid+'_'+_trainPkmData.id,_trainEVs);
+  debounceSyncTrainEVs(_trainSid);
+  renderTrainImmEVs();
+  // 精灵抖动
+  const sp=document.getElementById('train-imm-sprite');
+  if(sp){sp.classList.remove('train-imm-beat');void sp.offsetWidth;sp.classList.add('train-imm-beat');setTimeout(()=>sp.classList.remove('train-imm-beat'),300);}
+  // 卡片闪烁
+  const card=document.getElementById('tim-card-'+idx);
+  if(card){card.classList.add('tim-beat-flash');setTimeout(()=>card.classList.remove('tim-beat-flash'),350);}
+  // EV获得提示
+  const evText=Object.entries(pkm.evYields).filter(([,v])=>v>0).map(([k,v])=>{const s=EV_STATS.find(x=>x.key===k);return`${s?.zh||k}+${v*mult}`;}).join(' ');
+  showToast(pkm.name+'  '+evText);
+}
+
+function startTrainImmParticles(){
+  stopTrainImmParticles();
+  const container=document.getElementById('train-imm-particles');if(!container)return;
+  container.innerHTML='';
+  const colors=['rgba(200,144,64,.5)','rgba(90,184,154,.4)','rgba(160,100,220,.35)','rgba(255,255,255,.25)'];
+  let active=0;
+  _trainImmParticleTimer=setInterval(()=>{
+    if(active>30)return;
+    const el=document.createElement('div');el.className='hunt-particle';
+    const size=2+Math.random()*3;const dur=3+Math.random()*4;const dx=(Math.random()-.5)*60;
+    el.style.cssText=`left:${Math.random()*100}%;bottom:${5+Math.random()*30}%;width:${size}px;height:${size}px;background:${colors[Math.floor(Math.random()*colors.length)]};--pdx:${dx}px;animation-duration:${dur}s;`;
+    container.appendChild(el);active++;setTimeout(()=>{el.remove();active--;},dur*1000);
+  },220);
+}
+function stopTrainImmParticles(){
+  if(_trainImmParticleTimer){clearInterval(_trainImmParticleTimer);_trainImmParticleTimer=null;}
+  const c=document.getElementById('train-imm-particles');if(c)c.innerHTML='';
 }
 
 function renderTrainDist(items,isOfficial){
