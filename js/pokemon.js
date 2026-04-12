@@ -652,8 +652,9 @@ const SERIES_CHECKPOINTS={
   'legends-za':['📖 序章','🏙 卢米奥斯改造','⚔️ 首次大型战斗','🌀 中盘转折','🏆 终章通关'],
 };
 
-function lsGet(k){try{return JSON.parse(localStorage.getItem(k));}catch{return null;}}
-function lsSet(k,v){localStorage.setItem(k,JSON.stringify(v));}
+const _lsMem={};
+function lsGet(k){try{const v=localStorage.getItem(k);return v!=null?JSON.parse(v):(_lsMem[k]??null);}catch{return _lsMem[k]??null;}}
+function lsSet(k,v){_lsMem[k]=v;try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
 
 /* ── 当前系列 ID ── */
 let _curSid='';
@@ -1060,17 +1061,17 @@ async function doInlineSearch(v,resEl,mode){
       const img=p.sprites?.front_default||'';
       return{id,name:cn,img};
     }));
-    resEl.innerHTML=items.map(it=>{
-      const safeJson=JSON.stringify(JSON.stringify(it));
-      return`<div class="pkm-inline-item" onclick="selectInlinePkm(${safeJson},'${mode}')">
-        <img src="${it.img}" alt="" onerror="this.style.display='none'">
-        <div><div class="pkm-inline-item-name">${esc(it.name)}</div><div class="pkm-inline-item-num">#${String(it.id).padStart(3,'0')}</div></div>
-      </div>`;
-    }).join('');
+    // 存入全局数组，onclick 只传 index，避免 JSON 中的引号破坏 HTML 属性
+    _inlineSearchResults=items;
+    resEl.innerHTML=items.map((it,i)=>`<div class="pkm-inline-item" onclick="selectInlinePkm(${i},'${mode}')">
+      <img src="${it.img}" alt="" onerror="this.style.display='none'">
+      <div><div class="pkm-inline-item-name">${esc(it.name)}</div><div class="pkm-inline-item-num">#${String(it.id).padStart(3,'0')}</div></div>
+    </div>`).join('');
   }catch(e){resEl.innerHTML=`<div class="pkm-inline-item" style="color:var(--danger)">搜索失败</div>`;}
 }
-function selectInlinePkm(jsonStr,mode){
-  const pkm=JSON.parse(jsonStr);
+let _inlineSearchResults=[];
+function selectInlinePkm(idx,mode){
+  const pkm=_inlineSearchResults[idx];if(!pkm)return;
   if(mode==='party')addToParty(_curSid,pkm);
   else if(mode==='hunt')selectHuntPkm(pkm);
   else if(mode==='catch')selectCatchPkm(pkm);
