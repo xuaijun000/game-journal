@@ -19,6 +19,7 @@ game-journal/
 │   ├── cards.css           # 游戏卡片、媒体卡片、rank 列表样式
 │   ├── modals.css          # 所有弹窗/overlay 样式（详情、编辑、发现）
 │   ├── pokemon.css         # 宝可梦专栏全部样式
+│   ├── battle.css          # 宝可梦对战助手样式
 │   ├── media.css           # 动漫/漫画页面样式
 │   ├── timeline.css        # 时间轴（游戏+媒体）样式
 │   ├── play.css            # 沉浸式游玩模式全部样式
@@ -35,6 +36,7 @@ game-journal/
 │   ├── media.js            # 动漫/漫画 CRUD + 排行 + AI (≈300行)
 │   ├── moments.js          # 游戏时刻记录 (≈130行)
 │   ├── play.js             # 沉浸式游玩模式 (≈500行)
+│   ├── battle.js           # 宝可梦对战助手：队伍管理、相克分析、推荐 (≈870行)
 │   └── utils.js            # 工具函数：esc、showToast 等 (≈20行)
 └── html/                   # （可选）如果用 template 方式加载弹窗 HTML
 ```
@@ -47,10 +49,11 @@ game-journal/
 | `gemini-proxy` | 已部署 | AI 聊天代理（DeepSeek 文字 + AIGC 图片） |
 | `steam-proxy` | 已部署 | Steam 游戏库同步 |
 
-## Supabase 表（11 张）
+## Supabase 表（12 张）
 
 games / game_timelines / media_timelines / chat_summaries / game_moments /
-pkm_collection / pkm_logs / pkm_series_log / play_sessions / play_logs / play_snapshots
+pkm_collection / pkm_logs / pkm_series_log / play_sessions / play_logs / play_snapshots /
+**battle_teams**（新增，建表 SQL 见 js/battle.js 头部注释）
 
 ## 模块依赖关系
 

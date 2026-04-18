@@ -141,6 +141,7 @@ function go(pg,btn){
   }
   if(pg==='anime'&&!window._animeInited){window._animeInited=true;initMediaList('anime');}
   if(pg==='manga'&&!window._mangaInited){window._mangaInited=true;initMediaList('manga');}
+  if(pg==='battle'&&!window._battleInited){window._battleInited=true;initBattle();}
 }
 async function syncSteam(){
   const sid=document.getElementById('steam-id-inp').value.trim();

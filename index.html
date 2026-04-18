@@ -18,6 +18,7 @@
   <link rel="stylesheet" href="css/timeline.css">
   <link rel="stylesheet" href="css/play.css">
   <link rel="stylesheet" href="css/misc.css">
+  <link rel="stylesheet" href="css/battle.css">
 </head>
 <body>
 <canvas id="pkm-canvas"></canvas>
@@ -30,6 +31,7 @@
     <button onclick="go('pkm',this)">🐟 宝可梦</button>
     <button onclick="go('anime',this)">🎬 动漫</button>
     <button onclick="go('manga',this)">📖 漫画</button>
+    <button onclick="go('battle',this)">⚔️ 对战</button>
   </nav>
   <div class="hdr-r">
     <div class="av" id="av">?</div>
@@ -232,6 +234,53 @@
         <div id="manga-rank-list"><div class="disc-loading">加载中<span class="disc-loading-dots"><span></span><span></span><span></span></span></div></div>
       </div>
     </div>
+  </div>
+  <!-- ====== 宝可梦对战助手 ====== -->
+  <div class="pg" id="pg-battle">
+    <div style="background:var(--bg2);border:1px solid var(--b2);border-radius:var(--rl) var(--rl) 0 0;overflow:hidden;margin-bottom:0">
+      <div class="btab-bar">
+        <button class="btab on" onclick="switchBattleTab('team',this)">🗂 我的队伍</button>
+        <button class="btab" onclick="switchBattleTab('analysis',this)">⚔️ 赛前分析</button>
+        <button class="btab" onclick="switchBattleTab('calc',this)">📊 数值工具</button>
+      </div>
+    </div>
+
+    <!-- 我的队伍 -->
+    <div class="btab-panel on" id="btab-team">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 0 .2rem">
+        <div style="font-size:.65rem;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase">我的队伍列表</div>
+        <button class="btn btn-a btn-sm" onclick="openBattleTeamEdit(null,0)">＋ 新建队伍</button>
+      </div>
+      <div id="battle-team-list" class="battle-team-list"></div>
+      <div class="battle-datasrc-note" style="margin-top:1rem">
+        数据参考来源：
+        <a class="battle-datasrc-link" href="https://wiki.52poke.com" target="_blank" rel="noopener">52Poke Wiki（中文标准）</a> ·
+        <a class="battle-datasrc-link" href="https://bulbapedia.bulbagarden.net" target="_blank" rel="noopener">Bulbapedia</a> ·
+        <a class="battle-datasrc-link" href="https://gamewith.ai/pokemon-champions/en" target="_blank" rel="noopener">Champions GameWith</a>
+      </div>
+    </div>
+
+    <!-- 赛前分析 -->
+    <div class="btab-panel" id="btab-analysis">
+      <div class="battle-analysis-layout" style="margin-top:1rem">
+        <div class="battle-side-card">
+          <div class="battle-side-hdr">我的队伍</div>
+          <select class="bpkm-inp" id="battle-my-team-sel" style="width:100%;margin-bottom:8px" onchange="onMyTeamSelect(this.value)">
+            <option value="">选择队伍…</option>
+          </select>
+          <div id="battle-my-preview" class="battle-my-preview"></div>
+        </div>
+        <div class="battle-side-card">
+          <div class="battle-side-hdr">对方队伍（填属性自动分析）</div>
+          <div id="battle-opp-slots" class="battle-opp-slots"></div>
+        </div>
+      </div>
+      <button class="btn btn-a" onclick="analyzeMatchups()" style="width:100%;margin-top:8px;padding:10px">⚔️ 开始赛前分析</button>
+      <div id="battle-analysis-result"></div>
+    </div>
+
+    <!-- 数值工具 -->
+    <div class="btab-panel" id="btab-calc" style="padding-top:1rem"></div>
   </div>
 </main>
 <!-- 游戏详情弹窗 -->
@@ -737,6 +786,31 @@
   </div>
 </div>
 
+<!-- 宝可梦队伍编辑弹窗 -->
+<div class="ov" id="ov-battle-team" onclick="if(event.target===this)closeBattleTeamEdit()">
+  <div class="modal battle-team-modal">
+    <div class="mh" style="padding-bottom:.8rem;border-bottom:1px solid var(--b)">
+      <h2 id="battle-team-modal-title" style="font-family:'Noto Serif SC',serif">编辑队伍</h2>
+      <button class="btn btn-sm" onclick="closeBattleTeamEdit()">✕</button>
+    </div>
+    <div style="padding:10px 16px 6px;background:var(--bg3);border-bottom:1px solid var(--b)">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:.65rem;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.07em;text-transform:uppercase;flex-shrink:0">队伍名称</span>
+        <input id="battle-team-name-inp" class="bpkm-inp" placeholder="例：主力战队" style="flex:1">
+      </div>
+    </div>
+    <div class="battle-slot-tabs" id="battle-slot-tabs"></div>
+    <div class="mc" style="padding:0;overflow-y:auto;max-height:calc(85vh - 220px)">
+      <div id="battle-pokemon-form"></div>
+    </div>
+    <div class="mfoot">
+      <button class="btn btn-d btn-sm" id="battle-team-del-btn" onclick="deleteBattleTeamFromModal()" style="display:none;margin-right:auto">删除队伍</button>
+      <button class="btn" onclick="closeBattleTeamEdit()">取消</button>
+      <button class="btn btn-a" onclick="saveBattleTeam()">保存队伍</button>
+    </div>
+  </div>
+</div>
+
 <!-- JS Modules (按依赖顺序加载) -->
 <script src="js/config.js"></script>
 <script src="js/utils.js"></script>
@@ -750,6 +824,7 @@
 <script src="js/media.js"></script>
 <script src="js/moments.js"></script>
 <script src="js/play.js"></script>
+<script src="js/battle.js"></script>
 <script>init();</script>
 
 
