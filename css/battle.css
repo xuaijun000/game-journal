@@ -93,8 +93,9 @@
 .battle-side-hdr{font-size:.65rem;color:var(--acc);font-family:'DM Mono',monospace;letter-spacing:.12em;text-transform:uppercase;margin-bottom:10px}
 .battle-opp-slots{display:flex;flex-direction:column;gap:6px}
 .battle-opp-row{display:flex;gap:6px;align-items:center}
+.battle-opp-inp-wrap{position:relative;flex:1}
 .battle-opp-num{font-size:.6rem;color:var(--t3);font-family:'DM Mono',monospace;width:14px;flex-shrink:0;text-align:right}
-.battle-opp-inp{flex:1;background:var(--bg3);border:1px solid var(--b2);border-radius:var(--r);padding:6px 8px;color:var(--t);font-family:inherit;font-size:.8rem;outline:none;transition:border .15s}
+.battle-opp-inp{width:100%;background:var(--bg3);border:1px solid var(--b2);border-radius:var(--r);padding:6px 8px;color:var(--t);font-family:inherit;font-size:.8rem;outline:none;transition:border .15s}
 .battle-opp-inp:focus{border-color:var(--acc)}
 .battle-opp-type-sel{background:var(--bg3);border:1px solid var(--b2);border-radius:var(--r);padding:5px 6px;color:var(--t);font-family:inherit;font-size:.72rem;outline:none;width:72px}
 .battle-my-preview{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}

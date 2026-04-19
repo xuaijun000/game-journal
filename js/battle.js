@@ -1103,14 +1103,26 @@ function getLearnableMoveSuggestions(query){
   const p=battleEditTeam?.pokemon[battleEditSlot];
   const learnableEn=p?.learnableMovesEn;
   if(!learnableEn||!learnableEn.length)return null;
-  const learnableSet=new Set(learnableEn.map(n=>normalizeBattleMoveKeyword(n.replace(/-/g,' '))));
-  const filtered=MOVES_DATA.map((move,idx)=>{
-    if(!learnableSet.has(normalizeBattleMoveKeyword(move.nameEn)))return null;
-    return {idx,move};
-  }).filter(Boolean).sort((a,b)=>a.move.name.localeCompare(b.move.name,'zh-CN'));
-  if(!String(query||'').trim())return filtered;
+  const normalizeEn=n=>normalizeBattleMoveKeyword(n.replace(/-/g,' '));
+  const learnableSet=new Set(learnableEn.map(normalizeEn));
+  // Moves in MOVES_DATA that are learnable
+  const inData=MOVES_DATA.map((move,idx)=>{
+    if(!learnableSet.has(normalizeEn(move.nameEn)))return null;
+    return {idx,move,apiOnly:false};
+  }).filter(Boolean);
+  // Moves learnable from PokeAPI but absent from MOVES_DATA
+  const dataKeys=new Set(MOVES_DATA.map(m=>normalizeEn(m.nameEn)));
+  const apiOnlyMoves=learnableEn
+    .filter(en=>!dataKeys.has(normalizeEn(en)))
+    .map(en=>{
+      const displayName=en.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+      return {idx:-1,move:{name:displayName,nameEn:en,type:'',cat:'',power:null,pp:null},apiOnly:true};
+    });
+  const all=[...inData.sort((a,b)=>a.move.name.localeCompare(b.move.name,'zh-CN')),
+             ...apiOnlyMoves.sort((a,b)=>a.move.nameEn.localeCompare(b.move.nameEn))];
+  if(!String(query||'').trim())return all;
   const keyword=normalizeBattleMoveKeyword(query);
-  return filtered.filter(({move})=>
+  return all.filter(({move})=>
     normalizeBattleMoveKeyword(move.name).includes(keyword)||
     normalizeBattleMoveKeyword(move.nameEn).includes(keyword)
   );
@@ -1137,7 +1149,15 @@ function renderBattleMoveSuggestions(moveIndex,query){
   let header='';
   if(hasLearnables&&!queryTrimmed)header=`<div style="padding:4px 10px;font-size:.68rem;color:var(--t3);border-bottom:1px solid var(--b2)">共 ${items.length} 个可学技能</div>`;
   else if(fallback)header=`<div style="padding:4px 10px;font-size:.68rem;color:var(--acc2);border-bottom:1px solid var(--b2)">可学技能中无匹配，显示全库结果</div>`;
-  drop.innerHTML=header+items.map(({idx,move})=>{
+  drop.innerHTML=header+items.map(({idx,move,apiOnly})=>{
+    if(apiOnly){
+      return `<div class="bpkm-drop-item bpkm-move-drop-item" onclick="selectBattleMoveName(${moveIndex},'${move.nameEn.replace(/'/g,"\\'")}','${move.name.replace(/'/g,"\\'")}')">
+        <div class="bpkm-move-drop-main">
+          <div class="bpkm-drop-name">${esc(move.name)}</div>
+          <div class="bpkm-move-drop-en" style="color:var(--t3);font-size:.65rem">暂无详细数据</div>
+        </div>
+      </div>`;
+    }
     const powerLabel=move.cat==='status'||!move.power?'—':move.power;
     return `<div class="bpkm-drop-item bpkm-move-drop-item" onclick="selectBattleMoveSuggestion(${moveIndex},${idx})">
       <div class="bpkm-move-drop-main">
@@ -1193,6 +1213,12 @@ function selectBattleMoveSuggestion(moveIndex,dataIndex){
   if(catInput)catInput.value=move.cat||'';
   if(powerInput)powerInput.value=move.cat==='status'||!move.power?'':move.power;
   if(apInput && move.pp)apInput.value=move.pp;
+  closeBattleMoveSuggestions();
+}
+
+function selectBattleMoveName(moveIndex,moveNameEn,moveDisplay){
+  const nameInput=document.getElementById(`bpkm-move${moveIndex}-name`);
+  if(nameInput)nameInput.value=moveDisplay||moveNameEn;
   closeBattleMoveSuggestions();
 }
 
@@ -1525,6 +1551,8 @@ async function deleteBattleTeamFromModal(){
 }
 
 /* ──────── 赛前分析 ──────── */
+const boppSearchTimers={};
+
 function renderBattleOppSlots(){
   const el=document.getElementById('battle-opp-slots');
   if(!el)return;
@@ -1532,7 +1560,10 @@ function renderBattleOppSlots(){
   el.innerHTML=[0,1,2,3,4,5].map(i=>`
     <div class="battle-opp-row">
       <span class="battle-opp-num">${i+1}</span>
-      <input class="battle-opp-inp" id="bopp-name-${i}" placeholder="宝可梦名称…" oninput="onOppNameInput(${i},this.value)" autocomplete="off">
+      <div class="battle-opp-inp-wrap">
+        <input class="battle-opp-inp" id="bopp-name-${i}" placeholder="搜索宝可梦…" oninput="onOppNameInput(${i},this.value)" onblur="setTimeout(()=>closeBoppDrop(${i}),200)" autocomplete="off">
+        <div class="bpkm-search-drop" id="bopp-drop-${i}"></div>
+      </div>
       <select class="battle-opp-type-sel" id="bopp-t1-${i}" title="属性1">
         <option value="">属性1</option>${typeOpts}
       </select>
@@ -1542,27 +1573,57 @@ function renderBattleOppSlots(){
     </div>`).join('');
 }
 
-async function onOppNameInput(i,q){
-  if(!q||q.length<1)return;
-  // 尝试从中文名表匹配，自动填入属性
-  const match=Object.entries(PKM_CN_TABLE).find(([id,cn])=>cn===q.trim());
-  if(match){
+function closeBoppDrop(i){
+  const d=document.getElementById(`bopp-drop-${i}`);
+  if(d){d.classList.remove('open');d.innerHTML='';}
+}
+
+function onOppNameInput(i,q){
+  clearTimeout(boppSearchTimers[i]);
+  const drop=document.getElementById(`bopp-drop-${i}`);
+  if(!drop)return;
+  if(!q||q.length<1){drop.classList.remove('open');drop.innerHTML='';return;}
+  drop.innerHTML='<div style="padding:8px 10px;color:var(--t3);font-size:.78rem">搜索中…</div>';
+  drop.classList.add('open');
+  boppSearchTimers[i]=setTimeout(async()=>{
     try{
-      const r=await fetch(`${POKEAPI}/pokemon/${match[0]}`);
-      if(r.ok){
-        const d=await r.json();
-        const t1=d.types[0]?.type?.name||'';
-        const t2=d.types[1]?.type?.name||'';
-        const s1=document.getElementById(`bopp-t1-${i}`);
-        const s2=document.getElementById(`bopp-t2-${i}`);
-        if(s1)s1.value=t1;
-        if(s2)s2.value=t2;
-        battleOppPkm[i]={name:q.trim(),type1:t1,type2:t2};
+      const cnMatches=Object.entries(PKM_CN_TABLE).filter(([id,cn])=>cn.includes(q)).slice(0,8);
+      let results=cnMatches.map(([id,cn])=>({id:parseInt(id),cnName:cn}));
+      if(!results.length&&/^\d+$/.test(q))results=[{id:parseInt(q),cnName:PKM_CN_TABLE[parseInt(q)]||null}];
+      if(!results.length){
+        const r=await fetch(`${POKEAPI}/pokemon/${encodeURIComponent(q.toLowerCase())}`);
+        if(r.ok){const d=await r.json();results=[{id:d.id,cnName:PKM_CN_TABLE[d.id]||d.name}];}
       }
-    } catch(e){}
-  } else {
-    battleOppPkm[i]={name:q.trim(),type1:document.getElementById(`bopp-t1-${i}`)?.value||'',type2:document.getElementById(`bopp-t2-${i}`)?.value||''};
-  }
+      if(!results.length){drop.innerHTML='<div style="padding:8px 10px;color:var(--t3);font-size:.78rem">未找到</div>';return;}
+      drop.innerHTML=results.map(r=>{
+        const sprite=`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${r.id}.png`;
+        return`<div class="bpkm-drop-item" onclick="selectOppPkmFromDrop(${i},${r.id},'${esc(r.cnName||'')}')">
+          <img src="${sprite}" alt="" onerror="this.style.display='none'">
+          <div class="bpkm-drop-name">${esc(r.cnName||'')}</div>
+          <div class="bpkm-drop-num">#${r.id}</div>
+        </div>`;
+      }).join('');
+    } catch(e){drop.innerHTML='<div style="padding:8px 10px;color:var(--t3);font-size:.78rem">搜索出错</div>';}
+  },300);
+}
+
+async function selectOppPkmFromDrop(i,pkmId,cnName){
+  closeBoppDrop(i);
+  const inp=document.getElementById(`bopp-name-${i}`);
+  if(inp)inp.value=cnName;
+  try{
+    const r=await fetch(`${POKEAPI}/pokemon/${pkmId}`);
+    if(r.ok){
+      const d=await r.json();
+      const t1=d.types[0]?.type?.name||'';
+      const t2=d.types[1]?.type?.name||'';
+      const s1=document.getElementById(`bopp-t1-${i}`);
+      const s2=document.getElementById(`bopp-t2-${i}`);
+      if(s1)s1.value=t1;
+      if(s2)s2.value=t2;
+      battleOppPkm[i]={name:cnName,type1:t1,type2:t2};
+    }
+  } catch(e){}
 }
 
 function onMyTeamSelect(teamId){
