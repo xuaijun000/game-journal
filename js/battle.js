@@ -839,6 +839,7 @@ async function deleteBattleTeamFromServer(id){
 /* ──────── 渲染队伍列表 ──────── */
 function renderTeamList(){
   const el=document.getElementById('battle-team-list');
+  if(!el)return;
   if(!battleTeams.length){
     el.innerHTML=`<div class="btc-empty"><div class="btc-empty-ico">⚔️</div>还没有队伍，点击「新建队伍」开始吧！</div>`;
     return;
@@ -1304,32 +1305,43 @@ function selectBpkmAbility(name){
 
 /* ──────── 保存队伍 ──────── */
 async function saveBattleTeam(){
-  gatherSlotForm();
-  battleEditTeam.team_name=document.getElementById('battle-team-name-inp').value.trim()||'我的队伍';
-  battleEditTeam.updated_at=new Date().toISOString();
-  const prevId=battleEditTeam.id||`local_${Date.now()}`;
-  battleEditTeam.id=prevId;
-  const existing=battleTeams.findIndex(t=>t.id===battleEditTeam.id);
-  if(existing>=0){battleTeams[existing]=battleEditTeam;}else{battleTeams.unshift(battleEditTeam);}
-  const newId=await saveBattleTeamToServer(battleEditTeam);
-  if(newId&&newId!==prevId){
-    battleEditTeam.id=newId;
-    const idx=battleTeams.findIndex(t=>t.id===prevId);
-    if(idx>=0)battleTeams[idx].id=newId;
+  if(!battleEditTeam)return;
+  try{
+    gatherSlotForm();
+    battleEditTeam.team_name=document.getElementById('battle-team-name-inp').value.trim()||'我的队伍';
+    battleEditTeam.updated_at=new Date().toISOString();
+    const prevId=battleEditTeam.id||`local_${Date.now()}`;
+    battleEditTeam.id=prevId;
+    const existing=battleTeams.findIndex(t=>t.id===battleEditTeam.id);
+    if(existing>=0){battleTeams[existing]=battleEditTeam;}else{battleTeams.unshift(battleEditTeam);}
+    const newId=await saveBattleTeamToServer(battleEditTeam);
+    if(newId&&newId!==prevId){
+      if(battleEditTeam)battleEditTeam.id=newId;
+      const idx=battleTeams.findIndex(t=>t.id===prevId);
+      if(idx>=0)battleTeams[idx].id=newId;
+    }
+    renderTeamList();
+    renderBattleTeamSel();
+    closeBattleTeamEdit();
+    showToast('队伍已保存 ✓');
+  }catch(e){
+    console.error('saveBattleTeam error',e);
+    showToast('保存失败，请重试');
   }
-  renderTeamList();
-  renderBattleTeamSel();
-  closeBattleTeamEdit();
-  showToast('队伍已保存 ✓');
 }
 
 async function confirmDeleteBattleTeam(id){
   if(!confirm('确定要删除这支队伍吗？'))return;
-  await deleteBattleTeamFromServer(id);
-  battleTeams=battleTeams.filter(t=>t.id!==id);
-  renderTeamList();
-  renderBattleTeamSel();
-  showToast('已删除');
+  try{
+    await deleteBattleTeamFromServer(id);
+    battleTeams=battleTeams.filter(t=>t.id!==id);
+    renderTeamList();
+    renderBattleTeamSel();
+    showToast('已删除');
+  }catch(e){
+    console.error('confirmDeleteBattleTeam error',e);
+    showToast('删除失败，请重试');
+  }
 }
 
 async function deleteBattleTeamFromModal(){
