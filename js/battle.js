@@ -774,33 +774,45 @@ function switchBattleTab(tab,btn){
 }
 
 /* ──────── Supabase ──────── */
+function loadBattleTeamsFromLocal(){
+  try{
+    const localTeams=JSON.parse(localStorage.getItem('battle_teams')||'[]');
+    battleTeams=Array.isArray(localTeams)?localTeams:[];
+  } catch(e){
+    battleTeams=[];
+  }
+}
+
 async function loadBattleTeams(){
   try{
     const{data:{session}}=await db.auth.getSession();
     if(session?.user){
-      const{data}=await db.from('battle_teams').select('*').eq('user_id',session.user.id).order('created_at',{ascending:false});
+      const{data,error}=await db.from('battle_teams').select('*').eq('user_id',session.user.id).order('created_at',{ascending:false});
+      if(error)throw error;
       battleTeams=data||[];
     } else {
-      try{battleTeams=JSON.parse(localStorage.getItem('battle_teams')||'[]');}catch{battleTeams=[];}
+      loadBattleTeamsFromLocal();
     }
   } catch(e){
-    try{battleTeams=JSON.parse(localStorage.getItem('battle_teams')||'[]');}catch{battleTeams=[];}
+    console.warn('battle load error',e);
+    loadBattleTeamsFromLocal();
   }
 }
 
 async function saveBattleTeamToServer(team){
+  const localId=team?.id||`local_${Date.now()}`;
   try{
     const{data:{session}}=await db.auth.getSession();
     if(session?.user){
-      team.user_id=session.user.id;
-      if(team.id && !team.id.startsWith('local_')){
-        const{error}=await db.from('battle_teams').update({team_name:team.team_name,pokemon:team.pokemon,updated_at:new Date().toISOString()}).eq('id',team.id);
+      const payload={...team,user_id:session.user.id};
+      if(payload.id && !payload.id.startsWith('local_')){
+        const{error}=await db.from('battle_teams').update({team_name:payload.team_name,pokemon:payload.pokemon,updated_at:new Date().toISOString()}).eq('id',payload.id);
         if(error)throw error;
       } else {
-        delete team.id;
-        const{data,error}=await db.from('battle_teams').insert(team).select().single();
+        delete payload.id;
+        const{data,error}=await db.from('battle_teams').insert(payload).select().single();
         if(error)throw error;
-        return data.id;
+        return data?.id||localId;
       }
     } else {
       localStorage.setItem('battle_teams',JSON.stringify(battleTeams));
@@ -809,16 +821,19 @@ async function saveBattleTeamToServer(team){
     console.warn('battle save error',e);
     localStorage.setItem('battle_teams',JSON.stringify(battleTeams));
   }
-  return team.id;
+  return localId;
 }
 
 async function deleteBattleTeamFromServer(id){
   try{
     const{data:{session}}=await db.auth.getSession();
     if(session?.user && id && !id.startsWith('local_')){
-      await db.from('battle_teams').delete().eq('id',id);
+      const{error}=await db.from('battle_teams').delete().eq('id',id);
+      if(error)throw error;
     }
-  } catch(e){console.warn(e);}
+  } catch(e){
+    console.warn('battle delete error',e);
+  }
 }
 
 /* ──────── 渲染队伍列表 ──────── */
@@ -1292,12 +1307,14 @@ async function saveBattleTeam(){
   gatherSlotForm();
   battleEditTeam.team_name=document.getElementById('battle-team-name-inp').value.trim()||'我的队伍';
   battleEditTeam.updated_at=new Date().toISOString();
+  const prevId=battleEditTeam.id||`local_${Date.now()}`;
+  battleEditTeam.id=prevId;
   const existing=battleTeams.findIndex(t=>t.id===battleEditTeam.id);
   if(existing>=0){battleTeams[existing]=battleEditTeam;}else{battleTeams.unshift(battleEditTeam);}
   const newId=await saveBattleTeamToServer(battleEditTeam);
-  if(newId&&newId!==battleEditTeam.id){
+  if(newId&&newId!==prevId){
     battleEditTeam.id=newId;
-    const idx=battleTeams.findIndex(t=>t.id===battleEditTeam.id||t.id===('local_'+battleEditTeam.id.replace('local_','')));
+    const idx=battleTeams.findIndex(t=>t.id===prevId);
     if(idx>=0)battleTeams[idx].id=newId;
   }
   renderTeamList();
