@@ -777,7 +777,9 @@ function switchBattleTab(tab,btn){
 function loadBattleTeamsFromLocal(){
   try{
     const localTeams=JSON.parse(localStorage.getItem('battle_teams')||'[]');
-    battleTeams=Array.isArray(localTeams)?localTeams:[];
+    battleTeams=Array.isArray(localTeams)
+      ?localTeams.map(t=>({...t,id:t.id&&t.id!=='undefined'?t.id:`local_${Date.now()}_${Math.random().toString(36).slice(2)}`}))
+      :[];
   } catch(e){
     battleTeams=[];
   }
@@ -825,9 +827,10 @@ async function saveBattleTeamToServer(team){
 }
 
 async function deleteBattleTeamFromServer(id){
+  if(!id||id==='undefined'||id==='null')return;
   try{
     const{data:{session}}=await db.auth.getSession();
-    if(session?.user && id && !id.startsWith('local_')){
+    if(session?.user && !id.startsWith('local_')){
       const{error}=await db.from('battle_teams').delete().eq('id',id);
       if(error)throw error;
     }
@@ -878,9 +881,10 @@ function renderBattleTeamSel(){
 
 /* ──────── 打开编辑 ──────── */
 function openBattleTeamEdit(teamId, slotIndex=0){
-  if(teamId){
+  if(teamId&&teamId!=='undefined'){
     const found=battleTeams.find(t=>t.id===teamId);
-    battleEditTeam=JSON.parse(JSON.stringify(found||{id:teamId,team_name:'我的队伍',pokemon:[]}));
+    if(!found){showToast('队伍数据未找到，请刷新页面');return;}
+    battleEditTeam=JSON.parse(JSON.stringify(found));
   } else {
     battleEditTeam={id:'local_'+Date.now(),team_name:'我的队伍',pokemon:[]};
   }
