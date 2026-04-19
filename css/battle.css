@@ -72,6 +72,13 @@
 .bpkm-move-card{background:var(--bg3);border:1px solid var(--b2);border-radius:var(--r);padding:8px 10px;display:flex;flex-direction:column;gap:5px}
 .bpkm-move-num{font-size:.58rem;color:var(--t3);font-family:'DM Mono',monospace}
 .bpkm-move-row{display:flex;gap:5px}
+.bpkm-move-search-wrap{position:relative}
+.bpkm-move-search-drop{max-height:220px}
+.bpkm-move-drop-item{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;align-items:center;gap:6px}
+.bpkm-move-drop-main{min-width:0}
+.bpkm-move-drop-en{font-size:.62rem;color:var(--t3);font-family:'DM Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bpkm-move-drop-meta,.bpkm-move-drop-power{font-size:.66rem;color:var(--t2);font-family:'DM Mono',monospace;white-space:nowrap}
+.bpkm-move-drop-power{min-width:18px;text-align:right}
 .bpkm-ev-total{font-size:.7rem;font-family:'DM Mono',monospace;text-align:right;padding:4px 0;color:var(--t3)}
 .bpkm-ev-total.warn{color:var(--warn)}
 .bpkm-ev-total.ok{color:var(--acc2)}
@@ -180,6 +187,11 @@
 .type-dark{background:rgba(112,88,72,.15);color:#887060;border-color:rgba(112,88,72,.35)}
 .type-steel{background:rgba(184,184,208,.15);color:#b8b8d8;border-color:rgba(184,184,208,.35)}
 .type-fairy{background:rgba(238,153,172,.15);color:#ee99cc;border-color:rgba(238,153,172,.35)}
+
+/* ── 特性芯片 ── */
+.bpkm-ability-chip{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.72rem;font-family:'DM Mono',monospace;background:var(--bg3);border:1px solid var(--b2);color:var(--t2);cursor:pointer;transition:all .15s}
+.bpkm-ability-chip:hover{border-color:var(--acc);color:var(--t)}
+.bpkm-ability-chip.active{background:rgba(200,144,64,.15);border-color:var(--acc);color:var(--acc);font-weight:600}
 
 /* ── 数据来源说明 ── */
 .battle-datasrc-note{font-size:.65rem;color:var(--t3);font-family:'DM Mono',monospace;padding:6px 14px 4px;display:flex;align-items:center;gap:8px}

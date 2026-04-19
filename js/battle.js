@@ -16,6 +16,699 @@
 
 /* ──────── 常量 ──────── */
 const B_TYPES=['normal','fire','water','electric','grass','ice','fighting','poison','ground','flying','psychic','bug','rock','ghost','dragon','dark','steel','fairy'];
+const B_MOVE_CATS_ZH={physical:'物理',special:'特殊',status:'变化'};
+const MOVES_DATA=[
+  // A
+  {name:'闪岩攻击',nameEn:'Accelerock',type:'rock',cat:'physical',power:40,acc:100,pp:20},
+  {name:'溶化',nameEn:'Acid Armor',type:'poison',cat:'status',power:null,acc:null,pp:20},
+  {name:'腐蚀液',nameEn:'Acid Spray',type:'poison',cat:'special',power:40,acc:100,pp:20},
+  {name:'特技翻飞',nameEn:'Acrobatics',type:'flying',cat:'physical',power:55,acc:100,pp:16},
+  {name:'穴位攻击',nameEn:'Acupressure',type:'normal',cat:'status',power:null,acc:null,pp:20},
+  {name:'飞翔神速',nameEn:'Aerial Ace',type:'flying',cat:'physical',power:60,acc:null,pp:20},
+  {name:'先礼后兵',nameEn:'After You',type:'normal',cat:'status',power:null,acc:null,pp:16},
+  {name:'高速移动',nameEn:'Agility',type:'psychic',cat:'status',power:null,acc:null,pp:20},
+  {name:'大气切',nameEn:'Air Cutter',type:'flying',cat:'special',power:60,acc:95,pp:20},
+  {name:'空气斩',nameEn:'Air Slash',type:'flying',cat:'special',power:75,acc:95,pp:16},
+  {name:'引诱之声',nameEn:'Alluring Voice',type:'fairy',cat:'special',power:80,acc:100,pp:12},
+  {name:'快速转换',nameEn:'Ally Switch',type:'psychic',cat:'status',power:null,acc:null,pp:16},
+  {name:'忘却',nameEn:'Amnesia',type:'psychic',cat:'status',power:null,acc:null,pp:20},
+  {name:'原始之力',nameEn:'Ancient Power',type:'rock',cat:'special',power:60,acc:100,pp:8},
+  {name:'苹果酸',nameEn:'Apple Acid',type:'grass',cat:'special',power:90,acc:100,pp:12},
+  {name:'水流切',nameEn:'Aqua Cutter',type:'water',cat:'physical',power:70,acc:100,pp:20},
+  {name:'水流喷射',nameEn:'Aqua Jet',type:'water',cat:'physical',power:40,acc:100,pp:20},
+  {name:'水之环',nameEn:'Aqua Ring',type:'water',cat:'status',power:null,acc:null,pp:20},
+  {name:'水舞步',nameEn:'Aqua Step',type:'water',cat:'physical',power:80,acc:100,pp:12},
+  {name:'水流尾击',nameEn:'Aqua Tail',type:'water',cat:'physical',power:90,acc:90,pp:12},
+  {name:'盔甲炮击',nameEn:'Armor Cannon',type:'fire',cat:'special',power:120,acc:100,pp:8},
+  {name:'芳香迷雾',nameEn:'Aromatic Mist',type:'fairy',cat:'status',power:null,acc:null,pp:20},
+  {name:'两肋插刀',nameEn:'Assurance',type:'dark',cat:'physical',power:60,acc:100,pp:12},
+  {name:'迷人',nameEn:'Attract',type:'normal',cat:'status',power:null,acc:100,pp:16},
+  {name:'波导弹',nameEn:'Aura Sphere',type:'fighting',cat:'special',power:80,acc:null,pp:20},
+  {name:'气场轮',nameEn:'Aura Wheel',type:'electric',cat:'physical',power:110,acc:100,pp:12},
+  {name:'极光幕',nameEn:'Aurora Veil',type:'ice',cat:'status',power:null,acc:null,pp:20},
+  {name:'雪崩',nameEn:'Avalanche',type:'ice',cat:'physical',power:60,acc:100,pp:12},
+  {name:'斧腿踢',nameEn:'Axe Kick',type:'fighting',cat:'physical',power:120,acc:90,pp:12},
+  // B
+  {name:'婴儿眼神',nameEn:'Baby-Doll Eyes',type:'fairy',cat:'status',power:null,acc:100,pp:20},
+  {name:'毒蛰防御',nameEn:'Baneful Bunker',type:'poison',cat:'status',power:null,acc:null,pp:8},
+  {name:'接力棒',nameEn:'Baton Pass',type:'normal',cat:'status',power:null,acc:null,pp:20},
+  {name:'喙炮击',nameEn:'Beak Blast',type:'flying',cat:'physical',power:120,acc:100,pp:8},
+  {name:'打群架',nameEn:'Beat Up',type:'dark',cat:'physical',power:null,acc:100,pp:12},
+  {name:'打嗝',nameEn:'Belch',type:'poison',cat:'special',power:120,acc:90,pp:12},
+  {name:'肚皮鼓',nameEn:'Belly Drum',type:'normal',cat:'status',power:null,acc:null,pp:12},
+  {name:'绑紧',nameEn:'Bind',type:'normal',cat:'physical',power:15,acc:85,pp:20},
+  {name:'咬住',nameEn:'Bite',type:'dark',cat:'physical',power:60,acc:100,pp:20},
+  {name:'苦刃',nameEn:'Bitter Blade',type:'fire',cat:'physical',power:90,acc:100,pp:12},
+  {name:'苦毒愁念',nameEn:'Bitter Malice',type:'ghost',cat:'special',power:75,acc:100,pp:12},
+  {name:'终极火焰',nameEn:'Blast Burn',type:'fire',cat:'special',power:150,acc:90,pp:8},
+  {name:'火炎脚',nameEn:'Blaze Kick',type:'fire',cat:'physical',power:85,acc:90,pp:12},
+  {name:'暴风雪',nameEn:'Blizzard',type:'ice',cat:'special',power:110,acc:70,pp:8},
+  {name:'封锁',nameEn:'Block',type:'normal',cat:'status',power:null,acc:null,pp:8},
+  {name:'身体压制',nameEn:'Body Press',type:'fighting',cat:'physical',power:80,acc:100,pp:12},
+  {name:'猛力压',nameEn:'Body Slam',type:'normal',cat:'physical',power:85,acc:100,pp:16},
+  {name:'骨头连击',nameEn:'Bone Rush',type:'ground',cat:'physical',power:30,acc:90,pp:12},
+  {name:'高音爆炸',nameEn:'Boomburst',type:'normal',cat:'special',power:140,acc:100,pp:12},
+  {name:'弹跳',nameEn:'Bounce',type:'flying',cat:'physical',power:85,acc:85,pp:8},
+  {name:'勇鸟猛攻',nameEn:'Brave Bird',type:'flying',cat:'physical',power:120,acc:100,pp:16},
+  {name:'破翼扫击',nameEn:'Breaking Swipe',type:'dragon',cat:'physical',power:60,acc:100,pp:16},
+  {name:'碎岩',nameEn:'Brick Break',type:'fighting',cat:'physical',power:75,acc:100,pp:16},
+  {name:'残忍挥击',nameEn:'Brutal Swing',type:'dark',cat:'physical',power:60,acc:100,pp:20},
+  {name:'虫咬',nameEn:'Bug Bite',type:'bug',cat:'physical',power:60,acc:100,pp:20},
+  {name:'虫鸣',nameEn:'Bug Buzz',type:'bug',cat:'special',power:90,acc:100,pp:12},
+  {name:'健美',nameEn:'Bulk Up',type:'fighting',cat:'status',power:null,acc:null,pp:20},
+  {name:'地盘震动',nameEn:'Bulldoze',type:'ground',cat:'physical',power:60,acc:100,pp:20},
+  {name:'子弹拳',nameEn:'Bullet Punch',type:'steel',cat:'physical',power:40,acc:100,pp:20},
+  {name:'子弹种子',nameEn:'Bullet Seed',type:'grass',cat:'physical',power:25,acc:100,pp:20},
+  {name:'燃烧殆尽',nameEn:'Burn Up',type:'fire',cat:'special',power:130,acc:100,pp:8},
+  {name:'嫉妒焚烧',nameEn:'Burning Jealousy',type:'fire',cat:'special',power:70,acc:100,pp:8},
+  // C
+  {name:'冥想',nameEn:'Calm Mind',type:'psychic',cat:'status',power:null,acc:null,pp:20},
+  {name:'不尽之刃',nameEn:'Ceaseless Edge',type:'dark',cat:'physical',power:65,acc:90,pp:16},
+  {name:'蓄电',nameEn:'Charge',type:'electric',cat:'status',power:null,acc:null,pp:20},
+  {name:'充电光线',nameEn:'Charge Beam',type:'electric',cat:'special',power:50,acc:90,pp:12},
+  {name:'撒娇',nameEn:'Charm',type:'fairy',cat:'status',power:null,acc:100,pp:20},
+  {name:'寒冷之水',nameEn:'Chilling Water',type:'water',cat:'special',power:50,acc:100,pp:20},
+  {name:'冬日登场',nameEn:'Chilly Reception',type:'ice',cat:'status',power:null,acc:null,pp:12},
+  {name:'投掷摔',nameEn:'Circle Throw',type:'fighting',cat:'physical',power:60,acc:90,pp:12},
+  {name:'刺鳞音',nameEn:'Clanging Scales',type:'dragon',cat:'special',power:110,acc:100,pp:8},
+  {name:'钢铃之魂',nameEn:'Clangorous Soul',type:'dragon',cat:'status',power:null,acc:null,pp:8},
+  {name:'清洗烟雾',nameEn:'Clear Smog',type:'poison',cat:'special',power:50,acc:null,pp:16},
+  {name:'近身战',nameEn:'Close Combat',type:'fighting',cat:'physical',power:120,acc:100,pp:8},
+  {name:'指导',nameEn:'Coaching',type:'fighting',cat:'status',power:null,acc:null,pp:12},
+  {name:'蜷缩',nameEn:'Coil',type:'poison',cat:'status',power:null,acc:null,pp:20},
+  {name:'以牙还牙',nameEn:'Comeuppance',type:'dark',cat:'physical',power:null,acc:100,pp:12},
+  {name:'迷幻光线',nameEn:'Confuse Ray',type:'ghost',cat:'status',power:null,acc:100,pp:12},
+  {name:'模仿跟随',nameEn:'Copycat',type:'normal',cat:'status',power:null,acc:null,pp:20},
+  {name:'腐蚀气体',nameEn:'Corrosive Gas',type:'poison',cat:'status',power:null,acc:100,pp:20},
+  {name:'宇宙之力',nameEn:'Cosmic Power',type:'psychic',cat:'status',power:null,acc:null,pp:20},
+  {name:'棉花防御',nameEn:'Cotton Guard',type:'grass',cat:'status',power:null,acc:null,pp:12},
+  {name:'棉孢子',nameEn:'Cotton Spore',type:'grass',cat:'status',power:null,acc:100,pp:20},
+  {name:'反击',nameEn:'Counter',type:'fighting',cat:'physical',power:null,acc:100,pp:20},
+  {name:'贪财',nameEn:'Covet',type:'normal',cat:'physical',power:60,acc:100,pp:20},
+  {name:'蟹钳锤击',nameEn:'Crabhammer',type:'water',cat:'physical',power:100,acc:95,pp:12},
+  {name:'十字斩',nameEn:'Cross Chop',type:'fighting',cat:'physical',power:100,acc:80,pp:8},
+  {name:'毒十字斩',nameEn:'Cross Poison',type:'poison',cat:'physical',power:70,acc:100,pp:20},
+  {name:'强力咬碎',nameEn:'Crunch',type:'dark',cat:'physical',power:80,acc:100,pp:16},
+  {name:'强力钳击',nameEn:'Crush Claw',type:'normal',cat:'physical',power:75,acc:95,pp:12},
+  {name:'诅咒',nameEn:'Curse',type:'ghost',cat:'status',power:null,acc:null,pp:12},
+  // D
+  {name:'恶之波动',nameEn:'Dark Pulse',type:'dark',cat:'special',power:80,acc:100,pp:16},
+  {name:'最暗大背摔',nameEn:'Darkest Lariat',type:'dark',cat:'physical',power:85,acc:100,pp:12},
+  {name:'魅惑之星',nameEn:'Dazzling Gleam',type:'fairy',cat:'special',power:80,acc:100,pp:12},
+  {name:'装饰',nameEn:'Decorate',type:'fairy',cat:'status',power:null,acc:null,pp:16},
+  {name:'清除浓雾',nameEn:'Defog',type:'flying',cat:'status',power:null,acc:null,pp:16},
+  {name:'同命',nameEn:'Destiny Bond',type:'ghost',cat:'status',power:null,acc:null,pp:8},
+  {name:'感知',nameEn:'Detect',type:'fighting',cat:'status',power:null,acc:null,pp:8},
+  {name:'挖洞',nameEn:'Dig',type:'ground',cat:'physical',power:80,acc:100,pp:12},
+  {name:'厄运猫爪',nameEn:'Dire Claw',type:'poison',cat:'physical',power:80,acc:100,pp:16},
+  {name:'封锁技能',nameEn:'Disable',type:'normal',cat:'status',power:null,acc:100,pp:20},
+  {name:'放电',nameEn:'Discharge',type:'electric',cat:'special',power:80,acc:100,pp:16},
+  {name:'潜水',nameEn:'Dive',type:'water',cat:'physical',power:80,acc:100,pp:12},
+  {name:'双重打击',nameEn:'Double Hit',type:'normal',cat:'physical',power:35,acc:90,pp:12},
+  {name:'残影',nameEn:'Double Team',type:'normal',cat:'status',power:null,acc:null,pp:16},
+  {name:'舍身冲撞',nameEn:'Double-Edge',type:'normal',cat:'physical',power:120,acc:100,pp:16},
+  {name:'流星群',nameEn:'Draco Meteor',type:'dragon',cat:'special',power:130,acc:90,pp:8},
+  {name:'龙之援声',nameEn:'Dragon Cheer',type:'dragon',cat:'status',power:null,acc:null,pp:16},
+  {name:'龙爪',nameEn:'Dragon Claw',type:'dragon',cat:'physical',power:80,acc:100,pp:16},
+  {name:'龙舞',nameEn:'Dragon Dance',type:'dragon',cat:'status',power:null,acc:null,pp:20},
+  {name:'龙之镖',nameEn:'Dragon Darts',type:'dragon',cat:'physical',power:50,acc:100,pp:12},
+  {name:'龙之波动',nameEn:'Dragon Pulse',type:'dragon',cat:'special',power:85,acc:100,pp:12},
+  {name:'龙冲击',nameEn:'Dragon Rush',type:'dragon',cat:'physical',power:100,acc:75,pp:12},
+  {name:'龙尾',nameEn:'Dragon Tail',type:'dragon',cat:'physical',power:60,acc:90,pp:12},
+  {name:'吸取拳',nameEn:'Drain Punch',type:'fighting',cat:'physical',power:75,acc:100,pp:12},
+  {name:'吸力之吻',nameEn:'Draining Kiss',type:'fairy',cat:'special',power:50,acc:100,pp:12},
+  {name:'高速喙击',nameEn:'Drill Peck',type:'flying',cat:'physical',power:80,acc:100,pp:20},
+  {name:'钻地',nameEn:'Drill Run',type:'ground',cat:'physical',power:80,acc:95,pp:12},
+  {name:'双翼击',nameEn:'Dual Wingbeat',type:'flying',cat:'physical',power:40,acc:90,pp:12},
+  {name:'爆炸拳',nameEn:'Dynamic Punch',type:'fighting',cat:'physical',power:100,acc:50,pp:8},
+  // E
+  {name:'大地之力',nameEn:'Earth Power',type:'ground',cat:'special',power:90,acc:100,pp:12},
+  {name:'地震',nameEn:'Earthquake',type:'ground',cat:'physical',power:100,acc:100,pp:12},
+  {name:'怪异冲动',nameEn:'Eerie Impulse',type:'electric',cat:'status',power:null,acc:100,pp:16},
+  {name:'怪异咒语',nameEn:'Eerie Spell',type:'psychic',cat:'special',power:80,acc:100,pp:8},
+  {name:'电气地形',nameEn:'Electric Terrain',type:'electric',cat:'status',power:null,acc:null,pp:12},
+  {name:'电气化',nameEn:'Electrify',type:'electric',cat:'status',power:null,acc:null,pp:20},
+  {name:'电球',nameEn:'Electro Ball',type:'electric',cat:'special',power:null,acc:100,pp:12},
+  {name:'充电炮',nameEn:'Electro Shot',type:'electric',cat:'special',power:130,acc:100,pp:12},
+  {name:'放电网',nameEn:'Electroweb',type:'electric',cat:'special',power:55,acc:95,pp:16},
+  {name:'再来一次',nameEn:'Encore',type:'normal',cat:'status',power:null,acc:100,pp:8},
+  {name:'竭尽全力',nameEn:'Endeavor',type:'normal',cat:'physical',power:null,acc:100,pp:8},
+  {name:'忍耐',nameEn:'Endure',type:'normal',cat:'status',power:null,acc:null,pp:12},
+  {name:'能量球',nameEn:'Energy Ball',type:'grass',cat:'special',power:90,acc:100,pp:12},
+  {name:'引入',nameEn:'Entrainment',type:'normal',cat:'status',power:null,acc:100,pp:16},
+  {name:'喷发',nameEn:'Eruption',type:'fire',cat:'special',power:150,acc:100,pp:8},
+  {name:'念力爆发',nameEn:'Expanding Force',type:'psychic',cat:'special',power:80,acc:100,pp:12},
+  {name:'大爆炸',nameEn:'Explosion',type:'normal',cat:'physical',power:250,acc:100,pp:8},
+  {name:'超感官',nameEn:'Extrasensory',type:'psychic',cat:'special',power:80,acc:100,pp:20},
+  {name:'神速',nameEn:'Extreme Speed',type:'normal',cat:'physical',power:80,acc:100,pp:8},
+  // F
+  {name:'宝贝脸',nameEn:'Facade',type:'normal',cat:'physical',power:70,acc:100,pp:20},
+  {name:'妖精封锁',nameEn:'Fairy Lock',type:'fairy',cat:'status',power:null,acc:null,pp:12},
+  {name:'猫手',nameEn:'Fake Out',type:'normal',cat:'physical',power:40,acc:100,pp:12},
+  {name:'催泪',nameEn:'Fake Tears',type:'dark',cat:'status',power:null,acc:100,pp:20},
+  {name:'羽毛舞',nameEn:'Feather Dance',type:'flying',cat:'status',power:null,acc:100,pp:16},
+  {name:'虚张声势',nameEn:'Feint',type:'normal',cat:'physical',power:30,acc:100,pp:12},
+  {name:'胜者蜂毒刺',nameEn:'Fell Stinger',type:'bug',cat:'physical',power:50,acc:100,pp:20},
+  {name:'变幻光束',nameEn:'Fickle Beam',type:'dragon',cat:'special',power:80,acc:100,pp:8},
+  {name:'火焰之舞',nameEn:'Fiery Dance',type:'fire',cat:'special',power:80,acc:100,pp:12},
+  {name:'殊死一搏',nameEn:'Final Gambit',type:'fighting',cat:'special',power:null,acc:100,pp:8},
+  {name:'大字爆炎',nameEn:'Fire Blast',type:'fire',cat:'special',power:110,acc:85,pp:8},
+  {name:'火焰牙',nameEn:'Fire Fang',type:'fire',cat:'physical',power:65,acc:95,pp:16},
+  {name:'烈焰鞭打',nameEn:'Fire Lash',type:'fire',cat:'physical',power:90,acc:100,pp:16},
+  {name:'火焰拳',nameEn:'Fire Punch',type:'fire',cat:'physical',power:75,acc:100,pp:16},
+  {name:'火焰漩涡',nameEn:'Fire Spin',type:'fire',cat:'special',power:35,acc:85,pp:16},
+  {name:'先声夺人',nameEn:'First Impression',type:'bug',cat:'physical',power:100,acc:100,pp:12},
+  {name:'裂地',nameEn:'Fissure',type:'ground',cat:'physical',power:null,acc:30,pp:8},
+  {name:'折腾',nameEn:'Flail',type:'normal',cat:'physical',power:null,acc:100,pp:16},
+  {name:'火焰冲锋',nameEn:'Flame Charge',type:'fire',cat:'physical',power:50,acc:100,pp:20},
+  {name:'喷射火焰',nameEn:'Flamethrower',type:'fire',cat:'special',power:90,acc:100,pp:16},
+  {name:'闪焰冲锋',nameEn:'Flare Blitz',type:'fire',cat:'physical',power:120,acc:100,pp:16},
+  {name:'光子炮',nameEn:'Flash Cannon',type:'steel',cat:'special',power:80,acc:100,pp:12},
+  {name:'甜言蜜语',nameEn:'Flatter',type:'dark',cat:'status',power:null,acc:100,pp:16},
+  {name:'投掷',nameEn:'Fling',type:'dark',cat:'physical',power:null,acc:100,pp:12},
+  {name:'翻身回游',nameEn:'Flip Turn',type:'water',cat:'physical',power:60,acc:100,pp:20},
+  {name:'花样戏法',nameEn:'Flower Trick',type:'grass',cat:'physical',power:70,acc:null,pp:12},
+  {name:'飞翔',nameEn:'Fly',type:'flying',cat:'physical',power:90,acc:95,pp:16},
+  {name:'飞膝压',nameEn:'Flying Press',type:'fighting',cat:'physical',power:100,acc:95,pp:12},
+  {name:'气合弹',nameEn:'Focus Blast',type:'fighting',cat:'special',power:120,acc:70,pp:8},
+  {name:'聚气',nameEn:'Focus Energy',type:'normal',cat:'status',power:null,acc:null,pp:20},
+  {name:'意念拳',nameEn:'Focus Punch',type:'fighting',cat:'physical',power:150,acc:100,pp:20},
+  {name:'向我来',nameEn:'Follow Me',type:'normal',cat:'status',power:null,acc:null,pp:20},
+  {name:'森林诅咒',nameEn:"Forest's Curse",type:'grass',cat:'status',power:null,acc:100,pp:20},
+  {name:'恶劣手段',nameEn:'Foul Play',type:'dark',cat:'physical',power:95,acc:100,pp:16},
+  {name:'冷冻干燥',nameEn:'Freeze-Dry',type:'ice',cat:'special',power:70,acc:100,pp:20},
+  {name:'终极花束',nameEn:'Frenzy Plant',type:'grass',cat:'special',power:150,acc:90,pp:8},
+  {name:'霜冻之息',nameEn:'Frost Breath',type:'ice',cat:'special',power:60,acc:90,pp:12},
+  {name:'先知',nameEn:'Future Sight',type:'psychic',cat:'special',power:120,acc:100,pp:12},
+  // G
+  {name:'胃液',nameEn:'Gastro Acid',type:'poison',cat:'status',power:null,acc:100,pp:12},
+  {name:'终极吸取',nameEn:'Giga Drain',type:'grass',cat:'special',power:75,acc:100,pp:12},
+  {name:'终极冲击',nameEn:'Giga Impact',type:'normal',cat:'physical',power:150,acc:90,pp:8},
+  {name:'超亿吨锤',nameEn:'Gigaton Hammer',type:'steel',cat:'physical',power:160,acc:100,pp:8},
+  {name:'大蛇凝视',nameEn:'Glare',type:'normal',cat:'status',power:null,acc:100,pp:20},
+  {name:'草结',nameEn:'Grass Knot',type:'grass',cat:'special',power:null,acc:100,pp:20},
+  {name:'草地急进',nameEn:'Grassy Glide',type:'grass',cat:'physical',power:55,acc:100,pp:20},
+  {name:'青草地形',nameEn:'Grassy Terrain',type:'grass',cat:'status',power:null,acc:null,pp:12},
+  {name:'重力苹果',nameEn:'Grav Apple',type:'grass',cat:'physical',power:90,acc:100,pp:12},
+  {name:'重力',nameEn:'Gravity',type:'psychic',cat:'status',power:null,acc:null,pp:8},
+  {name:'生长',nameEn:'Growth',type:'grass',cat:'status',power:null,acc:null,pp:20},
+  {name:'防御分割',nameEn:'Guard Split',type:'psychic',cat:'status',power:null,acc:null,pp:12},
+  {name:'防御交换',nameEn:'Guard Swap',type:'psychic',cat:'status',power:null,acc:null,pp:12},
+  {name:'断头台',nameEn:'Guillotine',type:'normal',cat:'physical',power:null,acc:30,pp:8},
+  {name:'污泥射击',nameEn:'Gunk Shot',type:'poison',cat:'physical',power:120,acc:80,pp:8},
+  {name:'陀螺球',nameEn:'Gyro Ball',type:'steel',cat:'physical',power:null,acc:100,pp:8},
+  // H
+  {name:'铁锤臂膀',nameEn:'Hammer Arm',type:'fighting',cat:'physical',power:100,acc:90,pp:12},
+  {name:'硬压',nameEn:'Hard Press',type:'steel',cat:'physical',power:null,acc:100,pp:12},
+  {name:'烟雾',nameEn:'Haze',type:'ice',cat:'status',power:null,acc:null,pp:20},
+  {name:'碎头',nameEn:'Head Smash',type:'rock',cat:'physical',power:150,acc:80,pp:8},
+  {name:'鲁莽冲击',nameEn:'Headlong Rush',type:'ground',cat:'physical',power:120,acc:100,pp:8},
+  {name:'治愈铃声',nameEn:'Heal Bell',type:'normal',cat:'status',power:null,acc:null,pp:8},
+  {name:'治愈波',nameEn:'Heal Pulse',type:'psychic',cat:'status',power:null,acc:null,pp:12},
+  {name:'治愈祈祷',nameEn:'Healing Wish',type:'psychic',cat:'status',power:null,acc:null,pp:12},
+  {name:'高温冲身',nameEn:'Heat Crash',type:'fire',cat:'physical',power:null,acc:100,pp:12},
+  {name:'热浪',nameEn:'Heat Wave',type:'fire',cat:'special',power:95,acc:90,pp:12},
+  {name:'重力压制',nameEn:'Heavy Slam',type:'steel',cat:'physical',power:null,acc:100,pp:12},
+  {name:'帮助',nameEn:'Helping Hand',type:'normal',cat:'status',power:null,acc:null,pp:20},
+  {name:'咒语',nameEn:'Hex',type:'ghost',cat:'special',power:65,acc:100,pp:12},
+  {name:'超强力马',nameEn:'High Horsepower',type:'ground',cat:'physical',power:95,acc:95,pp:12},
+  {name:'飞膝踢',nameEn:'High Jump Kick',type:'fighting',cat:'physical',power:130,acc:90,pp:12},
+  {name:'角钻',nameEn:'Horn Drill',type:'normal',cat:'physical',power:null,acc:30,pp:8},
+  {name:'吸角',nameEn:'Horn Leech',type:'grass',cat:'physical',power:75,acc:100,pp:12},
+  {name:'嚎叫',nameEn:'Howl',type:'normal',cat:'status',power:null,acc:null,pp:20},
+  {name:'暴风',nameEn:'Hurricane',type:'flying',cat:'special',power:110,acc:70,pp:12},
+  {name:'究极水炮',nameEn:'Hydro Cannon',type:'water',cat:'special',power:150,acc:90,pp:8},
+  {name:'水炮',nameEn:'Hydro Pump',type:'water',cat:'special',power:110,acc:80,pp:8},
+  {name:'破坏光线',nameEn:'Hyper Beam',type:'normal',cat:'special',power:150,acc:90,pp:8},
+  {name:'超音波',nameEn:'Hyper Voice',type:'normal',cat:'special',power:90,acc:100,pp:12},
+  {name:'催眠术',nameEn:'Hypnosis',type:'psychic',cat:'status',power:null,acc:60,pp:20},
+  // I
+  {name:'冰冻光束',nameEn:'Ice Beam',type:'ice',cat:'special',power:90,acc:100,pp:12},
+  {name:'冰牙',nameEn:'Ice Fang',type:'ice',cat:'physical',power:65,acc:95,pp:16},
+  {name:'冰锤',nameEn:'Ice Hammer',type:'ice',cat:'physical',power:100,acc:90,pp:12},
+  {name:'冰冻拳',nameEn:'Ice Punch',type:'ice',cat:'physical',power:75,acc:100,pp:16},
+  {name:'冰砾',nameEn:'Ice Shard',type:'ice',cat:'physical',power:40,acc:100,pp:20},
+  {name:'旋冰',nameEn:'Ice Spinner',type:'ice',cat:'physical',power:80,acc:100,pp:16},
+  {name:'冰柱坠落',nameEn:'Icicle Crash',type:'ice',cat:'physical',power:85,acc:90,pp:12},
+  {name:'冰柱针',nameEn:'Icicle Spear',type:'ice',cat:'physical',power:25,acc:100,pp:20},
+  {name:'冰风',nameEn:'Icy Wind',type:'ice',cat:'special',power:55,acc:95,pp:16},
+  {name:'封印',nameEn:'Imprison',type:'psychic',cat:'status',power:null,acc:null,pp:12},
+  {name:'怪火游行',nameEn:'Infernal Parade',type:'ghost',cat:'special',power:65,acc:100,pp:16},
+  {name:'炼狱',nameEn:'Inferno',type:'fire',cat:'special',power:100,acc:50,pp:8},
+  {name:'寄生虫',nameEn:'Infestation',type:'bug',cat:'special',power:20,acc:100,pp:20},
+  {name:'扎根',nameEn:'Ingrain',type:'grass',cat:'status',power:null,acc:null,pp:20},
+  {name:'指令',nameEn:'Instruct',type:'psychic',cat:'status',power:null,acc:null,pp:16},
+  {name:'铁壁',nameEn:'Iron Defense',type:'steel',cat:'status',power:null,acc:null,pp:16},
+  {name:'铁头',nameEn:'Iron Head',type:'steel',cat:'physical',power:80,acc:100,pp:16},
+  {name:'铁尾',nameEn:'Iron Tail',type:'steel',cat:'physical',power:100,acc:75,pp:16},
+  // J
+  {name:'喷射拳',nameEn:'Jet Punch',type:'water',cat:'physical',power:60,acc:100,pp:16},
+  // K
+  {name:'王者之盾',nameEn:"King's Shield",type:'steel',cat:'status',power:null,acc:null,pp:8},
+  {name:'拍落',nameEn:'Knock Off',type:'dark',cat:'physical',power:65,acc:100,pp:20},
+  {name:'叩头斩',nameEn:'Kowtow Cleave',type:'dark',cat:'physical',power:85,acc:null,pp:12},
+  // L
+  {name:'迁怒',nameEn:'Lash Out',type:'dark',cat:'physical',power:75,acc:100,pp:8},
+  {name:'孤注一掷',nameEn:'Last Resort',type:'normal',cat:'physical',power:140,acc:100,pp:8},
+  {name:'最后敬意',nameEn:'Last Respects',type:'ghost',cat:'physical',power:50,acc:100,pp:12},
+  {name:'熔岩风暴',nameEn:'Lava Plume',type:'fire',cat:'special',power:80,acc:100,pp:16},
+  {name:'叶刃',nameEn:'Leaf Blade',type:'grass',cat:'physical',power:90,acc:100,pp:16},
+  {name:'飞叶风暴',nameEn:'Leaf Storm',type:'grass',cat:'special',power:130,acc:90,pp:8},
+  {name:'吸血',nameEn:'Leech Life',type:'bug',cat:'physical',power:80,acc:100,pp:12},
+  {name:'寄生种子',nameEn:'Leech Seed',type:'grass',cat:'status',power:null,acc:90,pp:12},
+  {name:'生命之水',nameEn:'Life Dew',type:'water',cat:'status',power:null,acc:null,pp:12},
+  {name:'光墙',nameEn:'Light Screen',type:'psychic',cat:'status',power:null,acc:null,pp:20},
+  {name:'破灭之光',nameEn:'Light of Ruin',type:'fairy',cat:'special',power:140,acc:90,pp:8},
+  {name:'水流裂破',nameEn:'Liquidation',type:'water',cat:'physical',power:85,acc:100,pp:12},
+  {name:'锁定',nameEn:'Lock-On',type:'normal',cat:'status',power:null,acc:null,pp:8},
+  {name:'低踢',nameEn:'Low Kick',type:'fighting',cat:'physical',power:null,acc:100,pp:20},
+  {name:'扫脚',nameEn:'Low Sweep',type:'fighting',cat:'physical',power:65,acc:100,pp:20},
+  {name:'光子崩射',nameEn:'Lumina Crash',type:'psychic',cat:'special',power:80,acc:100,pp:12},
+  {name:'弹跳冲击',nameEn:'Lunge',type:'bug',cat:'physical',power:80,acc:100,pp:16},
+  // M
+  {name:'马赫拳',nameEn:'Mach Punch',type:'fighting',cat:'physical',power:40,acc:100,pp:20},
+  {name:'魔法粉末',nameEn:'Magic Powder',type:'psychic',cat:'status',power:null,acc:100,pp:20},
+  {name:'奇异空间',nameEn:'Magic Room',type:'psychic',cat:'status',power:null,acc:null,pp:12},
+  {name:'磁力浮游',nameEn:'Magnet Rise',type:'electric',cat:'status',power:null,acc:null,pp:12},
+  {name:'磁力扰动',nameEn:'Magnetic Flux',type:'electric',cat:'status',power:null,acc:null,pp:20},
+  {name:'飞叶抓取',nameEn:'Matcha Gotcha',type:'grass',cat:'special',power:80,acc:90,pp:16},
+  {name:'怪异眼神',nameEn:'Mean Look',type:'normal',cat:'status',power:null,acc:null,pp:8},
+  {name:'超级踢击',nameEn:'Mega Kick',type:'normal',cat:'physical',power:120,acc:75,pp:8},
+  {name:'大角',nameEn:'Megahorn',type:'bug',cat:'physical',power:120,acc:85,pp:12},
+  {name:'遗志',nameEn:'Memento',type:'dark',cat:'status',power:null,acc:100,pp:12},
+  {name:'金属爆炸',nameEn:'Metal Burst',type:'steel',cat:'physical',power:null,acc:100,pp:12},
+  {name:'金属音',nameEn:'Metal Sound',type:'steel',cat:'status',power:null,acc:85,pp:20},
+  {name:'流星射线',nameEn:'Meteor Beam',type:'rock',cat:'special',power:120,acc:90,pp:12},
+  {name:'流星拳',nameEn:'Meteor Mash',type:'steel',cat:'physical',power:90,acc:90,pp:12},
+  {name:'牛奶汲取',nameEn:'Milk Drink',type:'normal',cat:'status',power:null,acc:null,pp:8},
+  {name:'变小',nameEn:'Minimize',type:'normal',cat:'status',power:null,acc:null,pp:12},
+  {name:'镜面防御',nameEn:'Mirror Coat',type:'psychic',cat:'special',power:null,acc:100,pp:20},
+  {name:'迷雾爆炸',nameEn:'Misty Explosion',type:'fairy',cat:'special',power:100,acc:100,pp:8},
+  {name:'迷雾地形',nameEn:'Misty Terrain',type:'fairy',cat:'status',power:null,acc:null,pp:12},
+  {name:'月亮之力',nameEn:'Moonblast',type:'fairy',cat:'special',power:95,acc:100,pp:16},
+  {name:'月光',nameEn:'Moonlight',type:'fairy',cat:'status',power:null,acc:null,pp:8},
+  {name:'朝日',nameEn:'Morning Sun',type:'normal',cat:'status',power:null,acc:null,pp:8},
+  {name:'致命旋转',nameEn:'Mortal Spin',type:'poison',cat:'physical',power:30,acc:100,pp:16},
+  {name:'山岭烈风',nameEn:'Mountain Gale',type:'ice',cat:'physical',power:120,acc:85,pp:12},
+  {name:'泥泞射击',nameEn:'Mud Shot',type:'ground',cat:'special',power:55,acc:95,pp:16},
+  {name:'泥巴',nameEn:'Mud-Slap',type:'ground',cat:'special',power:20,acc:100,pp:12},
+  {name:'污浊之水',nameEn:'Muddy Water',type:'water',cat:'special',power:90,acc:85,pp:12},
+  {name:'神秘之火',nameEn:'Mystical Fire',type:'fire',cat:'special',power:75,acc:100,pp:12},
+  // N
+  {name:'诡计',nameEn:'Nasty Plot',type:'dark',cat:'status',power:null,acc:null,pp:20},
+  {name:'暗影驱散',nameEn:'Night Daze',type:'dark',cat:'special',power:90,acc:95,pp:12},
+  {name:'夜之暗影',nameEn:'Night Shade',type:'ghost',cat:'special',power:null,acc:100,pp:16},
+  {name:'夜袭',nameEn:'Night Slash',type:'dark',cat:'physical',power:70,acc:100,pp:20},
+  {name:'英勇怒吼',nameEn:'Noble Roar',type:'normal',cat:'status',power:null,acc:100,pp:20},
+  {name:'磨蹭',nameEn:'Nuzzle',type:'electric',cat:'physical',power:20,acc:100,pp:20},
+  // O
+  {name:'逆鳞',nameEn:'Outrage',type:'dragon',cat:'physical',power:120,acc:100,pp:12},
+  {name:'过热',nameEn:'Overheat',type:'fire',cat:'special',power:130,acc:90,pp:8},
+  // P
+  {name:'分担痛苦',nameEn:'Pain Split',type:'normal',cat:'status',power:null,acc:null,pp:20},
+  {name:'抛物线充电',nameEn:'Parabolic Charge',type:'electric',cat:'special',power:65,acc:100,pp:20},
+  {name:'抛下狠话',nameEn:'Parting Shot',type:'dark',cat:'status',power:null,acc:100,pp:20},
+  {name:'以怨报怨',nameEn:'Payback',type:'dark',cat:'physical',power:50,acc:100,pp:12},
+  {name:'灭亡之歌',nameEn:'Perish Song',type:'normal',cat:'status',power:null,acc:null,pp:8},
+  {name:'花瓣风暴',nameEn:'Petal Blizzard',type:'grass',cat:'physical',power:90,acc:100,pp:16},
+  {name:'花舞',nameEn:'Petal Dance',type:'grass',cat:'special',power:120,acc:100,pp:12},
+  {name:'虚空剪影',nameEn:'Phantom Force',type:'ghost',cat:'physical',power:90,acc:100,pp:12},
+  {name:'飞刺',nameEn:'Pin Missile',type:'bug',cat:'physical',power:25,acc:95,pp:20},
+  {name:'乱撒娇',nameEn:'Play Rough',type:'fairy',cat:'physical',power:90,acc:90,pp:12},
+  {name:'啄食',nameEn:'Pluck',type:'flying',cat:'physical',power:60,acc:100,pp:20},
+  {name:'毒牙',nameEn:'Poison Fang',type:'poison',cat:'physical',power:50,acc:100,pp:16},
+  {name:'毒击',nameEn:'Poison Jab',type:'poison',cat:'physical',power:80,acc:100,pp:20},
+  {name:'毒粉',nameEn:'Poison Powder',type:'poison',cat:'status',power:null,acc:75,pp:20},
+  {name:'花粉团',nameEn:'Pollen Puff',type:'bug',cat:'special',power:90,acc:100,pp:16},
+  {name:'骚灵',nameEn:'Poltergeist',type:'ghost',cat:'physical',power:110,acc:90,pp:8},
+  {name:'人海战术',nameEn:'Population Bomb',type:'normal',cat:'physical',power:20,acc:90,pp:12},
+  {name:'虫爪扑击',nameEn:'Pounce',type:'bug',cat:'physical',power:50,acc:100,pp:20},
+  {name:'宝石光线',nameEn:'Power Gem',type:'rock',cat:'special',power:80,acc:100,pp:20},
+  {name:'能力转移',nameEn:'Power Shift',type:'normal',cat:'status',power:null,acc:null,pp:12},
+  {name:'能力分割',nameEn:'Power Split',type:'psychic',cat:'status',power:null,acc:null,pp:12},
+  {name:'能力交换',nameEn:'Power Swap',type:'psychic',cat:'status',power:null,acc:null,pp:12},
+  {name:'能力互换',nameEn:'Power Trick',type:'psychic',cat:'status',power:null,acc:null,pp:12},
+  {name:'怒气倍增',nameEn:'Power Trip',type:'dark',cat:'physical',power:20,acc:100,pp:12},
+  {name:'强力鞭打',nameEn:'Power Whip',type:'grass',cat:'physical',power:120,acc:85,pp:12},
+  {name:'守住',nameEn:'Protect',type:'normal',cat:'status',power:null,acc:null,pp:8},
+  {name:'模仿',nameEn:'Psych Up',type:'normal',cat:'status',power:null,acc:null,pp:12},
+  {name:'精神强念',nameEn:'Psychic',type:'psychic',cat:'special',power:90,acc:100,pp:12},
+  {name:'超能毒牙',nameEn:'Psychic Fangs',type:'psychic',cat:'physical',power:85,acc:100,pp:12},
+  {name:'超能噪音',nameEn:'Psychic Noise',type:'psychic',cat:'special',power:75,acc:100,pp:12},
+  {name:'精神地形',nameEn:'Psychic Terrain',type:'psychic',cat:'status',power:null,acc:null,pp:12},
+  {name:'念力斩',nameEn:'Psycho Cut',type:'psychic',cat:'physical',power:70,acc:100,pp:20},
+  {name:'念力防护冲撞',nameEn:'Psyshield Bash',type:'psychic',cat:'physical',power:90,acc:90,pp:12},
+  {name:'精神冲击',nameEn:'Psyshock',type:'psychic',cat:'special',power:80,acc:100,pp:12},
+  // Q
+  {name:'压制',nameEn:'Quash',type:'dark',cat:'status',power:null,acc:100,pp:16},
+  {name:'电光一闪',nameEn:'Quick Attack',type:'normal',cat:'physical',power:40,acc:100,pp:20},
+  {name:'神速防御',nameEn:'Quick Guard',type:'fighting',cat:'status',power:null,acc:null,pp:16},
+  {name:'蝶舞',nameEn:'Quiver Dance',type:'bug',cat:'status',power:null,acc:null,pp:20},
+  // R
+  {name:'愤怒粉',nameEn:'Rage Powder',type:'bug',cat:'status',power:null,acc:null,pp:20},
+  {name:'激怒公牛',nameEn:'Raging Bull',type:'normal',cat:'physical',power:90,acc:100,pp:12},
+  {name:'暴怒烈焰',nameEn:'Raging Fury',type:'fire',cat:'physical',power:120,acc:100,pp:12},
+  {name:'下雨',nameEn:'Rain Dance',type:'water',cat:'status',power:null,acc:null,pp:8},
+  {name:'高速旋转',nameEn:'Rapid Spin',type:'normal',cat:'physical',power:50,acc:100,pp:20},
+  {name:'贝壳刃',nameEn:'Razor Shell',type:'water',cat:'physical',power:75,acc:95,pp:12},
+  {name:'回复',nameEn:'Recover',type:'normal',cat:'status',power:null,acc:null,pp:8},
+  {name:'回收',nameEn:'Recycle',type:'normal',cat:'status',power:null,acc:null,pp:12},
+  {name:'反射壁',nameEn:'Reflect',type:'psychic',cat:'status',power:null,acc:null,pp:20},
+  {name:'类型转换',nameEn:'Reflect Type',type:'normal',cat:'status',power:null,acc:null,pp:16},
+  {name:'睡眠',nameEn:'Rest',type:'psychic',cat:'status',power:null,acc:null,pp:8},
+  {name:'拼死一搏',nameEn:'Reversal',type:'fighting',cat:'physical',power:null,acc:100,pp:16},
+  {name:'升压打击',nameEn:'Rising Voltage',type:'electric',cat:'special',power:70,acc:100,pp:20},
+  {name:'怒吼',nameEn:'Roar',type:'normal',cat:'status',power:null,acc:null,pp:20},
+  {name:'连续岩石',nameEn:'Rock Blast',type:'rock',cat:'physical',power:25,acc:90,pp:12},
+  {name:'岩石磨光',nameEn:'Rock Polish',type:'rock',cat:'status',power:null,acc:null,pp:20},
+  {name:'岩崩',nameEn:'Rock Slide',type:'rock',cat:'physical',power:75,acc:90,pp:12},
+  {name:'落石封堵',nameEn:'Rock Tomb',type:'rock',cat:'physical',power:60,acc:95,pp:16},
+  {name:'岩石炸弹',nameEn:'Rock Wrecker',type:'rock',cat:'physical',power:150,acc:90,pp:8},
+  {name:'角色扮演',nameEn:'Role Play',type:'psychic',cat:'status',power:null,acc:null,pp:12},
+  {name:'羽栖',nameEn:'Roost',type:'flying',cat:'status',power:null,acc:null,pp:8},
+  {name:'合唱',nameEn:'Round',type:'normal',cat:'special',power:60,acc:100,pp:16},
+  // S
+  {name:'圣剑',nameEn:'Sacred Sword',type:'fighting',cat:'physical',power:90,acc:100,pp:16},
+  {name:'神秘防护',nameEn:'Safeguard',type:'normal',cat:'status',power:null,acc:null,pp:20},
+  {name:'盐腌',nameEn:'Salt Cure',type:'rock',cat:'physical',power:40,acc:100,pp:16},
+  {name:'沙埋',nameEn:'Sand Tomb',type:'ground',cat:'physical',power:35,acc:85,pp:16},
+  {name:'沙暴',nameEn:'Sandstorm',type:'rock',cat:'status',power:null,acc:null,pp:8},
+  {name:'热水',nameEn:'Scald',type:'water',cat:'special',power:80,acc:100,pp:16},
+  {name:'鳞片射击',nameEn:'Scale Shot',type:'dragon',cat:'physical',power:25,acc:90,pp:20},
+  {name:'可怕表情',nameEn:'Scary Face',type:'normal',cat:'status',power:null,acc:100,pp:12},
+  {name:'滚烫沙土',nameEn:'Scorching Sands',type:'ground',cat:'special',power:70,acc:100,pp:12},
+  {name:'尖叫',nameEn:'Screech',type:'normal',cat:'status',power:null,acc:85,pp:20},
+  {name:'种子机关枪',nameEn:'Seed Bomb',type:'grass',cat:'physical',power:80,acc:100,pp:16},
+  {name:'地球抛摔',nameEn:'Seismic Toss',type:'fighting',cat:'physical',power:null,acc:100,pp:20},
+  {name:'玉石俱碎',nameEn:'Self-Destruct',type:'normal',cat:'physical',power:200,acc:100,pp:8},
+  {name:'暗影球',nameEn:'Shadow Ball',type:'ghost',cat:'special',power:80,acc:100,pp:16},
+  {name:'影爪',nameEn:'Shadow Claw',type:'ghost',cat:'physical',power:70,acc:100,pp:16},
+  {name:'暗影拳',nameEn:'Shadow Punch',type:'ghost',cat:'physical',power:60,acc:null,pp:20},
+  {name:'暗影偷袭',nameEn:'Shadow Sneak',type:'ghost',cat:'physical',power:40,acc:100,pp:20},
+  {name:'蛇尾分身',nameEn:'Shed Tail',type:'normal',cat:'status',power:null,acc:null,pp:12},
+  {name:'绝对零度',nameEn:'Sheer Cold',type:'ice',cat:'special',power:null,acc:30,pp:8},
+  {name:'甲壳侧臂炮',nameEn:'Shell Side Arm',type:'poison',cat:'special',power:90,acc:100,pp:12},
+  {name:'破壳',nameEn:'Shell Smash',type:'normal',cat:'status',power:null,acc:null,pp:16},
+  {name:'防护壳',nameEn:'Shelter',type:'steel',cat:'status',power:null,acc:null,pp:12},
+  {name:'单纯光线',nameEn:'Simple Beam',type:'normal',cat:'status',power:null,acc:100,pp:16},
+  {name:'歌唱',nameEn:'Sing',type:'normal',cat:'status',power:null,acc:55,pp:16},
+  {name:'技能交换',nameEn:'Skill Swap',type:'psychic',cat:'status',power:null,acc:null,pp:12},
+  {name:'急袭爪',nameEn:'Skitter Smack',type:'bug',cat:'physical',power:70,acc:90,pp:12},
+  {name:'神鸟猛攻',nameEn:'Sky Attack',type:'flying',cat:'physical',power:140,acc:90,pp:8},
+  {name:'偷懒',nameEn:'Slack Off',type:'normal',cat:'status',power:null,acc:null,pp:8},
+  {name:'眠粉',nameEn:'Sleep Powder',type:'grass',cat:'status',power:null,acc:75,pp:16},
+  {name:'梦话',nameEn:'Sleep Talk',type:'normal',cat:'status',power:null,acc:null,pp:12},
+  {name:'污泥炸弹',nameEn:'Sludge Bomb',type:'poison',cat:'special',power:90,acc:100,pp:12},
+  {name:'污泥浪',nameEn:'Sludge Wave',type:'poison',cat:'special',power:95,acc:100,pp:12},
+  {name:'打落',nameEn:'Smack Down',type:'rock',cat:'physical',power:50,acc:100,pp:16},
+  {name:'智能钢刺',nameEn:'Smart Strike',type:'steel',cat:'physical',power:70,acc:null,pp:12},
+  {name:'钢铁陷阱',nameEn:'Snap Trap',type:'steel',cat:'physical',power:35,acc:100,pp:16},
+  {name:'咆哮',nameEn:'Snarl',type:'dark',cat:'special',power:55,acc:95,pp:16},
+  {name:'打鼾',nameEn:'Snore',type:'normal',cat:'special',power:50,acc:100,pp:16},
+  {name:'雪景',nameEn:'Snowscape',type:'ice',cat:'status',power:null,acc:null,pp:8},
+  {name:'浸透',nameEn:'Soak',type:'water',cat:'status',power:null,acc:100,pp:20},
+  {name:'生蛋',nameEn:'Soft-Boiled',type:'normal',cat:'status',power:null,acc:null,pp:8},
+  {name:'太阳光束',nameEn:'Solar Beam',type:'grass',cat:'special',power:120,acc:100,pp:12},
+  {name:'太阳之刃',nameEn:'Solar Blade',type:'grass',cat:'physical',power:125,acc:100,pp:12},
+  {name:'闪耀咏叹调',nameEn:'Sparkling Aria',type:'water',cat:'special',power:90,acc:100,pp:12},
+  {name:'速度交换',nameEn:'Speed Swap',type:'psychic',cat:'status',power:null,acc:null,pp:12},
+  {name:'辣椒提取',nameEn:'Spicy Extract',type:'grass',cat:'status',power:null,acc:null,pp:16},
+  {name:'撒菱',nameEn:'Spikes',type:'ground',cat:'status',power:null,acc:null,pp:20},
+  {name:'尖刺防御',nameEn:'Spiky Shield',type:'grass',cat:'status',power:null,acc:null,pp:8},
+  {name:'魂之打击',nameEn:'Spirit Break',type:'fairy',cat:'physical',power:75,acc:100,pp:16},
+  {name:'影缝',nameEn:'Spirit Shackle',type:'ghost',cat:'physical',power:90,acc:100,pp:12},
+  {name:'孢子',nameEn:'Spore',type:'grass',cat:'status',power:null,acc:100,pp:16},
+  {name:'隐形岩',nameEn:'Stealth Rock',type:'rock',cat:'status',power:null,acc:null,pp:20},
+  {name:'钢铁光束',nameEn:'Steel Beam',type:'steel',cat:'special',power:140,acc:95,pp:8},
+  {name:'钢铁滚轮',nameEn:'Steel Roller',type:'steel',cat:'physical',power:130,acc:100,pp:8},
+  {name:'钢铁翅膀',nameEn:'Steel Wing',type:'steel',cat:'physical',power:70,acc:90,pp:16},
+  {name:'暴躁跺脚',nameEn:'Stomping Tantrum',type:'ground',cat:'physical',power:75,acc:100,pp:12},
+  {name:'石斧',nameEn:'Stone Axe',type:'rock',cat:'physical',power:65,acc:90,pp:12},
+  {name:'尖石攻击',nameEn:'Stone Edge',type:'rock',cat:'physical',power:100,acc:80,pp:8},
+  {name:'暴风投',nameEn:'Storm Throw',type:'fighting',cat:'physical',power:60,acc:100,pp:12},
+  {name:'力量储备',nameEn:'Stored Power',type:'psychic',cat:'special',power:20,acc:100,pp:12},
+  {name:'丝网',nameEn:'String Shot',type:'bug',cat:'status',power:null,acc:95,pp:20},
+  {name:'虫虫困扰',nameEn:'Struggle Bug',type:'bug',cat:'special',power:50,acc:100,pp:20},
+  {name:'抱摔',nameEn:'Submission',type:'fighting',cat:'physical',power:80,acc:80,pp:12},
+  {name:'替身',nameEn:'Substitute',type:'normal',cat:'status',power:null,acc:null,pp:12},
+  {name:'晴天',nameEn:'Sunny Day',type:'fire',cat:'status',power:null,acc:null,pp:8},
+  {name:'超力',nameEn:'Superpower',type:'fighting',cat:'physical',power:120,acc:100,pp:8},
+  {name:'超音波',nameEn:'Supersonic',type:'normal',cat:'status',power:null,acc:55,pp:20},
+  {name:'冲浪',nameEn:'Surf',type:'water',cat:'special',power:90,acc:100,pp:16},
+  {name:'大言不惭',nameEn:'Swagger',type:'normal',cat:'status',power:null,acc:85,pp:16},
+  {name:'甜蜜之吻',nameEn:'Sweet Kiss',type:'fairy',cat:'status',power:null,acc:75,pp:12},
+  {name:'甜甜香气',nameEn:'Sweet Scent',type:'normal',cat:'status',power:null,acc:100,pp:20},
+  {name:'飞速星星',nameEn:'Swift',type:'normal',cat:'special',power:60,acc:null,pp:20},
+  {name:'剑舞',nameEn:'Swords Dance',type:'normal',cat:'status',power:null,acc:null,pp:20},
+  {name:'糖浆炸弹',nameEn:'Syrup Bomb',type:'grass',cat:'special',power:60,acc:90,pp:12},
+  // T
+  {name:'尾拍',nameEn:'Tail Slap',type:'normal',cat:'physical',power:25,acc:85,pp:12},
+  {name:'挑衅',nameEn:'Taunt',type:'dark',cat:'status',power:null,acc:100,pp:20},
+  {name:'太晶爆发',nameEn:'Tera Blast',type:'normal',cat:'special',power:80,acc:100,pp:12},
+  {name:'地形脉冲',nameEn:'Terrain Pulse',type:'normal',cat:'special',power:50,acc:100,pp:16},
+  {name:'喉击',nameEn:'Throat Chop',type:'dark',cat:'physical',power:80,acc:100,pp:16},
+  {name:'打雷',nameEn:'Thunder',type:'electric',cat:'special',power:110,acc:70,pp:12},
+  {name:'电力牙',nameEn:'Thunder Fang',type:'electric',cat:'physical',power:65,acc:95,pp:16},
+  {name:'雷电拳',nameEn:'Thunder Punch',type:'electric',cat:'physical',power:75,acc:100,pp:16},
+  {name:'电磁波',nameEn:'Thunder Wave',type:'electric',cat:'status',power:null,acc:90,pp:20},
+  {name:'十万伏特',nameEn:'Thunderbolt',type:'electric',cat:'special',power:90,acc:100,pp:16},
+  {name:'搔痒',nameEn:'Tickle',type:'normal',cat:'status',power:null,acc:100,pp:20},
+  {name:'骚扰',nameEn:'Torment',type:'dark',cat:'status',power:null,acc:100,pp:16},
+  {name:'剧毒',nameEn:'Toxic',type:'poison',cat:'status',power:null,acc:90,pp:12},
+  {name:'毒菱',nameEn:'Toxic Spikes',type:'poison',cat:'status',power:null,acc:null,pp:20},
+  {name:'毒丝',nameEn:'Toxic Thread',type:'poison',cat:'status',power:null,acc:100,pp:20},
+  {name:'先锋开路',nameEn:'Trailblaze',type:'grass',cat:'physical',power:50,acc:100,pp:20},
+  {name:'戏弄',nameEn:'Trick',type:'psychic',cat:'status',power:null,acc:100,pp:12},
+  {name:'戏法空间',nameEn:'Trick Room',type:'psychic',cat:'status',power:null,acc:null,pp:8},
+  {name:'三重转踢',nameEn:'Triple Axel',type:'ice',cat:'physical',power:20,acc:90,pp:12},
+  {name:'三连扑水',nameEn:'Triple Dive',type:'water',cat:'physical',power:30,acc:95,pp:12},
+  {name:'热带踢',nameEn:'Trop Kick',type:'grass',cat:'physical',power:85,acc:100,pp:16},
+  // U
+  {name:'急速折返',nameEn:'U-turn',type:'bug',cat:'physical',power:70,acc:100,pp:20},
+  {name:'占先手',nameEn:'Upper Hand',type:'fighting',cat:'physical',power:65,acc:100,pp:16},
+  {name:'喧闹',nameEn:'Uproar',type:'normal',cat:'special',power:90,acc:100,pp:12},
+  // V
+  {name:'真空波',nameEn:'Vacuum Wave',type:'fighting',cat:'special',power:40,acc:100,pp:20},
+  {name:'伏特替换',nameEn:'Volt Switch',type:'electric',cat:'special',power:70,acc:100,pp:20},
+  // W
+  {name:'水之誓约',nameEn:'Water Pledge',type:'water',cat:'special',power:80,acc:100,pp:12},
+  {name:'水流转珠',nameEn:'Water Pulse',type:'water',cat:'special',power:60,acc:100,pp:20},
+  {name:'飞水手里剑',nameEn:'Water Shuriken',type:'water',cat:'special',power:15,acc:100,pp:20},
+  {name:'攀瀑',nameEn:'Waterfall',type:'water',cat:'physical',power:80,acc:100,pp:16},
+  {name:'海浪撞击',nameEn:'Wave Crash',type:'water',cat:'physical',power:120,acc:100,pp:12},
+  {name:'天气球',nameEn:'Weather Ball',type:'normal',cat:'special',power:50,acc:100,pp:12},
+  {name:'漩涡',nameEn:'Whirlpool',type:'water',cat:'special',power:35,acc:85,pp:16},
+  {name:'广域防护',nameEn:'Wide Guard',type:'rock',cat:'status',power:null,acc:null,pp:16},
+  {name:'鬼火',nameEn:'Will-O-Wisp',type:'fire',cat:'status',power:null,acc:85,pp:16},
+  {name:'许愿',nameEn:'Wish',type:'normal',cat:'status',power:null,acc:null,pp:12},
+  {name:'木槌',nameEn:'Wood Hammer',type:'grass',cat:'physical',power:120,acc:100,pp:16},
+  {name:'杞人忧天',nameEn:'Worry Seed',type:'grass',cat:'status',power:null,acc:100,pp:16},
+  // X
+  {name:'十字剪',nameEn:'X-Scissor',type:'bug',cat:'physical',power:80,acc:100,pp:16},
+  // Y
+  {name:'打哈欠',nameEn:'Yawn',type:'normal',cat:'status',power:null,acc:null,pp:12},
+  // Z
+  {name:'禅思头槌',nameEn:'Zen Headbutt',type:'psychic',cat:'physical',power:80,acc:90,pp:16},
+  {name:'闪电炮',nameEn:'Zap Cannon',type:'electric',cat:'special',power:120,acc:50,pp:8},
+  {name:'嗞嗞电击',nameEn:'Zing Zap',type:'electric',cat:'physical',power:80,acc:100,pp:12},
+  // ── 补全：旧世代 / 传说专属 / 冷门招式 ──
+  // A+
+  {name:'吸取',nameEn:'Absorb',type:'grass',cat:'special',power:20,acc:100,pp:20},
+  {name:'强酸',nameEn:'Acid',type:'poison',cat:'special',power:40,acc:100,pp:20},
+  {name:'气功炮',nameEn:'Aeroblast',type:'flying',cat:'special',power:100,acc:95,pp:8},
+  {name:'推推手',nameEn:'Arm Thrust',type:'fighting',cat:'physical',power:15,acc:100,pp:20},
+  {name:'芳香治疗',nameEn:'Aromatherapy',type:'grass',cat:'status',power:null,acc:null,pp:8},
+  {name:'援助',nameEn:'Assist',type:'normal',cat:'status',power:null,acc:null,pp:20},
+  {name:'惊吓',nameEn:'Astonish',type:'ghost',cat:'physical',power:30,acc:100,pp:16},
+  {name:'星辰连击',nameEn:'Astral Barrage',type:'ghost',cat:'special',power:120,acc:100,pp:8},
+  {name:'进攻命令',nameEn:'Attack Order',type:'bug',cat:'physical',power:90,acc:100,pp:16},
+  {name:'极光线',nameEn:'Aurora Beam',type:'ice',cat:'special',power:65,acc:100,pp:20},
+  {name:'轻量化',nameEn:'Autotomize',type:'steel',cat:'status',power:null,acc:null,pp:16},
+  // B+
+  {name:'刺针连射',nameEn:'Barb Barrage',type:'poison',cat:'physical',power:60,acc:100,pp:12},
+  {name:'连续出击',nameEn:'Barrage',type:'normal',cat:'physical',power:15,acc:85,pp:20},
+  {name:'壁垒',nameEn:'Barrier',type:'psychic',cat:'status',power:null,acc:null,pp:20},
+  {name:'赠送',nameEn:'Bestow',type:'normal',cat:'status',power:null,acc:null,pp:20},
+  {name:'待机',nameEn:'Bide',type:'normal',cat:'physical',power:null,acc:null,pp:12},
+  {name:'荒风暴',nameEn:'Bleakwind Storm',type:'flying',cat:'special',power:100,acc:80,pp:8},
+  {name:'血月',nameEn:'Blood Moon',type:'normal',cat:'special',power:140,acc:100,pp:8},
+  {name:'蓝焰炮',nameEn:'Blue Flare',type:'fire',cat:'special',power:130,acc:85,pp:8},
+  {name:'闪电鸟喙',nameEn:'Bolt Beak',type:'electric',cat:'physical',power:85,acc:100,pp:12},
+  {name:'超级雷击',nameEn:'Bolt Strike',type:'electric',cat:'physical',power:130,acc:85,pp:8},
+  {name:'骨棒',nameEn:'Bone Club',type:'ground',cat:'physical',power:65,acc:85,pp:20},
+  {name:'回旋骨',nameEn:'Bonemerang',type:'ground',cat:'physical',power:50,acc:90,pp:12},
+  {name:'盐水',nameEn:'Brine',type:'water',cat:'special',power:65,acc:100,pp:12},
+  {name:'水泡',nameEn:'Bubble',type:'water',cat:'special',power:40,acc:100,pp:20},
+  {name:'泡泡光线',nameEn:'Bubble Beam',type:'water',cat:'special',power:65,acc:100,pp:20},
+  {name:'炎熔盾',nameEn:'Burning Bulwark',type:'fire',cat:'status',power:null,acc:null,pp:8},
+  // C+
+  {name:'变色伪装',nameEn:'Camouflage',type:'normal',cat:'status',power:null,acc:null,pp:20},
+  {name:'魅惑',nameEn:'Captivate',type:'normal',cat:'status',power:null,acc:100,pp:20},
+  {name:'庆祝',nameEn:'Celebrate',type:'normal',cat:'status',power:null,acc:null,pp:20},
+  {name:'喋喋不休',nameEn:'Chatter',type:'flying',cat:'special',power:65,acc:100,pp:20},
+  {name:'不休攻击',nameEn:'Chip Away',type:'normal',cat:'physical',power:70,acc:100,pp:20},
+  {name:'绿化炮',nameEn:'Chloroblast',type:'grass',cat:'special',power:150,acc:95,pp:8},
+  {name:'夹击',nameEn:'Clamp',type:'water',cat:'physical',power:35,acc:85,pp:16},
+  {name:'碰撞路线',nameEn:'Collision Course',type:'fighting',cat:'physical',power:100,acc:100,pp:8},
+  {name:'战斗扭矩',nameEn:'Combat Torque',type:'normal',cat:'physical',power:80,acc:100,pp:12},
+  {name:'彗星拳',nameEn:'Comet Punch',type:'normal',cat:'physical',power:18,acc:85,pp:16},
+  {name:'安慰',nameEn:'Confide',type:'normal',cat:'status',power:null,acc:null,pp:20},
+  {name:'念力',nameEn:'Confusion',type:'psychic',cat:'special',power:50,acc:100,pp:20},
+  {name:'束缚',nameEn:'Constrict',type:'normal',cat:'physical',power:10,acc:100,pp:20},
+  {name:'变换',nameEn:'Conversion',type:'normal',cat:'status',power:null,acc:null,pp:20},
+  {name:'核心惩处',nameEn:'Core Enforcer',type:'dragon',cat:'special',power:100,acc:100,pp:8},
+  {name:'场地交换',nameEn:'Court Change',type:'normal',cat:'status',power:null,acc:null,pp:16},
+  {name:'奇妙防御',nameEn:'Crafty Shield',type:'fairy',cat:'status',power:null,acc:null,pp:16},
+  {name:'强力握碎',nameEn:'Crush Grip',type:'normal',cat:'physical',power:null,acc:100,pp:8},
+  {name:'切割',nameEn:'Cut',type:'normal',cat:'physical',power:50,acc:95,pp:20},
+  // D+
+  {name:'暗黑陷阱',nameEn:'Dark Void',type:'dark',cat:'status',power:null,acc:50,pp:8},
+  {name:'防御命令',nameEn:'Defend Order',type:'bug',cat:'status',power:null,acc:null,pp:16},
+  {name:'防御蜷缩',nameEn:'Defense Curl',type:'normal',cat:'status',power:null,acc:null,pp:20},
+  {name:'钻石风暴',nameEn:'Diamond Storm',type:'rock',cat:'physical',power:100,acc:95,pp:8},
+  {name:'解除魅力',nameEn:'Disarming Voice',type:'fairy',cat:'special',power:40,acc:null,pp:16},
+  {name:'眩晕拳',nameEn:'Dizzy Punch',type:'normal',cat:'physical',power:70,acc:100,pp:12},
+  {name:'涂鸦',nameEn:'Doodle',type:'normal',cat:'status',power:null,acc:null,pp:12},
+  {name:'破灭之愿',nameEn:'Doom Desire',type:'steel',cat:'special',power:140,acc:100,pp:8},
+  {name:'双铁头锤',nameEn:'Double Iron Bash',type:'steel',cat:'physical',power:60,acc:100,pp:8},
+  {name:'二连踢',nameEn:'Double Kick',type:'fighting',cat:'physical',power:30,acc:100,pp:20},
+  {name:'双重电击',nameEn:'Double Shock',type:'electric',cat:'physical',power:null,acc:100,pp:8},
+  {name:'双掌击',nameEn:'Double Slap',type:'normal',cat:'physical',power:15,acc:85,pp:20},
+  {name:'天龙归来',nameEn:'Dragon Ascent',type:'flying',cat:'physical',power:120,acc:100,pp:8},
+  {name:'龙之息',nameEn:'Dragon Breath',type:'dragon',cat:'special',power:60,acc:100,pp:20},
+  {name:'龙能量',nameEn:'Dragon Energy',type:'dragon',cat:'special',power:null,acc:100,pp:8},
+  // E+
+  {name:'蛋炸弹',nameEn:'Egg Bomb',type:'normal',cat:'physical',power:100,acc:75,pp:12},
+  {name:'火花',nameEn:'Ember',type:'fire',cat:'special',power:40,acc:100,pp:20},
+  // F+
+  {name:'妖精之风',nameEn:'Fairy Wind',type:'fairy',cat:'special',power:40,acc:100,pp:20},
+  {name:'假挥',nameEn:'False Swipe',type:'normal',cat:'physical',power:40,acc:100,pp:20},
+  {name:'偷袭',nameEn:'Feint Attack',type:'dark',cat:'physical',power:60,acc:null,pp:20},
+  {name:'怒焰',nameEn:'Fiery Wrath',type:'dark',cat:'special',power:90,acc:100,pp:12},
+  {name:'火之誓约',nameEn:'Fire Pledge',type:'fire',cat:'special',power:80,acc:100,pp:12},
+  {name:'火焰轮',nameEn:'Flame Wheel',type:'fire',cat:'physical',power:60,acc:100,pp:20},
+  {name:'花束炮',nameEn:'Fleur Cannon',type:'fairy',cat:'special',power:130,acc:90,pp:8},
+  {name:'闪光',nameEn:'Flash',type:'normal',cat:'status',power:null,acc:100,pp:20},
+  {name:'花之防御',nameEn:'Flower Shield',type:'fairy',cat:'status',power:null,acc:null,pp:20},
+  {name:'掌底力',nameEn:'Force Palm',type:'fighting',cat:'physical',power:60,acc:100,pp:12},
+  {name:'冰冻凝视',nameEn:'Freezing Glare',type:'psychic',cat:'special',power:90,acc:100,pp:12},
+  {name:'泄愤',nameEn:'Frustration',type:'normal',cat:'physical',power:null,acc:100,pp:20},
+  {name:'连续攻击',nameEn:'Fury Attack',type:'normal',cat:'physical',power:15,acc:85,pp:20},
+  {name:'连斩',nameEn:'Fury Cutter',type:'bug',cat:'physical',power:40,acc:95,pp:20},
+  {name:'猛抓',nameEn:'Fury Swipes',type:'normal',cat:'physical',power:18,acc:80,pp:16},
+  // G+
+  {name:'齿轮加速',nameEn:'Gear Up',type:'steel',cat:'status',power:null,acc:null,pp:20},
+  {name:'地理仙法',nameEn:'Geomancy',type:'fairy',cat:'status',power:null,acc:null,pp:12},
+  {name:'冰刺长枪',nameEn:'Glacial Lance',type:'ice',cat:'physical',power:120,acc:100,pp:8},
+  {name:'冰冻世界',nameEn:'Glaciate',type:'ice',cat:'special',power:65,acc:95,pp:12},
+  // H+
+  {name:'治愈命令',nameEn:'Heal Order',type:'bug',cat:'status',power:null,acc:null,pp:12},
+  {name:'心心相印',nameEn:'Heart Stamp',type:'psychic',cat:'physical',power:60,acc:100,pp:20},
+  {name:'跟骨翻身',nameEn:'Heel Turn',type:'dark',cat:'physical',power:55,acc:100,pp:20},
+  {name:'手下留情',nameEn:'Hold Back',type:'normal',cat:'physical',power:40,acc:100,pp:20},
+  {name:'磨爪',nameEn:'Hone Claws',type:'dark',cat:'status',power:null,acc:null,pp:16},
+  {name:'角撞击',nameEn:'Horn Attack',type:'normal',cat:'physical',power:65,acc:100,pp:20},
+  {name:'超级钻头',nameEn:'Hyper Drill',type:'normal',cat:'physical',power:100,acc:100,pp:8},
+  {name:'超级利齿',nameEn:'Hyper Fang',type:'normal',cat:'physical',power:80,acc:90,pp:12},
+  // I+
+  {name:'冰球',nameEn:'Ice Ball',type:'ice',cat:'physical',power:30,acc:90,pp:20},
+  {name:'火焰吞噬',nameEn:'Incinerate',type:'fire',cat:'special',power:60,acc:100,pp:16},
+  {name:'离子流',nameEn:'Ion Deluge',type:'electric',cat:'status',power:null,acc:null,pp:20},
+  // J+
+  {name:'神之审判',nameEn:'Judgment',type:'normal',cat:'special',power:100,acc:100,pp:12},
+  {name:'飞踢',nameEn:'Jump Kick',type:'fighting',cat:'physical',power:100,acc:95,pp:12},
+  // L+
+  {name:'叶旋',nameEn:'Leaf Tornado',type:'grass',cat:'special',power:65,acc:90,pp:12},
+  {name:'瞪眼',nameEn:'Leer',type:'normal',cat:'status',power:null,acc:100,pp:20},
+  {name:'舔食',nameEn:'Lick',type:'ghost',cat:'physical',power:30,acc:100,pp:20},
+  // M+
+  {name:'熔火漩涡',nameEn:'Magma Storm',type:'fire',cat:'special',power:100,acc:75,pp:8},
+  {name:'震级',nameEn:'Magnitude',type:'ground',cat:'physical',power:null,acc:100,pp:20},
+  {name:'抢先',nameEn:'Me First',type:'normal',cat:'status',power:null,acc:null,pp:20},
+  {name:'镜面移动',nameEn:'Mirror Move',type:'flying',cat:'status',power:null,acc:null,pp:20},
+  {name:'薄雾',nameEn:'Mist',type:'ice',cat:'status',power:null,acc:null,pp:20},
+  {name:'迷雾球',nameEn:'Mist Ball',type:'psychic',cat:'special',power:70,acc:100,pp:8},
+  {name:'泥土炸弹',nameEn:'Mud Bomb',type:'ground',cat:'special',power:65,acc:85,pp:12},
+  {name:'多属性攻击',nameEn:'Multi-Attack',type:'normal',cat:'physical',power:120,acc:100,pp:12},
+  {name:'神秘之力',nameEn:'Mystical Power',type:'psychic',cat:'special',power:70,acc:90,pp:12},
+  // N+
+  {name:'自然之力',nameEn:'Nature Power',type:'normal',cat:'status',power:null,acc:null,pp:20},
+  {name:'针臂刺',nameEn:'Needle Arm',type:'grass',cat:'physical',power:60,acc:100,pp:16},
+  {name:'噩梦',nameEn:'Nightmare',type:'ghost',cat:'status',power:null,acc:100,pp:16},
+  // O+
+  {name:'章鱼喷墨',nameEn:'Octazooka',type:'water',cat:'special',power:65,acc:85,pp:12},
+  {name:'不详之风',nameEn:'Ominous Wind',type:'ghost',cat:'special',power:60,acc:100,pp:8},
+  {name:'待命出击',nameEn:'Order Up',type:'dragon',cat:'physical',power:80,acc:100,pp:12},
+  {name:'本源波动',nameEn:'Origin Pulse',type:'water',cat:'special',power:110,acc:85,pp:8},
+  {name:'超载',nameEn:'Overdrive',type:'electric',cat:'special',power:80,acc:100,pp:12},
+  // P+
+  {name:'光子间歇泉',nameEn:'Photon Geyser',type:'psychic',cat:'special',power:100,acc:100,pp:8},
+  {name:'等离子拳',nameEn:'Plasma Fists',type:'electric',cat:'physical',power:100,acc:100,pp:8},
+  {name:'强力拳',nameEn:'Power-Up Punch',type:'fighting',cat:'physical',power:40,acc:100,pp:20},
+  {name:'断崖之刃',nameEn:'Precipice Blades',type:'ground',cat:'physical',power:120,acc:85,pp:8},
+  {name:'棱镜激光',nameEn:'Prismatic Laser',type:'psychic',cat:'special',power:160,acc:100,pp:8},
+  {name:'超能量爆发',nameEn:'Psycho Boost',type:'psychic',cat:'special',power:140,acc:90,pp:8},
+  {name:'超能冲击',nameEn:'Psystrike',type:'psychic',cat:'special',power:100,acc:100,pp:12},
+  {name:'追打',nameEn:'Pursuit',type:'dark',cat:'physical',power:40,acc:100,pp:20},
+  // R+
+  {name:'远古之歌',nameEn:'Relic Song',type:'normal',cat:'special',power:75,acc:100,pp:12},
+  {name:'天启舞',nameEn:'Revelation Dance',type:'normal',cat:'special',power:90,acc:100,pp:16},
+  {name:'时间的轰鸣',nameEn:'Roar of Time',type:'dragon',cat:'special',power:150,acc:90,pp:8},
+  // S+
+  {name:'抓击',nameEn:'Scratch',type:'normal',cat:'physical',power:40,acc:100,pp:20},
+  {name:'秘剑',nameEn:'Secret Sword',type:'fighting',cat:'special',power:85,acc:100,pp:12},
+  {name:'阴骨锤',nameEn:'Shadow Bone',type:'ghost',cat:'physical',power:85,acc:100,pp:12},
+  {name:'暗影冲击',nameEn:'Shadow Force',type:'ghost',cat:'physical',power:120,acc:100,pp:8},
+  {name:'信号光线',nameEn:'Signal Beam',type:'bug',cat:'special',power:75,acc:100,pp:16},
+  {name:'银色旋风',nameEn:'Silver Wind',type:'bug',cat:'special',power:60,acc:100,pp:8},
+  {name:'高空坠落',nameEn:'Sky Drop',type:'flying',cat:'physical',power:60,acc:100,pp:12},
+  {name:'回旋升龙拳',nameEn:'Sky Uppercut',type:'fighting',cat:'physical',power:85,acc:90,pp:16},
+  {name:'摔打',nameEn:'Slam',type:'normal',cat:'physical',power:80,acc:75,pp:20},
+  {name:'劈砍',nameEn:'Slash',type:'normal',cat:'physical',power:70,acc:100,pp:20},
+  {name:'嗅盐',nameEn:'Smelling Salts',type:'normal',cat:'physical',power:70,acc:100,pp:12},
+  {name:'烟幕',nameEn:'Smokescreen',type:'normal',cat:'status',power:null,acc:100,pp:20},
+  {name:'空间裂缝',nameEn:'Spacial Rend',type:'dragon',cat:'special',power:100,acc:95,pp:8},
+  {name:'幽灵偷盗',nameEn:'Spectral Thief',type:'ghost',cat:'physical',power:90,acc:100,pp:12},
+  {name:'旋转出击',nameEn:'Spin Out',type:'steel',cat:'physical',power:100,acc:100,pp:8},
+  {name:'吐出',nameEn:'Spit Up',type:'normal',cat:'special',power:null,acc:100,pp:12},
+  {name:'怨恨',nameEn:'Spite',type:'ghost',cat:'status',power:null,acc:100,pp:12},
+  {name:'聚光灯',nameEn:'Spotlight',type:'normal',cat:'status',power:null,acc:null,pp:16},
+  {name:'春风风暴',nameEn:'Springtide Storm',type:'fairy',cat:'special',power:100,acc:80,pp:8},
+  {name:'蒸汽喷发',nameEn:'Steam Eruption',type:'water',cat:'special',power:110,acc:95,pp:8},
+  {name:'储藏',nameEn:'Stockpile',type:'normal',cat:'status',power:null,acc:null,pp:20},
+  {name:'力量',nameEn:'Strength',type:'normal',cat:'physical',power:80,acc:100,pp:16},
+  {name:'大切牙',nameEn:'Super Fang',type:'normal',cat:'physical',power:null,acc:90,pp:12},
+  {name:'吞下',nameEn:'Swallow',type:'normal',cat:'status',power:null,acc:null,pp:12},
+  // T+
+  {name:'撞击',nameEn:'Tackle',type:'normal',cat:'physical',power:40,acc:100,pp:20},
+  {name:'舍身攻击',nameEn:'Take Down',type:'normal',cat:'physical',power:90,acc:85,pp:20},
+  {name:'泪眼',nameEn:'Tearful Look',type:'water',cat:'status',power:null,acc:null,pp:20},
+  {name:'科技爆炸',nameEn:'Techno Blast',type:'normal',cat:'special',power:120,acc:100,pp:8},
+  {name:'念动力',nameEn:'Telekinesis',type:'psychic',cat:'status',power:null,acc:null,pp:16},
+  {name:'瞬间移动',nameEn:'Teleport',type:'psychic',cat:'status',power:null,acc:null,pp:20},
+  {name:'千箭',nameEn:'Thousand Arrows',type:'ground',cat:'physical',power:90,acc:100,pp:12},
+  {name:'千浪',nameEn:'Thousand Waves',type:'ground',cat:'physical',power:90,acc:100,pp:12},
+  {name:'大闹一番',nameEn:'Thrash',type:'normal',cat:'physical',power:120,acc:100,pp:12},
+  {name:'雷电囚笼',nameEn:'Thunder Cage',type:'electric',cat:'special',power:80,acc:90,pp:12},
+  {name:'雷霆踢',nameEn:'Thunderous Kick',type:'fighting',cat:'physical',power:90,acc:100,pp:12},
+  {name:'世界倒置',nameEn:'Topsy-Turvy',type:'dark',cat:'status',power:null,acc:null,pp:20},
+  {name:'三重踢',nameEn:'Triple Kick',type:'fighting',cat:'physical',power:10,acc:90,pp:12},
+  // V+
+  {name:'毒液冲击',nameEn:'Venoshock',type:'poison',cat:'special',power:65,acc:100,pp:12},
+  {name:'胜利舞',nameEn:'Victory Dance',type:'fighting',cat:'status',power:null,acc:null,pp:12},
+  {name:'藤鞭',nameEn:'Vine Whip',type:'grass',cat:'physical',power:45,acc:100,pp:20},
+  {name:'钳夹',nameEn:'Vise Grip',type:'normal',cat:'physical',power:55,acc:100,pp:20},
+  {name:'伏特冲击',nameEn:'Volt Tackle',type:'electric',cat:'physical',power:120,acc:100,pp:16},
+  // W+
+  {name:'叫醒掌',nameEn:'Wake-Up Slap',type:'fighting',cat:'physical',power:70,acc:100,pp:12},
+  {name:'水枪',nameEn:'Water Gun',type:'water',cat:'special',power:40,acc:100,pp:20},
+  {name:'戏水',nameEn:'Water Sport',type:'water',cat:'status',power:null,acc:null,pp:16},
+  {name:'旋风',nameEn:'Whirlwind',type:'normal',cat:'status',power:null,acc:null,pp:20},
+  {name:'野性冲电',nameEn:'Wild Charge',type:'electric',cat:'physical',power:90,acc:100,pp:16},
+  {name:'拧干',nameEn:'Wring Out',type:'normal',cat:'special',power:null,acc:100,pp:8},
+];
+const BATTLE_MOVE_SEARCH_LIMIT=8;
+const battleMoveSearchState={activeIndex:null};
 // 攻击方（行）× 防御方（列）相克倍率矩阵 — Gen 9 标准
 const TYPE_EFF_MATRIX=[
 //  nor  fir  wat  ele  grs  ice  fgt  psn  gnd  fly  psy  bug  rck  gst  drg  drk  stl  fry
@@ -58,6 +751,7 @@ let battleEditTeam=null;     // 正在编辑的队伍（对象）
 let battleEditSlot=0;        // 当前编辑的宝可梦槽位 0-5
 let battleEditSpriteCache={}; // slot -> sprite URL
 let battleSrchT=null;
+let battleMoveDropdownBound=false;
 let battleMyTeamId=null;     // 分析页选中的我方队伍
 let battleOppPkm=[{},{},{},{},{},{} ];  // 对方6只（{name,type1,type2}）
 let battleAnalysisMyTeam=null;
@@ -226,8 +920,8 @@ function renderBattleSlotForm(){
     return`<div class="bpkm-stat-col">
       <span class="bpkm-stat-lbl">${STAT_ZH_B[k]}</span>
       <input class="bpkm-inp-num" id="bpkm-base-${k}" type="number" min="0" max="255" placeholder="种族" value="${p.base?.[k]||''}" oninput="onBpkmStatChange()">
-      <input class="bpkm-inp-num" id="bpkm-iv-${k}" type="number" min="0" max="31" placeholder="个体" value="${p.iv?.[k]??31}" oninput="onBpkmStatChange()">
-      <input class="bpkm-inp-num" id="bpkm-ev-${k}" type="number" min="0" max="252" placeholder="努力" value="${p.ev?.[k]||0}" oninput="onBpkmEvChange()">
+      <input class="bpkm-inp-num" id="bpkm-iv-${k}" type="number" value="31" readonly style="opacity:.45;pointer-events:none">
+      <input class="bpkm-inp-num" id="bpkm-ev-${k}" type="number" min="0" max="32" placeholder="SP" value="${p.ev?.[k]||0}" oninput="onBpkmEvChange()">
       <span class="bpkm-stat-calc" id="bpkm-calc-${k}">${calc||'—'}</span>
     </div>`;
   }).join('');
@@ -238,7 +932,10 @@ function renderBattleSlotForm(){
 
   const movesHtml=moves.map((m,i)=>`<div class="bpkm-move-card">
     <span class="bpkm-move-num">技能 ${i+1}</span>
-    <input class="bpkm-inp" id="bpkm-move${i+1}-name" placeholder="技能名称" value="${esc(m.name||'')}" autocomplete="off">
+    <div class="bpkm-move-search-wrap">
+      <input class="bpkm-inp" id="bpkm-move${i+1}-name" placeholder="技能名称" value="${esc(m.name||'')}" autocomplete="off" oninput="onBattleMoveNameInput(${i+1},this.value)" onfocus="onBattleMoveNameInput(${i+1},this.value)">
+      <div class="bpkm-search-drop bpkm-move-search-drop" id="bpkm-move${i+1}-drop"></div>
+    </div>
     <div class="bpkm-move-row">
       <select class="bpkm-inp" id="bpkm-move${i+1}-type" style="flex:1;padding:5px 8px">
         <option value="">属性</option>${B_TYPES.map(t=>`<option value="${t}"${m.type===t?' selected':''}>${TYPE_ZH[t]||t}</option>`).join('')}
@@ -252,7 +949,7 @@ function renderBattleSlotForm(){
     </div>
     <div class="bpkm-move-row">
       <input class="bpkm-inp-num" id="bpkm-move${i+1}-power" type="number" min="0" max="999" placeholder="威力" value="${m.power||''}" style="flex:1">
-      <input class="bpkm-inp-num" id="bpkm-move${i+1}-ap" type="number" min="1" max="5" placeholder="AP" value="${m.ap||''}" title="Champions AP (1-5)" style="flex:1">
+      <input class="bpkm-inp-num" id="bpkm-move${i+1}-pp" type="number" min="1" max="64" placeholder="PP" value="${m.pp||''}" style="flex:1">
     </div>
   </div>`).join('');
 
@@ -282,7 +979,10 @@ function renderBattleSlotForm(){
         </div>
         <div class="bpkm-inp-group">
           <span class="bpkm-inp-label">特性</span>
-          <input class="bpkm-inp" id="bpkm-ability" placeholder="例：猛火" value="${esc(p.ability||'')}">
+          <div style="position:relative">
+            <input class="bpkm-inp" id="bpkm-ability" placeholder="输入或点击下方特性" value="${esc(p.ability||'')}" autocomplete="off">
+            <div id="bpkm-ability-chips" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">${(p.abilities||[]).map(a=>`<span class="bpkm-ability-chip${p.ability===a?' active':''}" onclick="selectBpkmAbility('${esc(a)}')">${esc(a)}</span>`).join('')}</div>
+          </div>
         </div>
         <div class="bpkm-inp-group">
           <span class="bpkm-inp-label">持有道具</span>
@@ -299,7 +999,7 @@ function renderBattleSlotForm(){
       </div>
 
       <div class="bpkm-section-hdr">种族值 / 个体值 / 努力值 → 实际能力值</div>
-      <div style="font-size:.62rem;color:var(--t3);font-family:'DM Mono',monospace;margin-bottom:6px">每行依次：种族 / 个体(0-31) / 努力(0-252) → <span style="color:var(--acc2)">实际值</span>　努力值总和上限：<span id="bpkm-ev-total-lbl">0/508</span></div>
+      <div style="font-size:.62rem;color:var(--t3);font-family:'DM Mono',monospace;margin-bottom:6px">每行依次：种族 / 个体<span style="opacity:.5">（固定31）</span> / SP(0-32) → <span style="color:var(--acc2)">实际值</span>　SP总和上限：<span id="bpkm-ev-total-lbl">0/66</span></div>
       <div class="bpkm-stats-block">${statsBlock}</div>
 
       <div class="bpkm-section-hdr" style="margin-top:8px">技能（支持 Champions AP 制，AP 1-5 对应技能消耗行动点数）</div>
@@ -311,9 +1011,109 @@ function renderBattleSlotForm(){
       </div>
     </div>`;
   updateEvTotal();
+  ensureBattleMoveDropdownBinding();
 }
 
 /* ──────── 搜索宝可梦 ──────── */
+function ensureBattleMoveDropdownBinding(){
+  if(battleMoveDropdownBound)return;
+  document.addEventListener('click',e=>{
+    if(e.target.closest('.bpkm-move-search-wrap')||e.target.closest('.bpkm-search-wrap'))return;
+    closeBattleMoveSuggestions();
+  });
+  battleMoveDropdownBound=true;
+}
+
+function normalizeBattleMoveKeyword(v){
+  return String(v||'').trim().toLowerCase().replace(/[\s\-_'.]/g,'');
+}
+
+function getBattleMoveSuggestions(query){
+  const raw=String(query||'').trim();
+  if(!raw)return [];
+  const keyword=normalizeBattleMoveKeyword(raw);
+  return MOVES_DATA.map((move,idx)=>{
+    const nameNorm=normalizeBattleMoveKeyword(move.name);
+    const enNorm=normalizeBattleMoveKeyword(move.nameEn);
+    let score=-1;
+    if(move.name===raw||move.nameEn.toLowerCase()===raw.toLowerCase())score=0;
+    else if(nameNorm.startsWith(keyword)||enNorm.startsWith(keyword))score=1;
+    else if(nameNorm.includes(keyword)||enNorm.includes(keyword))score=2;
+    if(score<0)return null;
+    return {idx,move,score};
+  }).filter(Boolean).sort((a,b)=>{
+    if(a.score!==b.score)return a.score-b.score;
+    return a.move.name.localeCompare(b.move.name,'zh-CN');
+  }).slice(0,BATTLE_MOVE_SEARCH_LIMIT);
+}
+
+function renderBattleMoveSuggestions(moveIndex,query){
+  const drop=document.getElementById(`bpkm-move${moveIndex}-drop`);
+  if(!drop)return;
+  const items=getBattleMoveSuggestions(query);
+  if(!items.length){
+    drop.classList.remove('open');
+    drop.innerHTML='';
+    if(battleMoveSearchState.activeIndex===moveIndex)battleMoveSearchState.activeIndex=null;
+    return;
+  }
+  drop.innerHTML=items.map(({idx,move})=>{
+    const powerLabel=move.cat==='status'||!move.power?'—':move.power;
+    return `<div class="bpkm-drop-item bpkm-move-drop-item" onclick="selectBattleMoveSuggestion(${moveIndex},${idx})">
+      <div class="bpkm-move-drop-main">
+        <div class="bpkm-drop-name">${esc(move.name)}</div>
+        <div class="bpkm-move-drop-en">${esc(move.nameEn)}</div>
+      </div>
+      <span class="coverage-type-tag type-${move.type}">${TYPE_ZH[move.type]||move.type}</span>
+      <span class="bpkm-move-drop-meta">${B_MOVE_CATS_ZH[move.cat]||move.cat}</span>
+      <span class="bpkm-move-drop-power">${powerLabel}</span>
+    </div>`;
+  }).join('');
+  closeBattleMoveSuggestions(moveIndex);
+  drop.classList.add('open');
+  battleMoveSearchState.activeIndex=moveIndex;
+}
+
+function closeBattleMoveSuggestions(keepIndex=null){
+  [1,2,3,4].forEach(i=>{
+    if(i===keepIndex)return;
+    const drop=document.getElementById(`bpkm-move${i}-drop`);
+    if(!drop)return;
+    drop.classList.remove('open');
+    if(keepIndex===null)drop.innerHTML='';
+  });
+  if(keepIndex===null)battleMoveSearchState.activeIndex=null;
+}
+
+function onBattleMoveNameInput(moveIndex,query){
+  if(!String(query||'').trim()){
+    const drop=document.getElementById(`bpkm-move${moveIndex}-drop`);
+    if(drop){
+      drop.classList.remove('open');
+      drop.innerHTML='';
+    }
+    if(battleMoveSearchState.activeIndex===moveIndex)battleMoveSearchState.activeIndex=null;
+    return;
+  }
+  renderBattleMoveSuggestions(moveIndex,query);
+}
+
+function selectBattleMoveSuggestion(moveIndex,dataIndex){
+  const move=MOVES_DATA[dataIndex];
+  if(!move)return;
+  const nameInput=document.getElementById(`bpkm-move${moveIndex}-name`);
+  const typeInput=document.getElementById(`bpkm-move${moveIndex}-type`);
+  const catInput=document.getElementById(`bpkm-move${moveIndex}-cat`);
+  const powerInput=document.getElementById(`bpkm-move${moveIndex}-power`);
+  const apInput=document.getElementById(`bpkm-move${moveIndex}-pp`);
+  if(nameInput)nameInput.value=move.name;
+  if(typeInput)typeInput.value=move.type||'';
+  if(catInput)catInput.value=move.cat||'';
+  if(powerInput)powerInput.value=move.cat==='status'||!move.power?'':move.power;
+  if(apInput && move.pp)apInput.value=move.pp;
+  closeBattleMoveSuggestions();
+}
+
 function onBpkmSearch(q){
   clearTimeout(battleSrchT);
   const drop=document.getElementById('bpkm-search-drop');
@@ -374,6 +1174,14 @@ async function selectBpkmFromDrop(pkmId, cnName){
         const el=document.getElementById(`bpkm-base-${k}`);
         if(el&&stats[k])el.value=stats[k];
       });
+      // 特性
+      const abilities=d.abilities.map(a=>a.ability.name);
+      battleEditTeam.pokemon[battleEditSlot].abilities=abilities;
+      const chipsEl=document.getElementById('bpkm-ability-chips');
+      if(chipsEl){
+        const curAbility=document.getElementById('bpkm-ability')?.value||'';
+        chipsEl.innerHTML=abilities.map(a=>`<span class="bpkm-ability-chip${curAbility===a?' active':''}" onclick="selectBpkmAbility('${esc(a)}')">${esc(a)}</span>`).join('');
+      }
       // 精灵图
       const spriteUrl=d.sprites.front_default||`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pkmId}.png`;
       battleEditSpriteCache[battleEditSlot]=spriteUrl;
@@ -417,22 +1225,23 @@ function updateEvTotal(){
   STAT_KEYS_B.forEach(k=>{total+=parseInt(document.getElementById(`bpkm-ev-${k}`)?.value)||0;});
   const el=document.getElementById('bpkm-ev-total-lbl');
   if(!el)return;
-  el.textContent=`${total}/508`;
-  el.style.color=total>508?'var(--danger)':total===508?'var(--acc2)':'var(--t3)';
+  el.textContent=`${total}/66`;
+  el.style.color=total>66?'var(--danger)':total===66?'var(--acc2)':'var(--t3)';
 }
 
-/* ──────── 能力值公式 ──────── */
-function calcActualStatVal(base,iv,ev,nature,statKey,level=50){
+/* ──────── 能力值公式（Champions：IV固定31，EV→SP 0-32，spBonus=2sp-1） ──────── */
+function calcActualStatVal(base,_iv,sp,nature,statKey,level=50){
   if(!base&&base!==0)return 0;
-  iv=Math.max(0,Math.min(31,parseInt(iv)||0));
-  ev=Math.max(0,Math.min(252,parseInt(ev)||0));
+  const iv=31;
+  sp=Math.max(0,Math.min(32,parseInt(sp)||0));
   base=parseInt(base)||0;
   level=parseInt(level)||50;
+  const spBonus=sp>0?2*sp-1:0;
   let val;
   if(statKey==='hp'){
-    val=Math.floor((2*base+iv+Math.floor(ev/4))*level/100)+level+10;
+    val=Math.floor((2*base+iv+spBonus)*level/100)+level+10;
   } else {
-    val=Math.floor((Math.floor((2*base+iv+Math.floor(ev/4))*level/100)+5)*(NATURES_ZH[nature]?.[STAT_KEYS_B.indexOf(statKey)]||1));
+    val=Math.floor((Math.floor((2*base+iv+spBonus)*level/100)+5)*(NATURES_ZH[nature]?.[STAT_KEYS_B.indexOf(statKey)]||1));
   }
   return val;
 }
@@ -454,8 +1263,8 @@ function gatherSlotForm(){
   p.base={};p.iv={};p.ev={};
   STAT_KEYS_B.forEach(k=>{
     p.base[k]=parseInt(document.getElementById(`bpkm-base-${k}`)?.value)||0;
-    p.iv[k]=parseInt(document.getElementById(`bpkm-iv-${k}`)?.value)??31;
-    p.ev[k]=parseInt(document.getElementById(`bpkm-ev-${k}`)?.value)||0;
+    p.iv[k]=31;
+    p.ev[k]=Math.min(32,parseInt(document.getElementById(`bpkm-ev-${k}`)?.value)||0);
   });
   // 技能
   [1,2,3,4].forEach(i=>{
@@ -464,10 +1273,18 @@ function gatherSlotForm(){
       type:document.getElementById(`bpkm-move${i}-type`)?.value||'',
       cat:document.getElementById(`bpkm-move${i}-cat`)?.value||'',
       power:parseInt(document.getElementById(`bpkm-move${i}-power`)?.value)||0,
-      ap:parseInt(document.getElementById(`bpkm-move${i}-ap`)?.value)||3,
+      pp:parseInt(document.getElementById(`bpkm-move${i}-pp`)?.value)||null,
     };
   });
+  p.abilities=battleEditTeam.pokemon[battleEditSlot]?.abilities||[];
   battleEditTeam.pokemon[battleEditSlot]=p;
+}
+
+/* ──────── 特性选择 ──────── */
+function selectBpkmAbility(name){
+  const inp=document.getElementById('bpkm-ability');
+  if(inp)inp.value=name;
+  document.querySelectorAll('.bpkm-ability-chip').forEach(c=>c.classList.toggle('active',c.textContent===name));
 }
 
 /* ──────── 保存队伍 ──────── */
@@ -594,7 +1411,7 @@ function getOppBestEff(oppPkm, myPkm){
  * Champions AP修正：ap1→×0.6, ap2→×0.85, ap3→×1.0, ap4→×1.25, ap5→×1.55
  * 持有道具修正（简化）：讲究系→×1.5, 生命球→×1.3
  */
-const AP_MOD={1:0.6,2:0.85,3:1.0,4:1.25,5:1.55};
+// AP_MOD removed — Champions uses PP, not AP action points
 const ITEM_MOD={'讲究头带':1.5,'讲究眼镜':1.5,'讲究围巾':1.5,'生命球':1.3,'火焰宝珠':1.2,'强化道具':1.1};
 
 function calcDamageEst(myPkm, oppPkm, move){
@@ -603,23 +1420,21 @@ function calcDamageEst(myPkm, oppPkm, move){
   const isPhys=move.cat==='physical';
   // 攻防能力值（如果没有录入则用种族值估算）
   const atkStat=isPhys
-    ?calcActualStatVal(myPkm.base?.atk||70,myPkm.iv?.atk??31,myPkm.ev?.atk||0,myPkm.nature,'atk',level)
-    :calcActualStatVal(myPkm.base?.spa||70,myPkm.iv?.spa??31,myPkm.ev?.spa||0,myPkm.nature,'spa',level);
+    ?calcActualStatVal(myPkm.base?.atk||70,31,myPkm.ev?.atk||0,myPkm.nature,'atk',level)
+    :calcActualStatVal(myPkm.base?.spa||70,31,myPkm.ev?.spa||0,myPkm.nature,'spa',level);
   const defStat=isPhys
     ?calcActualStatVal(oppPkm.base?.def||70,15,0,'','def',level)
     :calcActualStatVal(oppPkm.base?.spd||70,15,0,'','spd',level);
   const oppHp=calcActualStatVal(oppPkm.base?.hp||70,15,0,'','hp',level);
 
   let pwr=move.power;
-  // AP 修正（Champions专用）
-  const apMul=AP_MOD[move.ap]||1.0;
   // 属性相克
   const typeMul=getTypeEff(move.type,oppPkm.type1,oppPkm.type2);
   // 道具修正
   let itemMul=ITEM_MOD[myPkm.item]||1.0;
   // 技能属性与本体属性一致时 STAB 1.5x
   const stab=(move.type===myPkm.type1||move.type===myPkm.type2)?1.5:1.0;
-  const baseDmg=Math.floor((Math.floor((2*level/5+2)*pwr*atkStat/defStat/50)+2)*typeMul*stab*itemMul*apMul);
+  const baseDmg=Math.floor((Math.floor((2*level/5+2)*pwr*atkStat/defStat/50)+2)*typeMul*stab*itemMul);
   const dmgPct=oppHp>0?Math.round(baseDmg/oppHp*100):0;
   return{damage:baseDmg,pct:dmgPct,typeMul};
 }
