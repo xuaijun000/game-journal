@@ -1339,6 +1339,7 @@ async function confirmDeleteBattleTeam(id){
   try{
     await deleteBattleTeamFromServer(id);
     battleTeams=battleTeams.filter(t=>t.id!==id);
+    try{localStorage.setItem('battle_teams',JSON.stringify(battleTeams));}catch{}
     renderTeamList();
     renderBattleTeamSel();
     showToast('已删除');
@@ -1351,12 +1352,18 @@ async function confirmDeleteBattleTeam(id){
 async function deleteBattleTeamFromModal(){
   if(!battleEditTeam)return;
   if(!confirm('确定要删除这支队伍吗？'))return;
-  await deleteBattleTeamFromServer(battleEditTeam.id);
-  battleTeams=battleTeams.filter(t=>t.id!==battleEditTeam.id);
-  renderTeamList();
-  renderBattleTeamSel();
-  closeBattleTeamEdit();
-  showToast('已删除');
+  try{
+    await deleteBattleTeamFromServer(battleEditTeam.id);
+    battleTeams=battleTeams.filter(t=>t.id!==battleEditTeam.id);
+    try{localStorage.setItem('battle_teams',JSON.stringify(battleTeams));}catch{}
+    renderTeamList();
+    renderBattleTeamSel();
+    closeBattleTeamEdit();
+    showToast('已删除');
+  }catch(e){
+    console.error('deleteBattleTeamFromModal error',e);
+    showToast('删除失败，请重试');
+  }
 }
 
 /* ──────── 赛前分析 ──────── */
