@@ -82,6 +82,10 @@
 .bpkm-ev-total{font-size:.7rem;font-family:'DM Mono',monospace;text-align:right;padding:4px 0;color:var(--t3)}
 .bpkm-ev-total.warn{color:var(--warn)}
 .bpkm-ev-total.ok{color:var(--acc2)}
+.bpkm-form-chips{display:flex;flex-wrap:wrap;gap:5px}
+.bpkm-form-chip{background:var(--bg3);border:1px solid var(--b2);border-radius:var(--r);padding:3px 10px;font-size:.72rem;color:var(--t2);cursor:pointer;transition:all .15s;font-family:inherit;white-space:nowrap}
+.bpkm-form-chip:hover{border-color:rgba(200,144,64,.4);color:var(--t)}
+.bpkm-form-chip.active{border-color:var(--acc);background:rgba(200,144,64,.12);color:var(--acc);font-weight:600}
 
 /* ── 赛前分析 ── */
 .battle-analysis-layout{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px}

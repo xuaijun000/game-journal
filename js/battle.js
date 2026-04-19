@@ -17,6 +17,35 @@
 /* ──────── 常量 ──────── */
 const B_TYPES=['normal','fire','water','electric','grass','ice','fighting','poison','ground','flying','psychic','bug','rock','ghost','dragon','dark','steel','fairy'];
 const B_MOVE_CATS_ZH={physical:'物理',special:'特殊',status:'变化'};
+const FORM_SUFFIX_ZH={
+  'mega':'Mega','mega-x':'Mega X','mega-y':'Mega Y',
+  'alola':'阿罗拉','alolan':'阿罗拉',
+  'galar':'伽勒尔','galarian':'伽勒尔',
+  'hisui':'洗翠','hisuian':'洗翠',
+  'paldea':'帕底亚','paldean':'帕底亚',
+  'gmax':'极巨化',
+  'eternamax':'永极巨化',
+  'primal':'原始回归',
+  'origin':'起源形态','sky':'天空形态','land':'大地形态',
+  'attack':'攻击形态','defense':'防御形态','speed':'速度形态',
+  'plant':'植物斗篷','sandy':'沙漠斗篷','trash':'垃圾斗篷',
+  'zen':'冥想模式',
+  'heat':'暖炉形态','wash':'清洗形态','frost':'冰箱形态','fan':'电扇形态','mow':'割草形态',
+  'therian':'灵兽形态','incarnate':'降临形态',
+  'black':'黑色形态','white':'白色形态',
+  'resolute':'决心形态','ordinary':'普通形态',
+  'pirouette':'舞步形态','aria':'歌声形态',
+  'complete':'完全形态','core':'50%形态',
+  'dusk-mane':'黄昏之鬃','dawn-wings':'黎明之翼',
+  'ultra':'究极形态',
+  'original':'原始形态',
+  'crowned':'王者形态','hero':'英雄形态','single':'单剑形态','rapid':'速攻形态',
+  'ice':'冰面形态','noice':'冰面形态',
+  'hangry':'饥饿形态','full-belly':'饱腹形态',
+  'roaming':'游走形态',
+  'family':'家族形态',
+  'female':'♀','male':'♂',
+};
 const MOVES_DATA=[
   // A
   {name:'闪岩攻击',nameEn:'Accelerock',type:'rock',cat:'physical',power:40,acc:100,pp:20},
@@ -983,13 +1012,14 @@ function renderBattleSlotForm(){
         <input class="bpkm-search-inp" id="bpkm-name-inp" placeholder="输入宝可梦名称或编号搜索…" value="${esc(p.name||'')}" oninput="onBpkmSearch(this.value)" autocomplete="off">
         <div class="bpkm-search-drop" id="bpkm-search-drop"></div>
       </div>
-      ${spriteUrl?`<div class="bpkm-preview">
+      ${spriteUrl?`<div class="bpkm-preview" id="bpkm-preview-wrap">
         <img src="${esc(spriteUrl)}" alt="" id="bpkm-sprite" onerror="this.style.display='none'">
         <div>
           <div class="bpkm-preview-name" id="bpkm-preview-name">${esc(p.name||'')}</div>
           <div class="bpkm-preview-types" id="bpkm-preview-types">${p.type1?`<span class="coverage-type-tag type-${p.type1}">${TYPE_ZH[p.type1]||p.type1}</span>`:''}${p.type2?`<span class="coverage-type-tag type-${p.type2}">${TYPE_ZH[p.type2]||p.type2}</span>`:''}</div>
         </div>
-      </div>`:''}
+      </div>
+      ${(p.varieties||[]).length>1?`<div class="bpkm-form-chips" id="bpkm-form-chips">${(p.varieties).map(v=>`<button class="bpkm-form-chip${v.name===(p.currentVariety||p.basePkmName)?' active':''}" onclick="selectBpkmForm('${esc(v.name)}')">${esc(v.displayName)}</button>`).join('')}</div>`:''}`:''}
       <div class="bpkm-form-grid">
         <div class="bpkm-inp-group">
           <span class="bpkm-inp-label">属性1</span>
@@ -1261,8 +1291,97 @@ async function selectBpkmFromDrop(pkmId, cnName){
           <div class="bpkm-preview-types">${t1?`<span class="coverage-type-tag type-${t1}">${TYPE_ZH[t1]||t1}</span>`:''}${t2?`<span class="coverage-type-tag type-${t2}">${TYPE_ZH[t2]||t2}</span>`:''}</div>
         </div>`;
       onBpkmStatChange();
+      // 加载全形态（Mega/极巨化/地区形态等）
+      loadPkmForms(pkmId, d.name, cnName);
     }
   } catch(e){console.warn(e);}
+}
+
+/* ──────── 宝可梦形态 ──────── */
+function getFormDisplayName(baseName,varietyName){
+  if(!varietyName||varietyName===baseName)return '标准';
+  const suffix=varietyName.startsWith(baseName+'-')?varietyName.slice(baseName.length+1):varietyName;
+  if(FORM_SUFFIX_ZH[suffix])return FORM_SUFFIX_ZH[suffix];
+  const parts=suffix.split('-');
+  for(let i=parts.length;i>0;i--){
+    const key=parts.slice(0,i).join('-');
+    if(FORM_SUFFIX_ZH[key])return FORM_SUFFIX_ZH[key]+(parts.slice(i).length?' '+parts.slice(i).join(' '):'');
+  }
+  return suffix.replace(/-/g,' ');
+}
+
+async function loadPkmForms(pkmId,baseName,cnName){
+  try{
+    const sr=await fetch(`${POKEAPI}/pokemon-species/${pkmId}`);
+    if(!sr.ok)return;
+    const species=await sr.json();
+    const varieties=species.varieties||[];
+    if(varieties.length<=1)return;
+    const forms=varieties.map(v=>({name:v.pokemon.name,displayName:getFormDisplayName(baseName,v.pokemon.name),isDefault:v.is_default}));
+    const p=battleEditTeam?.pokemon[battleEditSlot];
+    if(!p)return;
+    p.varieties=forms;
+    p.currentVariety=baseName;
+    p.basePkmName=baseName;
+    renderBpkmFormChips();
+  }catch(e){console.warn('loadPkmForms error',e);}
+}
+
+function renderBpkmFormChips(){
+  const p=battleEditTeam?.pokemon[battleEditSlot];
+  if(!p||(p.varieties||[]).length<=1)return;
+  let el=document.getElementById('bpkm-form-chips');
+  if(!el){
+    el=document.createElement('div');
+    el.id='bpkm-form-chips';
+    el.className='bpkm-form-chips';
+    const prev=document.getElementById('bpkm-preview-wrap')||document.querySelector('.bpkm-preview');
+    if(!prev)return;
+    prev.insertAdjacentElement('afterend',el);
+  }
+  el.innerHTML=p.varieties.map(v=>`<button class="bpkm-form-chip${v.name===(p.currentVariety||p.basePkmName)?' active':''}" onclick="selectBpkmForm('${esc(v.name)}')">${esc(v.displayName)}</button>`).join('');
+}
+
+async function selectBpkmForm(varietyName){
+  if(!battleEditTeam)return;
+  const p=battleEditTeam.pokemon[battleEditSlot];
+  if(!p)return;
+  try{
+    const r=await fetch(`${POKEAPI}/pokemon/${varietyName}`);
+    if(!r.ok)return;
+    const d=await r.json();
+    const spriteUrl=d.sprites.front_default||'';
+    battleEditSpriteCache[battleEditSlot]=spriteUrl;
+    p._spriteUrl=spriteUrl;
+    const spriteEl=document.getElementById('bpkm-sprite');
+    if(spriteEl&&spriteUrl)spriteEl.src=spriteUrl;
+    const t1=d.types[0]?.type?.name||'';
+    const t2=d.types[1]?.type?.name||'';
+    p.type1=t1;p.type2=t2;
+    const s1=document.getElementById('bpkm-type1');
+    const s2=document.getElementById('bpkm-type2');
+    if(s1)s1.value=t1;if(s2)s2.value=t2||'';
+    const stats={};
+    d.stats.forEach(s=>{
+      const k={'hp':'hp','attack':'atk','defense':'def','special-attack':'spa','special-defense':'spd','speed':'spe'}[s.stat.name];
+      if(k)stats[k]=s.base_stat;
+    });
+    p.base=stats;
+    STAT_KEYS_B.forEach(k=>{const el=document.getElementById(`bpkm-base-${k}`);if(el&&stats[k]!==undefined)el.value=stats[k];});
+    const abilities=d.abilities.map(a=>a.ability.name);
+    p.abilities=abilities;
+    const abChips=document.getElementById('bpkm-ability-chips');
+    if(abChips){
+      const cur=document.getElementById('bpkm-ability')?.value||'';
+      abChips.innerHTML=abilities.map(a=>`<span class="bpkm-ability-chip${cur===a?' active':''}" onclick="selectBpkmAbility('${esc(a)}')">${esc(a)}</span>`).join('');
+    }
+    const typesEl=document.getElementById('bpkm-preview-types');
+    if(typesEl)typesEl.innerHTML=(t1?`<span class="coverage-type-tag type-${t1}">${TYPE_ZH[t1]||t1}</span>`:'')+
+      (t2?`<span class="coverage-type-tag type-${t2}">${TYPE_ZH[t2]||t2}</span>`:'');
+    p.currentVariety=varietyName;
+    renderBpkmFormChips();
+    onBpkmStatChange();
+  }catch(e){console.warn('selectBpkmForm error',e);}
 }
 
 /* ──────── 能力值实时计算 ──────── */
