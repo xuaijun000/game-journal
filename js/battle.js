@@ -950,10 +950,12 @@ function renderBattleSlotForm(){
   const typeOpts2=['<option value="">无</option>',...B_TYPES.map(t=>`<option value="${t}"${p.type2===t?' selected':''}>${TYPE_ZH[t]||t}</option>`)].join('');
   const natOpts=['', ...Object.keys(NATURES_ZH)].map(n=>`<option value="${n}"${p.nature===n?' selected':''}>${n||'无'}</option>`).join('');
 
+  const hasLearnables=(p.learnableMovesEn||[]).length>0;
+  const movePlaceholder=hasLearnables?'点击选择可学技能…':'技能名称（可搜索）';
   const movesHtml=moves.map((m,i)=>`<div class="bpkm-move-card">
     <span class="bpkm-move-num">技能 ${i+1}</span>
     <div class="bpkm-move-search-wrap">
-      <input class="bpkm-inp" id="bpkm-move${i+1}-name" placeholder="技能名称" value="${esc(m.name||'')}" autocomplete="off" oninput="onBattleMoveNameInput(${i+1},this.value)" onfocus="onBattleMoveNameInput(${i+1},this.value)">
+      <input class="bpkm-inp" id="bpkm-move${i+1}-name" placeholder="${movePlaceholder}" value="${esc(m.name||'')}" autocomplete="off" oninput="onBattleMoveNameInput(${i+1},this.value)" onfocus="onBattleMoveNameInput(${i+1},this.value)">
       <div class="bpkm-search-drop bpkm-move-search-drop" id="bpkm-move${i+1}-drop"></div>
     </div>
     <div class="bpkm-move-row">
@@ -1067,17 +1069,38 @@ function getBattleMoveSuggestions(query){
   }).slice(0,BATTLE_MOVE_SEARCH_LIMIT);
 }
 
+function getLearnableMoveSuggestions(query){
+  const p=battleEditTeam?.pokemon[battleEditSlot];
+  const learnableEn=p?.learnableMovesEn;
+  if(!learnableEn||!learnableEn.length)return null;
+  const learnableSet=new Set(learnableEn.map(n=>normalizeBattleMoveKeyword(n.replace(/-/g,' '))));
+  const filtered=MOVES_DATA.map((move,idx)=>{
+    if(!learnableSet.has(normalizeBattleMoveKeyword(move.nameEn)))return null;
+    return {idx,move};
+  }).filter(Boolean).sort((a,b)=>a.move.name.localeCompare(b.move.name,'zh-CN'));
+  if(!String(query||'').trim())return filtered;
+  const keyword=normalizeBattleMoveKeyword(query);
+  return filtered.filter(({move})=>
+    normalizeBattleMoveKeyword(move.name).includes(keyword)||
+    normalizeBattleMoveKeyword(move.nameEn).includes(keyword)
+  );
+}
+
 function renderBattleMoveSuggestions(moveIndex,query){
   const drop=document.getElementById(`bpkm-move${moveIndex}-drop`);
   if(!drop)return;
-  const items=getBattleMoveSuggestions(query);
+  const learnableItems=getLearnableMoveSuggestions(query);
+  const hasLearnables=learnableItems!==null;
+  const items=hasLearnables?learnableItems:getBattleMoveSuggestions(query);
   if(!items.length){
     drop.classList.remove('open');
     drop.innerHTML='';
     if(battleMoveSearchState.activeIndex===moveIndex)battleMoveSearchState.activeIndex=null;
     return;
   }
-  drop.innerHTML=items.map(({idx,move})=>{
+  const header=hasLearnables&&!String(query||'').trim()
+    ?`<div style="padding:4px 10px;font-size:.68rem;color:var(--t3);border-bottom:1px solid var(--b2)">共 ${items.length} 个可学技能</div>`:'';
+  drop.innerHTML=header+items.map(({idx,move})=>{
     const powerLabel=move.cat==='status'||!move.power?'—':move.power;
     return `<div class="bpkm-drop-item bpkm-move-drop-item" onclick="selectBattleMoveSuggestion(${moveIndex},${idx})">
       <div class="bpkm-move-drop-main">
@@ -1106,13 +1129,15 @@ function closeBattleMoveSuggestions(keepIndex=null){
 }
 
 function onBattleMoveNameInput(moveIndex,query){
+  const hasLearnables=(battleEditTeam?.pokemon[battleEditSlot]?.learnableMovesEn||[]).length>0;
   if(!String(query||'').trim()){
-    const drop=document.getElementById(`bpkm-move${moveIndex}-drop`);
-    if(drop){
-      drop.classList.remove('open');
-      drop.innerHTML='';
+    if(hasLearnables){
+      renderBattleMoveSuggestions(moveIndex,'');
+    } else {
+      const drop=document.getElementById(`bpkm-move${moveIndex}-drop`);
+      if(drop){drop.classList.remove('open');drop.innerHTML='';}
+      if(battleMoveSearchState.activeIndex===moveIndex)battleMoveSearchState.activeIndex=null;
     }
-    if(battleMoveSearchState.activeIndex===moveIndex)battleMoveSearchState.activeIndex=null;
     return;
   }
   renderBattleMoveSuggestions(moveIndex,query);
@@ -1202,6 +1227,13 @@ async function selectBpkmFromDrop(pkmId, cnName){
         const curAbility=document.getElementById('bpkm-ability')?.value||'';
         chipsEl.innerHTML=abilities.map(a=>`<span class="bpkm-ability-chip${curAbility===a?' active':''}" onclick="selectBpkmAbility('${esc(a)}')">${esc(a)}</span>`).join('');
       }
+      // 可学技能列表
+      const learnableMovesEn=(d.moves||[]).map(m=>m.move.name);
+      battleEditTeam.pokemon[battleEditSlot].learnableMovesEn=learnableMovesEn;
+      [1,2,3,4].forEach(i=>{
+        const inp=document.getElementById(`bpkm-move${i}-name`);
+        if(inp)inp.placeholder='点击选择可学技能…';
+      });
       // 精灵图
       const spriteUrl=d.sprites.front_default||`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pkmId}.png`;
       battleEditSpriteCache[battleEditSlot]=spriteUrl;
