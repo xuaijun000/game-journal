@@ -46,7 +46,16 @@ const FORM_SUFFIX_ZH={
   'family':'家族形态',
   'female':'♀','male':'♂',
 };
-const MOVES_DATA=[
+// 使用 PKM_CHAMPIONS_DATA / MOVES_CHAMPIONS_DATA（由 js/data/ 预加载）
+const MOVES_DATA = window.MOVES_CHAMPIONS_DATA || [];
+// PKM Champions 宝可梦快速查找表
+const _pkmPC = window.PKM_CHAMPIONS_DATA || [];
+const PKM_PC_BY_SLUG = {};
+const PKM_PC_BY_NUM  = {};
+_pkmPC.forEach(p => { PKM_PC_BY_SLUG[p.slug]=p; if(p.num) PKM_PC_BY_NUM[p.num]=p; });
+
+// ── 以下旧 MOVES_DATA 硬编码已移除，保留占位以避免引用错误 ──
+const _MOVES_DATA_LEGACY=[
   // A
   {name:'闪岩攻击',nameEn:'Accelerock',type:'rock',cat:'physical',power:40,acc:100,pp:20},
   {name:'溶化',nameEn:'Acid Armor',type:'poison',cat:'status',power:null,acc:null,pp:20},
@@ -736,6 +745,7 @@ const MOVES_DATA=[
   {name:'野性冲电',nameEn:'Wild Charge',type:'electric',cat:'physical',power:90,acc:100,pp:16},
   {name:'拧干',nameEn:'Wring Out',type:'normal',cat:'special',power:null,acc:100,pp:8},
 ];
+// 旧数据已被 MOVES_CHAMPIONS_DATA 取代，此数组不再使用
 const BATTLE_MOVE_SEARCH_LIMIT=8;
 const battleMoveSearchState={activeIndex:null};
 // 攻击方（行）× 防御方（列）相克倍率矩阵 — Gen 9 标准
@@ -1103,20 +1113,20 @@ function getLearnableMoveSuggestions(query){
   const p=battleEditTeam?.pokemon[battleEditSlot];
   const learnableEn=p?.learnableMovesEn;
   if(!learnableEn||!learnableEn.length)return null;
-  const normalizeEn=n=>normalizeBattleMoveKeyword(n.replace(/-/g,' '));
-  const learnableSet=new Set(learnableEn.map(normalizeEn));
-  // Moves in MOVES_DATA that are learnable
+  // learnableEn 存的是 slug（如 "dragon-dance"），MOVES_DATA 也有 slug 字段，直接匹配
+  const learnableSet=new Set(learnableEn);
   const inData=MOVES_DATA.map((move,idx)=>{
-    if(!learnableSet.has(normalizeEn(move.nameEn)))return null;
+    const slug=move.slug||normalizeBattleMoveKeyword(move.nameEn);
+    if(!learnableSet.has(slug))return null;
     return {idx,move,apiOnly:false};
   }).filter(Boolean);
-  // Moves learnable from PokeAPI but absent from MOVES_DATA
-  const dataKeys=new Set(MOVES_DATA.map(m=>normalizeEn(m.nameEn)));
+  // learnset 里有但 MOVES_DATA 找不到的（极少）
+  const dataSlugSet=new Set(MOVES_DATA.map(m=>m.slug||normalizeBattleMoveKeyword(m.nameEn)));
   const apiOnlyMoves=learnableEn
-    .filter(en=>!dataKeys.has(normalizeEn(en)))
-    .map(en=>{
-      const displayName=en.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
-      return {idx:-1,move:{name:displayName,nameEn:en,type:'',cat:'',power:null,pp:null},apiOnly:true};
+    .filter(slug=>!dataSlugSet.has(slug))
+    .map(slug=>{
+      const displayName=slug.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+      return {idx:-1,move:{name:displayName,nameEn:slug,type:'',cat:'',power:null,pp:null},apiOnly:true};
     });
   const all=[...inData.sort((a,b)=>a.move.name.localeCompare(b.move.name,'zh-CN')),
              ...apiOnlyMoves.sort((a,b)=>a.move.nameEn.localeCompare(b.move.nameEn))];
@@ -1230,21 +1240,24 @@ function onBpkmSearch(q){
     drop.innerHTML='<div style="padding:8px 10px;color:var(--t3);font-size:.78rem">搜索中…</div>';
     drop.classList.add('open');
     try{
-      // 先从中文名表查找
-      const cnMatches=Object.entries(PKM_CN_TABLE).filter(([id,cn])=>cn.includes(q)).slice(0,8);
-      let results=cnMatches.map(([id,cn])=>({id:parseInt(id),cnName:cn}));
-      // 再尝试PokeAPI英文/编号搜索
-      if(!results.length&&/^\d+$/.test(q)){results=[{id:parseInt(q),cnName:PKM_CN_TABLE[parseInt(q)]||null}];}
+      // 先从 Pokemon Champions 数据搜索中文名
+      let results=_pkmPC.filter(p=>p.name.includes(q)).slice(0,8).map(p=>({id:p.num,cnName:p.name,slug:p.slug}));
+      // 编号搜索
+      if(!results.length&&/^\d+$/.test(q)){
+        const p=PKM_PC_BY_NUM[parseInt(q)];
+        results=p?[{id:p.num,cnName:p.name,slug:p.slug}]:[{id:parseInt(q),cnName:PKM_CN_TABLE[parseInt(q)]||null,slug:''}];
+      }
+      // 英文/PokeAPI 搜索兜底
       if(!results.length){
         const r=await fetch(`${POKEAPI}/pokemon/${encodeURIComponent(q.toLowerCase())}`);
-        if(r.ok){const d=await r.json();results=[{id:d.id,cnName:PKM_CN_TABLE[d.id]||d.name,name:d.name,types:d.types}];}
+        if(r.ok){const d=await r.json();const lp=PKM_PC_BY_NUM[d.id];results=[{id:d.id,cnName:lp?.name||PKM_CN_TABLE[d.id]||d.name,slug:lp?.slug||''}];}
       }
       if(!results.length){drop.innerHTML='<div style="padding:8px 10px;color:var(--t3);font-size:.78rem">未找到</div>';return;}
       drop.innerHTML=results.map(r=>{
         const sprite=`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${r.id}.png`;
-        return`<div class="bpkm-drop-item" onclick="selectBpkmFromDrop(${r.id},'${esc(r.cnName||r.name||'')}')">
+        return`<div class="bpkm-drop-item" onclick="selectBpkmFromDrop(${r.id},'${esc(r.cnName||'')}','${r.slug||''}')">
           <img src="${sprite}" alt="" onerror="this.style.display='none'">
-          <div class="bpkm-drop-name">${esc(r.cnName||r.name||'')}</div>
+          <div class="bpkm-drop-name">${esc(r.cnName||'')}</div>
           <div class="bpkm-drop-num">#${r.id}</div>
         </div>`;
       }).join('');
@@ -1252,75 +1265,93 @@ function onBpkmSearch(q){
   },300);
 }
 
-async function selectBpkmFromDrop(pkmId, cnName){
+async function selectBpkmFromDrop(pkmId, cnName, slug=''){
   const drop=document.getElementById('bpkm-search-drop');
   drop.classList.remove('open');
   const inp=document.getElementById('bpkm-name-inp');
   if(inp)inp.value=cnName;
   battleEditTeam.pokemon[battleEditSlot].name=cnName;
-  // 加载属性 + 精灵图
-  try{
-    const r=await fetch(`${POKEAPI}/pokemon/${pkmId}`);
-    if(r.ok){
-      const d=await r.json();
-      const t1=d.types[0]?.type?.name||'';
-      const t2=d.types[1]?.type?.name||'';
-      const s1=document.getElementById('bpkm-type1');
-      const s2=document.getElementById('bpkm-type2');
-      if(s1)s1.value=t1;
-      if(s2)s2.value=t2||'';
-      battleEditTeam.pokemon[battleEditSlot].type1=t1;
-      battleEditTeam.pokemon[battleEditSlot].type2=t2;
-      // 种族值
-      const stats={};
-      d.stats.forEach(s=>{
-        const k={'hp':'hp','attack':'atk','defense':'def','special-attack':'spa','special-defense':'spd','speed':'spe'}[s.stat.name];
-        if(k)stats[k]=s.base_stat;
-      });
-      battleEditTeam.pokemon[battleEditSlot].base=stats;
-      STAT_KEYS_B.forEach(k=>{
-        const el=document.getElementById(`bpkm-base-${k}`);
-        if(el&&stats[k])el.value=stats[k];
-      });
-      // 特性
-      const abilities=d.abilities.map(a=>a.ability.name);
-      battleEditTeam.pokemon[battleEditSlot].abilities=abilities;
-      const chipsEl=document.getElementById('bpkm-ability-chips');
-      if(chipsEl){
-        const curAbility=document.getElementById('bpkm-ability')?.value||'';
-        chipsEl.innerHTML=abilities.map(a=>`<span class="bpkm-ability-chip${curAbility===a?' active':''}" onclick="selectBpkmAbility('${esc(a)}')">${esc(a)}</span>`).join('');
-      }
-      // 可学技能列表
-      const learnableMovesEn=(d.moves||[]).map(m=>m.move.name);
-      battleEditTeam.pokemon[battleEditSlot].learnableMovesEn=learnableMovesEn;
-      [1,2,3,4].forEach(i=>{
-        const inp=document.getElementById(`bpkm-move${i}-name`);
-        if(inp)inp.placeholder='点击选择可学技能…';
-      });
-      // 精灵图
-      const spriteUrl=d.sprites.front_default||`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pkmId}.png`;
-      battleEditSpriteCache[battleEditSlot]=spriteUrl;
-      battleEditTeam.pokemon[battleEditSlot]._spriteUrl=spriteUrl;
-      // 更新预览
-      let prev=document.querySelector('.bpkm-preview');
-      if(!prev){
-        const wrap=document.getElementById('bpkm-name-inp').parentElement;
-        const previewDiv=document.createElement('div');
-        previewDiv.className='bpkm-preview';
-        previewDiv.id='bpkm-preview-wrap';
-        wrap.parentElement.insertBefore(previewDiv,wrap.nextSibling);
-        prev=previewDiv;
-      }
-      prev.innerHTML=`<img src="${esc(spriteUrl)}" alt="" id="bpkm-sprite" onerror="this.style.display='none'">
-        <div>
-          <div class="bpkm-preview-name">${esc(cnName)}</div>
-          <div class="bpkm-preview-types">${t1?`<span class="coverage-type-tag type-${t1}">${TYPE_ZH[t1]||t1}</span>`:''}${t2?`<span class="coverage-type-tag type-${t2}">${TYPE_ZH[t2]||t2}</span>`:''}</div>
-        </div>`;
-      onBpkmStatChange();
-      // 加载全形态（Mega/极巨化/地区形态等）
-      loadPkmForms(pkmId, d.name, cnName);
+
+  // 优先使用本地 PKM_CHAMPIONS_DATA，无需 API 调用
+  const localPkm=PKM_PC_BY_SLUG[slug]||PKM_PC_BY_NUM[pkmId];
+
+  const applyPkmData=(t1,t2,stats,abilities,learnableSlugs,spriteUrl)=>{
+    const s1=document.getElementById('bpkm-type1');
+    const s2=document.getElementById('bpkm-type2');
+    if(s1)s1.value=t1;
+    if(s2)s2.value=t2||'';
+    battleEditTeam.pokemon[battleEditSlot].type1=t1;
+    battleEditTeam.pokemon[battleEditSlot].type2=t2;
+    battleEditTeam.pokemon[battleEditSlot].base=stats;
+    STAT_KEYS_B.forEach(k=>{
+      const el=document.getElementById(`bpkm-base-${k}`);
+      if(el&&stats[k])el.value=stats[k];
+    });
+    battleEditTeam.pokemon[battleEditSlot].abilities=abilities;
+    const chipsEl=document.getElementById('bpkm-ability-chips');
+    if(chipsEl){
+      const curAbility=document.getElementById('bpkm-ability')?.value||'';
+      chipsEl.innerHTML=abilities.map(a=>`<span class="bpkm-ability-chip${curAbility===a?' active':''}" onclick="selectBpkmAbility('${esc(a)}')">${esc(a)}</span>`).join('');
     }
-  } catch(e){console.warn(e);}
+    battleEditTeam.pokemon[battleEditSlot].learnableMovesEn=learnableSlugs;
+    [1,2,3,4].forEach(i=>{ const inp=document.getElementById(`bpkm-move${i}-name`); if(inp)inp.placeholder='点击选择可学技能…'; });
+    const url=spriteUrl||`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pkmId}.png`;
+    battleEditSpriteCache[battleEditSlot]=url;
+    battleEditTeam.pokemon[battleEditSlot]._spriteUrl=url;
+    let prev=document.querySelector('.bpkm-preview');
+    if(!prev){
+      const wrap=document.getElementById('bpkm-name-inp').parentElement;
+      const d2=document.createElement('div');
+      d2.className='bpkm-preview';d2.id='bpkm-preview-wrap';
+      wrap.parentElement.insertBefore(d2,wrap.nextSibling);
+      prev=d2;
+    }
+    prev.innerHTML=`<img src="${esc(url)}" alt="" id="bpkm-sprite" onerror="this.style.display='none'">
+      <div>
+        <div class="bpkm-preview-name">${esc(cnName)}</div>
+        <div class="bpkm-preview-types">${t1?`<span class="coverage-type-tag type-${t1}">${TYPE_ZH[t1]||t1}</span>`:''}${t2?`<span class="coverage-type-tag type-${t2}">${TYPE_ZH[t2]||t2}</span>`:''}</div>
+      </div>`;
+    onBpkmStatChange();
+  };
+
+  if(localPkm){
+    // 本地数据直接使用，无需网络请求
+    applyPkmData(
+      localPkm.types[0]||'', localPkm.types[1]||'',
+      localPkm.stats||{}, localPkm.abilities||[],
+      localPkm.learnset||[], localPkm.spriteUrl||''
+    );
+    // 形态：PKM_CHAMPIONS_DATA 中同一宝可梦的不同形态直接列出
+    const baseName=localPkm.slug.replace(/^mega-/,'').replace(/-(mega|alolan|galarian|hisuian|paldean|x|y)$/,'');
+    const varieties=_pkmPC
+      .filter(p=>p.slug===localPkm.slug||p.slug.startsWith(baseName+'-')||p.slug===baseName)
+      .map(p=>({is_default:p.slug===baseName||p.slug===localPkm.slug,pokemon:{name:p.slug}}));
+    if(varieties.length>1){
+      const p2=battleEditTeam.pokemon[battleEditSlot];
+      p2.varieties=varieties;
+      renderBpkmFormChips(p2, cnName);
+    }
+  } else {
+    // PokeAPI 兜底（非 Champions 宝可梦）
+    try{
+      const r=await fetch(`${POKEAPI}/pokemon/${pkmId}`);
+      if(r.ok){
+        const d=await r.json();
+        const stats={};
+        d.stats.forEach(s=>{
+          const k={'hp':'hp','attack':'atk','defense':'def','special-attack':'spa','special-defense':'spd','speed':'spe'}[s.stat.name];
+          if(k)stats[k]=s.base_stat;
+        });
+        applyPkmData(
+          d.types[0]?.type?.name||'', d.types[1]?.type?.name||'',
+          stats, d.abilities.map(a=>a.ability.name),
+          (d.moves||[]).map(m=>m.move.name),
+          d.sprites.front_default||''
+        );
+        loadPkmForms(pkmId, d.name, cnName);
+      }
+    } catch(e){console.warn(e);}
+  }
 }
 
 /* ──────── 宝可梦形态 ──────── */
@@ -1587,12 +1618,11 @@ function onOppNameInput(i,q){
   drop.classList.add('open');
   boppSearchTimers[i]=setTimeout(async()=>{
     try{
-      const cnMatches=Object.entries(PKM_CN_TABLE).filter(([id,cn])=>cn.includes(q)).slice(0,8);
-      let results=cnMatches.map(([id,cn])=>({id:parseInt(id),cnName:cn}));
-      if(!results.length&&/^\d+$/.test(q))results=[{id:parseInt(q),cnName:PKM_CN_TABLE[parseInt(q)]||null}];
+      let results=_pkmPC.filter(p=>p.name.includes(q)).slice(0,8).map(p=>({id:p.num,cnName:p.name,slug:p.slug}));
+      if(!results.length&&/^\d+$/.test(q)){const p=PKM_PC_BY_NUM[parseInt(q)];results=p?[{id:p.num,cnName:p.name,slug:p.slug}]:[];}
       if(!results.length){
         const r=await fetch(`${POKEAPI}/pokemon/${encodeURIComponent(q.toLowerCase())}`);
-        if(r.ok){const d=await r.json();results=[{id:d.id,cnName:PKM_CN_TABLE[d.id]||d.name}];}
+        if(r.ok){const d=await r.json();const lp=PKM_PC_BY_NUM[d.id];results=[{id:d.id,cnName:lp?.name||PKM_CN_TABLE[d.id]||d.name,slug:lp?.slug||''}];}
       }
       if(!results.length){drop.innerHTML='<div style="padding:8px 10px;color:var(--t3);font-size:.78rem">未找到</div>';return;}
       drop.innerHTML=results.map(r=>{
