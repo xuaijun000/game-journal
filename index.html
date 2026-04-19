@@ -31,7 +31,7 @@
     <button onclick="go('pkm',this)">🐟 宝可梦</button>
     <button onclick="go('anime',this)">🎬 动漫</button>
     <button onclick="go('manga',this)">📖 漫画</button>
-    <button onclick="go('battle',this)">⚔️ 对战</button>
+    <button onclick="go('battle',this)">⚔️ 对战 <span style="font-size:.7em;opacity:.7">(PC)</span></button>
   </nav>
   <div class="hdr-r">
     <div class="av" id="av">?</div>
@@ -237,6 +237,10 @@
   </div>
   <!-- ====== 宝可梦对战助手 ====== -->
   <div class="pg" id="pg-battle">
+    <div style="padding:.9rem 0 .4rem;display:flex;align-items:baseline;gap:.5rem">
+      <span style="font-size:1.05rem;font-weight:700;font-family:'Noto Serif SC',serif;color:var(--t)">对战助手</span>
+      <span style="font-size:.72rem;color:var(--acc);font-family:'DM Mono',monospace;letter-spacing:.04em">Pokemon Champions</span>
+    </div>
     <div style="background:var(--bg2);border:1px solid var(--b2);border-radius:var(--rl) var(--rl) 0 0;overflow:hidden;margin-bottom:0">
       <div class="btab-bar">
         <button class="btab on" onclick="switchBattleTab('team',this)">🗂 我的队伍</button>
