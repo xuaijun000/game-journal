@@ -210,6 +210,31 @@
 .battle-analyzing-dots span:nth-child(3){animation-delay:.4s}
 @keyframes dotBlink{0%,80%,100%{opacity:.2}40%{opacity:1}}
 
+/* ── 角色标签 ── */
+.battle-role-tag{display:inline-block;font-size:.6rem;padding:1px 6px;border-radius:3px;margin-left:6px;vertical-align:middle;font-weight:600;letter-spacing:.03em}
+.role-phys{background:#ff6b81;color:#fff}
+.role-spec{background:#70a1ff;color:#fff}
+.role-support{background:#9c88ff;color:#fff}
+.role-wall{background:#7bed9f;color:#1a2a1a}
+.role-mixed{background:#ffa502;color:#fff}
+
+/* ── 脆弱性预警 ── */
+.battle-warn-ok{color:#2ed573;font-size:.82rem;padding:6px 0}
+.battle-warn-list{display:flex;flex-direction:column;gap:6px}
+.battle-warn-item{font-size:.82rem;color:#ffa502;padding:6px 10px;background:rgba(255,165,2,.08);border-left:3px solid #ffa502;border-radius:2px}
+.battle-warn-item b{color:#ff6348}
+
+/* ── 速度档位 ── */
+.battle-speed-wrap{overflow-x:auto}
+.battle-speed-table{border-collapse:collapse;font-size:.78rem;min-width:100%}
+.battle-speed-table th,.battle-speed-table td{padding:6px 10px;border:1px solid var(--bdr,#333);text-align:center;white-space:nowrap}
+.battle-speed-table th{background:var(--bg2);font-size:.72rem;color:var(--t3)}
+.spd-name{text-align:left!important;font-weight:500}
+.spd-base{font-size:.65rem;color:var(--t3);margin-left:3px}
+.spd-win{color:#2ed573;font-weight:700}
+.spd-lose{color:#ff6b81}
+.spd-unclear{color:var(--t3);font-style:italic}
+
 /* ── 响应式 ── */
 @media(max-width:700px){
   .battle-analysis-layout{grid-template-columns:1fr}

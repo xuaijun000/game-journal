@@ -1740,13 +1740,13 @@ function calcDamageEst(myPkm, oppPkm, move){
 
 /* ──────── 主分析入口 ──────── */
 function analyzeMatchups(){
-  // 收集对方数据
+  // 收集对方数据（含种族值，用于速度对比）
   [0,1,2,3,4,5].forEach(i=>{
-    battleOppPkm[i]={
-      name:document.getElementById(`bopp-name-${i}`)?.value.trim()||'',
-      type1:document.getElementById(`bopp-t1-${i}`)?.value||'',
-      type2:document.getElementById(`bopp-t2-${i}`)?.value||'',
-    };
+    const name=document.getElementById(`bopp-name-${i}`)?.value.trim()||'';
+    const type1=document.getElementById(`bopp-t1-${i}`)?.value||'';
+    const type2=document.getElementById(`bopp-t2-${i}`)?.value||'';
+    const lp=name?_pkmPC.find(p=>p.name===name):null;
+    battleOppPkm[i]={name,type1,type2,base:lp?.stats||{},slug:lp?.slug||''};
   });
   const opp=battleOppPkm.filter(p=>p.name||p.type1);
   if(!opp.length){showToast('请至少填入对方一只宝可梦的属性');return;}
@@ -1762,14 +1762,29 @@ function analyzeMatchups(){
 
   setTimeout(()=>{
     try{
+      const scored=scorePkmForBattle(myPkm,opp);
       const matrixHtml=renderBattleMatrix(myPkm,opp);
       const coverageHtml=renderBattleCoverage(myPkm);
       const dmgHtml=renderBattleDamage(myPkm,opp);
-      const recHtml=renderBattleRec(myPkm,opp);
+      const recHtml=renderBattleRec(scored,opp);
+      const weakHtml=renderTeamWeaknessWarning(scored);
+      const speedHtml=renderSpeedAnalysis(scored,opp);
       resultBox.innerHTML=`
         <div class="battle-result-box">
           <div class="battle-result-section">
-            <div class="battle-result-hdr"><span class="battle-result-title">属性相克矩阵</span><span class="battle-datasrc-note">行=我方用技能攻击，列=对方防御。我→对方倍率</span></div>
+            <div class="battle-result-hdr"><span class="battle-result-title">推荐出战阵容</span></div>
+            ${recHtml}
+          </div>
+          <div class="battle-result-section">
+            <div class="battle-result-hdr"><span class="battle-result-title">⚠ 队伍脆弱性预警</span></div>
+            ${weakHtml}
+          </div>
+          <div class="battle-result-section">
+            <div class="battle-result-hdr"><span class="battle-result-title">速度档位</span><span class="battle-datasrc-note">仅基础速度；差值&lt;20时先后手受努力值影响</span></div>
+            ${speedHtml}
+          </div>
+          <div class="battle-result-section">
+            <div class="battle-result-hdr"><span class="battle-result-title">属性相克矩阵</span><span class="battle-datasrc-note">行=我方用技能攻击，列=对方防御</span></div>
             ${matrixHtml}
           </div>
           <div class="battle-result-section">
@@ -1777,12 +1792,8 @@ function analyzeMatchups(){
             ${coverageHtml}
           </div>
           <div class="battle-result-section">
-            <div class="battle-result-hdr"><span class="battle-result-title">伤害估算（单发最优技能 vs 对方）</span><span class="battle-datasrc-note">Champions Lv.50 公式 + AP修正</span></div>
+            <div class="battle-result-hdr"><span class="battle-result-title">伤害估算（单发最优技能 vs 对方）</span><span class="battle-datasrc-note">Champions Lv.50 公式</span></div>
             ${dmgHtml}
-          </div>
-          <div class="battle-result-section">
-            <div class="battle-result-hdr"><span class="battle-result-title">推荐出战阵容</span></div>
-            ${recHtml}
           </div>
         </div>`;
     } catch(e){
@@ -1864,27 +1875,25 @@ function renderBattleDamage(myPkm, opp){
   return`<div class="battle-dmg-list">${rows||'<div class="battle-analyzing">请填写技能和对方队伍信息以估算伤害</div>'}</div>`;
 }
 
-/* ── 推荐出战 ── */
-function renderBattleRec(myPkm, opp){
-  const scored=myPkm.map(mp=>{
+/* ── 评分核心（供多个渲染函数共用） ── */
+function scorePkmForBattle(myPkm, opp){
+  const oppValid=opp.filter(op=>op.name||op.type1);
+  return myPkm.map(mp=>{
     let offScore=0, defScore=0, koCount=0;
     const reasons=[];
-    const oppValid=opp.filter(op=>op.name||op.type1);
     oppValid.forEach(op=>{
       const eff=getBestMoveEff(mp,op);
-      if(eff===null)return; // 对方属性未知，跳过
+      if(eff===null)return;
       offScore+=eff;
       if(eff>=2)reasons.push(`克制${op.name||op.type1}系`);
       const taken=getOppBestEff(op,mp);
       defScore+=taken;
-      // 估算KO
       const moves=[mp.move1,mp.move2,mp.move3,mp.move4].filter(m=>m&&m.power>0&&m.cat!=='status');
       let bestPct=0;
       moves.forEach(m=>{const r=calcDamageEst(mp,op,m);if(r&&r.pct>bestPct)bestPct=r.pct;});
       if(bestPct>=100){koCount++;reasons.push(`可一击秒杀${esc(op.name||'?')}`);}
       else if(bestPct>=50)reasons.push(`两击可KO${esc(op.name||'?')}`);
     });
-    // 防御弱点数
     const weakTypes=B_TYPES.filter(t=>getTypeEff(t,mp.type1,mp.type2)>=2);
     const resistTypes=B_TYPES.filter(t=>getTypeEff(t,mp.type1,mp.type2)<=0.5);
     if(resistTypes.length)reasons.push(`抗性好（${resistTypes.map(t=>TYPE_ZH[t]).slice(0,3).join('/')}等）`);
@@ -1892,20 +1901,93 @@ function renderBattleRec(myPkm, opp){
     const total=offScore - defScore*0.5 + koCount*3;
     return{pkm:mp,offScore,defScore,koCount,total,reasons:[...new Set(reasons)].slice(0,4)};
   }).sort((a,b)=>b.total-a.total);
+}
 
+/* ── 角色识别 ── */
+function classifyRole(pkm){
+  const moves=[pkm.move1,pkm.move2,pkm.move3,pkm.move4].filter(m=>m&&m.name);
+  const statusMoves=moves.filter(m=>m.cat==='status');
+  const physMoves=moves.filter(m=>m.cat==='physical'&&m.power>0);
+  const specMoves=moves.filter(m=>m.cat==='special'&&m.power>0);
+  const base=pkm.base||{};
+  const atk=base.atk||0, spa=base.spa||0;
+  const hp=base.hp||0, def=base.def||0, spd=base.spd||0;
+  if(moves.length>0&&physMoves.length===0&&specMoves.length===0)
+    return{label:'辅助',cls:'role-support'};
+  if(statusMoves.length>=2)return{label:'辅助',cls:'role-support'};
+  if(atk+spa>0&&(hp+def+spd)/(atk+spa)>1.8&&statusMoves.length>=1)
+    return{label:'盾牌',cls:'role-wall'};
+  if(physMoves.length>specMoves.length&&atk>=spa)
+    return{label:'物理输出',cls:'role-phys'};
+  if(specMoves.length>physMoves.length&&spa>atk)
+    return{label:'特攻输出',cls:'role-spec'};
+  if(physMoves.length>0&&specMoves.length>0)return{label:'混合输出',cls:'role-mixed'};
+  return{label:'综合型',cls:'role-mixed'};
+}
+
+/* ── 队伍脆弱性预警 ── */
+function renderTeamWeaknessWarning(scored){
+  const top3=scored.slice(0,3).map(s=>s.pkm).filter(p=>p.type1);
+  if(!top3.length)return`<div class="battle-warn-ok">属性数据不足，无法分析</div>`;
+  const warnings=[];
+  B_TYPES.forEach(t=>{
+    const hits=top3.filter(p=>getTypeEff(t,p.type1,p.type2)>=2);
+    if(hits.length>=2)
+      warnings.push(`<b>${TYPE_ZH[t]||t}系</b>可克制 ${hits.map(p=>esc(p.name)).join('、')}（${hits.length}/3只）`);
+  });
+  // 没有任何宝可梦对某属性抗性的类型
+  const noResist=B_TYPES.filter(t=>top3.every(p=>getTypeEff(t,p.type1,p.type2)>=1));
+  if(!warnings.length)
+    return`<div class="battle-warn-ok">✓ 出战三只对各属性无明显集体弱点</div>`;
+  return`<div class="battle-warn-list">${warnings.map(w=>`<div class="battle-warn-item">⚠ ${w}</div>`).join('')}</div>`;
+}
+
+/* ── 速度档位对比 ── */
+function renderSpeedAnalysis(scored, opp){
+  const top3=scored.slice(0,3);
+  const oppWithSpd=opp.filter(op=>(op.name||op.type1)&&op.base?.spe);
+  if(!oppWithSpd.length)
+    return`<div style="color:var(--t3);font-size:.78rem">需通过搜索选择对方宝可梦才能获取种族值，手动填入属性时无法计算速度</div>`;
+  const header=oppWithSpd.map(op=>`<th>${esc(op.name||'?')}<br><span class="spd-base">(${op.base.spe})</span></th>`).join('');
+  const rows=top3.map(s=>{
+    const mySpd=s.pkm.base?.spe||0;
+    if(!mySpd)return`<tr><td class="spd-name">${esc(s.pkm.name)}</td><td colspan="${oppWithSpd.length}" style="color:var(--t3)">种族值未知</td></tr>`;
+    const cells=oppWithSpd.map(op=>{
+      const diff=mySpd-op.base.spe;
+      if(diff>=20)return`<td class="spd-win">先手 +${diff}</td>`;
+      if(diff<=-20)return`<td class="spd-lose">后手 ${diff}</td>`;
+      return`<td class="spd-unclear">±${Math.abs(diff)} 不定</td>`;
+    }).join('');
+    return`<tr><td class="spd-name">${esc(s.pkm.name)}<span class="spd-base">（${mySpd}）</span></td>${cells}</tr>`;
+  }).join('');
+  return`<div class="battle-speed-wrap"><table class="battle-speed-table"><tr><th>我方 ↓</th>${header}</tr>${rows}</table></div>`;
+}
+
+/* ── 推荐出战 ── */
+function renderBattleRec(scored, opp){
   const top3=scored.slice(0,3);
   const rankClass=['rank-1','rank-2','rank-3'];
   const rankLabel=['#1 首选','#2 次选','#3 备选'];
   const rankCls=['r1','r2','r3'];
   return`<div class="battle-rec-list">${top3.map((s,i)=>{
     const img=s.pkm._spriteUrl?`<img src="${esc(s.pkm._spriteUrl)}" alt="" onerror="this.style.display='none'">`:'';
+    const role=classifyRole(s.pkm);
+    // 速度先后手快速标注（领先20+才在卡片里显示）
+    const mySpd=s.pkm.base?.spe||0;
+    const spdNotes=mySpd?opp.filter(op=>op.base?.spe).map(op=>{
+      const diff=mySpd-op.base.spe;
+      if(diff>=20)return`⚡ 先手 vs ${esc(op.name||'?')}（+${diff}）`;
+      if(diff<=-20)return`🐢 后手 vs ${esc(op.name||'?')}（${diff}）`;
+      return null;
+    }).filter(Boolean):[];
+    const allReasons=[...s.reasons,...spdNotes].slice(0,5);
     return`<div class="battle-rec-card ${rankClass[i]}">
       <span class="battle-rec-rank ${rankCls[i]}">${rankLabel[i]}</span>
       <div class="battle-rec-sprite">${img}</div>
       <div class="battle-rec-body">
-        <div class="battle-rec-name">${esc(s.pkm.name)}</div>
+        <div class="battle-rec-name">${esc(s.pkm.name)}<span class="battle-role-tag ${role.cls}">${role.label}</span></div>
         <div class="battle-rec-score">进攻+${s.offScore.toFixed(1)} 防御-${s.defScore.toFixed(1)} 综合${s.total.toFixed(1)}</div>
-        <div class="battle-rec-reasons">${s.reasons.map(r=>`<div class="battle-rec-reason">${esc(r)}</div>`).join('')}</div>
+        <div class="battle-rec-reasons">${allReasons.map(r=>`<div class="battle-rec-reason">${r}</div>`).join('')}</div>
       </div>
     </div>`;
   }).join('')}</div>`;
