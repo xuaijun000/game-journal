@@ -1091,15 +1091,22 @@ function renderBattleMoveSuggestions(moveIndex,query){
   if(!drop)return;
   const learnableItems=getLearnableMoveSuggestions(query);
   const hasLearnables=learnableItems!==null;
-  const items=hasLearnables?learnableItems:getBattleMoveSuggestions(query);
+  const queryTrimmed=String(query||'').trim();
+  let items=hasLearnables?learnableItems:getBattleMoveSuggestions(query);
+  let fallback=false;
+  if(hasLearnables&&queryTrimmed&&!items.length){
+    items=getBattleMoveSuggestions(query);
+    fallback=true;
+  }
   if(!items.length){
     drop.classList.remove('open');
     drop.innerHTML='';
     if(battleMoveSearchState.activeIndex===moveIndex)battleMoveSearchState.activeIndex=null;
     return;
   }
-  const header=hasLearnables&&!String(query||'').trim()
-    ?`<div style="padding:4px 10px;font-size:.68rem;color:var(--t3);border-bottom:1px solid var(--b2)">共 ${items.length} 个可学技能</div>`:'';
+  let header='';
+  if(hasLearnables&&!queryTrimmed)header=`<div style="padding:4px 10px;font-size:.68rem;color:var(--t3);border-bottom:1px solid var(--b2)">共 ${items.length} 个可学技能</div>`;
+  else if(fallback)header=`<div style="padding:4px 10px;font-size:.68rem;color:var(--acc2);border-bottom:1px solid var(--b2)">可学技能中无匹配，显示全库结果</div>`;
   drop.innerHTML=header+items.map(({idx,move})=>{
     const powerLabel=move.cat==='status'||!move.power?'—':move.power;
     return `<div class="bpkm-drop-item bpkm-move-drop-item" onclick="selectBattleMoveSuggestion(${moveIndex},${idx})">
