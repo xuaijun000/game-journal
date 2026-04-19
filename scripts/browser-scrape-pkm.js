@@ -37,19 +37,32 @@
     }
   } catch(e) {}
 
-  // ── Step 2: 自动滚动让虚拟列表渲染完整 ──────────────────────────────────
-  console.log('自动滚动页面加载全部宝可梦...');
+  // ── Step 2: 找内嵌滚动容器并滚动，让虚拟列表渲染完整 ───────────────────
+  console.log('查找宝可梦列表滚动容器...');
+  // 找含有 /pokedex/ 链接且可滚动的容器
+  const scrollEl = [...document.querySelectorAll('*')].find(el => {
+    const s = getComputedStyle(el);
+    return (s.overflow === 'auto' || s.overflow === 'scroll' ||
+            s.overflowY === 'auto' || s.overflowY === 'scroll') &&
+           el.scrollHeight > el.clientHeight + 50 &&
+           el.querySelectorAll('a[href*="/pokedex/"]').length > 0;
+  });
+  if (!scrollEl) { console.warn('未找到内嵌滚动容器，尝试滚动 window'); }
+  else console.log('找到容器:', scrollEl.className.slice(0,60), '| scrollHeight:', scrollEl.scrollHeight);
+
   let lastCount = 0;
   let stableRounds = 0;
-  for (let round = 0; round < 60; round++) {
-    window.scrollTo(0, document.body.scrollHeight);
-    await sleep(600);
+  for (let round = 0; round < 80; round++) {
+    if (scrollEl) scrollEl.scrollTop = scrollEl.scrollHeight;
+    else window.scrollTo(0, document.body.scrollHeight);
+    await sleep(500);
     const cur = document.querySelectorAll('a[href*="/pokedex/"]').length;
-    if (cur === lastCount) { stableRounds++; if (stableRounds >= 3) break; }
+    if (cur === lastCount) { stableRounds++; if (stableRounds >= 4) break; }
     else { stableRounds = 0; lastCount = cur; }
-    if (round % 5 === 0) console.log(`  滚动中... DOM 中已有 ${cur} 个链接`);
+    if (round % 5 === 0) console.log(`  滚动中... 已加载 ${cur} 个宝可梦`);
   }
-  window.scrollTo(0, 0);
+  if (scrollEl) scrollEl.scrollTop = 0;
+  else window.scrollTo(0, 0);
   await sleep(400);
 
   // ── Step 3: 从 DOM 收集所有 slug ─────────────────────────────────────────
