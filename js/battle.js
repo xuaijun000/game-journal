@@ -1241,20 +1241,20 @@ function onBpkmSearch(q){
     drop.classList.add('open');
     try{
       // 先从 Pokemon Champions 数据搜索中文名
-      let results=_pkmPC.filter(p=>p.name.includes(q)).slice(0,8).map(p=>({id:p.num,cnName:p.name,slug:p.slug}));
+      let results=_pkmPC.filter(p=>p.name.includes(q)).slice(0,8).map(p=>({id:p.num,cnName:p.name,slug:p.slug,spriteUrl:p.spriteUrl||''}));
       // 编号搜索
       if(!results.length&&/^\d+$/.test(q)){
         const p=PKM_PC_BY_NUM[parseInt(q)];
-        results=p?[{id:p.num,cnName:p.name,slug:p.slug}]:[{id:parseInt(q),cnName:PKM_CN_TABLE[parseInt(q)]||null,slug:''}];
+        results=p?[{id:p.num,cnName:p.name,slug:p.slug,spriteUrl:p.spriteUrl||''}]:[{id:parseInt(q),cnName:PKM_CN_TABLE[parseInt(q)]||null,slug:'',spriteUrl:''}];
       }
       // 英文/PokeAPI 搜索兜底
       if(!results.length){
         const r=await fetch(`${POKEAPI}/pokemon/${encodeURIComponent(q.toLowerCase())}`);
-        if(r.ok){const d=await r.json();const lp=PKM_PC_BY_NUM[d.id];results=[{id:d.id,cnName:lp?.name||PKM_CN_TABLE[d.id]||d.name,slug:lp?.slug||''}];}
+        if(r.ok){const d=await r.json();const lp=PKM_PC_BY_SLUG[q.toLowerCase()]||PKM_PC_BY_NUM[d.id];results=[{id:d.id,cnName:lp?.name||PKM_CN_TABLE[d.id]||d.name,slug:lp?.slug||'',spriteUrl:lp?.spriteUrl||d.sprites?.front_default||''}];}
       }
       if(!results.length){drop.innerHTML='<div style="padding:8px 10px;color:var(--t3);font-size:.78rem">未找到</div>';return;}
       drop.innerHTML=results.map(r=>{
-        const sprite=`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${r.id}.png`;
+        const sprite=r.spriteUrl||`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${r.id}.png`;
         return`<div class="bpkm-drop-item" onclick="selectBpkmFromDrop(${r.id},'${esc(r.cnName||'')}','${r.slug||''}')">
           <img src="${sprite}" alt="" onerror="this.style.display='none'">
           <div class="bpkm-drop-name">${esc(r.cnName||'')}</div>
@@ -1618,16 +1618,16 @@ function onOppNameInput(i,q){
   drop.classList.add('open');
   boppSearchTimers[i]=setTimeout(async()=>{
     try{
-      let results=_pkmPC.filter(p=>p.name.includes(q)).slice(0,8).map(p=>({id:p.num,cnName:p.name,slug:p.slug}));
-      if(!results.length&&/^\d+$/.test(q)){const p=PKM_PC_BY_NUM[parseInt(q)];results=p?[{id:p.num,cnName:p.name,slug:p.slug}]:[];}
+      let results=_pkmPC.filter(p=>p.name.includes(q)).slice(0,8).map(p=>({id:p.num,cnName:p.name,slug:p.slug,spriteUrl:p.spriteUrl||''}));
+      if(!results.length&&/^\d+$/.test(q)){const p=PKM_PC_BY_NUM[parseInt(q)];results=p?[{id:p.num,cnName:p.name,slug:p.slug,spriteUrl:p.spriteUrl||''}]:[];}
       if(!results.length){
         const r=await fetch(`${POKEAPI}/pokemon/${encodeURIComponent(q.toLowerCase())}`);
-        if(r.ok){const d=await r.json();const lp=PKM_PC_BY_NUM[d.id];results=[{id:d.id,cnName:lp?.name||PKM_CN_TABLE[d.id]||d.name,slug:lp?.slug||''}];}
+        if(r.ok){const d=await r.json();const lp=PKM_PC_BY_SLUG[q.toLowerCase()]||PKM_PC_BY_NUM[d.id];results=[{id:d.id,cnName:lp?.name||PKM_CN_TABLE[d.id]||d.name,slug:lp?.slug||'',spriteUrl:lp?.spriteUrl||d.sprites?.front_default||''}];}
       }
       if(!results.length){drop.innerHTML='<div style="padding:8px 10px;color:var(--t3);font-size:.78rem">未找到</div>';return;}
       drop.innerHTML=results.map(r=>{
-        const sprite=`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${r.id}.png`;
-        return`<div class="bpkm-drop-item" onclick="selectOppPkmFromDrop(${i},${r.id},'${esc(r.cnName||'')}')">
+        const sprite=r.spriteUrl||`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${r.id}.png`;
+        return`<div class="bpkm-drop-item" onclick="selectOppPkmFromDrop(${i},${r.id},'${esc(r.cnName||'')}','${r.slug||''}')">
           <img src="${sprite}" alt="" onerror="this.style.display='none'">
           <div class="bpkm-drop-name">${esc(r.cnName||'')}</div>
           <div class="bpkm-drop-num">#${r.id}</div>
@@ -1637,14 +1637,23 @@ function onOppNameInput(i,q){
   },300);
 }
 
-async function selectOppPkmFromDrop(i,pkmId,cnName){
+function selectOppPkmFromDrop(i,pkmId,cnName,slug=''){
   closeBoppDrop(i);
   const inp=document.getElementById(`bopp-name-${i}`);
   if(inp)inp.value=cnName;
-  try{
-    const r=await fetch(`${POKEAPI}/pokemon/${pkmId}`);
-    if(r.ok){
-      const d=await r.json();
+  const localPkm=PKM_PC_BY_SLUG[slug]||PKM_PC_BY_NUM[pkmId];
+  if(localPkm){
+    const t1=localPkm.types[0]||'';
+    const t2=localPkm.types[1]||'';
+    const s1=document.getElementById(`bopp-t1-${i}`);
+    const s2=document.getElementById(`bopp-t2-${i}`);
+    if(s1)s1.value=t1;
+    if(s2)s2.value=t2;
+    battleOppPkm[i]={name:cnName,type1:t1,type2:t2};
+  } else {
+    // fallback for non-Champions Pokemon
+    fetch(`${POKEAPI}/pokemon/${pkmId}`).then(r=>r.ok?r.json():null).then(d=>{
+      if(!d)return;
       const t1=d.types[0]?.type?.name||'';
       const t2=d.types[1]?.type?.name||'';
       const s1=document.getElementById(`bopp-t1-${i}`);
@@ -1652,8 +1661,8 @@ async function selectOppPkmFromDrop(i,pkmId,cnName){
       if(s1)s1.value=t1;
       if(s2)s2.value=t2;
       battleOppPkm[i]={name:cnName,type1:t1,type2:t2};
-    }
-  } catch(e){}
+    }).catch(()=>{});
+  }
 }
 
 function onMyTeamSelect(teamId){
@@ -1679,10 +1688,11 @@ function getTypeEff(atkType, defType1, defType2){
   return m;
 }
 
-// 获取我方宝可梦使用其最优技能攻击对方的最高倍率
+// 获取我方宝可梦使用其最优技能攻击对方的最高倍率；对方属性未知时返回 null
 function getBestMoveEff(myPkm, oppPkm){
+  if(!oppPkm.type1&&!oppPkm.type2)return null;
   const moves=[myPkm.move1,myPkm.move2,myPkm.move3,myPkm.move4].filter(m=>m&&m.type&&m.type!=='status'&&m.power>0);
-  if(!moves.length)return getTypeEff(myPkm.type1,oppPkm.type1,oppPkm.type2); // 无技能时用本体属性
+  if(!moves.length)return getTypeEff(myPkm.type1,oppPkm.type1,oppPkm.type2);
   return Math.max(...moves.map(m=>getTypeEff(m.type,oppPkm.type1,oppPkm.type2)));
 }
 
@@ -1793,6 +1803,7 @@ function renderBattleMatrix(myPkm, opp){
   const rows=myPkm.map(mp=>{
     const cells=opp.map(op=>{
       const eff=getBestMoveEff(mp,op);
+      if(eff===null)return`<td class="bm-x1" style="color:var(--t3)">?</td>`;
       return`<td class="${effClass(eff)}">${effLabel(eff)}</td>`;
     }).join('');
     const dot1=mp.type1?`<span class="bm-type-dot" style="background:${TYPE_COLOR[mp.type1]||'#888'}"></span>`:'';
@@ -1828,8 +1839,11 @@ function renderBattleDamage(myPkm, opp){
         if(r&&(!bestResult||r.pct>bestResult.pct))bestResult={...r,moveName:m.name||m.type};
       });
       if(!bestResult){
-        // fallback: use type only
         const eff=getBestMoveEff(mp,op);
+        if(eff===null)return`<div class="battle-dmg-row">
+          <span class="battle-dmg-vs">${esc(mp.name)} → ${esc(op.name||'?')}</span>
+          <span class="battle-dmg-ko dmg-survive">属性未知</span>
+        </div>`;
         const koCls=eff>=2?'dmg-2hko':'dmg-survive';
         const koTxt=eff>=2?'属性克制':'普通';
         return`<div class="battle-dmg-row">
@@ -1858,6 +1872,7 @@ function renderBattleRec(myPkm, opp){
     const oppValid=opp.filter(op=>op.name||op.type1);
     oppValid.forEach(op=>{
       const eff=getBestMoveEff(mp,op);
+      if(eff===null)return; // 对方属性未知，跳过
       offScore+=eff;
       if(eff>=2)reasons.push(`克制${op.name||op.type1}系`);
       const taken=getOppBestEff(op,mp);
