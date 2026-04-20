@@ -2548,24 +2548,33 @@ function buildThreatMap(combo,myPkm){
 
 /* ── 渲染对方出战预测（使用预计算结果） ── */
 function renderOppTeamPrediction(valid, predResult){
-  if(!valid.length||!predResult.combo.length)return '';
+  if(!valid.length)return '';
   const{combo,threatMap}=predResult;
+  const comboSlugs=new Set(combo.map(op=>op.slug||op.name||''));
 
   const validJson=JSON.stringify(valid.map(op=>({name:op.name,slug:op.slug||'',type1:op.type1})));
-  const pkmHtml=combo.map(op=>{
+
+  const makePkmEl=(op,isPredicted)=>{
     const img=op.slug?(PKM_PC_BY_SLUG[op.slug]?.spriteUrl||''):'';
     const slugAttr=esc(op.slug||'');
-    const threats=threatMap[op.slug||op.name||'']||[];
+    const threats=isPredicted?(threatMap[op.slug||op.name||'']||[]):[];
     const threatTag=threats.length?`<span class="opp-pred-threat">克制 ${threats.map(n=>esc(n)).join('、')}</span>`:'';
-    return`<div class="battle-opp-pred-item" onclick="onOppLeadClick('${slugAttr}',this)" title="点击设为首发，预测后续两只">
+    const dimCls=isPredicted?'':'opp-pred-dim';
+    return`<div class="battle-opp-pred-item ${dimCls}" onclick="onOppLeadClick('${slugAttr}',this)" title="点击设为首发，预测后续两只">
       ${img?`<img src="${esc(img)}" alt="" onerror="this.style.display='none'">`:''}
       <span class="battle-opp-pred-name">${esc(op.name||op.type1||'?')}</span>
       ${threatTag}
     </div>`;
-  }).join('');
+  };
+
+  const predictedHtml=combo.map(op=>makePkmEl(op,true)).join('');
+  const restHtml=valid.filter(op=>!comboSlugs.has(op.slug||op.name||'')).map(op=>makePkmEl(op,false)).join('');
 
   return`<div class="battle-opp-pred-wrap" id="opp-pred-wrap" data-valid='${validJson.replace(/'/g,"&#39;")}'>
-    <div class="opp-pred-combo">${pkmHtml}</div>
+    <div class="opp-pred-row-label">预测出战</div>
+    <div class="opp-pred-combo">${predictedHtml}</div>
+    ${restHtml?`<div class="opp-pred-row-label opp-pred-row-label--rest">其余备选（点击可预测后续）</div>
+    <div class="opp-pred-combo">${restHtml}</div>`:''}
     <div id="opp-lead-result" class="opp-lead-result"></div>
   </div>`;
 }
