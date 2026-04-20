@@ -1947,7 +1947,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "chilling-water",
       "alluring-voice"
     ],
-    "spriteUrl": ""
+    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/35.png"
   },
   {
     "slug": "ninetales",
@@ -4127,7 +4127,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "expanding-force",
       "meteor-beam"
     ],
-    "spriteUrl": ""
+    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/121.png"
   },
   {
     "slug": "pinsir",
@@ -6051,7 +6051,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "tera-blast",
       "trailblaze"
     ],
-    "spriteUrl": ""
+    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/154.png"
   },
   {
     "slug": "typhlosion",
@@ -6601,7 +6601,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "trailblaze",
       "chilling-water"
     ],
-    "spriteUrl": ""
+    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/160.png"
   },
   {
     "slug": "ariados",
@@ -8639,7 +8639,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "steel-beam",
       "tera-blast"
     ],
-    "spriteUrl": ""
+    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/227.png"
   },
   {
     "slug": "houndoom",
@@ -11640,7 +11640,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "tera-blast",
       "psychic-noise"
     ],
-    "spriteUrl": ""
+    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/358.png"
   },
   {
     "slug": "absol",
@@ -15268,7 +15268,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "snowscape",
       "chilling-water"
     ],
-    "spriteUrl": ""
+    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/478.png"
   },
   {
     "slug": "rotom",
@@ -15358,6 +15358,56 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "tera-blast"
     ],
     "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/479.png"
+  },
+  {
+    "slug": "rotom-heat",
+    "num": 259,
+    "name": "热量洛托姆",
+    "types": ["electric","fire"],
+    "stats": {"hp":50,"atk":65,"def":107,"spa":105,"spd":107,"spe":86},
+    "abilities": ["levitate"],
+    "learnset": ["thunder-shock","thunderbolt","thunder-wave","thunder","toxic","night-shade","double-team","confuse-ray","light-screen","reflect","swift","rest","substitute","thief","snore","protect","swagger","sleep-talk","pain-split","rain-dance","sunny-day","shadow-ball","will-o-wisp","facade","charge","helping-hand","trick","hyper-voice","dark-pulse","nasty-plot","discharge","charge-beam","electro-ball","foul-play","hex","volt-switch","endure","return","hidden-power","shock-wave","round","electroweb","tera-blast"],
+    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10011.png"
+  },
+  {
+    "slug": "rotom-wash",
+    "num": 260,
+    "name": "洗涤洛托姆",
+    "types": ["electric","water"],
+    "stats": {"hp":50,"atk":65,"def":107,"spa":105,"spd":107,"spe":86},
+    "abilities": ["levitate"],
+    "learnset": ["thunder-shock","thunderbolt","thunder-wave","thunder","toxic","night-shade","double-team","confuse-ray","light-screen","reflect","swift","rest","substitute","thief","snore","protect","swagger","sleep-talk","pain-split","rain-dance","sunny-day","shadow-ball","will-o-wisp","facade","charge","helping-hand","trick","hyper-voice","dark-pulse","nasty-plot","discharge","charge-beam","electro-ball","foul-play","hex","volt-switch","endure","return","hidden-power","shock-wave","round","electroweb","tera-blast"],
+    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10012.png"
+  },
+  {
+    "slug": "rotom-frost",
+    "num": 261,
+    "name": "结冰洛托姆",
+    "types": ["electric","ice"],
+    "stats": {"hp":50,"atk":65,"def":107,"spa":105,"spd":107,"spe":86},
+    "abilities": ["levitate"],
+    "learnset": ["thunder-shock","thunderbolt","thunder-wave","thunder","toxic","night-shade","double-team","confuse-ray","light-screen","reflect","swift","rest","substitute","thief","snore","protect","swagger","sleep-talk","pain-split","rain-dance","sunny-day","shadow-ball","will-o-wisp","facade","charge","helping-hand","trick","hyper-voice","dark-pulse","nasty-plot","discharge","charge-beam","electro-ball","foul-play","hex","volt-switch","endure","return","hidden-power","shock-wave","round","electroweb","tera-blast"],
+    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10013.png"
+  },
+  {
+    "slug": "rotom-fan",
+    "num": 262,
+    "name": "旋转洛托姆",
+    "types": ["electric","flying"],
+    "stats": {"hp":50,"atk":65,"def":107,"spa":105,"spd":107,"spe":86},
+    "abilities": ["levitate"],
+    "learnset": ["thunder-shock","thunderbolt","thunder-wave","thunder","toxic","night-shade","double-team","confuse-ray","light-screen","reflect","swift","rest","substitute","thief","snore","protect","swagger","sleep-talk","pain-split","rain-dance","sunny-day","shadow-ball","will-o-wisp","facade","charge","helping-hand","trick","hyper-voice","dark-pulse","nasty-plot","discharge","charge-beam","electro-ball","foul-play","hex","volt-switch","endure","return","hidden-power","shock-wave","round","electroweb","tera-blast"],
+    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10014.png"
+  },
+  {
+    "slug": "rotom-mow",
+    "num": 263,
+    "name": "割草洛托姆",
+    "types": ["electric","grass"],
+    "stats": {"hp":50,"atk":65,"def":107,"spa":105,"spd":107,"spe":86},
+    "abilities": ["levitate"],
+    "learnset": ["thunder-shock","thunderbolt","thunder-wave","thunder","toxic","night-shade","double-team","confuse-ray","light-screen","reflect","swift","rest","substitute","thief","snore","protect","swagger","sleep-talk","pain-split","rain-dance","sunny-day","shadow-ball","will-o-wisp","facade","charge","helping-hand","trick","hyper-voice","dark-pulse","nasty-plot","discharge","charge-beam","electro-ball","foul-play","hex","volt-switch","endure","return","hidden-power","shock-wave","round","electroweb","tera-blast"],
+    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10015.png"
   },
   {
     "slug": "serperior",
@@ -15718,7 +15768,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "hard-press",
       "temper-flare"
     ],
-    "spriteUrl": ""
+    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/500.png"
   },
   {
     "slug": "samurott",
@@ -16620,7 +16670,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "scorching-sands",
       "tera-blast"
     ],
-    "spriteUrl": ""
+    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/530.png"
   },
   {
     "slug": "audino",
@@ -18090,7 +18140,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "trailblaze",
       "temper-flare"
     ],
-    "spriteUrl": ""
+    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/609.png"
   },
   {
     "slug": "beartic",
@@ -18668,7 +18718,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "tera-blast",
       "hard-press"
     ],
-    "spriteUrl": ""
+    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/623.png"
   },
   {
     "slug": "hydreigon",
@@ -19178,7 +19228,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "tera-blast",
       "trailblaze"
     ],
-    "spriteUrl": ""
+    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/652.png"
   },
   {
     "slug": "delphox",
@@ -19437,7 +19487,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "tera-blast",
       "psychic-noise"
     ],
-    "spriteUrl": ""
+    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/655.png"
   },
   {
     "slug": "greninja",
@@ -19670,7 +19720,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "chilling-water",
       "upper-hand"
     ],
-    "spriteUrl": ""
+    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/658.png"
   },
   {
     "slug": "diggersby",
@@ -20149,7 +20199,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "chilling-water",
       "alluring-voice"
     ],
-    "spriteUrl": ""
+    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/669.png"
   },
   {
     "slug": "florges",
@@ -20686,7 +20736,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "alluring-voice",
       "psychic-noise"
     ],
-    "spriteUrl": ""
+    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/678.png"
   },
   {
     "slug": "aegislash",
@@ -21712,7 +21762,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "trailblaze",
       "upper-hand"
     ],
-    "spriteUrl": ""
+    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/701.png"
   },
   {
     "slug": "dedenne",
@@ -23491,7 +23541,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "hard-press",
       "upper-hand"
     ],
-    "spriteUrl": ""
+    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/740.png"
   },
   {
     "slug": "lycanroc",
@@ -24650,7 +24700,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "scale-shot",
       "lash-out"
     ],
-    "spriteUrl": ""
+    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/780.png"
   },
   {
     "slug": "kommo-o",
@@ -26895,7 +26945,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "trailblaze",
       "temper-flare"
     ],
-    "spriteUrl": ""
+    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/953.png"
   },
   {
     "slug": "espathra",
@@ -27347,7 +27397,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "tera-blast",
       "mortal-spin"
     ],
-    "spriteUrl": ""
+    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/970.png"
   },
   {
     "slug": "farigiraf",

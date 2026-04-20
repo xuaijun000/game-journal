@@ -1433,7 +1433,7 @@ function onBpkmSearch(q){
       }
       if(!results.length){drop.innerHTML='<div style="padding:8px 10px;color:var(--t3);font-size:.78rem">未找到</div>';return;}
       drop.innerHTML=results.map(r=>{
-        const sprite=r.spriteUrl||`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${r.id}.png`;
+        const sprite=getSearchSprite(r);
         return`<div class="bpkm-drop-item" onclick="selectBpkmFromDrop(${r.id},'${esc(r.cnName||'')}','${r.slug||''}')">
           <img src="${sprite}" alt="" onerror="this.style.display='none'">
           <div class="bpkm-drop-name">${esc(r.cnName||'')}</div>
@@ -1810,6 +1810,20 @@ async function deleteBattleTeamFromModal(){
 
 /* ──────── 赛前分析 ──────── */
 const boppSearchTimers={};
+
+// 搜索结果图片：优先用数据里的 spriteUrl，超级形态没图时用基础形态图，兜底用 PokeAPI 全国图鉴编号
+function getSearchSprite(r){
+  if(r.spriteUrl) return r.spriteUrl;
+  // mega / regional 形态：找基础形态
+  if(r.slug){
+    const base=r.slug.replace(/^mega-/,'').replace(/-(hisui|alolan|galarian|paldean|heat|wash|frost|fan|mow|x|y)$/,'');
+    if(base!==r.slug){
+      const bp=PKM_PC_BY_SLUG[base];
+      if(bp?.spriteUrl) return bp.spriteUrl;
+    }
+  }
+  return '';
+}
 const boppComposing={};
 
 function renderBattleOppSlots(){
@@ -1858,7 +1872,7 @@ function onOppNameInput(i,q){
       }
       if(!results.length){drop.innerHTML='<div style="padding:8px 10px;color:var(--t3);font-size:.78rem">未找到</div>';return;}
       drop.innerHTML=results.map(r=>{
-        const sprite=r.spriteUrl||`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${r.id}.png`;
+        const sprite=getSearchSprite(r);
         return`<div class="bpkm-drop-item" onclick="selectOppPkmFromDrop(${i},${r.id},'${esc(r.cnName||'')}','${r.slug||''}')">
           <img src="${sprite}" alt="" onerror="this.style.display='none'">
           <div class="bpkm-drop-name">${esc(r.cnName||'')}</div>
