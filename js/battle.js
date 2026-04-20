@@ -48,6 +48,7 @@ const FORM_SUFFIX_ZH={
 };
 // 对战数据 — 通过 loadBattleGameData(gameId) 从注册表加载，支持多版本隔离
 let MOVES_DATA = [];
+let PKM_LIST = [];
 let PKM_PC_BY_SLUG = {};
 let PKM_PC_BY_NUM  = {};
 let ITEMS_DATA = [];
@@ -56,10 +57,10 @@ let ITEMS_BY_NAME = {};
 function loadBattleGameData(gameId) {
   const reg = (window.BATTLE_REGISTRY || {})[gameId] || {};
   MOVES_DATA = reg.moves || [];
-  const pkmList = reg.pkm || [];
+  PKM_LIST = reg.pkm || [];
   PKM_PC_BY_SLUG = {};
   PKM_PC_BY_NUM  = {};
-  pkmList.forEach(p => { PKM_PC_BY_SLUG[p.slug]=p; if(p.num) PKM_PC_BY_NUM[p.num]=p; });
+  PKM_LIST.forEach(p => { PKM_PC_BY_SLUG[p.slug]=p; if(p.num) PKM_PC_BY_NUM[p.num]=p; });
   ITEMS_DATA = reg.items || [];
   ITEMS_BY_NAME = {};
   ITEMS_DATA.forEach(it => { ITEMS_BY_NAME[it.name]=it; });
@@ -1405,7 +1406,7 @@ function onBpkmSearch(q){
     drop.classList.add('open');
     try{
       // 先从 Pokemon Champions 数据搜索中文名
-      let results=_pkmPC.filter(p=>p.name.includes(q)).slice(0,8).map(p=>({id:p.num,cnName:p.name,slug:p.slug,spriteUrl:p.spriteUrl||''}));
+      let results=PKM_LIST.filter(p=>p.name.includes(q)).slice(0,8).map(p=>({id:p.num,cnName:p.name,slug:p.slug,spriteUrl:p.spriteUrl||''}));
       // 编号搜索
       if(!results.length&&/^\d+$/.test(q)){
         const p=PKM_PC_BY_NUM[parseInt(q)];
@@ -1830,7 +1831,7 @@ function onOppNameInput(i,q){
   drop.classList.add('open');
   boppSearchTimers[i]=setTimeout(async()=>{
     try{
-      let results=_pkmPC.filter(p=>p.name.includes(q)).slice(0,8).map(p=>({id:p.num,cnName:p.name,slug:p.slug,spriteUrl:p.spriteUrl||''}));
+      let results=PKM_LIST.filter(p=>p.name.includes(q)).slice(0,8).map(p=>({id:p.num,cnName:p.name,slug:p.slug,spriteUrl:p.spriteUrl||''}));
       if(!results.length&&/^\d+$/.test(q)){const p=PKM_PC_BY_NUM[parseInt(q)];results=p?[{id:p.num,cnName:p.name,slug:p.slug,spriteUrl:p.spriteUrl||''}]:[];}
       if(!results.length){
         const r=await fetch(`${POKEAPI}/pokemon/${encodeURIComponent(q.toLowerCase())}`);
