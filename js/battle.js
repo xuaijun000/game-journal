@@ -931,9 +931,15 @@ function detectOppWeather(oppList){
 function getEffectiveSpeed(pkm, activeWeather=''){
   const base=pkm.base?.spe||0;
   if(!base)return 0;
+  let spe=base;
+  // 道具速度修正（优先从 ITEMS_BY_NAME 读 spdMul，兜底硬编码）
+  const itemD=ITEMS_BY_NAME[pkm.item||''];
+  if(itemD?.damageMul?.spdMul) spe=Math.floor(spe*itemD.damageMul.spdMul);
+  else if(pkm.item==='讲究围巾') spe=Math.floor(spe*1.5);
+  // 特性速度修正
   const mod=ABILITY_SPD_MOD[pkm.ability||''];
-  if(mod?.weather && mod.weather===activeWeather) return base*mod.mul;
-  return base;
+  if(mod?.weather&&mod.weather===activeWeather) spe=Math.floor(spe*mod.mul);
+  return spe;
 }
 
 // 性格修正 — [HP, 攻击, 防御, 特攻, 特防, 速度]
@@ -2287,8 +2293,40 @@ function scorePkmForBattle(myPkm, opp, activeWeather=''){
     if(oppMoveTypes.length&&defTypeBonus>1)
       reasons.push(`能抗对方常用技能`);
 
-    const total=offScore - defScore*0.5 + koScore*3 + defTypeBonus;
-    return{pkm:mp,offScore,defScore,koCount:Math.round(koScore),koScore,defTypeBonus:+defTypeBonus.toFixed(2),total,reasons:[...new Set(reasons)].slice(0,5)};
+    // ── 我方携带道具加成 ──
+    let myItemBonus=0;
+    const myItem=mp.item||'';
+    if(myItem==='突击背心'){
+      // 对方有特殊招式时，特防×1.5相当于降低受伤效率
+      const hasOppSpec=oppValid.some(op=>(op.predictedMoves||[]).some(m=>MOVES_BY_SLUG?.[m.slug]?.cat==='special'));
+      if(hasOppSpec){myItemBonus+=1.5;reasons.push('突击背心对抗对方特攻');}
+    } else if(myItem==='气势披带'){
+      myItemBonus+=1.0;reasons.push('气势披带可撑过一击');
+    } else if(myItem==='吃剩的东西'){
+      myItemBonus+=0.5;reasons.push('吃剩的东西持续回血');
+    } else if(myItem==='文柚果'){
+      myItemBonus+=0.3;
+    } else if(myItem==='讲究围巾'){
+      reasons.push('讲究围巾速度×1.5');
+    } else if(myItem==='讲究头带'){
+      reasons.push('讲究头带物攻×1.5');
+    } else if(myItem==='讲究眼镜'){
+      reasons.push('讲究眼镜特攻×1.5');
+    } else if(myItem==='生命球'){
+      reasons.push('生命球伤害×1.3');
+    }
+    // 抗性树果：对方有对应属性招式时额外加分
+    const BERRY_RESIST={'草蚕果':'rock','棱瓜果':'flying','刺耳果':'dark','莲蒲果':'fighting',
+      '莓榴果':'dragon','佛柑果':'ghost','通通果':'poison','巧可果':'fire',
+      '千香果':'water','福禄果':'psychic','霹霹果':'steel','灯浆果':'normal'};
+    if(BERRY_RESIST[myItem]){
+      const rType=BERRY_RESIST[myItem];
+      const threatPct=oppMoveTypes.filter(({type})=>type===rType).reduce((s,{pct})=>s+pct,0);
+      if(threatPct>40){myItemBonus+=1.0;reasons.push(`${myItem}减弱对方${TYPE_ZH[rType]||rType}系招式`);}
+    }
+
+    const total=offScore - defScore*0.5 + koScore*3 + defTypeBonus + myItemBonus;
+    return{pkm:mp,offScore,defScore,koCount:Math.round(koScore),koScore,defTypeBonus:+defTypeBonus.toFixed(2),myItemBonus:+myItemBonus.toFixed(2),total,reasons:[...new Set(reasons)].slice(0,5)};
   }).sort((a,b)=>b.total-a.total);
   return selectSynergisticTop3(rawScored);
 }
