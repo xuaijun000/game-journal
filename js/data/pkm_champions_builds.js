@@ -3,7 +3,7 @@
 // 生成时间: 2026-04-20
 // 字段说明: moves(top4) / item(top1) / ability(top1) / teammates(top6)
 //           pct = 锦标赛使用率百分比
-window.PKM_CHAMPIONS_BUILDS = {
+window.PKM_CHAMPIONS_BUILDS = window.PKM_CHAMPIONS_BUILDS = {
   "venusaur": {
     "moves": [
       {
@@ -12825,5 +12825,271 @@ window.PKM_CHAMPIONS_BUILDS = {
         "pct": 16.667
       }
     ]
+  },
+  "rotom-heat": {
+    "moves": [
+      {
+        "slug": "overheat",
+        "pct": 97.516
+      },
+      {
+        "slug": "thunderbolt",
+        "pct": 71.429
+      },
+      {
+        "slug": "volt-switch",
+        "pct": 65.839
+      },
+      {
+        "slug": "protect",
+        "pct": 62.112
+      }
+    ],
+    "item": {
+      "slug": "choice-scarf",
+      "pct": 31.056
+    },
+    "ability": {
+      "slug": "levitate",
+      "pct": 100
+    },
+    "teammates": [
+      {
+        "slug": "sneasler",
+        "pct": 41.615
+      },
+      {
+        "slug": "sinistcha",
+        "pct": 36.646
+      },
+      {
+        "slug": "tyranitar",
+        "pct": 36.646
+      },
+      {
+        "slug": "garchomp",
+        "pct": 30.435
+      },
+      {
+        "slug": "kingambit",
+        "pct": 30.435
+      },
+      {
+        "slug": "excadrill",
+        "pct": 26.708
+      }
+    ]
+  },
+  "rotom-wash": {
+    "moves": [
+      {
+        "slug": "hydro-pump",
+        "pct": 98.127
+      },
+      {
+        "slug": "thunderbolt",
+        "pct": 73.221
+      },
+      {
+        "slug": "will-o-wisp",
+        "pct": 55.899
+      },
+      {
+        "slug": "protect",
+        "pct": 55.15
+      }
+    ],
+    "item": {
+      "slug": "sitrus-berry",
+      "pct": 36.891
+    },
+    "ability": {
+      "slug": "levitate",
+      "pct": 100
+    },
+    "teammates": [
+      {
+        "slug": "garchomp",
+        "pct": 61.704
+      },
+      {
+        "slug": "incineroar",
+        "pct": 49.251
+      },
+      {
+        "slug": "sneasler",
+        "pct": 48.783
+      },
+      {
+        "slug": "floette-eternal",
+        "pct": 24.813
+      },
+      {
+        "slug": "sinistcha",
+        "pct": 24.532
+      },
+      {
+        "slug": "tyranitar",
+        "pct": 23.315
+      }
+    ]
+  },
+  "rotom-frost": {
+    "moves": [
+      {
+        "slug": "blizzard",
+        "pct": 100
+      },
+      {
+        "slug": "thunderbolt",
+        "pct": 85.714
+      },
+      {
+        "slug": "protect",
+        "pct": 57.143
+      },
+      {
+        "slug": "volt-switch",
+        "pct": 52.381
+      }
+    ],
+    "item": {
+      "slug": "never-melt-ice",
+      "pct": 45.238
+    },
+    "ability": {
+      "slug": "levitate",
+      "pct": 100
+    },
+    "teammates": [
+      {
+        "slug": "froslass",
+        "pct": 90.476
+      },
+      {
+        "slug": "garchomp",
+        "pct": 80.952
+      },
+      {
+        "slug": "incineroar",
+        "pct": 71.429
+      },
+      {
+        "slug": "basculegion",
+        "pct": 45.238
+      },
+      {
+        "slug": "orthworm",
+        "pct": 40.476
+      },
+      {
+        "slug": "kingambit",
+        "pct": 21.429
+      }
+    ]
+  },
+  "rotom-fan": {
+    "moves": [
+      {
+        "slug": "air-slash",
+        "pct": 100
+      },
+      {
+        "slug": "thunderbolt",
+        "pct": 100
+      },
+      {
+        "slug": "will-o-wisp",
+        "pct": 100
+      },
+      {
+        "slug": "double-team",
+        "pct": 100
+      }
+    ],
+    "item": {
+      "slug": "magnet",
+      "pct": 100
+    },
+    "ability": {
+      "slug": "levitate",
+      "pct": 100
+    },
+    "teammates": [
+      {
+        "slug": "primarina",
+        "pct": 100
+      },
+      {
+        "slug": "tyranitar",
+        "pct": 100
+      },
+      {
+        "slug": "farigiraf",
+        "pct": 100
+      },
+      {
+        "slug": "aggron",
+        "pct": 100
+      },
+      {
+        "slug": "incineroar",
+        "pct": 100
+      }
+    ]
+  },
+  "rotom-mow": {
+    "moves": [
+      {
+        "slug": "leaf-storm",
+        "pct": 100
+      },
+      {
+        "slug": "volt-switch",
+        "pct": 72
+      },
+      {
+        "slug": "thunderbolt",
+        "pct": 64
+      },
+      {
+        "slug": "will-o-wisp",
+        "pct": 44
+      }
+    ],
+    "item": {
+      "slug": "choice-scarf",
+      "pct": 36
+    },
+    "ability": {
+      "slug": "levitate",
+      "pct": 100
+    },
+    "teammates": [
+      {
+        "slug": "incineroar",
+        "pct": 48
+      },
+      {
+        "slug": "garchomp",
+        "pct": 32
+      },
+      {
+        "slug": "tyranitar",
+        "pct": 32
+      },
+      {
+        "slug": "sneasler",
+        "pct": 28
+      },
+      {
+        "slug": "whimsicott",
+        "pct": 24
+      },
+      {
+        "slug": "gengar",
+        "pct": 20
+      }
+    ]
   }
-};
+};;
