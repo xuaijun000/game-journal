@@ -51,6 +51,7 @@
       'lucario','mega-lucario','hippowdon','toxicroak','abomasnow','mega-abomasnow',
       'weavile','rhyperior','leafeon','glaceon','gliscor','mamoswine',
       'gallade','mega-gallade','froslass','mega-froslass','rotom',
+      'rotom-heat','rotom-wash','rotom-frost','rotom-fan','rotom-mow',
       'serperior','emboar','mega-emboar','samurott','samurott-hisui',
       'watchog','liepard','simisage','simisear','simipour',
       'excadrill','mega-excadrill','audino','mega-audino','conkeldurr','whimsicott',
