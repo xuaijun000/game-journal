@@ -1947,7 +1947,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "chilling-water",
       "alluring-voice"
     ],
-    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/35.png"
+    "spriteUrl": "https://s-stats-platform-cdn.op.gg/pokemon/images/pokemon/mega-clefable.png?image=q_auto:good,f_webp,w_950&v=1776680235"
   },
   {
     "slug": "ninetales",
@@ -3012,7 +3012,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "pounce",
       "trailblaze"
     ],
-    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10279.png"
+    "spriteUrl": "https://s-stats-platform-cdn.op.gg/pokemon/images/pokemon/mega-victreebel.png?image=q_auto:good,f_webp,w_950&v=1776680235"
   },
   {
     "slug": "slowbro",
@@ -4127,7 +4127,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "expanding-force",
       "meteor-beam"
     ],
-    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/121.png"
+    "spriteUrl": "https://s-stats-platform-cdn.op.gg/pokemon/images/pokemon/mega-starmie.png?image=q_auto:good,f_webp,w_950&v=1776680235"
   },
   {
     "slug": "pinsir",
@@ -6601,7 +6601,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "trailblaze",
       "chilling-water"
     ],
-    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/160.png"
+    "spriteUrl": "https://s-stats-platform-cdn.op.gg/pokemon/images/pokemon/mega-feraligatr.png?image=q_auto:good,f_webp,w_950&v=1776680235"
   },
   {
     "slug": "ariados",
@@ -8639,7 +8639,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "steel-beam",
       "tera-blast"
     ],
-    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/227.png"
+    "spriteUrl": "https://s-stats-platform-cdn.op.gg/pokemon/images/pokemon/mega-skarmory.png?image=q_auto:good,f_webp,w_950&v=1776680235"
   },
   {
     "slug": "houndoom",
@@ -11640,7 +11640,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "tera-blast",
       "psychic-noise"
     ],
-    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/358.png"
+    "spriteUrl": "https://s-stats-platform-cdn.op.gg/pokemon/images/pokemon/mega-chimecho.png?image=q_auto:good,f_webp,w_950&v=1776680235"
   },
   {
     "slug": "absol",
@@ -15268,7 +15268,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "snowscape",
       "chilling-water"
     ],
-    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/478.png"
+    "spriteUrl": "https://s-stats-platform-cdn.op.gg/pokemon/images/pokemon/mega-froslass.png?image=q_auto:good,f_webp,w_950&v=1776680235"
   },
   {
     "slug": "rotom",
@@ -15363,51 +15363,331 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
     "slug": "rotom-heat",
     "num": 259,
     "name": "热量洛托姆",
-    "types": ["electric","fire"],
-    "stats": {"hp":50,"atk":65,"def":107,"spa":105,"spd":107,"spe":86},
-    "abilities": ["levitate"],
-    "learnset": ["thunder-shock","thunderbolt","thunder-wave","thunder","toxic","night-shade","double-team","confuse-ray","light-screen","reflect","swift","rest","substitute","thief","snore","protect","swagger","sleep-talk","pain-split","rain-dance","sunny-day","shadow-ball","will-o-wisp","facade","charge","helping-hand","trick","hyper-voice","dark-pulse","nasty-plot","discharge","charge-beam","electro-ball","foul-play","hex","volt-switch","endure","return","hidden-power","shock-wave","round","electroweb","tera-blast"],
-    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10011.png"
+    "types": [
+      "electric",
+      "fire"
+    ],
+    "stats": {
+      "hp": 50,
+      "atk": 65,
+      "def": 107,
+      "spa": 105,
+      "spd": 107,
+      "spe": 86
+    },
+    "abilities": [
+      "levitate"
+    ],
+    "learnset": [
+      "thunder-shock",
+      "thunderbolt",
+      "thunder-wave",
+      "thunder",
+      "toxic",
+      "night-shade",
+      "double-team",
+      "confuse-ray",
+      "light-screen",
+      "reflect",
+      "swift",
+      "rest",
+      "substitute",
+      "thief",
+      "snore",
+      "protect",
+      "swagger",
+      "sleep-talk",
+      "pain-split",
+      "rain-dance",
+      "sunny-day",
+      "shadow-ball",
+      "will-o-wisp",
+      "facade",
+      "charge",
+      "helping-hand",
+      "trick",
+      "hyper-voice",
+      "dark-pulse",
+      "nasty-plot",
+      "discharge",
+      "charge-beam",
+      "electro-ball",
+      "foul-play",
+      "hex",
+      "volt-switch",
+      "endure",
+      "return",
+      "hidden-power",
+      "shock-wave",
+      "round",
+      "electroweb",
+      "tera-blast"
+    ],
+    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10008.png"
   },
   {
     "slug": "rotom-wash",
     "num": 260,
     "name": "洗涤洛托姆",
-    "types": ["electric","water"],
-    "stats": {"hp":50,"atk":65,"def":107,"spa":105,"spd":107,"spe":86},
-    "abilities": ["levitate"],
-    "learnset": ["thunder-shock","thunderbolt","thunder-wave","thunder","toxic","night-shade","double-team","confuse-ray","light-screen","reflect","swift","rest","substitute","thief","snore","protect","swagger","sleep-talk","pain-split","rain-dance","sunny-day","shadow-ball","will-o-wisp","facade","charge","helping-hand","trick","hyper-voice","dark-pulse","nasty-plot","discharge","charge-beam","electro-ball","foul-play","hex","volt-switch","endure","return","hidden-power","shock-wave","round","electroweb","tera-blast"],
-    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10012.png"
+    "types": [
+      "electric",
+      "water"
+    ],
+    "stats": {
+      "hp": 50,
+      "atk": 65,
+      "def": 107,
+      "spa": 105,
+      "spd": 107,
+      "spe": 86
+    },
+    "abilities": [
+      "levitate"
+    ],
+    "learnset": [
+      "thunder-shock",
+      "thunderbolt",
+      "thunder-wave",
+      "thunder",
+      "toxic",
+      "night-shade",
+      "double-team",
+      "confuse-ray",
+      "light-screen",
+      "reflect",
+      "swift",
+      "rest",
+      "substitute",
+      "thief",
+      "snore",
+      "protect",
+      "swagger",
+      "sleep-talk",
+      "pain-split",
+      "rain-dance",
+      "sunny-day",
+      "shadow-ball",
+      "will-o-wisp",
+      "facade",
+      "charge",
+      "helping-hand",
+      "trick",
+      "hyper-voice",
+      "dark-pulse",
+      "nasty-plot",
+      "discharge",
+      "charge-beam",
+      "electro-ball",
+      "foul-play",
+      "hex",
+      "volt-switch",
+      "endure",
+      "return",
+      "hidden-power",
+      "shock-wave",
+      "round",
+      "electroweb",
+      "tera-blast"
+    ],
+    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10009.png"
   },
   {
     "slug": "rotom-frost",
     "num": 261,
     "name": "结冰洛托姆",
-    "types": ["electric","ice"],
-    "stats": {"hp":50,"atk":65,"def":107,"spa":105,"spd":107,"spe":86},
-    "abilities": ["levitate"],
-    "learnset": ["thunder-shock","thunderbolt","thunder-wave","thunder","toxic","night-shade","double-team","confuse-ray","light-screen","reflect","swift","rest","substitute","thief","snore","protect","swagger","sleep-talk","pain-split","rain-dance","sunny-day","shadow-ball","will-o-wisp","facade","charge","helping-hand","trick","hyper-voice","dark-pulse","nasty-plot","discharge","charge-beam","electro-ball","foul-play","hex","volt-switch","endure","return","hidden-power","shock-wave","round","electroweb","tera-blast"],
-    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10013.png"
+    "types": [
+      "electric",
+      "ice"
+    ],
+    "stats": {
+      "hp": 50,
+      "atk": 65,
+      "def": 107,
+      "spa": 105,
+      "spd": 107,
+      "spe": 86
+    },
+    "abilities": [
+      "levitate"
+    ],
+    "learnset": [
+      "thunder-shock",
+      "thunderbolt",
+      "thunder-wave",
+      "thunder",
+      "toxic",
+      "night-shade",
+      "double-team",
+      "confuse-ray",
+      "light-screen",
+      "reflect",
+      "swift",
+      "rest",
+      "substitute",
+      "thief",
+      "snore",
+      "protect",
+      "swagger",
+      "sleep-talk",
+      "pain-split",
+      "rain-dance",
+      "sunny-day",
+      "shadow-ball",
+      "will-o-wisp",
+      "facade",
+      "charge",
+      "helping-hand",
+      "trick",
+      "hyper-voice",
+      "dark-pulse",
+      "nasty-plot",
+      "discharge",
+      "charge-beam",
+      "electro-ball",
+      "foul-play",
+      "hex",
+      "volt-switch",
+      "endure",
+      "return",
+      "hidden-power",
+      "shock-wave",
+      "round",
+      "electroweb",
+      "tera-blast"
+    ],
+    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10010.png"
   },
   {
     "slug": "rotom-fan",
     "num": 262,
     "name": "旋转洛托姆",
-    "types": ["electric","flying"],
-    "stats": {"hp":50,"atk":65,"def":107,"spa":105,"spd":107,"spe":86},
-    "abilities": ["levitate"],
-    "learnset": ["thunder-shock","thunderbolt","thunder-wave","thunder","toxic","night-shade","double-team","confuse-ray","light-screen","reflect","swift","rest","substitute","thief","snore","protect","swagger","sleep-talk","pain-split","rain-dance","sunny-day","shadow-ball","will-o-wisp","facade","charge","helping-hand","trick","hyper-voice","dark-pulse","nasty-plot","discharge","charge-beam","electro-ball","foul-play","hex","volt-switch","endure","return","hidden-power","shock-wave","round","electroweb","tera-blast"],
-    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10014.png"
+    "types": [
+      "electric",
+      "flying"
+    ],
+    "stats": {
+      "hp": 50,
+      "atk": 65,
+      "def": 107,
+      "spa": 105,
+      "spd": 107,
+      "spe": 86
+    },
+    "abilities": [
+      "levitate"
+    ],
+    "learnset": [
+      "thunder-shock",
+      "thunderbolt",
+      "thunder-wave",
+      "thunder",
+      "toxic",
+      "night-shade",
+      "double-team",
+      "confuse-ray",
+      "light-screen",
+      "reflect",
+      "swift",
+      "rest",
+      "substitute",
+      "thief",
+      "snore",
+      "protect",
+      "swagger",
+      "sleep-talk",
+      "pain-split",
+      "rain-dance",
+      "sunny-day",
+      "shadow-ball",
+      "will-o-wisp",
+      "facade",
+      "charge",
+      "helping-hand",
+      "trick",
+      "hyper-voice",
+      "dark-pulse",
+      "nasty-plot",
+      "discharge",
+      "charge-beam",
+      "electro-ball",
+      "foul-play",
+      "hex",
+      "volt-switch",
+      "endure",
+      "return",
+      "hidden-power",
+      "shock-wave",
+      "round",
+      "electroweb",
+      "tera-blast"
+    ],
+    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10011.png"
   },
   {
     "slug": "rotom-mow",
     "num": 263,
     "name": "割草洛托姆",
-    "types": ["electric","grass"],
-    "stats": {"hp":50,"atk":65,"def":107,"spa":105,"spd":107,"spe":86},
-    "abilities": ["levitate"],
-    "learnset": ["thunder-shock","thunderbolt","thunder-wave","thunder","toxic","night-shade","double-team","confuse-ray","light-screen","reflect","swift","rest","substitute","thief","snore","protect","swagger","sleep-talk","pain-split","rain-dance","sunny-day","shadow-ball","will-o-wisp","facade","charge","helping-hand","trick","hyper-voice","dark-pulse","nasty-plot","discharge","charge-beam","electro-ball","foul-play","hex","volt-switch","endure","return","hidden-power","shock-wave","round","electroweb","tera-blast"],
-    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10015.png"
+    "types": [
+      "electric",
+      "grass"
+    ],
+    "stats": {
+      "hp": 50,
+      "atk": 65,
+      "def": 107,
+      "spa": 105,
+      "spd": 107,
+      "spe": 86
+    },
+    "abilities": [
+      "levitate"
+    ],
+    "learnset": [
+      "thunder-shock",
+      "thunderbolt",
+      "thunder-wave",
+      "thunder",
+      "toxic",
+      "night-shade",
+      "double-team",
+      "confuse-ray",
+      "light-screen",
+      "reflect",
+      "swift",
+      "rest",
+      "substitute",
+      "thief",
+      "snore",
+      "protect",
+      "swagger",
+      "sleep-talk",
+      "pain-split",
+      "rain-dance",
+      "sunny-day",
+      "shadow-ball",
+      "will-o-wisp",
+      "facade",
+      "charge",
+      "helping-hand",
+      "trick",
+      "hyper-voice",
+      "dark-pulse",
+      "nasty-plot",
+      "discharge",
+      "charge-beam",
+      "electro-ball",
+      "foul-play",
+      "hex",
+      "volt-switch",
+      "endure",
+      "return",
+      "hidden-power",
+      "shock-wave",
+      "round",
+      "electroweb",
+      "tera-blast"
+    ],
+    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/10012.png"
   },
   {
     "slug": "serperior",
@@ -15768,7 +16048,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "hard-press",
       "temper-flare"
     ],
-    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/500.png"
+    "spriteUrl": "https://s-stats-platform-cdn.op.gg/pokemon/images/pokemon/mega-emboar.png?image=q_auto:good,f_webp,w_950&v=1776680235"
   },
   {
     "slug": "samurott",
@@ -16670,7 +16950,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "scorching-sands",
       "tera-blast"
     ],
-    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/530.png"
+    "spriteUrl": "https://s-stats-platform-cdn.op.gg/pokemon/images/pokemon/mega-excadrill.png?image=q_auto:good,f_webp,w_950&v=1776680235"
   },
   {
     "slug": "audino",
@@ -18140,7 +18420,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "trailblaze",
       "temper-flare"
     ],
-    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/609.png"
+    "spriteUrl": "https://s-stats-platform-cdn.op.gg/pokemon/images/pokemon/mega-chandelure.png?image=q_auto:good,f_webp,w_950&v=1776680235"
   },
   {
     "slug": "beartic",
@@ -18718,7 +18998,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "tera-blast",
       "hard-press"
     ],
-    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/623.png"
+    "spriteUrl": "https://s-stats-platform-cdn.op.gg/pokemon/images/pokemon/mega-golurk.png?image=q_auto:good,f_webp,w_950&v=1776680235"
   },
   {
     "slug": "hydreigon",
@@ -19228,7 +19508,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "tera-blast",
       "trailblaze"
     ],
-    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/652.png"
+    "spriteUrl": "https://s-stats-platform-cdn.op.gg/pokemon/images/pokemon/mega-chesnaught.png?image=q_auto:good,f_webp,w_950&v=1776680235"
   },
   {
     "slug": "delphox",
@@ -19487,7 +19767,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "tera-blast",
       "psychic-noise"
     ],
-    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/655.png"
+    "spriteUrl": "https://s-stats-platform-cdn.op.gg/pokemon/images/pokemon/mega-delphox.png?image=q_auto:good,f_webp,w_950&v=1776680235"
   },
   {
     "slug": "greninja",
@@ -19720,7 +20000,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "chilling-water",
       "upper-hand"
     ],
-    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/658.png"
+    "spriteUrl": "https://s-stats-platform-cdn.op.gg/pokemon/images/pokemon/mega-greninja.png?image=q_auto:good,f_webp,w_950&v=1776680235"
   },
   {
     "slug": "diggersby",
@@ -20199,7 +20479,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "chilling-water",
       "alluring-voice"
     ],
-    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/669.png"
+    "spriteUrl": "https://s-stats-platform-cdn.op.gg/pokemon/images/pokemon/mega-floette.png?image=q_auto:good,f_webp,w_950&v=1776680235"
   },
   {
     "slug": "florges",
@@ -20736,7 +21016,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "alluring-voice",
       "psychic-noise"
     ],
-    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/678.png"
+    "spriteUrl": "https://s-stats-platform-cdn.op.gg/pokemon/images/pokemon/mega-meowstic.png?image=q_auto:good,f_webp,w_950&v=1776680235"
   },
   {
     "slug": "aegislash",
@@ -21762,7 +22042,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "trailblaze",
       "upper-hand"
     ],
-    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/701.png"
+    "spriteUrl": "https://s-stats-platform-cdn.op.gg/pokemon/images/pokemon/mega-hawlucha.png?image=q_auto:good,f_webp,w_950&v=1776680235"
   },
   {
     "slug": "dedenne",
@@ -23541,7 +23821,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "hard-press",
       "upper-hand"
     ],
-    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/740.png"
+    "spriteUrl": "https://s-stats-platform-cdn.op.gg/pokemon/images/pokemon/mega-crabominable.png?image=q_auto:good,f_webp,w_950&v=1776680235"
   },
   {
     "slug": "lycanroc",
@@ -24700,7 +24980,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "scale-shot",
       "lash-out"
     ],
-    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/780.png"
+    "spriteUrl": "https://s-stats-platform-cdn.op.gg/pokemon/images/pokemon/mega-drampa.png?image=q_auto:good,f_webp,w_950&v=1776680235"
   },
   {
     "slug": "kommo-o",
@@ -26945,7 +27225,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "trailblaze",
       "temper-flare"
     ],
-    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/953.png"
+    "spriteUrl": "https://s-stats-platform-cdn.op.gg/pokemon/images/pokemon/mega-scovillain.png?image=q_auto:good,f_webp,w_950&v=1776680235"
   },
   {
     "slug": "espathra",
@@ -27397,7 +27677,7 @@ window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
       "tera-blast",
       "mortal-spin"
     ],
-    "spriteUrl": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/970.png"
+    "spriteUrl": "https://s-stats-platform-cdn.op.gg/pokemon/images/pokemon/mega-glimmora.png?image=q_auto:good,f_webp,w_950&v=1776680235"
   },
   {
     "slug": "farigiraf",
