@@ -1488,7 +1488,7 @@ async function selectBpkmFromDrop(pkmId, cnName, slug=''){
     );
     // 形态：PKM_CHAMPIONS_DATA 中同一宝可梦的不同形态直接列出
     const baseName=localPkm.slug.replace(/^mega-/,'').replace(/-(mega|alolan|galarian|hisuian|paldean|x|y)$/,'');
-    const varieties=_pkmPC
+    const varieties=PKM_LIST
       .filter(p=>p.slug===localPkm.slug||p.slug.startsWith(baseName+'-')||p.slug===baseName)
       .map(p=>({is_default:p.slug===baseName||p.slug===localPkm.slug,pokemon:{name:p.slug}}));
     if(varieties.length>1){
@@ -2044,7 +2044,7 @@ function analyzeMatchups(){
     const name=document.getElementById(`bopp-name-${i}`)?.value.trim()||'';
     const type1=document.getElementById(`bopp-t1-${i}`)?.value||'';
     const type2=document.getElementById(`bopp-t2-${i}`)?.value||'';
-    const lp=name?_pkmPC.find(p=>p.name===name):null;
+    const lp=name?PKM_LIST.find(p=>p.name===name):null;
     battleOppPkm[i]={name,type1,type2,base:lp?.stats||{},slug:lp?.slug||''};
   });
   const opp=battleOppPkm.filter(p=>p.name||p.type1);
@@ -2346,7 +2346,7 @@ function renderBattleRec(scored, opp){
     const role=classifyRole(pkm);
     // 特性徽章
     const ability=pkm.ability||'';
-    const abilityZH=_pkmPC.find(p=>p.slug===pkm.slug)?.abilities?.indexOf(ability)>=0?ability:'';
+    const abilityZH=PKM_LIST.find(p=>p.slug===pkm.slug)?.abilities?.indexOf(ability)>=0?ability:'';
     const abilityLabel=ability?(()=>{
       if(ABILITY_TYPE_IMMUNE[ability]) return{txt:'属性免疫',cls:'ab-immune'};
       if(ABILITY_WEATHER_SET[ability]) return{txt:'天气设置',cls:'ab-weather'};
