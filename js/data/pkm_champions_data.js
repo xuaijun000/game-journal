@@ -1,6 +1,8 @@
 // 自动生成 — Pokemon Champions 宝可梦数据 (258 只)
 // 来源: op.gg + PokeAPI，勿手动修改
-window.PKM_CHAMPIONS_DATA = [
+// 注册到对战数据注册表（battle_registry.js 须先加载）
+(window.BATTLE_REGISTRY['champions'] = window.BATTLE_REGISTRY['champions'] || {});
+window.PKM_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].pkm = [
   {
     "slug": "venusaur",
     "num": 1,

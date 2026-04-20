@@ -198,6 +198,14 @@
 .bpkm-ability-chip:hover{border-color:var(--acc);color:var(--t)}
 .bpkm-ability-chip.active{background:rgba(200,144,64,.15);border-color:var(--acc);color:var(--acc);font-weight:600}
 
+/* ── 道具搜索下拉 ── */
+.bpkm-item-drop-cat{padding:3px 10px;font-size:.62rem;color:var(--t3);font-family:'DM Mono',monospace;background:var(--bg2);border-bottom:1px solid var(--b);letter-spacing:.06em;text-transform:uppercase}
+.bpkm-item-drop-item{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px;padding:6px 10px;cursor:pointer;transition:background .1s;border-bottom:1px solid var(--b)}
+.bpkm-item-drop-item:hover{background:var(--bg3)}
+.bpkm-item-name{font-size:.82rem;color:var(--t);font-weight:500;min-width:90px}
+.bpkm-item-en{font-size:.65rem;color:var(--t3);font-family:'DM Mono',monospace}
+.bpkm-item-eff{font-size:.68rem;color:var(--t2);flex:1;text-align:right;opacity:.75}
+
 /* ── 数据来源说明 ── */
 .battle-datasrc-note{font-size:.65rem;color:var(--t3);font-family:'DM Mono',monospace;padding:6px 14px 4px;display:flex;align-items:center;gap:8px}
 .battle-datasrc-link{color:var(--acc);text-decoration:none;border-bottom:1px dashed rgba(200,144,64,.4)}
@@ -234,6 +242,23 @@
 .spd-win{color:#2ed573;font-weight:700}
 .spd-lose{color:#ff6b81}
 .spd-unclear{color:var(--t3);font-style:italic}
+.spd-ability-tag{display:inline-block;font-size:.6rem;color:#ffd32a;background:rgba(255,211,42,.12);border:1px solid rgba(255,211,42,.3);border-radius:3px;padding:0 4px;margin-left:4px;vertical-align:middle}
+.spd-weather-note{font-size:.72rem;color:#ffa502;padding:4px 0 6px;margin-bottom:2px}
+
+/* ── 特性徽章 ── */
+.battle-ability-tag{display:inline-block;font-size:.6rem;border-radius:3px;padding:1px 5px;margin-left:5px;vertical-align:middle;font-weight:600;cursor:default}
+.ab-immune{color:#7bed9f;background:rgba(123,237,159,.12);border:1px solid rgba(123,237,159,.3)}
+.ab-weather{color:#70a1ff;background:rgba(112,161,255,.12);border:1px solid rgba(112,161,255,.3)}
+.ab-speed{color:#ffd32a;background:rgba(255,211,42,.12);border:1px solid rgba(255,211,42,.3)}
+.ab-survive{color:#a29bfe;background:rgba(162,155,254,.12);border:1px solid rgba(162,155,254,.3)}
+.ab-atk{color:#ff6b81;background:rgba(255,107,129,.12);border:1px solid rgba(255,107,129,.3)}
+
+/* ── 恐吓/生存警告 ── */
+.warn-intimidate{color:#ffa502!important;font-style:italic}
+.warn-intimidate::before{content:'▸';color:#ffa502!important}
+
+/* ── 伤害估算生存标注 ── */
+.dmg-survive-note{display:inline-block;font-size:.62rem;color:#a29bfe;background:rgba(162,155,254,.12);border:1px solid rgba(162,155,254,.3);border-radius:3px;padding:0 4px;margin-left:4px;cursor:default}
 
 /* ── 响应式 ── */
 @media(max-width:700px){

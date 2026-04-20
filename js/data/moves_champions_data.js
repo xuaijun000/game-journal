@@ -1,6 +1,8 @@
 // 自动生成 — Pokemon Champions 技能数据 (919 个)
 // 来源: op.gg + PokeAPI，勿手动修改
-window.MOVES_CHAMPIONS_DATA = [
+// 注册到对战数据注册表（battle_registry.js 须先加载）
+(window.BATTLE_REGISTRY['champions'] = window.BATTLE_REGISTRY['champions'] || {});
+window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
   {
     "slug": "pound",
     "name": "拍击",

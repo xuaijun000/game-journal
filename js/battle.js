@@ -46,13 +46,24 @@ const FORM_SUFFIX_ZH={
   'family':'家族形态',
   'female':'♀','male':'♂',
 };
-// 使用 PKM_CHAMPIONS_DATA / MOVES_CHAMPIONS_DATA（由 js/data/ 预加载）
-const MOVES_DATA = window.MOVES_CHAMPIONS_DATA || [];
-// PKM Champions 宝可梦快速查找表
-const _pkmPC = window.PKM_CHAMPIONS_DATA || [];
-const PKM_PC_BY_SLUG = {};
-const PKM_PC_BY_NUM  = {};
-_pkmPC.forEach(p => { PKM_PC_BY_SLUG[p.slug]=p; if(p.num) PKM_PC_BY_NUM[p.num]=p; });
+// 对战数据 — 通过 loadBattleGameData(gameId) 从注册表加载，支持多版本隔离
+let MOVES_DATA = [];
+let PKM_PC_BY_SLUG = {};
+let PKM_PC_BY_NUM  = {};
+let ITEMS_DATA = [];
+let ITEMS_BY_NAME = {};
+
+function loadBattleGameData(gameId) {
+  const reg = (window.BATTLE_REGISTRY || {})[gameId] || {};
+  MOVES_DATA = reg.moves || [];
+  const pkmList = reg.pkm || [];
+  PKM_PC_BY_SLUG = {};
+  PKM_PC_BY_NUM  = {};
+  pkmList.forEach(p => { PKM_PC_BY_SLUG[p.slug]=p; if(p.num) PKM_PC_BY_NUM[p.num]=p; });
+  ITEMS_DATA = reg.items || [];
+  ITEMS_BY_NAME = {};
+  ITEMS_DATA.forEach(it => { ITEMS_BY_NAME[it.name]=it; });
+}
 
 // ── 以下旧 MOVES_DATA 硬编码已移除，保留占位以避免引用错误 ──
 const _MOVES_DATA_LEGACY=[
@@ -772,6 +783,154 @@ const TYPE_EFF_MATRIX=[
 ];
 const B_TYPE_IDX={};B_TYPES.forEach((t,i)=>B_TYPE_IDX[t]=i);
 
+/* ──────── 特性数据库 ──────── */
+// A类：属性免疫（直接改变相克矩阵）
+const ABILITY_TYPE_IMMUNE={
+  'levitate':      ['ground'],
+  'flash-fire':    ['fire'],
+  'water-absorb':  ['water'],
+  'dry-skin':      ['water'],
+  'volt-absorb':   ['electric'],
+  'motor-drive':   ['electric'],
+  'lightning-rod': ['electric'],
+  'sap-sipper':    ['grass'],
+  'earth-eater':   ['ground'],
+  'storm-drain':   ['water'],
+};
+// B类：防御端伤害减免
+const ABILITY_DEF_MOD={
+  'thick-fat':      {types:['fire','ice'],  mul:0.5},
+  'heatproof':      {types:['fire'],        mul:0.5},
+  'water-bubble':   {types:['fire'],        mul:0.5},
+  'purifying-salt': {types:['ghost'],       mul:0.5},
+  'solid-rock':     {superEff:0.75},
+  'filter':         {superEff:0.75},
+  'multiscale':     {fullHp:0.5, note:'满血时受到伤害减半'},
+  'fur-coat':       {physMul:0.5},
+};
+// C类：进攻端增幅（用于 calcDamageEst）
+const ABILITY_ATK_MOD={
+  'adaptability':  {stabMul:2.0},
+  'huge-power':    {atkStatMul:2.0}, 'pure-power':{atkStatMul:2.0},
+  'hustle':        {atkStatMul:1.5},
+  'sheer-force':   {globalMul:1.3},
+  'tough-claws':   {physMul:1.3},
+  'technician':    {lowPwrMul:1.5, threshold:60},
+  'iron-fist':     {punchMul:1.2},
+  'strong-jaw':    {biteMul:1.5},
+  'reckless':      {recoilMul:1.2},
+  'sharpness':     {sliceMul:1.5},
+  'mega-launcher': {pulseMul:1.5},
+  'water-bubble':  {typeMul:{water:2.0}},
+  'fairy-aura':    {typeMul:{fairy:1.33}},
+  'solar-power':   {sunSpaMul:1.5},
+  'parental-bond': {globalMul:1.25},
+  'protean':       {alwaysStab:true},
+  'pixilate':      {normalConvert:'fairy',   convertMul:1.2},
+  'refrigerate':   {normalConvert:'ice',     convertMul:1.2},
+  'aerilate':      {normalConvert:'flying',  convertMul:1.2},
+  'dragonize':     {normalConvert:'dragon',  convertMul:1.0},
+  'sand-force':    {sandTypes:['rock','ground','steel'], sandMul:1.3},
+  'analytic':      {lastMul:1.3},
+};
+// 技能分类标签（用于 iron-fist / strong-jaw / sharpness 等）
+const MOVE_PUNCH_SET=new Set(['ice-punch','fire-punch','thunder-punch','mach-punch','bullet-punch','shadow-punch','focus-punch','hammer-arm','drain-punch','power-up-punch','sky-uppercut','dizzy-punch','sucker-punch','dynamic-punch','plasma-fists','comet-punch','mega-punch']);
+const MOVE_BITE_SET=new Set(['bite','crunch','hyper-fang','super-fang','thunder-fang','ice-fang','fire-fang','poison-fang','psychic-fangs','fishious-rend','jaw-lock']);
+const MOVE_SLICE_SET=new Set(['cut','slash','aerial-ace','night-slash','leaf-blade','x-scissor','cross-poison','sacred-sword','secret-sword','razor-shell','solar-blade','ceaseless-edge','kowtow-cleave','fury-cutter','air-slash','psycho-cut']);
+const MOVE_PULSE_SET=new Set(['aura-sphere','water-pulse','dark-pulse','dragon-pulse','heal-pulse','origin-pulse','terrain-pulse','tera-blast']);
+const MOVE_RECOIL_SET=new Set(['double-edge','flare-blitz','brave-bird','take-down','volt-tackle','head-smash','wild-charge','wood-hammer','head-charge','high-jump-kick','jump-kick']);
+// D类：速度修正
+const ABILITY_SPD_MOD={
+  'swift-swim':  {weather:'rain',  mul:2.0},
+  'chlorophyll': {weather:'sun',   mul:2.0},
+  'sand-rush':   {weather:'sand',  mul:2.0},
+  'slush-rush':  {weather:'snow',  mul:2.0},
+  'surge-surfer':{terrain:'electric', mul:2.0},
+  'speed-boost': {perTurn:true,    note:'每回合速度+1档'},
+  'unburden':    {onItemUse:true,  note:'消耗道具后速度×2'},
+  'quick-feet':  {onStatus:1.5,   note:'异常状态时速度×1.5'},
+  'quick-draw':  {priority30:true, note:'30%概率先制行动'},
+};
+// E类：天气设置
+const ABILITY_WEATHER_SET={'drought':'sun','drizzle':'rain','sand-stream':'sand','snow-warning':'snow'};
+// G类：生存特性（影响OHKO判断）
+const ABILITY_SURVIVE={
+  'sturdy':   '满血时必定以1HP生还任何一击',
+  'multiscale':'满血时受到伤害减半',
+  'disguise': '第一击必定格挡（伤害无效）',
+};
+// 破格类（无视防御特性）
+const ABILITY_BREAKER=new Set(['mold-breaker','turboblaze','teravolt']);
+
+/* ── 特性辅助函数 ── */
+// 获取对方宝可梦数据库中的特性列表
+function getOppAbilityList(oppPkm){
+  return oppPkm.slug?(PKM_PC_BY_SLUG[oppPkm.slug]?.abilities||[]):[];
+}
+// 获取对方宝可梦"最可能的"特性（取第一个，即普通特性）
+function resolveOppAbility(oppPkm){
+  const list=getOppAbilityList(oppPkm);
+  return list[0]||'';
+}
+// 对方宝可梦的所有特性中，能免疫哪些属性
+function getOppPossibleImmunes(oppPkm){
+  const list=getOppAbilityList(oppPkm);
+  const immunes=new Set();
+  list.forEach(a=>(ABILITY_TYPE_IMMUNE[a]||[]).forEach(t=>immunes.add(t)));
+  return immunes;
+}
+// 计算攻击方特性对技能的增幅倍率
+function calcAtkAbilityMul(myPkm, move, activeWeather=''){
+  const ability=myPkm.ability||'';
+  const mod=ABILITY_ATK_MOD[ability];
+  if(!mod)return 1.0;
+  const pwr=move.power||0;
+  const slug=move.slug||move.nameEn?.toLowerCase().replace(/ /g,'-')||'';
+  if(mod.globalMul) return mod.globalMul;
+  if(mod.atkStatMul) return 1.0; // handled separately in stat calc
+  if(mod.lowPwrMul && pwr>0 && pwr<=mod.threshold) return mod.lowPwrMul;
+  if(mod.physMul && move.cat==='physical') return mod.physMul; // tough-claws
+  if(mod.punchMul && MOVE_PUNCH_SET.has(slug)) return mod.punchMul;
+  if(mod.biteMul  && MOVE_BITE_SET.has(slug))  return mod.biteMul;
+  if(mod.sliceMul && MOVE_SLICE_SET.has(slug)) return mod.sliceMul;
+  if(mod.pulseMul && MOVE_PULSE_SET.has(slug)) return mod.pulseMul;
+  if(mod.recoilMul&& MOVE_RECOIL_SET.has(slug))return mod.recoilMul;
+  if(mod.typeMul && mod.typeMul[move.type]) return mod.typeMul[move.type];
+  if(mod.sandTypes && mod.sandTypes.includes(move.type) && activeWeather==='sand') return mod.sandMul;
+  if(mod.sunSpaMul && move.cat==='special' && activeWeather==='sun') return mod.sunSpaMul;
+  if(mod.lastMul) return mod.lastMul; // analytic: approximate
+  return 1.0;
+}
+// 获取攻击方特性转换后的技能属性（pixilate等）
+function getMoveTypeWithAbility(myPkm, move){
+  const ability=myPkm.ability||'';
+  const mod=ABILITY_ATK_MOD[ability];
+  if(mod?.normalConvert && move.type==='normal') return {type:mod.normalConvert, convertMul:mod.convertMul||1.0};
+  return {type:move.type, convertMul:1.0};
+}
+// 检测己方队伍活跃天气（有天气设置特性的宝可梦）
+function detectMyWeather(myPkmList){
+  for(const p of myPkmList){
+    const w=ABILITY_WEATHER_SET[p.ability||''];
+    if(w)return w;
+  }
+  return '';
+}
+// 检测对方队伍可能设置的天气
+function detectOppWeather(oppList){
+  const weathers=new Set();
+  oppList.forEach(op=>getOppAbilityList(op).forEach(a=>{const w=ABILITY_WEATHER_SET[a];if(w)weathers.add(w);}));
+  return [...weathers];
+}
+// 含天气的有效速度
+function getEffectiveSpeed(pkm, activeWeather=''){
+  const base=pkm.base?.spe||0;
+  if(!base)return 0;
+  const mod=ABILITY_SPD_MOD[pkm.ability||''];
+  if(mod?.weather && mod.weather===activeWeather) return base*mod.mul;
+  return base;
+}
+
 // 性格修正 — [HP, 攻击, 防御, 特攻, 特防, 速度]
 const NATURES_ZH={
   '勤奋':[1,1,1,1,1,1],'温顺':[1,1,1,1,1,1],'认真':[1,1,1,1,1,1],'害羞':[1,1,1,1,1,1],'古怪':[1,1,1,1,1,1],
@@ -797,6 +956,7 @@ let battleAnalysisMyTeam=null;
 
 /* ──────── 初始化 ──────── */
 async function initBattle(){
+  loadBattleGameData('champions');
   renderBattleOppSlots();
   await loadBattleTeams();
   renderTeamList();
@@ -1048,7 +1208,11 @@ function renderBattleSlotForm(){
         </div>
         <div class="bpkm-inp-group">
           <span class="bpkm-inp-label">持有道具</span>
-          <input class="bpkm-inp" id="bpkm-item" placeholder="例：讲究头带" value="${esc(p.item||'')}">
+          <div style="position:relative">
+            <input class="bpkm-inp" id="bpkm-item" placeholder="搜索道具名称…" value="${esc(p.item||'')}"
+              autocomplete="off" oninput="onBpkmItemInput()" onfocus="onBpkmItemInput()" onblur="setTimeout(()=>hideBpkmItemDrop(),180)">
+            <div id="bpkm-item-drop" class="bpkm-drop" style="display:none"></div>
+          </div>
         </div>
         <div class="bpkm-inp-group">
           <span class="bpkm-inp-label">性格</span>
@@ -1522,6 +1686,54 @@ function selectBpkmAbility(name){
   document.querySelectorAll('.bpkm-ability-chip').forEach(c=>c.classList.toggle('active',c.textContent===name));
 }
 
+/* ──────── 道具搜索下拉 ──────── */
+const ITEM_CAT_ZH={hold:'携带道具', mega:'超级进化石', berry:'树果'};
+function onBpkmItemInput(){
+  const inp=document.getElementById('bpkm-item');
+  const drop=document.getElementById('bpkm-item-drop');
+  if(!inp||!drop)return;
+  const query=(inp.value||'').trim().toLowerCase();
+  // 过滤：中文名/英文名/slug 均可检索
+  let results=ITEMS_DATA.filter(it=>
+    it.name.includes(query)||
+    it.nameEn.toLowerCase().includes(query)||
+    it.slug.includes(query)
+  );
+  if(!query){
+    // 无输入时：优先展示携带道具，再超进化石，再树果（最多30条）
+    const order={hold:0,mega:1,berry:2};
+    results=[...results].sort((a,b)=>order[a.category]-order[b.category]).slice(0,30);
+  } else {
+    results=results.slice(0,20);
+  }
+  if(!results.length){drop.style.display='none';return;}
+  // 按类别分组渲染
+  let lastCat='';
+  const html=results.map(it=>{
+    let header='';
+    if(it.category!==lastCat){
+      lastCat=it.category;
+      header=`<div class="bpkm-item-drop-cat">${ITEM_CAT_ZH[it.category]||it.category}</div>`;
+    }
+    return header+`<div class="bpkm-drop-item bpkm-item-drop-item" onclick="selectBpkmItem('${esc(it.name)}')">
+      <span class="bpkm-item-name">${esc(it.name)}</span>
+      <span class="bpkm-item-en">${esc(it.nameEn)}</span>
+      <span class="bpkm-item-eff">${esc(it.effect)}</span>
+    </div>`;
+  }).join('');
+  drop.innerHTML=html;
+  drop.style.display='block';
+}
+function selectBpkmItem(name){
+  const inp=document.getElementById('bpkm-item');
+  if(inp){inp.value=name;}
+  hideBpkmItemDrop();
+}
+function hideBpkmItemDrop(){
+  const drop=document.getElementById('bpkm-item-drop');
+  if(drop)drop.style.display='none';
+}
+
 /* ──────── 保存队伍 ──────── */
 async function saveBattleTeam(){
   if(!battleEditTeam)return;
@@ -1688,20 +1900,47 @@ function getTypeEff(atkType, defType1, defType2){
   return m;
 }
 
-// 获取我方宝可梦使用其最优技能攻击对方的最高倍率；对方属性未知时返回 null
-function getBestMoveEff(myPkm, oppPkm){
-  if(!oppPkm.type1&&!oppPkm.type2)return null;
-  const moves=[myPkm.move1,myPkm.move2,myPkm.move3,myPkm.move4].filter(m=>m&&m.type&&m.type!=='status'&&m.power>0);
-  if(!moves.length)return getTypeEff(myPkm.type1,oppPkm.type1,oppPkm.type2);
-  return Math.max(...moves.map(m=>getTypeEff(m.type,oppPkm.type1,oppPkm.type2)));
+// 计算攻击某属性对防御方（含特性免疫）的有效倍率
+function getTypeEffWithAbility(atkType, oppPkm, atkAbility=''){
+  // 破格特性：无视防御方特性
+  if(ABILITY_BREAKER.has(atkAbility)){
+    return getTypeEff(atkType, oppPkm.type1, oppPkm.type2);
+  }
+  // 使用对方"最可能"的特性（首个特性）判断免疫
+  const defAbility=oppPkm.ability||resolveOppAbility(oppPkm);
+  if((ABILITY_TYPE_IMMUNE[defAbility]||[]).includes(atkType)) return 0;
+  return getTypeEff(atkType, oppPkm.type1, oppPkm.type2);
 }
 
-// 对方攻击我方的最高倍率（简化，只算属性相克）
+// 获取我方宝可梦使用其最优技能攻击对方的最高倍率（含特性修正）；对方属性未知时返回 null
+function getBestMoveEff(myPkm, oppPkm){
+  if(!oppPkm.type1&&!oppPkm.type2)return null;
+  const atkAbility=myPkm.ability||'';
+  const atkMod=ABILITY_ATK_MOD[atkAbility]||{};
+  const moves=[myPkm.move1,myPkm.move2,myPkm.move3,myPkm.move4].filter(m=>m&&m.type&&m.type!=='status'&&m.power>0);
+  if(!moves.length){
+    // 用本体属性估算
+    return getTypeEffWithAbility(myPkm.type1, oppPkm, atkAbility);
+  }
+  return Math.max(...moves.map(m=>{
+    // 属性转换特性（像素精灵等）
+    const {type:moveType}=getMoveTypeWithAbility(myPkm, m);
+    return getTypeEffWithAbility(moveType, oppPkm, atkAbility);
+  }));
+}
+
+// 对方攻击我方的最高倍率（含我方特性免疫）
 function getOppBestEff(oppPkm, myPkm){
-  // 对方信息有限，只能用属性判断
-  const att1=getTypeEff(oppPkm.type1,myPkm.type1,myPkm.type2);
-  const att2=oppPkm.type2?getTypeEff(oppPkm.type2,myPkm.type1,myPkm.type2):0;
-  return Math.max(att1,att2,0.25);
+  const myAbility=myPkm.ability||'';
+  const myImmune=ABILITY_TYPE_IMMUNE[myAbility]||[];
+  const getEff=(atkType)=>{
+    if(!atkType)return 0;
+    if(myImmune.includes(atkType))return 0;
+    return getTypeEff(atkType, myPkm.type1, myPkm.type2);
+  };
+  const att1=getEff(oppPkm.type1);
+  const att2=oppPkm.type2?getEff(oppPkm.type2):0;
+  return Math.max(att1, att2, 0.25);
 }
 
 /* ── Champions 伤害估算 ──
@@ -1711,31 +1950,90 @@ function getOppBestEff(oppPkm, myPkm){
  * 持有道具修正（简化）：讲究系→×1.5, 生命球→×1.3
  */
 // AP_MOD removed — Champions uses PP, not AP action points
+// 兼容旧格式（全局倍率），优先用 calcItemDamageMul
 const ITEM_MOD={'讲究头带':1.5,'讲究眼镜':1.5,'讲究围巾':1.5,'生命球':1.3,'火焰宝珠':1.2,'强化道具':1.1};
+// 计算持有道具对伤害的倍率（支持属性限定/物理特殊限定）
+function calcItemDamageMul(itemName, moveType, moveCat){
+  if(!itemName)return 1.0;
+  // 优先从 ITEMS_DATA 查
+  const it=ITEMS_BY_NAME[itemName];
+  if(it?.damageMul){
+    const m=it.damageMul;
+    if(m.typeMul && m.typeMul[moveType]) return m.typeMul[moveType];
+    if(m.globalMul) return m.globalMul;
+    if(m.physMul && moveCat==='physical') return m.physMul;
+    if(m.specMul && moveCat==='special')  return m.specMul;
+    return 1.0;
+  }
+  // 回退旧 ITEM_MOD（讲究头带按物理/特殊分类）
+  if(itemName==='讲究头带'  && moveCat==='physical') return 1.5;
+  if(itemName==='讲究眼镜'  && moveCat==='special')  return 1.5;
+  if(itemName==='讲究围巾')  return 1.0; // 仅加速，不加伤害
+  return ITEM_MOD[itemName]||1.0;
+}
 
-function calcDamageEst(myPkm, oppPkm, move){
+function calcDamageEst(myPkm, oppPkm, move, activeWeather=''){
   if(!move||!move.power||move.cat==='status')return null;
   const level=myPkm.level||50;
   const isPhys=move.cat==='physical';
-  // 攻防能力值（如果没有录入则用种族值估算）
-  const atkStat=isPhys
+  const atkAbility=myPkm.ability||'';
+  const defAbility=oppPkm.ability||resolveOppAbility(oppPkm);
+  const atkMod=ABILITY_ATK_MOD[atkAbility]||{};
+
+  // ── 攻防能力值 ──
+  let rawAtk=isPhys
     ?calcActualStatVal(myPkm.base?.atk||70,31,myPkm.ev?.atk||0,myPkm.nature,'atk',level)
     :calcActualStatVal(myPkm.base?.spa||70,31,myPkm.ev?.spa||0,myPkm.nature,'spa',level);
-  const defStat=isPhys
+  // C类：攻击能力值倍率（大力士/纯力/活泼）
+  if(atkMod.atkStatMul && isPhys) rawAtk=Math.floor(rawAtk*atkMod.atkStatMul);
+  if(atkMod.atkStatMul && !isPhys) rawAtk=Math.floor(rawAtk*atkMod.atkStatMul); // pure-power only phys, but simplify
+
+  let defStat=isPhys
     ?calcActualStatVal(oppPkm.base?.def||70,15,0,'','def',level)
     :calcActualStatVal(oppPkm.base?.spd||70,15,0,'','spd',level);
+  // B类：毛皮大衣→物理防御×2（等效伤害×0.5）
+  const defMod=ABILITY_DEF_MOD[defAbility];
+  if(defMod?.physMul && isPhys) defStat=Math.floor(defStat/defMod.physMul);
+
   const oppHp=calcActualStatVal(oppPkm.base?.hp||70,15,0,'','hp',level);
 
+  // ── 技能属性（含转换特性）──
+  const {type:moveType, convertMul}=getMoveTypeWithAbility(myPkm, move);
   let pwr=move.power;
-  // 属性相克
-  const typeMul=getTypeEff(move.type,oppPkm.type1,oppPkm.type2);
-  // 道具修正
-  let itemMul=ITEM_MOD[myPkm.item]||1.0;
-  // 技能属性与本体属性一致时 STAB 1.5x
-  const stab=(move.type===myPkm.type1||move.type===myPkm.type2)?1.5:1.0;
-  const baseDmg=Math.floor((Math.floor((2*level/5+2)*pwr*atkStat/defStat/50)+2)*typeMul*stab*itemMul);
+
+  // ── 属性相克（含免疫特性）──
+  const typeMul=getTypeEffWithAbility(moveType, oppPkm, atkAbility);
+  if(typeMul===0) return{damage:0,pct:0,typeMul:0};
+
+  // ── B类：防御特性减免 ──
+  let defAbilMul=1.0;
+  if(defMod){
+    if(defMod.types?.includes(moveType)) defAbilMul*=defMod.mul;
+    if(defMod.superEff && typeMul>=2) defAbilMul*=defMod.superEff;
+    // multiscale / fullHp：标注但不强制减伤（无法确定当前HP）
+  }
+
+  // ── 道具修正 ──
+  const itemMul=calcItemDamageMul(myPkm.item, moveType, move.cat);
+
+  // ── STAB（含适应力/变幻自如）──
+  const isStabType=(moveType===myPkm.type1||moveType===myPkm.type2);
+  const hasStab=isStabType||(atkMod.alwaysStab);
+  const stabMul=hasStab?(atkMod.stabMul||1.5):1.0;
+
+  // ── C类：技能增幅倍率 ──
+  const atkAbilMul=calcAtkAbilityMul(myPkm, {...move, type:moveType}, activeWeather);
+  // 属性转换附加倍率（pixilate等）
+  const finalConvertMul=(atkMod.normalConvert&&move.type==='normal')?convertMul:1.0;
+
+  const baseDmg=Math.floor((Math.floor((2*level/5+2)*pwr*rawAtk/defStat/50)+2)
+    *typeMul*stabMul*itemMul*atkAbilMul*finalConvertMul*defAbilMul);
   const dmgPct=oppHp>0?Math.round(baseDmg/oppHp*100):0;
-  return{damage:baseDmg,pct:dmgPct,typeMul};
+
+  // G类生存标注
+  const surviveNote=ABILITY_SURVIVE[defAbility]||'';
+
+  return{damage:baseDmg,pct:dmgPct,typeMul,surviveNote};
 }
 
 /* ──────── 主分析入口 ──────── */
@@ -1762,10 +2060,11 @@ function analyzeMatchups(){
 
   setTimeout(()=>{
     try{
-      const scored=scorePkmForBattle(myPkm,opp);
+      const activeWeather=detectMyWeather(myPkm);
+      const scored=scorePkmForBattle(myPkm,opp,activeWeather);
       const matrixHtml=renderBattleMatrix(myPkm,opp);
       const coverageHtml=renderBattleCoverage(myPkm);
-      const dmgHtml=renderBattleDamage(myPkm,opp);
+      const dmgHtml=renderBattleDamage(myPkm,opp,activeWeather);
       const recHtml=renderBattleRec(scored,opp);
       const weakHtml=renderTeamWeaknessWarning(scored);
       const speedHtml=renderSpeedAnalysis(scored,opp);
@@ -1839,14 +2138,14 @@ function renderBattleCoverage(myPkm){
 }
 
 /* ── 伤害估算 ── */
-function renderBattleDamage(myPkm, opp){
+function renderBattleDamage(myPkm, opp, activeWeather=''){
   const rows=myPkm.map(mp=>{
     const oppRows=opp.map(op=>{
       if(!op.name&&!op.type1)return'';
       const moves=[mp.move1,mp.move2,mp.move3,mp.move4].filter(m=>m&&m.power>0&&m.cat!=='status');
       let bestResult=null;
       moves.forEach(m=>{
-        const r=calcDamageEst(mp,op,m);
+        const r=calcDamageEst(mp,op,m,activeWeather);
         if(r&&(!bestResult||r.pct>bestResult.pct))bestResult={...r,moveName:m.name||m.type};
       });
       if(!bestResult){
@@ -1864,10 +2163,12 @@ function renderBattleDamage(myPkm, opp){
       }
       const koClass=bestResult.pct>=100?'dmg-1hko':bestResult.pct>=50?'dmg-2hko':'dmg-survive';
       const koText=bestResult.pct>=100?'一击KO':bestResult.pct>=50?'两击KO':'无法秒杀';
+      // G类生存特性标注
+      const surviveTag=bestResult.surviveNote?`<span class="dmg-survive-note" title="${esc(bestResult.surviveNote)}">⚑坚守</span>`:'';
       return`<div class="battle-dmg-row">
         <span class="battle-dmg-vs">${esc(mp.name)} [${esc(bestResult.moveName)}] → ${esc(op.name||'?')}</span>
         <span class="battle-dmg-pct">${bestResult.pct}%</span>
-        <span class="battle-dmg-ko ${koClass}">${koText}</span>
+        <span class="battle-dmg-ko ${koClass}">${koText}</span>${surviveTag}
       </div>`;
     }).filter(Boolean).join('');
     return oppRows;
@@ -1876,11 +2177,12 @@ function renderBattleDamage(myPkm, opp){
 }
 
 /* ── 评分核心（供多个渲染函数共用） ── */
-function scorePkmForBattle(myPkm, opp){
+function scorePkmForBattle(myPkm, opp, activeWeather=''){
   const oppValid=opp.filter(op=>op.name||op.type1);
-  return myPkm.map(mp=>{
-    let offScore=0, defScore=0, koCount=0;
+  const rawScored=myPkm.map(mp=>{
+    let offScore=0, defScore=0, koScore=0;
     const reasons=[];
+    const mySpd=getEffectiveSpeed(mp, activeWeather);
     oppValid.forEach(op=>{
       const eff=getBestMoveEff(mp,op);
       if(eff===null)return;
@@ -1890,17 +2192,53 @@ function scorePkmForBattle(myPkm, opp){
       defScore+=taken;
       const moves=[mp.move1,mp.move2,mp.move3,mp.move4].filter(m=>m&&m.power>0&&m.cat!=='status');
       let bestPct=0;
-      moves.forEach(m=>{const r=calcDamageEst(mp,op,m);if(r&&r.pct>bestPct)bestPct=r.pct;});
-      if(bestPct>=100){koCount++;reasons.push(`可一击秒杀${esc(op.name||'?')}`);}
-      else if(bestPct>=50)reasons.push(`两击可KO${esc(op.name||'?')}`);
+      moves.forEach(m=>{const r=calcDamageEst(mp,op,m,activeWeather);if(r&&r.pct>bestPct)bestPct=r.pct;});
+      // 速度加权：先手OHKO价值×1.5（确保能在挨打前秒杀），后手×0.7
+      const oppSpd=getEffectiveSpeed(op, activeWeather);
+      const isFaster=mySpd>0&&oppSpd>0&&mySpd>oppSpd;
+      const speedMul=(mySpd>0&&oppSpd>0)?(isFaster?1.5:0.7):1.0;
+      if(bestPct>=100){
+        koScore+=speedMul;
+        reasons.push(`可一击秒杀${esc(op.name||'?')}${isFaster?' ⚡先手':oppSpd&&mySpd?' 🐢后手':''}`);
+      } else if(bestPct>=50){
+        reasons.push(`两击可KO${esc(op.name||'?')}`);
+      }
     });
-    const weakTypes=B_TYPES.filter(t=>getTypeEff(t,mp.type1,mp.type2)>=2);
+    // 特性相关加分：免疫某类型
+    const myAbility=mp.ability||'';
+    const immuneTypes=ABILITY_TYPE_IMMUNE[myAbility]||[];
+    if(immuneTypes.length) reasons.push(`特性免疫${immuneTypes.map(t=>TYPE_ZH[t]).join('/')}系`);
+    const weakTypes=B_TYPES.filter(t=>getTypeEff(t,mp.type1,mp.type2)>=2&&!immuneTypes.includes(t));
     const resistTypes=B_TYPES.filter(t=>getTypeEff(t,mp.type1,mp.type2)<=0.5);
     if(resistTypes.length)reasons.push(`抗性好（${resistTypes.map(t=>TYPE_ZH[t]).slice(0,3).join('/')}等）`);
     if(weakTypes.length<=2)reasons.push(`弱点少（仅${weakTypes.length}种）`);
-    const total=offScore - defScore*0.5 + koCount*3;
-    return{pkm:mp,offScore,defScore,koCount,total,reasons:[...new Set(reasons)].slice(0,4)};
+    const total=offScore - defScore*0.5 + koScore*3;
+    return{pkm:mp,offScore,defScore,koCount:Math.round(koScore),koScore,total,reasons:[...new Set(reasons)].slice(0,5)};
   }).sort((a,b)=>b.total-a.total);
+  return selectSynergisticTop3(rawScored);
+}
+
+/* ── 协同性Top3选择：#2/#3 补强前面宝可梦的弱点属性 ── */
+function selectSynergisticTop3(scored){
+  if(scored.length<=3)return scored;
+  const first=scored[0];
+  const pool1=scored.slice(1);
+  const weakOf=p=>{
+    const immune=ABILITY_TYPE_IMMUNE[p.ability||'']||[];
+    return B_TYPES.filter(t=>getTypeEff(t,p.type1,p.type2)>=2&&!immune.includes(t));
+  };
+  const firstWeak=weakOf(first.pkm);
+  // 选#2：原评分 + 每抵抗一个#1的弱点+2分
+  const second=pool1.map(s=>({s,syn:s.total+firstWeak.filter(t=>getTypeEff(t,s.pkm.type1,s.pkm.type2)<=0.5).length*2}))
+    .sort((a,b)=>b.syn-a.syn)[0].s;
+  const pool2=pool1.filter(s=>s!==second);
+  const secondWeak=weakOf(second.pkm);
+  const combinedWeak=[...new Set([...firstWeak,...secondWeak])];
+  // 选#3：补强两者共同弱点
+  const third=pool2.map(s=>({s,syn:s.total+combinedWeak.filter(t=>getTypeEff(t,s.pkm.type1,s.pkm.type2)<=0.5).length*2}))
+    .sort((a,b)=>b.syn-a.syn)[0].s;
+  const top3=new Set([first,second,third]);
+  return[first,second,third,...scored.filter(s=>!top3.has(s))];
 }
 
 /* ── 角色识别 ── */
@@ -1942,25 +2280,55 @@ function renderTeamWeaknessWarning(scored){
   return`<div class="battle-warn-list">${warnings.map(w=>`<div class="battle-warn-item">⚠ ${w}</div>`).join('')}</div>`;
 }
 
-/* ── 速度档位对比 ── */
+/* ── 速度档位对比（含天气/特性速度修正）── */
 function renderSpeedAnalysis(scored, opp){
   const top3=scored.slice(0,3);
   const oppWithSpd=opp.filter(op=>(op.name||op.type1)&&op.base?.spe);
   if(!oppWithSpd.length)
     return`<div style="color:var(--t3);font-size:.78rem">需通过搜索选择对方宝可梦才能获取种族值，手动填入属性时无法计算速度</div>`;
-  const header=oppWithSpd.map(op=>`<th>${esc(op.name||'?')}<br><span class="spd-base">(${op.base.spe})</span></th>`).join('');
+
+  // 检测双方天气
+  const myWeather=detectMyWeather(top3.map(s=>s.pkm));
+  const oppWeathers=detectOppWeather(oppWithSpd);
+  // 优先用己方天气；对方天气仅作提示
+  const activeWeather=myWeather||'';
+
+  // 天气提示
+  const weatherZH={'sun':'晴天','rain':'雨天','sand':'沙暴','snow':'冰雪'};
+  const weatherNote=myWeather?`<div class="spd-weather-note">☀ 己方天气：${weatherZH[myWeather]||myWeather}（影响速度计算）</div>`:
+    oppWeathers.length?`<div class="spd-weather-note">⚠ 对方可能设置：${oppWeathers.map(w=>weatherZH[w]||w).join('/')} 天气</div>`:'';
+
+  const header=oppWithSpd.map(op=>{
+    const oppAbilityList=getOppAbilityList(op);
+    const oppSpdMod=oppAbilityList.map(a=>ABILITY_SPD_MOD[a]).find(m=>m?.weather);
+    const effSpd=oppSpdMod&&oppWeathers.includes(oppSpdMod.weather)?op.base.spe*oppSpdMod.mul:op.base.spe;
+    const spdNote=effSpd!==op.base.spe?`<span class="spd-ability-tag">${effSpd}↑</span>`:'';
+    return`<th>${esc(op.name||'?')}<br><span class="spd-base">(${op.base.spe})</span>${spdNote}</th>`;
+  }).join('');
+
   const rows=top3.map(s=>{
-    const mySpd=s.pkm.base?.spe||0;
-    if(!mySpd)return`<tr><td class="spd-name">${esc(s.pkm.name)}</td><td colspan="${oppWithSpd.length}" style="color:var(--t3)">种族值未知</td></tr>`;
+    const pkm=s.pkm;
+    const baseSpd=pkm.base?.spe||0;
+    if(!baseSpd)return`<tr><td class="spd-name">${esc(pkm.name)}</td><td colspan="${oppWithSpd.length}" style="color:var(--t3)">种族值未知</td></tr>`;
+    const myEffSpd=getEffectiveSpeed(pkm, activeWeather);
+    const spdMod=ABILITY_SPD_MOD[pkm.ability||''];
+    const spdTag=myEffSpd!==baseSpd?`<span class="spd-ability-tag">${myEffSpd}↑</span>`:
+      spdMod?.perTurn?`<span class="spd-ability-tag">每回合↑</span>`:
+      spdMod?.onItemUse?`<span class="spd-ability-tag">道具消耗后×2</span>`:'';
     const cells=oppWithSpd.map(op=>{
-      const diff=mySpd-op.base.spe;
+      // 对方速度（考虑对方天气特性）
+      const oppAbilityList=getOppAbilityList(op);
+      const oppSpdMod=oppAbilityList.map(a=>ABILITY_SPD_MOD[a]).find(m=>m?.weather);
+      const oppEffSpd=oppSpdMod&&oppWeathers.includes(oppSpdMod.weather)?op.base.spe*oppSpdMod.mul:op.base.spe;
+      const diff=myEffSpd-oppEffSpd;
       if(diff>=20)return`<td class="spd-win">先手 +${diff}</td>`;
       if(diff<=-20)return`<td class="spd-lose">后手 ${diff}</td>`;
       return`<td class="spd-unclear">±${Math.abs(diff)} 不定</td>`;
     }).join('');
-    return`<tr><td class="spd-name">${esc(s.pkm.name)}<span class="spd-base">（${mySpd}）</span></td>${cells}</tr>`;
+    return`<tr><td class="spd-name">${esc(pkm.name)}<span class="spd-base">（${baseSpd}）</span>${spdTag}</td>${cells}</tr>`;
   }).join('');
-  return`<div class="battle-speed-wrap"><table class="battle-speed-table"><tr><th>我方 ↓</th>${header}</tr>${rows}</table></div>`;
+
+  return`<div class="battle-speed-wrap">${weatherNote}<table class="battle-speed-table"><tr><th>我方 ↓</th>${header}</tr>${rows}</table></div>`;
 }
 
 /* ── 推荐出战 ── */
@@ -1969,11 +2337,31 @@ function renderBattleRec(scored, opp){
   const rankClass=['rank-1','rank-2','rank-3'];
   const rankLabel=['#1 首选','#2 次选','#3 备选'];
   const rankCls=['r1','r2','r3'];
+  // 检测对方是否有恐吓
+  const oppHasIntimidate=opp.some(op=>getOppAbilityList(op).includes('intimidate'));
   return`<div class="battle-rec-list">${top3.map((s,i)=>{
-    const img=s.pkm._spriteUrl?`<img src="${esc(s.pkm._spriteUrl)}" alt="" onerror="this.style.display='none'">`:'';
-    const role=classifyRole(s.pkm);
+    const pkm=s.pkm;
+    const img=pkm._spriteUrl?`<img src="${esc(pkm._spriteUrl)}" alt="" onerror="this.style.display='none'">`:'';
+    const role=classifyRole(pkm);
+    // 特性徽章
+    const ability=pkm.ability||'';
+    const abilityZH=_pkmPC.find(p=>p.slug===pkm.slug)?.abilities?.indexOf(ability)>=0?ability:'';
+    const abilityLabel=ability?(()=>{
+      if(ABILITY_TYPE_IMMUNE[ability]) return{txt:'属性免疫',cls:'ab-immune'};
+      if(ABILITY_WEATHER_SET[ability]) return{txt:'天气设置',cls:'ab-weather'};
+      if(ABILITY_SPD_MOD[ability]) return{txt:'速度特性',cls:'ab-speed'};
+      if(ABILITY_SURVIVE[ability]) return{txt:'生存特性',cls:'ab-survive'};
+      if(ABILITY_ATK_MOD[ability]) return{txt:'进攻特性',cls:'ab-atk'};
+      return null;
+    })():null;
+    const abilityTag=abilityLabel?`<span class="battle-ability-tag ${abilityLabel.cls}" title="${esc(ability)}">${abilityLabel.txt}</span>`:'';
+    // 恐吓警告：对方有恐吓 且 我方是物理攻击手
+    const physRole=role.cls==='role-phys'||role.cls==='role-mixed';
+    const intimidateWarn=oppHasIntimidate&&physRole?`<div class="battle-rec-reason warn-intimidate">⚠ 对方有恐吓，物攻实效约降33%</div>`:'';
+    // 生存特性标注
+    const surviveWarn=ABILITY_SURVIVE[ability]?`<div class="battle-rec-reason">${ABILITY_SURVIVE[ability]}</div>`:'';
     // 速度先后手快速标注（领先20+才在卡片里显示）
-    const mySpd=s.pkm.base?.spe||0;
+    const mySpd=pkm.base?.spe||0;
     const spdNotes=mySpd?opp.filter(op=>op.base?.spe).map(op=>{
       const diff=mySpd-op.base.spe;
       if(diff>=20)return`⚡ 先手 vs ${esc(op.name||'?')}（+${diff}）`;
@@ -1985,9 +2373,12 @@ function renderBattleRec(scored, opp){
       <span class="battle-rec-rank ${rankCls[i]}">${rankLabel[i]}</span>
       <div class="battle-rec-sprite">${img}</div>
       <div class="battle-rec-body">
-        <div class="battle-rec-name">${esc(s.pkm.name)}<span class="battle-role-tag ${role.cls}">${role.label}</span></div>
+        <div class="battle-rec-name">${esc(pkm.name)}<span class="battle-role-tag ${role.cls}">${role.label}</span>${abilityTag}</div>
         <div class="battle-rec-score">进攻+${s.offScore.toFixed(1)} 防御-${s.defScore.toFixed(1)} 综合${s.total.toFixed(1)}</div>
-        <div class="battle-rec-reasons">${allReasons.map(r=>`<div class="battle-rec-reason">${r}</div>`).join('')}</div>
+        <div class="battle-rec-reasons">
+          ${allReasons.map(r=>`<div class="battle-rec-reason">${r}</div>`).join('')}
+          ${surviveWarn}${intimidateWarn}
+        </div>
       </div>
     </div>`;
   }).join('')}</div>`;
