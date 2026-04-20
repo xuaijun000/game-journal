@@ -2560,7 +2560,7 @@ function renderOppTeamPrediction(valid, predResult){
     const threats=isPredicted?(threatMap[op.slug||op.name||'']||[]):[];
     const threatTag=threats.length?`<span class="opp-pred-threat">克制 ${threats.map(n=>esc(n)).join('、')}</span>`:'';
     const dimCls=isPredicted?'':'opp-pred-dim';
-    return`<div class="battle-opp-pred-item ${dimCls}" onclick="onOppLeadClick('${slugAttr}',this)" title="点击设为首发，预测后续两只">
+    return`<div class="battle-opp-pred-item ${dimCls}" data-slug="${slugAttr}" onclick="onOppLeadClick('${slugAttr}',this)" title="点击确认出场，再点取消">
       ${img?`<img src="${esc(img)}" alt="" onerror="this.style.display='none'">`:''}
       <span class="battle-opp-pred-name">${esc(op.name||op.type1||'?')}</span>
       ${threatTag}
@@ -2579,29 +2579,48 @@ function renderOppTeamPrediction(valid, predResult){
   </div>`;
 }
 
-/* ── 点击首发后预测后续两只 ── */
+/* ── 点击出场宝可梦，累计已知信息重新预测剩余 ── */
 function onOppLeadClick(leadSlug, el){
-  // 高亮选中
-  el.closest('.battle-opp-pred-wrap').querySelectorAll('.battle-opp-pred-item').forEach(e=>e.classList.remove('pred-lead-active'));
-  el.classList.add('pred-lead-active');
+  // 切换"已确认出场"状态
+  el.classList.toggle('pred-confirmed');
 
   const wrap=el.closest('#opp-pred-wrap');
   const valid=JSON.parse(wrap.dataset.valid||'[]');
-  const rest=valid.filter(op=>op.slug!==leadSlug);
 
-  // 从首发宝可梦的 builds 取队友率，过滤到对方已知6只范围内
-  const builds=window.PKM_CHAMPIONS_BUILDS?.[leadSlug];
-  const teammateRates={};
-  (builds?.teammates||[]).forEach(t=>{ teammateRates[t.slug]=t.pct; });
+  // 收集所有已确认出场的 slug
+  const confirmed=[...wrap.querySelectorAll('.battle-opp-pred-item.pred-confirmed')]
+    .map(e=>e.dataset.slug).filter(Boolean);
 
-  const ranked=rest
-    .map(op=>({...op, rate:teammateRates[op.slug]||0}))
+  const resultEl=wrap.querySelector('#opp-lead-result');
+  if(!resultEl)return;
+
+  if(!confirmed.length){resultEl.innerHTML='';return;}
+
+  // 剩余未确认的宝可梦
+  const remaining=valid.filter(op=>!confirmed.includes(op.slug||''));
+  // 预测数量：3 - 已确认数，最少0
+  const numPredict=Math.max(0,3-confirmed.length);
+
+  // 合并所有已出场宝可梦的队友率（累加，出场越多数据越精准）
+  const combinedRates={};
+  confirmed.forEach(confSlug=>{
+    const builds=window.PKM_CHAMPIONS_BUILDS?.[confSlug];
+    (builds?.teammates||[]).forEach(t=>{
+      combinedRates[t.slug]=(combinedRates[t.slug]||0)+t.pct;
+    });
+  });
+
+  const ranked=remaining
+    .map(op=>({...op,rate:combinedRates[op.slug||'']||0}))
     .sort((a,b)=>b.rate-a.rate)
-    .slice(0,2);
+    .slice(0,numPredict);
 
-  const leadPkm=PKM_PC_BY_SLUG[leadSlug];
-  const leadImg=leadPkm?.spriteUrl||'';
-  const leadName=valid.find(op=>op.slug===leadSlug)?.name||leadSlug;
+  const confirmedNames=confirmed.map(s=>valid.find(op=>op.slug===s)?.name||s);
+
+  if(numPredict===0){
+    resultEl.innerHTML=`<div class="opp-lead-label">已确认出场：<b>${esc(confirmedNames.join('、'))}</b>（3只齐全）</div>`;
+    return;
+  }
 
   const backlineHtml=ranked.map(op=>{
     const img=PKM_PC_BY_SLUG[op.slug]?.spriteUrl||'';
@@ -2612,12 +2631,8 @@ function onOppLeadClick(leadSlug, el){
     </div>`;
   }).join('');
 
-  const resultEl=wrap.querySelector('#opp-lead-result');
-  if(resultEl){
-    resultEl.innerHTML=backlineHtml
-      ?`<div class="opp-lead-label">首发 <b>${esc(leadName)}</b> → 预测后续：</div><div class="opp-pred-combo">${backlineHtml}</div>`
-      :`<div class="opp-lead-label">暂无队友数据</div>`;
-  }
+  resultEl.innerHTML=`<div class="opp-lead-label">已出场 <b>${esc(confirmedNames.join('、'))}</b> → 预测剩余${numPredict}只：</div>`
+    +(backlineHtml?`<div class="opp-pred-combo">${backlineHtml}</div>`:'<div class="opp-lead-label">暂无队友数据</div>');
 }
 
 /* ── 推荐出战 ── */
