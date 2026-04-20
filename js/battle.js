@@ -2090,23 +2090,30 @@ function analyzeMatchups(){
   setTimeout(()=>{
     try{
       const activeWeather=detectMyWeather(myPkm);
-      const scored=scorePkmForBattle(myPkm,opp,activeWeather);
+      // ── 博弈核心：先预测对方出战3只，再针对性推荐我方 ──
+      const oppValid=opp.filter(op=>op.name||op.type1);
+      const predResult=predictOppBestCombo(oppValid,myPkm);
+      const targetOpp=predResult.combo.length>=2?predResult.combo:oppValid;
+      const scored=scorePkmForBattle(myPkm,targetOpp,activeWeather);
       const matrixHtml=renderBattleMatrix(myPkm,opp);
       const coverageHtml=renderBattleCoverage(myPkm);
       const dmgHtml=renderBattleDamage(myPkm,opp,activeWeather);
       const oppDmgHtml=renderOppDamage(opp,myPkm,activeWeather);
-      const recHtml=renderBattleRec(scored,opp);
+      const recHtml=renderBattleRec(scored,targetOpp);
       const weakHtml=renderTeamWeaknessWarning(scored);
-      const speedHtml=renderSpeedAnalysis(scored,opp);
-      const oppPredHtml=renderOppTeamPrediction(opp);
+      const speedHtml=renderSpeedAnalysis(scored,targetOpp);
+      const oppPredHtml=renderOppTeamPrediction(oppValid,predResult);
+      const recSubtitle=targetOpp.length<oppValid.length
+        ?`针对预测出战阵容（${targetOpp.map(op=>esc(op.name||'?')).join('、')}）`
+        :'针对已知对方阵容';
       resultBox.innerHTML=`
         <div class="battle-result-box">
           ${oppPredHtml?`<div class="battle-result-section">
-            <div class="battle-result-hdr"><span class="battle-result-title">🔮 对方出战预测</span><span class="battle-datasrc-note">基于锦标赛队友共现率 · 点击首发宝可梦可预测后续</span></div>
+            <div class="battle-result-hdr"><span class="battle-result-title">🔮 对方出战预测</span><span class="battle-datasrc-note">队友协同 30% + 克制我方 70% · 点击首发可预测后续</span></div>
             ${oppPredHtml}
           </div>`:''}
           <div class="battle-result-section">
-            <div class="battle-result-hdr"><span class="battle-result-title">推荐出战阵容</span></div>
+            <div class="battle-result-hdr"><span class="battle-result-title">推荐出战阵容</span><span class="battle-datasrc-note">${recSubtitle}</span></div>
             ${recHtml}
           </div>
           <div class="battle-result-section">
@@ -2446,60 +2453,110 @@ function classifyOppRole(op){
   return{label:'混合输出',cls:'role-mixed'};
 }
 
-/* ── 对方出战阵容预测 ── */
-function renderOppTeamPrediction(opp){
-  const valid=opp.filter(op=>op.name||op.type1);
-  if(valid.length<2) return '';
+/* ── 对方单只对我方单只的威胁分（基于预测技能属性相克） ── */
+function oppThreatScore(op, mp){
+  const myAbility=mp.ability||'';
+  const myImmune=ABILITY_TYPE_IMMUNE[myAbility]||[];
+  const predMoves=op.predictedMoves||[];
+  if(predMoves.length){
+    let best=0;
+    predMoves.forEach(m=>{
+      const mv=MOVES_BY_SLUG?.[m.slug];
+      if(!mv||mv.cat==='status'||!mv.type)return;
+      if(myImmune.includes(mv.type))return;
+      const eff=getTypeEff(mv.type,mp.type1,mp.type2);
+      if(eff>best)best=eff;
+    });
+    if(best>0)return best;
+  }
+  return getOppBestEff(op,mp);
+}
 
-  // 对每只宝可梦，从已存入的 predictedTeammates 建立 slug→pct 映射
-  const teammateMap=(op)=>{
-    const map={};
-    (op.predictedTeammates||[]).forEach(t=>{ map[t.slug]=t.pct; });
-    return map;
-  };
+/* ── 预测对方最优出战3只：队友协同30% + 克制我方70% ── */
+function predictOppBestCombo(valid, myPkm){
+  if(!valid.length)return{combo:[],synergyScore:0,antiScore:0,threatMap:{}};
+  if(valid.length<=3)return{combo:valid,synergyScore:0,antiScore:0,threatMap:buildThreatMap(valid,myPkm)};
 
-  // 计算一个组合的协同分：组内每对 (A,B) 的双向队友率之和
-  const synergy=(combo)=>{
-    let score=0;
+  // 队友协同分
+  const synergyScore=(combo)=>{
+    let s=0;
     for(let a=0;a<combo.length;a++){
-      const mapA=teammateMap(combo[a]);
+      const mapA={};
+      (combo[a].predictedTeammates||[]).forEach(t=>{mapA[t.slug]=t.pct;});
       for(let b=a+1;b<combo.length;b++){
-        const mapB=teammateMap(combo[b]);
-        score+=(mapA[combo[b].slug||'']||0)+(mapB[combo[a].slug||'']||0);
+        const mapB={};
+        (combo[b].predictedTeammates||[]).forEach(t=>{mapB[t.slug]=t.pct;});
+        s+=(mapA[combo[b].slug||'']||0)+(mapB[combo[a].slug||'']||0);
       }
     }
-    return score;
+    return s;
   };
 
-  // 枚举所有 C(n,3) 组合，找最高协同分
-  let bestCombo=null, bestScore=-1;
+  // 克制我方分：对每只我方宝可梦，取combo中最高威胁值
+  const antiScore=(combo)=>{
+    if(!myPkm.length)return 0;
+    let total=0;
+    myPkm.forEach(mp=>{
+      const best=combo.reduce((m,op)=>Math.max(m,oppThreatScore(op,mp)),0);
+      total+=best;
+    });
+    return total;
+  };
+
+  // 枚举所有 C(n,3)，记录原始分
+  const allCombos=[];
   for(let a=0;a<valid.length-2;a++)
     for(let b=a+1;b<valid.length-1;b++)
-      for(let c=b+1;c<valid.length;c++){
-        const combo=[valid[a],valid[b],valid[c]];
-        const s=synergy(combo);
-        if(s>bestScore){ bestScore=s; bestCombo=combo; }
-      }
+      for(let c=b+1;c<valid.length;c++)
+        allCombos.push([valid[a],valid[b],valid[c]]);
 
-  if(!bestCombo||bestScore<=0){
-    // 无 builds 数据时直接返回空（不显示该区块）
-    return '';
-  }
+  const raw=allCombos.map(combo=>({combo,syn:synergyScore(combo),anti:antiScore(combo)}));
+  const maxSyn=Math.max(...raw.map(r=>r.syn),1);
+  const maxAnti=Math.max(...raw.map(r=>r.anti),1);
 
-  // 渲染预测阵容（可点击首发触发后续预测）
+  let best=raw[0],bestBlend=-1;
+  raw.forEach(r=>{
+    const blend=(r.syn/maxSyn)*0.3+(r.anti/maxAnti)*0.7;
+    if(blend>bestBlend){bestBlend=blend;best=r;}
+  });
+
+  return{combo:best.combo,synergyScore:best.syn,antiScore:best.anti,threatMap:buildThreatMap(best.combo,myPkm)};
+}
+
+function buildThreatMap(combo,myPkm){
+  const map={};
+  combo.forEach(op=>{
+    const threats=myPkm
+      .map(mp=>({name:mp.name,eff:oppThreatScore(op,mp)}))
+      .filter(t=>t.eff>=2)
+      .sort((a,b)=>b.eff-a.eff)
+      .slice(0,2)
+      .map(t=>t.name);
+    map[op.slug||op.name||'']=threats;
+  });
+  return map;
+}
+
+/* ── 渲染对方出战预测（使用预计算结果） ── */
+function renderOppTeamPrediction(valid, predResult){
+  if(!valid.length||!predResult.combo.length)return '';
+  const{combo,threatMap}=predResult;
+
   const validJson=JSON.stringify(valid.map(op=>({name:op.name,slug:op.slug||'',type1:op.type1})));
-  const pkmHtml=bestCombo.map(op=>{
+  const pkmHtml=combo.map(op=>{
     const img=op.slug?(PKM_PC_BY_SLUG[op.slug]?.spriteUrl||''):'';
     const slugAttr=esc(op.slug||'');
+    const threats=threatMap[op.slug||op.name||'']||[];
+    const threatTag=threats.length?`<span class="opp-pred-threat">克制 ${threats.map(n=>esc(n)).join('、')}</span>`:'';
     return`<div class="battle-opp-pred-item" onclick="onOppLeadClick('${slugAttr}',this)" title="点击设为首发，预测后续两只">
       ${img?`<img src="${esc(img)}" alt="" onerror="this.style.display='none'">`:''}
       <span class="battle-opp-pred-name">${esc(op.name||op.type1||'?')}</span>
+      ${threatTag}
     </div>`;
   }).join('');
 
-  const scoreLabel=bestScore>0?`<span class="battle-datasrc-note">共现分 ${bestScore.toFixed(0)}</span>`:'';
   return`<div class="battle-opp-pred-wrap" id="opp-pred-wrap" data-valid='${validJson.replace(/'/g,"&#39;")}'>
-    <div class="opp-pred-combo">${pkmHtml}${scoreLabel}</div>
+    <div class="opp-pred-combo">${pkmHtml}</div>
     <div id="opp-lead-result" class="opp-lead-result"></div>
   </div>`;
 }
