@@ -871,8 +871,9 @@ const ABILITY_BREAKER=new Set(['mold-breaker','turboblaze','teravolt']);
 function getOppAbilityList(oppPkm){
   return oppPkm.slug?(PKM_PC_BY_SLUG[oppPkm.slug]?.abilities||[]):[];
 }
-// 获取对方宝可梦"最可能的"特性（取第一个，即普通特性）
+// 获取对方宝可梦最可能的特性：优先用 builds 预测，其次取数据库第一个
 function resolveOppAbility(oppPkm){
+  if(oppPkm.predictedAbility?.slug) return oppPkm.predictedAbility.slug;
   const list=getOppAbilityList(oppPkm);
   return list[0]||'';
 }
@@ -2021,10 +2022,17 @@ function calcDamageEst(myPkm, oppPkm, move, activeWeather=''){
   if(defMod){
     if(defMod.types?.includes(moveType)) defAbilMul*=defMod.mul;
     if(defMod.superEff && typeMul>=2) defAbilMul*=defMod.superEff;
-    // multiscale / fullHp：标注但不强制减伤（无法确定当前HP）
   }
 
-  // ── 道具修正 ──
+  // ── 对方持有道具的防御修正 ──
+  const oppItemSlug=oppPkm.predictedItem?.slug||'';
+  let oppItemDefMul=1.0;
+  if(oppItemSlug==='assault-vest'&&!isPhys) oppItemDefMul=1/1.5;      // 突击背心：特防×1.5
+  else if(oppItemSlug==='eviolite')         oppItemDefMul=1/1.5;       // 进化奇石：防御特防×1.5
+  else if(oppItemSlug==='rocky-helmet'||oppItemSlug==='iron-barbs') {} // 仅反伤，不影响受伤
+  else if(oppItemSlug==='life-orb'&&false)  {}                         // 攻击方道具，不在此处理
+
+  // ── 攻击方道具修正 ──
   const itemMul=calcItemDamageMul(myPkm.item, moveType, move.cat);
 
   // ── STAB（含适应力/变幻自如）──
@@ -2038,7 +2046,7 @@ function calcDamageEst(myPkm, oppPkm, move, activeWeather=''){
   const finalConvertMul=(atkMod.normalConvert&&move.type==='normal')?convertMul:1.0;
 
   const baseDmg=Math.floor((Math.floor((2*level/5+2)*pwr*rawAtk/defStat/50)+2)
-    *typeMul*stabMul*itemMul*atkAbilMul*finalConvertMul*defAbilMul);
+    *typeMul*stabMul*itemMul*atkAbilMul*finalConvertMul*defAbilMul*oppItemDefMul);
   const dmgPct=oppHp>0?Math.round(baseDmg/oppHp*100):0;
 
   // G类生存标注
@@ -2086,6 +2094,7 @@ function analyzeMatchups(){
       const matrixHtml=renderBattleMatrix(myPkm,opp);
       const coverageHtml=renderBattleCoverage(myPkm);
       const dmgHtml=renderBattleDamage(myPkm,opp,activeWeather);
+      const oppDmgHtml=renderOppDamage(opp,myPkm,activeWeather);
       const recHtml=renderBattleRec(scored,opp);
       const weakHtml=renderTeamWeaknessWarning(scored);
       const speedHtml=renderSpeedAnalysis(scored,opp);
@@ -2093,7 +2102,7 @@ function analyzeMatchups(){
       resultBox.innerHTML=`
         <div class="battle-result-box">
           ${oppPredHtml?`<div class="battle-result-section">
-            <div class="battle-result-hdr"><span class="battle-result-title">🔮 对方出战预测</span><span class="battle-datasrc-note">基于锦标赛队友共现率</span></div>
+            <div class="battle-result-hdr"><span class="battle-result-title">🔮 对方出战预测</span><span class="battle-datasrc-note">基于锦标赛队友共现率 · 点击首发宝可梦可预测后续</span></div>
             ${oppPredHtml}
           </div>`:''}
           <div class="battle-result-section">
@@ -2117,9 +2126,13 @@ function analyzeMatchups(){
             ${coverageHtml}
           </div>
           <div class="battle-result-section">
-            <div class="battle-result-hdr"><span class="battle-result-title">伤害估算（单发最优技能 vs 对方）</span><span class="battle-datasrc-note">Champions Lv.50 公式</span></div>
+            <div class="battle-result-hdr"><span class="battle-result-title">伤害估算（我方 → 对方）</span><span class="battle-datasrc-note">Champions Lv.50 公式</span></div>
             ${dmgHtml}
           </div>
+          ${oppDmgHtml?`<div class="battle-result-section">
+            <div class="battle-result-hdr"><span class="battle-result-title">对方热门技能 → 我方伤害</span><span class="battle-datasrc-note">基于锦标赛使用率 top4 技能</span></div>
+            ${oppDmgHtml}
+          </div>`:''}
         </div>`;
     } catch(e){
       resultBox.innerHTML=`<div class="battle-analyzing">分析出错：${esc(e.message)}</div>`;
@@ -2377,6 +2390,62 @@ function renderSpeedAnalysis(scored, opp){
   return`<div class="battle-speed-wrap">${weatherNote}<table class="battle-speed-table"><tr><th>我方 ↓</th>${header}</tr>${rows}</table></div>`;
 }
 
+/* ── 对方热门技能打我方的伤害估算 ── */
+function renderOppDamage(opp, myPkm, activeWeather=''){
+  const oppValid=opp.filter(op=>(op.name||op.type1)&&op.predictedMoves?.length);
+  if(!oppValid.length) return '';
+
+  const rows=oppValid.map(op=>{
+    const oppAbility=resolveOppAbility(op);
+    const oppItemSlug=op.predictedItem?.slug||'';
+    // 构造对方宝可梦的"攻击方"对象
+    const oppAsAtk={
+      name:op.name, type1:op.type1, type2:op.type2,
+      base:op.base||{}, ability:oppAbility, item:oppItemSlug,
+      level:50,
+      move1:null,move2:null,move3:null,move4:null,
+    };
+    // 把 predictedMoves 转成技能对象
+    const moves=op.predictedMoves.map(m=>MOVES_BY_SLUG[m.slug]).filter(Boolean)
+      .filter(m=>m.power>0&&m.cat!=='status');
+    if(!moves.length) return '';
+
+    const role=classifyOppRole(op);
+    const roleTag=`<span class="opp-dmg-role ${role.cls}">${role.label}</span>`;
+    const abilityTag=oppAbility?`<span class="opp-dmg-ability">${oppAbility}</span>`:'';
+    const itemTag=oppItemSlug?`<span class="opp-dmg-item">${oppItemSlug.replace(/-/g,' ')}</span>`:'';
+
+    const myPkmCols=myPkm.map(mp=>{
+      let bestPct=0, bestMove='';
+      moves.forEach(mv=>{
+        const res=calcDamageEst(oppAsAtk, mp, mv, activeWeather);
+        if(res&&res.pct>bestPct){ bestPct=res.pct; bestMove=mv.name||mv.nameEn||''; }
+      });
+      const cls=bestPct>=100?'opp-dmg-ohko':bestPct>=50?'opp-dmg-heavy':bestPct>=25?'opp-dmg-mid':'opp-dmg-low';
+      return`<td class="${cls}">${bestPct>0?bestPct+'%':'-'}${bestMove?`<br><span class="opp-dmg-move">${esc(bestMove)}</span>`:''}`;
+    }).join('');
+
+    return`<tr><td class="opp-dmg-name">${esc(op.name||'?')}${roleTag}${abilityTag}${itemTag}</td>${myPkmCols}</tr>`;
+  }).filter(Boolean).join('');
+
+  if(!rows) return '';
+  const header=myPkm.map(mp=>`<th>${esc(mp.name||'?')}</th>`).join('');
+  return`<div class="opp-dmg-wrap"><table class="opp-dmg-table"><tr><th>对方↓ / 我方→</th>${header}</tr>${rows}</table></div>`;
+}
+
+/* ── 对方宝可梦角色识别（基于 predictedMoves）── */
+function classifyOppRole(op){
+  const moves=(op.predictedMoves||[]).map(m=>MOVES_BY_SLUG[m.slug]).filter(Boolean);
+  const phys=moves.filter(m=>m.cat==='physical'&&m.power>0);
+  const spec=moves.filter(m=>m.cat==='special'&&m.power>0);
+  const status=moves.filter(m=>m.cat==='status');
+  if(!phys.length&&!spec.length) return{label:'辅助',cls:'role-support'};
+  if(status.length>=2)           return{label:'辅助',cls:'role-support'};
+  if(phys.length>spec.length)    return{label:'物理输出',cls:'role-phys'};
+  if(spec.length>phys.length)    return{label:'特攻输出',cls:'role-spec'};
+  return{label:'混合输出',cls:'role-mixed'};
+}
+
 /* ── 对方出战阵容预测 ── */
 function renderOppTeamPrediction(opp){
   const valid=opp.filter(op=>op.name||op.type1);
@@ -2417,16 +2486,63 @@ function renderOppTeamPrediction(opp){
     return '';
   }
 
+  // 渲染预测阵容（可点击首发触发后续预测）
+  const validJson=JSON.stringify(valid.map(op=>({name:op.name,slug:op.slug||'',type1:op.type1})));
   const pkmHtml=bestCombo.map(op=>{
     const img=op.slug?(PKM_PC_BY_SLUG[op.slug]?.spriteUrl||''):'';
-    return`<div class="battle-opp-pred-item">
+    const slugAttr=esc(op.slug||'');
+    return`<div class="battle-opp-pred-item" onclick="onOppLeadClick('${slugAttr}',this)" title="点击设为首发，预测后续两只">
       ${img?`<img src="${esc(img)}" alt="" onerror="this.style.display='none'">`:''}
       <span class="battle-opp-pred-name">${esc(op.name||op.type1||'?')}</span>
     </div>`;
   }).join('');
 
-  const scoreLabel=bestScore>0?`<span class="battle-datasrc-note">队友共现分 ${bestScore.toFixed(0)}</span>`:'';
-  return`<div class="battle-opp-pred-wrap">${pkmHtml}${scoreLabel}</div>`;
+  const scoreLabel=bestScore>0?`<span class="battle-datasrc-note">共现分 ${bestScore.toFixed(0)}</span>`:'';
+  return`<div class="battle-opp-pred-wrap" id="opp-pred-wrap" data-valid='${validJson.replace(/'/g,"&#39;")}'>
+    <div class="opp-pred-combo">${pkmHtml}${scoreLabel}</div>
+    <div id="opp-lead-result" class="opp-lead-result"></div>
+  </div>`;
+}
+
+/* ── 点击首发后预测后续两只 ── */
+function onOppLeadClick(leadSlug, el){
+  // 高亮选中
+  el.closest('.battle-opp-pred-wrap').querySelectorAll('.battle-opp-pred-item').forEach(e=>e.classList.remove('pred-lead-active'));
+  el.classList.add('pred-lead-active');
+
+  const wrap=el.closest('#opp-pred-wrap');
+  const valid=JSON.parse(wrap.dataset.valid||'[]');
+  const rest=valid.filter(op=>op.slug!==leadSlug);
+
+  // 从首发宝可梦的 builds 取队友率，过滤到对方已知6只范围内
+  const builds=window.PKM_CHAMPIONS_BUILDS?.[leadSlug];
+  const teammateRates={};
+  (builds?.teammates||[]).forEach(t=>{ teammateRates[t.slug]=t.pct; });
+
+  const ranked=rest
+    .map(op=>({...op, rate:teammateRates[op.slug]||0}))
+    .sort((a,b)=>b.rate-a.rate)
+    .slice(0,2);
+
+  const leadPkm=PKM_PC_BY_SLUG[leadSlug];
+  const leadImg=leadPkm?.spriteUrl||'';
+  const leadName=valid.find(op=>op.slug===leadSlug)?.name||leadSlug;
+
+  const backlineHtml=ranked.map(op=>{
+    const img=PKM_PC_BY_SLUG[op.slug]?.spriteUrl||'';
+    const pct=op.rate>0?`<span class="pred-rate">${op.rate.toFixed(0)}%</span>`:'';
+    return`<div class="battle-opp-pred-item">
+      ${img?`<img src="${esc(img)}" alt="" onerror="this.style.display='none'">`:''}
+      <span class="battle-opp-pred-name">${esc(op.name||op.slug)}</span>${pct}
+    </div>`;
+  }).join('');
+
+  const resultEl=wrap.querySelector('#opp-lead-result');
+  if(resultEl){
+    resultEl.innerHTML=backlineHtml
+      ?`<div class="opp-lead-label">首发 <b>${esc(leadName)}</b> → 预测后续：</div><div class="opp-pred-combo">${backlineHtml}</div>`
+      :`<div class="opp-lead-label">暂无队友数据</div>`;
+  }
 }
 
 /* ── 推荐出战 ── */
