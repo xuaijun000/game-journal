@@ -48,6 +48,7 @@ const FORM_SUFFIX_ZH={
 };
 // 对战数据 — 通过 loadBattleGameData(gameId) 从注册表加载，支持多版本隔离
 let MOVES_DATA = [];
+let MOVES_BY_SLUG = {};
 let PKM_LIST = [];
 let PKM_PC_BY_SLUG = {};
 let PKM_PC_BY_NUM  = {};
@@ -57,6 +58,8 @@ let ITEMS_BY_NAME = {};
 function loadBattleGameData(gameId) {
   const reg = (window.BATTLE_REGISTRY || {})[gameId] || {};
   MOVES_DATA = reg.moves || [];
+  MOVES_BY_SLUG = {};
+  MOVES_DATA.forEach(m => { if(m.slug) MOVES_BY_SLUG[m.slug]=m; });
   PKM_LIST = reg.pkm || [];
   PKM_PC_BY_SLUG = {};
   PKM_PC_BY_NUM  = {};
@@ -1862,7 +1865,14 @@ function selectOppPkmFromDrop(i,pkmId,cnName,slug=''){
     const s2=document.getElementById(`bopp-t2-${i}`);
     if(s1)s1.value=t1;
     if(s2)s2.value=t2;
-    battleOppPkm[i]={name:cnName,type1:t1,type2:t2};
+    const builds=window.PKM_CHAMPIONS_BUILDS?.[slug]||null;
+    battleOppPkm[i]={
+      name:cnName,type1:t1,type2:t2,slug,
+      predictedMoves: builds?.moves||[],
+      predictedItem:  builds?.item||null,
+      predictedAbility: builds?.ability||null,
+      predictedTeammates: builds?.teammates||[],
+    };
   } else {
     // fallback for non-Champions Pokemon
     fetch(`${POKEAPI}/pokemon/${pkmId}`).then(r=>r.ok?r.json():null).then(d=>{
@@ -2045,7 +2055,17 @@ function analyzeMatchups(){
     const type1=document.getElementById(`bopp-t1-${i}`)?.value||'';
     const type2=document.getElementById(`bopp-t2-${i}`)?.value||'';
     const lp=name?PKM_LIST.find(p=>p.name===name):null;
-    battleOppPkm[i]={name,type1,type2,base:lp?.stats||{},slug:lp?.slug||''};
+    const sl=lp?.slug||battleOppPkm[i]?.slug||'';
+    const builds=window.PKM_CHAMPIONS_BUILDS?.[sl]||null;
+    // 保留从下拉选择时已存入的 predicted 字段，如没有则从 builds 补充
+    const prev=battleOppPkm[i]||{};
+    battleOppPkm[i]={
+      name,type1,type2,base:lp?.stats||{},slug:sl,
+      predictedMoves:    prev.predictedMoves    || builds?.moves    || [],
+      predictedItem:     prev.predictedItem     ?? builds?.item     ?? null,
+      predictedAbility:  prev.predictedAbility  ?? builds?.ability  ?? null,
+      predictedTeammates:prev.predictedTeammates|| builds?.teammates|| [],
+    };
   });
   const opp=battleOppPkm.filter(p=>p.name||p.type1);
   if(!opp.length){showToast('请至少填入对方一只宝可梦的属性');return;}
@@ -2069,8 +2089,13 @@ function analyzeMatchups(){
       const recHtml=renderBattleRec(scored,opp);
       const weakHtml=renderTeamWeaknessWarning(scored);
       const speedHtml=renderSpeedAnalysis(scored,opp);
+      const oppPredHtml=renderOppTeamPrediction(opp);
       resultBox.innerHTML=`
         <div class="battle-result-box">
+          ${oppPredHtml?`<div class="battle-result-section">
+            <div class="battle-result-hdr"><span class="battle-result-title">🔮 对方出战预测</span><span class="battle-datasrc-note">基于锦标赛队友共现率</span></div>
+            ${oppPredHtml}
+          </div>`:''}
           <div class="battle-result-section">
             <div class="battle-result-hdr"><span class="battle-result-title">推荐出战阵容</span></div>
             ${recHtml}
@@ -2213,8 +2238,28 @@ function scorePkmForBattle(myPkm, opp, activeWeather=''){
     const resistTypes=B_TYPES.filter(t=>getTypeEff(t,mp.type1,mp.type2)<=0.5);
     if(resistTypes.length)reasons.push(`抗性好（${resistTypes.map(t=>TYPE_ZH[t]).slice(0,3).join('/')}等）`);
     if(weakTypes.length<=2)reasons.push(`弱点少（仅${weakTypes.length}种）`);
-    const total=offScore - defScore*0.5 + koScore*3;
-    return{pkm:mp,offScore,defScore,koCount:Math.round(koScore),koScore,total,reasons:[...new Set(reasons)].slice(0,5)};
+
+    // defTypeBonus：对方预测技能属性的抗性加分
+    let defTypeBonus=0;
+    const oppMoveTypes=[];
+    oppValid.forEach(op=>{
+      (op.predictedMoves||[]).forEach(m=>{
+        const mv=MOVES_BY_SLUG?.[m.slug];
+        if(mv&&mv.type&&mv.cat!=='status') oppMoveTypes.push({type:mv.type,pct:m.pct});
+      });
+    });
+    oppMoveTypes.forEach(({type,pct})=>{
+      const eff=getTypeEff(type,mp.type1,mp.type2);
+      const immune=immuneTypes.includes(type);
+      if(immune)          defTypeBonus+=2*(pct/100);
+      else if(eff<=0.5)   defTypeBonus+=1*(pct/100);
+      else if(eff>=2)     defTypeBonus-=1*(pct/100);
+    });
+    if(oppMoveTypes.length&&defTypeBonus>1)
+      reasons.push(`能抗对方常用技能`);
+
+    const total=offScore - defScore*0.5 + koScore*3 + defTypeBonus;
+    return{pkm:mp,offScore,defScore,koCount:Math.round(koScore),koScore,defTypeBonus:+defTypeBonus.toFixed(2),total,reasons:[...new Set(reasons)].slice(0,5)};
   }).sort((a,b)=>b.total-a.total);
   return selectSynergisticTop3(rawScored);
 }
@@ -2330,6 +2375,58 @@ function renderSpeedAnalysis(scored, opp){
   }).join('');
 
   return`<div class="battle-speed-wrap">${weatherNote}<table class="battle-speed-table"><tr><th>我方 ↓</th>${header}</tr>${rows}</table></div>`;
+}
+
+/* ── 对方出战阵容预测 ── */
+function renderOppTeamPrediction(opp){
+  const valid=opp.filter(op=>op.name||op.type1);
+  if(valid.length<2) return '';
+
+  // 对每只宝可梦，从已存入的 predictedTeammates 建立 slug→pct 映射
+  const teammateMap=(op)=>{
+    const map={};
+    (op.predictedTeammates||[]).forEach(t=>{ map[t.slug]=t.pct; });
+    return map;
+  };
+
+  // 计算一个组合的协同分：组内每对 (A,B) 的双向队友率之和
+  const synergy=(combo)=>{
+    let score=0;
+    for(let a=0;a<combo.length;a++){
+      const mapA=teammateMap(combo[a]);
+      for(let b=a+1;b<combo.length;b++){
+        const mapB=teammateMap(combo[b]);
+        score+=(mapA[combo[b].slug||'']||0)+(mapB[combo[a].slug||'']||0);
+      }
+    }
+    return score;
+  };
+
+  // 枚举所有 C(n,3) 组合，找最高协同分
+  let bestCombo=null, bestScore=-1;
+  for(let a=0;a<valid.length-2;a++)
+    for(let b=a+1;b<valid.length-1;b++)
+      for(let c=b+1;c<valid.length;c++){
+        const combo=[valid[a],valid[b],valid[c]];
+        const s=synergy(combo);
+        if(s>bestScore){ bestScore=s; bestCombo=combo; }
+      }
+
+  if(!bestCombo||bestScore<=0){
+    // 无 builds 数据时直接返回空（不显示该区块）
+    return '';
+  }
+
+  const pkmHtml=bestCombo.map(op=>{
+    const img=op.slug?(PKM_PC_BY_SLUG[op.slug]?.spriteUrl||''):'';
+    return`<div class="battle-opp-pred-item">
+      ${img?`<img src="${esc(img)}" alt="" onerror="this.style.display='none'">`:''}
+      <span class="battle-opp-pred-name">${esc(op.name||op.type1||'?')}</span>
+    </div>`;
+  }).join('');
+
+  const scoreLabel=bestScore>0?`<span class="battle-datasrc-note">队友共现分 ${bestScore.toFixed(0)}</span>`:'';
+  return`<div class="battle-opp-pred-wrap">${pkmHtml}${scoreLabel}</div>`;
 }
 
 /* ── 推荐出战 ── */

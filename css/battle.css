@@ -268,3 +268,8 @@
   .bpkm-moves-grid{grid-template-columns:1fr}
   .bpkm-stats-block{grid-template-columns:repeat(3,1fr)}
 }
+
+.battle-opp-pred-wrap{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:6px 0}
+.battle-opp-pred-item{display:flex;flex-direction:column;align-items:center;gap:2px}
+.battle-opp-pred-item img{width:52px;height:52px;object-fit:contain}
+.battle-opp-pred-name{font-size:.78rem;color:var(--t1);text-align:center}
