@@ -1184,7 +1184,11 @@ function renderBattleSlotForm(){
     <div class="bpkm-form">
       <div class="bpkm-search-wrap">
         <span class="bpkm-search-ico">🔍</span>
-        <input class="bpkm-search-inp" id="bpkm-name-inp" placeholder="输入宝可梦名称或编号搜索…" value="${esc(p.name||'')}" oninput="onBpkmSearch(this.value)" autocomplete="off">
+        <input class="bpkm-search-inp" id="bpkm-name-inp" placeholder="输入宝可梦名称或编号搜索…" value="${esc(p.name||'')}"
+          oninput="if(!window._bpkmComposing)onBpkmSearch(this.value)"
+          oncompositionstart="window._bpkmComposing=true"
+          oncompositionend="window._bpkmComposing=false;onBpkmSearch(this.value)"
+          autocomplete="off">
         <div class="bpkm-search-drop" id="bpkm-search-drop"></div>
       </div>
       ${spriteUrl?`<div class="bpkm-preview" id="bpkm-preview-wrap">
@@ -1416,8 +1420,8 @@ function onBpkmSearch(q){
         const p=PKM_PC_BY_NUM[parseInt(q)];
         results=p?[{id:p.num,cnName:p.name,slug:p.slug,spriteUrl:p.spriteUrl||''}]:[{id:parseInt(q),cnName:PKM_CN_TABLE[parseInt(q)]||null,slug:'',spriteUrl:''}];
       }
-      // 英文/PokeAPI 搜索兜底
-      if(!results.length){
+      // 英文/PokeAPI 搜索兜底（跳过中文、拼音撇号等无效查询）
+      if(!results.length&&!/[\u4e00-\u9fff\u3040-\u30ff\u31f0-\u31ff']/.test(q)){
         const r=await fetch(`${POKEAPI}/pokemon/${encodeURIComponent(q.toLowerCase())}`);
         if(r.ok){const d=await r.json();const lp=PKM_PC_BY_SLUG[q.toLowerCase()]||PKM_PC_BY_NUM[d.id];results=[{id:d.id,cnName:lp?.name||PKM_CN_TABLE[d.id]||d.name,slug:lp?.slug||'',spriteUrl:lp?.spriteUrl||d.sprites?.front_default||''}];}
       }
@@ -1800,6 +1804,7 @@ async function deleteBattleTeamFromModal(){
 
 /* ──────── 赛前分析 ──────── */
 const boppSearchTimers={};
+const boppComposing={};
 
 function renderBattleOppSlots(){
   const el=document.getElementById('battle-opp-slots');
@@ -1809,7 +1814,11 @@ function renderBattleOppSlots(){
     <div class="battle-opp-row">
       <span class="battle-opp-num">${i+1}</span>
       <div class="battle-opp-inp-wrap">
-        <input class="battle-opp-inp" id="bopp-name-${i}" placeholder="搜索宝可梦…" oninput="onOppNameInput(${i},this.value)" onblur="setTimeout(()=>closeBoppDrop(${i}),200)" autocomplete="off">
+        <input class="battle-opp-inp" id="bopp-name-${i}" placeholder="搜索宝可梦…"
+          oninput="if(!boppComposing[${i}])onOppNameInput(${i},this.value)"
+          oncompositionstart="boppComposing[${i}]=true"
+          oncompositionend="boppComposing[${i}]=false;onOppNameInput(${i},this.value)"
+          onblur="setTimeout(()=>closeBoppDrop(${i}),350)" autocomplete="off">
         <div class="bpkm-search-drop" id="bopp-drop-${i}"></div>
       </div>
       <select class="battle-opp-type-sel" id="bopp-t1-${i}" title="属性1">
@@ -1837,7 +1846,7 @@ function onOppNameInput(i,q){
     try{
       let results=PKM_LIST.filter(p=>p.name.includes(q)).slice(0,8).map(p=>({id:p.num,cnName:p.name,slug:p.slug,spriteUrl:p.spriteUrl||''}));
       if(!results.length&&/^\d+$/.test(q)){const p=PKM_PC_BY_NUM[parseInt(q)];results=p?[{id:p.num,cnName:p.name,slug:p.slug,spriteUrl:p.spriteUrl||''}]:[];}
-      if(!results.length){
+      if(!results.length&&!/[\u4e00-\u9fff\u3040-\u30ff\u31f0-\u31ff']/.test(q)){
         const r=await fetch(`${POKEAPI}/pokemon/${encodeURIComponent(q.toLowerCase())}`);
         if(r.ok){const d=await r.json();const lp=PKM_PC_BY_SLUG[q.toLowerCase()]||PKM_PC_BY_NUM[d.id];results=[{id:d.id,cnName:lp?.name||PKM_CN_TABLE[d.id]||d.name,slug:lp?.slug||'',spriteUrl:lp?.spriteUrl||d.sprites?.front_default||''}];}
       }
