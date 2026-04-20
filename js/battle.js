@@ -2579,29 +2579,35 @@ function renderOppTeamPrediction(valid, predResult){
   </div>`;
 }
 
-/* ── 点击出场宝可梦，累计已知信息重新预测剩余 ── */
+/* ── 记录点击顺序（按出场顺序，不是 DOM 顺序）── */
+const _oppConfirmedOrder=[];   // [{slug,wrapId}]
+
 function onOppLeadClick(leadSlug, el){
-  // 切换"已确认出场"状态
-  el.classList.toggle('pred-confirmed');
-
   const wrap=el.closest('#opp-pred-wrap');
-  const valid=JSON.parse(wrap.dataset.valid||'[]');
+  const wrapId=wrap?.id||'opp-pred-wrap';
 
-  // 收集所有已确认出场的 slug
-  const confirmed=[...wrap.querySelectorAll('.battle-opp-pred-item.pred-confirmed')]
-    .map(e=>e.dataset.slug).filter(Boolean);
+  // 已在列表中 → 取消确认，从顺序数组移除
+  const idx=_oppConfirmedOrder.findIndex(x=>x.slug===leadSlug&&x.wrapId===wrapId);
+  if(idx!==-1){
+    _oppConfirmedOrder.splice(idx,1);
+    el.classList.remove('pred-confirmed');
+  } else {
+    _oppConfirmedOrder.push({slug:leadSlug,wrapId});
+    el.classList.add('pred-confirmed');
+  }
+
+  const valid=JSON.parse(wrap.dataset.valid||'[]');
+  // 按出场顺序排列已确认 slug
+  const confirmed=_oppConfirmedOrder.filter(x=>x.wrapId===wrapId).map(x=>x.slug);
 
   const resultEl=wrap.querySelector('#opp-lead-result');
   if(!resultEl)return;
-
   if(!confirmed.length){resultEl.innerHTML='';return;}
 
-  // 剩余未确认的宝可梦
-  const remaining=valid.filter(op=>!confirmed.includes(op.slug||''));
-  // 预测数量：3 - 已确认数，最少0
   const numPredict=Math.max(0,3-confirmed.length);
+  const remaining=valid.filter(op=>!confirmed.includes(op.slug||''));
 
-  // 合并所有已出场宝可梦的队友率（累加，出场越多数据越精准）
+  // 合并所有已出场宝可梦的队友率
   const combinedRates={};
   confirmed.forEach(confSlug=>{
     const builds=window.PKM_CHAMPIONS_BUILDS?.[confSlug];
@@ -2615,10 +2621,16 @@ function onOppLeadClick(leadSlug, el){
     .sort((a,b)=>b.rate-a.rate)
     .slice(0,numPredict);
 
-  const confirmedNames=confirmed.map(s=>valid.find(op=>op.slug===s)?.name||s);
+  // 标签：首发 A → 第2个 B → 预测第3只
+  const orderLabels=['首发','第2个出场','第3个出场'];
+  const confirmedParts=confirmed.map((s,i)=>{
+    const name=valid.find(op=>op.slug===s)?.name||s;
+    return`${orderLabels[i]||`第${i+1}个`} <b>${esc(name)}</b>`;
+  });
+  const labelHtml=confirmedParts.join(' → ');
 
   if(numPredict===0){
-    resultEl.innerHTML=`<div class="opp-lead-label">已确认出场：<b>${esc(confirmedNames.join('、'))}</b>（3只齐全）</div>`;
+    resultEl.innerHTML=`<div class="opp-lead-label">${labelHtml}（3只已全部出场）</div>`;
     return;
   }
 
@@ -2631,7 +2643,7 @@ function onOppLeadClick(leadSlug, el){
     </div>`;
   }).join('');
 
-  resultEl.innerHTML=`<div class="opp-lead-label">已出场 <b>${esc(confirmedNames.join('、'))}</b> → 预测剩余${numPredict}只：</div>`
+  resultEl.innerHTML=`<div class="opp-lead-label">${labelHtml} → 预测第${confirmed.length+1}只：</div>`
     +(backlineHtml?`<div class="opp-pred-combo">${backlineHtml}</div>`:'<div class="opp-lead-label">暂无队友数据</div>');
 }
 
