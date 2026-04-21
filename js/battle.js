@@ -32,6 +32,7 @@
  * CREATE POLICY "public_read" ON pkm_champions_teams FOR SELECT USING (true);
  * CREATE POLICY "anon_write"  ON pkm_champions_teams FOR INSERT WITH CHECK (true);
  * CREATE POLICY "anon_del"    ON pkm_champions_teams FOR DELETE USING (true);
+ * GRANT SELECT, INSERT, DELETE ON TABLE pkm_champions_teams TO anon;
  */
 
 /* ──────── 常量 ──────── */
