@@ -191,3 +191,31 @@ main{max-width:1080px;margin:0 auto;padding:2.1rem 1.5rem 4.5rem}
   .hdr-r{gap:6px}
   .logo img{height:33px}
 }
+
+/* Content protection baseline */
+html,body{
+  -webkit-user-select:none;
+  user-select:none;
+}
+
+input,textarea,select,[contenteditable]{
+  -webkit-user-select:text;
+  user-select:text;
+}
+
+img{
+  pointer-events:none;
+  -webkit-user-drag:none;
+}
+
+.site-footer{
+  position:relative;
+  z-index:1;
+  margin:0 auto 1.8rem;
+  max-width:1080px;
+  padding:0 1.5rem;
+  font-size:.74rem;
+  letter-spacing:.04em;
+  color:var(--t3);
+  text-align:center;
+}

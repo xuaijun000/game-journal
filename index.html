@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -19,6 +19,7 @@
   <link rel="stylesheet" href="css/play.css">
   <link rel="stylesheet" href="css/misc.css">
   <link rel="stylesheet" href="css/battle.css">
+  <script src="js/protect.js" defer></script>
   <script src="js/data/battle_registry.js"></script>
   <script src="js/data/pkm_champions_data.js"></script>
   <script src="js/data/moves_champions_data.js"></script>
@@ -30,34 +31,34 @@
 <header>
   <div class="logo"><img src="css/logo_final.png" alt="PIXELFISH"></div>
   <nav>
-    <button class="on" onclick="go('list',this)">游戏库</button>
-    <button onclick="go('disc',this)">发现</button>
-    <button onclick="go('stats',this)">统计</button>
+    <button class="on" onclick="go('list',this)">娓告垙搴?/button>
+    <button onclick="go('disc',this)">鍙戠幇</button>
+    <button onclick="go('stats',this)">缁熻</button>
     <span class="nav-sep"></span>
-    <button onclick="go('pkm',this)">宝可梦</button>
-    <button onclick="go('anime',this)">动漫</button>
-    <button onclick="go('manga',this)">漫画</button>
-    <button onclick="go('battle',this)">对战</button>
+    <button onclick="go('pkm',this)">瀹濆彲姊?/button>
+    <button onclick="go('anime',this)">鍔ㄦ极</button>
+    <button onclick="go('manga',this)">婕敾</button>
+    <button onclick="go('battle',this)">瀵规垬</button>
   </nav>
   <div class="hdr-r">
     <div class="av" id="av">?</div>
-    <button class="hbtn" id="abtn" onclick="go('auth',null)">登录</button>
+    <button class="hbtn" id="abtn" onclick="go('auth',null)">鐧诲綍</button>
   </div>
 </header>
 <main>
   <div class="pg on" id="pg-list">
     <div class="stats">
-      <div class="sc" style="--c:var(--acc)"><div class="sn" id="s-total">0</div><div class="sl">总收录</div></div>
-      <div class="sc" style="--c:var(--acc)"><div class="sn" id="s-pl">0</div><div class="sl">游玩中</div></div>
-      <div class="sc" style="--c:var(--acc2)"><div class="sn" id="s-dn">0</div><div class="sl">已通关</div></div>
-      <div class="sc" style="--c:var(--warn)"><div class="sn" id="s-hr">0</div><div class="sl">总时长h</div></div>
-      <div class="sc" style="--c:var(--acc2)"><div class="sn" id="s-av">—</div><div class="sl">平均评分</div></div>
+      <div class="sc" style="--c:var(--acc)"><div class="sn" id="s-total">0</div><div class="sl">鎬绘敹褰?/div></div>
+      <div class="sc" style="--c:var(--acc)"><div class="sn" id="s-pl">0</div><div class="sl">娓哥帺涓?/div></div>
+      <div class="sc" style="--c:var(--acc2)"><div class="sn" id="s-dn">0</div><div class="sl">宸查€氬叧</div></div>
+      <div class="sc" style="--c:var(--warn)"><div class="sn" id="s-hr">0</div><div class="sl">鎬绘椂闀縣</div></div>
+      <div class="sc" style="--c:var(--acc2)"><div class="sn" id="s-av">鈥?/div><div class="sl">骞冲潎璇勫垎</div></div>
     </div>
     <div class="tb">
-      <input type="text" id="q" placeholder="搜索游戏名称…" oninput="render()" autocomplete="off">
-      <select id="fst" onchange="render()"><option value="">全部状态</option><option value="playing">游玩中</option><option value="done">已通关</option><option value="wishlist">想玩</option><option value="dropped">放弃</option></select>
-      <select id="fso" onchange="render()"><option value="date">最新添加</option><option value="rating">评分最高</option><option value="hours">游玩时长</option><option value="name">名称排序</option></select>
-      <button class="btn btn-a" onclick="openAdd()">＋ 添加游戏</button>
+      <input type="text" id="q" placeholder="鎼滅储娓告垙鍚嶇О鈥? oninput="render()" autocomplete="off">
+      <select id="fst" onchange="render()"><option value="">鍏ㄩ儴鐘舵€?/option><option value="playing">娓哥帺涓?/option><option value="done">宸查€氬叧</option><option value="wishlist">鎯崇帺</option><option value="dropped">鏀惧純</option></select>
+      <select id="fso" onchange="render()"><option value="date">鏈€鏂版坊鍔?/option><option value="rating">璇勫垎鏈€楂?/option><option value="hours">娓哥帺鏃堕暱</option><option value="name">鍚嶇О鎺掑簭</option></select>
+      <button class="btn btn-a" onclick="openAdd()">锛?娣诲姞娓告垙</button>
     </div>
     <div class="steam-bar">
       <div class="steam-bar-label">
@@ -65,56 +66,56 @@
         Steam ID
       </div>
       <input type="text" id="steam-id-inp" placeholder="76561198xxxxxxxxx" autocomplete="off">
-      <button class="btn btn-sm" onclick="syncSteam()" id="steam-sync-btn" style="border-color:rgba(102,192,244,.3);color:#66c0f4">↓ 同步 Steam 库</button>
+      <button class="btn btn-sm" onclick="syncSteam()" id="steam-sync-btn" style="border-color:rgba(102,192,244,.3);color:#66c0f4">鈫?鍚屾 Steam 搴?/button>
       <span id="steam-msg" class="steam-msg"></span>
     </div>
     <div class="pf-row">
-      <div class="pfchip on" data-p="all" onclick="setPF('all',this)">全部平台</div>
+      <div class="pfchip on" data-p="all" onclick="setPF('all',this)">鍏ㄩ儴骞冲彴</div>
       <div class="pfchip" data-p="xbox" onclick="setPF('xbox',this)">Xbox</div>
       <div class="pfchip" data-p="ps" onclick="setPF('ps',this)">PlayStation</div>
       <div class="pfchip" data-p="switch" onclick="setPF('switch',this)">Nintendo Switch</div>
       <div class="pfchip" data-p="steam" onclick="setPF('steam',this)">Steam / PC</div>
-      <div class="pfchip" data-p="other" onclick="setPF('other',this)">其他</div>
+      <div class="pfchip" data-p="other" onclick="setPF('other',this)">鍏朵粬</div>
     </div>
-    <div class="gg" id="gg"><div style="text-align:center;padding:3rem;color:var(--t3)">加载中…</div></div>
+    <div class="gg" id="gg"><div style="text-align:center;padding:3rem;color:var(--t3)">鍔犺浇涓€?/div></div>
   </div>
   <div class="pg" id="pg-disc">
     <div class="disc-header">
       <div class="disc-tabs">
-        <button class="disc-tab on" data-mode="rating" onclick="switchDiscTab(this)">综合评分榜</button>
-        <button class="disc-tab" data-mode="recent" onclick="switchDiscTab(this)">近期新游</button>
-        <button class="disc-tab" data-mode="hype" onclick="switchDiscTab(this)">期待新作</button>
-        <button class="disc-tab" data-mode="popular" onclick="switchDiscTab(this)">人气热榜</button>
+        <button class="disc-tab on" data-mode="rating" onclick="switchDiscTab(this)">缁煎悎璇勫垎姒?/button>
+        <button class="disc-tab" data-mode="recent" onclick="switchDiscTab(this)">杩戞湡鏂版父</button>
+        <button class="disc-tab" data-mode="hype" onclick="switchDiscTab(this)">鏈熷緟鏂颁綔</button>
+        <button class="disc-tab" data-mode="popular" onclick="switchDiscTab(this)">浜烘皵鐑</button>
       </div>
-      <div style="font-size:.72rem;color:var(--t3);font-family:'DM Mono',monospace">数据来源 IGDB</div>
+      <div style="font-size:.72rem;color:var(--t3);font-family:'DM Mono',monospace">鏁版嵁鏉ユ簮 IGDB</div>
     </div>
     <div class="disc-pf-row">
-      <div class="disc-pfchip on" data-pf="all" onclick="setDiscPF('all',this)">全平台</div>
+      <div class="disc-pfchip on" data-pf="all" onclick="setDiscPF('all',this)">鍏ㄥ钩鍙?/div>
       <div class="disc-pfchip" data-pf="6" onclick="setDiscPF('6',this)">PC</div>
       <div class="disc-pfchip" data-pf="48" onclick="setDiscPF('48',this)">Xbox</div>
       <div class="disc-pfchip" data-pf="167" onclick="setDiscPF('167',this)">Switch</div>
       <div class="disc-pfchip" data-pf="169" onclick="setDiscPF('169',this)">PS5</div>
       <div class="disc-pfchip" data-pf="130" onclick="setDiscPF('130',this)">PS4</div>
     </div>
-    <div class="rank-list" id="rank-list"><div class="disc-loading">加载中<span class="disc-loading-dots"><span></span><span></span><span></span></span></div></div>
+    <div class="rank-list" id="rank-list"><div class="disc-loading">鍔犺浇涓?span class="disc-loading-dots"><span></span><span></span><span></span></span></div></div>
   </div>
   <div class="pg" id="pg-stats">
     <div class="cg">
-      <div class="cc"><h3>状态分布</h3><div class="cw"><canvas id="ch-st"></canvas></div></div>
-      <div class="cc"><h3>类型分布</h3><div class="cw"><canvas id="ch-gn"></canvas></div></div>
-      <div class="cc"><h3>平台分布</h3><div class="cw"><canvas id="ch-pf"></canvas></div></div>
-      <div class="cc"><h3>评分分布</h3><div class="cw"><canvas id="ch-rt"></canvas></div></div>
-      <div class="cc full"><h3>风格偏好</h3><div class="cw" style="height:160px"><canvas id="ch-sty"></canvas></div></div>
+      <div class="cc"><h3>鐘舵€佸垎甯?/h3><div class="cw"><canvas id="ch-st"></canvas></div></div>
+      <div class="cc"><h3>绫诲瀷鍒嗗竷</h3><div class="cw"><canvas id="ch-gn"></canvas></div></div>
+      <div class="cc"><h3>骞冲彴鍒嗗竷</h3><div class="cw"><canvas id="ch-pf"></canvas></div></div>
+      <div class="cc"><h3>璇勫垎鍒嗗竷</h3><div class="cw"><canvas id="ch-rt"></canvas></div></div>
+      <div class="cc full"><h3>椋庢牸鍋忓ソ</h3><div class="cw" style="height:160px"><canvas id="ch-sty"></canvas></div></div>
     </div>
   </div>
   <div class="pg" id="pg-auth">
     <div class="auth-c">
       <div class="abox">
-        <h2>欢迎回来</h2><p>登录后跨设备云同步记录</p>
-        <div class="atab"><button class="on" id="t-in" onclick="am('login')">登录</button><button id="t-up" onclick="am('signup')">注册</button></div>
-        <div class="field"><label>邮箱</label><input type="email" id="ae" placeholder="your@email.com" autocomplete="email"></div>
-        <div class="field"><label>密码</label><input type="password" id="ap" placeholder="至少 6 位" autocomplete="current-password"></div>
-        <button class="btn btn-a" style="width:100%" id="asub" onclick="doAuth()">登录</button>
+        <h2>娆㈣繋鍥炴潵</h2><p>鐧诲綍鍚庤法璁惧浜戝悓姝ヨ褰?/p>
+        <div class="atab"><button class="on" id="t-in" onclick="am('login')">鐧诲綍</button><button id="t-up" onclick="am('signup')">娉ㄥ唽</button></div>
+        <div class="field"><label>閭</label><input type="email" id="ae" placeholder="your@email.com" autocomplete="email"></div>
+        <div class="field"><label>瀵嗙爜</label><input type="password" id="ap" placeholder="鑷冲皯 6 浣? autocomplete="current-password"></div>
+        <button class="btn btn-a" style="width:100%" id="asub" onclick="doAuth()">鐧诲綍</button>
         <div class="amsg" id="amsg"></div>
       </div>
     </div>
@@ -122,7 +123,7 @@
   <div class="pg" id="pg-pkm">
     <div id="pkm-active-catches" style="display:none" class="pkm-active-catches-box">
       <div class="pkm-active-catches-hdr">
-        <span class="pkm-active-catches-title">▶ 当前游玩 · 捕获记录</span>
+        <span class="pkm-active-catches-title">鈻?褰撳墠娓哥帺 路 鎹曡幏璁板綍</span>
         <span class="pkm-active-catches-count" id="pkm-active-count"></span>
         <span class="pkm-active-catches-game" id="pkm-active-game"></span>
       </div>
@@ -133,7 +134,7 @@
         <div class="pkm-today-hero"><div class="pkm-today-bg" id="pkm-today-bg"></div><img id="pkm-today-img" src="" alt="" class="pkm-today-img"></div>
         <div class="pkm-today-body">
           <div class="pkm-today-num" id="pkm-today-num">#???</div>
-          <div class="pkm-today-name" id="pkm-today-name">加载中…</div>
+          <div class="pkm-today-name" id="pkm-today-name">鍔犺浇涓€?/div>
           <div class="pkm-types" id="pkm-today-types"></div>
           <div class="pkm-stats" id="pkm-today-stats"></div>
           <div id="pkm-today-abilities" style="margin-bottom:10px"></div>
@@ -141,42 +142,42 @@
           <div id="pkm-today-evo" style="margin-bottom:10px"></div>
           <div id="pkm-today-locations" style="margin-bottom:10px"></div>
           <div class="pkm-action-row">
-            <button class="pkm-btn" id="pkm-btn-caught" onclick="togglePkmStatus('caught')">✓ 已捕获</button>
-            <button class="pkm-btn" id="pkm-btn-liked" onclick="togglePkmStatus('liked')">♥ 喜欢</button>
-            <button class="pkm-btn" id="pkm-btn-wanted" onclick="togglePkmStatus('wanted')">★ 想要</button>
+            <button class="pkm-btn" id="pkm-btn-caught" onclick="togglePkmStatus('caught')">鉁?宸叉崟鑾?/button>
+            <button class="pkm-btn" id="pkm-btn-liked" onclick="togglePkmStatus('liked')">鈾?鍠滄</button>
+            <button class="pkm-btn" id="pkm-btn-wanted" onclick="togglePkmStatus('wanted')">鈽?鎯宠</button>
           </div>
-          <button class="pkm-btn-ai" onclick="openPkmChat()">⬡ 和 AI 聊聊它</button>
-          <button class="btn btn-sm" style="width:100%;margin-top:6px;color:var(--t3)" onclick="loadTodayPkm(true)">🔀 换一只</button>
+          <button class="pkm-btn-ai" onclick="openPkmChat()">猬?鍜?AI 鑱婅亰瀹?/button>
+          <button class="btn btn-sm" style="width:100%;margin-top:6px;color:var(--t3)" onclick="loadTodayPkm(true)">馃攢 鎹竴鍙?/button>
         </div>
       </div>
       <div class="pkm-right">
         <div class="pkm-search-box">
-          <div style="font-size:.72rem;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">🔍 搜索宝可梦</div>
-          <div class="pkm-search-row"><input class="pkm-search-inp" id="pkm-search-inp" placeholder="输入名称或编号…" oninput="onPkmSearch(this.value)" autocomplete="off"></div>
+          <div style="font-size:.72rem;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">馃攳 鎼滅储瀹濆彲姊?/div>
+          <div class="pkm-search-row"><input class="pkm-search-inp" id="pkm-search-inp" placeholder="杈撳叆鍚嶇О鎴栫紪鍙封€? oninput="onPkmSearch(this.value)" autocomplete="off"></div>
           <div class="pkm-search-results" id="pkm-search-results"></div>
         </div>
         <div class="pkm-gen-box">
-          <div style="font-size:.72rem;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">📖 按世代浏览</div>
+          <div style="font-size:.72rem;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">馃摉 鎸変笘浠ｆ祻瑙?/div>
           <div class="pkm-gen-tabs" id="pkm-gen-tabs">
-            <div class="pkm-gen-tab on" data-gen="1" onclick="loadGen(1,this)">第一世代</div>
-            <div class="pkm-gen-tab" data-gen="2" onclick="loadGen(2,this)">第二世代</div>
-            <div class="pkm-gen-tab" data-gen="3" onclick="loadGen(3,this)">第三世代</div>
-            <div class="pkm-gen-tab" data-gen="4" onclick="loadGen(4,this)">第四世代</div>
-            <div class="pkm-gen-tab" data-gen="5" onclick="loadGen(5,this)">第五世代</div>
-            <div class="pkm-gen-tab" data-gen="6" onclick="loadGen(6,this)">第六世代</div>
-            <div class="pkm-gen-tab" data-gen="7" onclick="loadGen(7,this)">第七世代</div>
-            <div class="pkm-gen-tab" data-gen="8" onclick="loadGen(8,this)">第八世代</div>
-            <div class="pkm-gen-tab" data-gen="9" onclick="loadGen(9,this)">第九世代</div>
+            <div class="pkm-gen-tab on" data-gen="1" onclick="loadGen(1,this)">绗竴涓栦唬</div>
+            <div class="pkm-gen-tab" data-gen="2" onclick="loadGen(2,this)">绗簩涓栦唬</div>
+            <div class="pkm-gen-tab" data-gen="3" onclick="loadGen(3,this)">绗笁涓栦唬</div>
+            <div class="pkm-gen-tab" data-gen="4" onclick="loadGen(4,this)">绗洓涓栦唬</div>
+            <div class="pkm-gen-tab" data-gen="5" onclick="loadGen(5,this)">绗簲涓栦唬</div>
+            <div class="pkm-gen-tab" data-gen="6" onclick="loadGen(6,this)">绗叚涓栦唬</div>
+            <div class="pkm-gen-tab" data-gen="7" onclick="loadGen(7,this)">绗竷涓栦唬</div>
+            <div class="pkm-gen-tab" data-gen="8" onclick="loadGen(8,this)">绗叓涓栦唬</div>
+            <div class="pkm-gen-tab" data-gen="9" onclick="loadGen(9,this)">绗節涓栦唬</div>
           </div>
-          <div class="pkm-gen-grid" id="pkm-gen-grid"><div class="pkm-empty">加载中…</div></div>
+          <div class="pkm-gen-grid" id="pkm-gen-grid"><div class="pkm-empty">鍔犺浇涓€?/div></div>
         </div>
         <div class="pkm-series-box">
-          <div style="font-size:.72rem;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px">🎮 系列追踪</div>
+          <div style="font-size:.72rem;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px">馃幃 绯诲垪杩借釜</div>
           <div class="pkm-series-grid" id="pkm-series-grid"></div>
         </div>
         <div class="pkm-log-box">
-          <div class="pkm-log-hdr"><span>📋 游戏日志</span><span id="pkm-log-count" style="color:var(--t3)"></span></div>
-          <div id="pkm-log-list" class="pkm-log-list"><div class="pkm-empty">还没有日志</div></div>
+          <div class="pkm-log-hdr"><span>馃搵 娓告垙鏃ュ織</span><span id="pkm-log-count" style="color:var(--t3)"></span></div>
+          <div id="pkm-log-list" class="pkm-log-list"><div class="pkm-empty">杩樻病鏈夋棩蹇?/div></div>
         </div>
       </div>
     </div>
@@ -184,116 +185,119 @@
   <div class="pg" id="pg-anime">
     <div class="media-pg">
       <div class="disc-tabs" style="margin-bottom:.5rem">
-        <div class="disc-tab-btn on" id="anime-tab-list" onclick="switchMediaTab('anime','list',this)">📋 我的记录</div>
-        <div class="disc-tab-btn" id="anime-tab-rank" onclick="switchMediaTab('anime','rank',this)">🏆 排行榜</div>
+        <div class="disc-tab-btn on" id="anime-tab-list" onclick="switchMediaTab('anime','list',this)">馃搵 鎴戠殑璁板綍</div>
+        <div class="disc-tab-btn" id="anime-tab-rank" onclick="switchMediaTab('anime','rank',this)">馃弳 鎺掕姒?/div>
       </div>
       <div id="anime-panel-list">
         <div class="media-stats" id="anime-stats"></div>
         <div class="media-tb">
-          <input type="text" id="anime-q" placeholder="搜索动漫标题…" oninput="renderMedia('anime')" autocomplete="off">
-          <select id="anime-fst" onchange="renderMedia('anime')"><option value="">全部状态</option><option value="watching">观看中</option><option value="completed">已看完</option><option value="planned">想看</option><option value="paused">暂停</option><option value="dropped">放弃</option></select>
-          <select id="anime-fso" onchange="renderMedia('anime')"><option value="date">最新添加</option><option value="rating">评分最高</option><option value="title">标题排序</option></select>
-          <button class="btn btn-a" onclick="openMediaAdd('anime')">＋ 添加动漫</button>
+          <input type="text" id="anime-q" placeholder="鎼滅储鍔ㄦ极鏍囬鈥? oninput="renderMedia('anime')" autocomplete="off">
+          <select id="anime-fst" onchange="renderMedia('anime')"><option value="">鍏ㄩ儴鐘舵€?/option><option value="watching">瑙傜湅涓?/option><option value="completed">宸茬湅瀹?/option><option value="planned">鎯崇湅</option><option value="paused">鏆傚仠</option><option value="dropped">鏀惧純</option></select>
+          <select id="anime-fso" onchange="renderMedia('anime')"><option value="date">鏈€鏂版坊鍔?/option><option value="rating">璇勫垎鏈€楂?/option><option value="title">鏍囬鎺掑簭</option></select>
+          <button class="btn btn-a" onclick="openMediaAdd('anime')">锛?娣诲姞鍔ㄦ极</button>
         </div>
-        <div class="media-grid" id="anime-grid"><div style="text-align:center;padding:3rem;color:var(--t3)">加载中…</div></div>
+        <div class="media-grid" id="anime-grid"><div style="text-align:center;padding:3rem;color:var(--t3)">鍔犺浇涓€?/div></div>
       </div>
       <div id="anime-panel-rank" style="display:none">
         <div class="disc-header" style="margin-bottom:.8rem">
           <div class="disc-tabs">
-            <div class="disc-tab-btn on" data-mode="top" onclick="setMediaRankMode('anime','top',this)">🔥 热门推荐</div>
-            <div class="disc-tab-btn" data-mode="airing" onclick="setMediaRankMode('anime','airing',this)">📺 连载中</div>
-            <div class="disc-tab-btn" data-mode="upcoming" onclick="setMediaRankMode('anime','upcoming',this)">🗓 即将播出</div>
-            <div class="disc-tab-btn" data-mode="movie" onclick="setMediaRankMode('anime','movie',this)">🎬 剧场版</div>
+            <div class="disc-tab-btn on" data-mode="top" onclick="setMediaRankMode('anime','top',this)">馃敟 鐑棬鎺ㄨ崘</div>
+            <div class="disc-tab-btn" data-mode="airing" onclick="setMediaRankMode('anime','airing',this)">馃摵 杩炶浇涓?/div>
+            <div class="disc-tab-btn" data-mode="upcoming" onclick="setMediaRankMode('anime','upcoming',this)">馃棑 鍗冲皢鎾嚭</div>
+            <div class="disc-tab-btn" data-mode="movie" onclick="setMediaRankMode('anime','movie',this)">馃幀 鍓у満鐗?/div>
           </div>
-          <span style="font-size:.72rem;color:var(--t3);font-family:'DM Mono',monospace">数据来源 MAL</span>
+          <span style="font-size:.72rem;color:var(--t3);font-family:'DM Mono',monospace">鏁版嵁鏉ユ簮 MAL</span>
         </div>
-        <div id="anime-rank-list"><div class="disc-loading">加载中<span class="disc-loading-dots"><span></span><span></span><span></span></span></div></div>
+        <div id="anime-rank-list"><div class="disc-loading">鍔犺浇涓?span class="disc-loading-dots"><span></span><span></span><span></span></span></div></div>
       </div>
     </div>
   </div>
   <div class="pg" id="pg-manga">
     <div class="media-pg">
       <div class="disc-tabs" style="margin-bottom:.5rem">
-        <div class="disc-tab-btn on" id="manga-tab-list" onclick="switchMediaTab('manga','list',this)">📋 我的记录</div>
-        <div class="disc-tab-btn" id="manga-tab-rank" onclick="switchMediaTab('manga','rank',this)">🏆 排行榜</div>
+        <div class="disc-tab-btn on" id="manga-tab-list" onclick="switchMediaTab('manga','list',this)">馃搵 鎴戠殑璁板綍</div>
+        <div class="disc-tab-btn" id="manga-tab-rank" onclick="switchMediaTab('manga','rank',this)">馃弳 鎺掕姒?/div>
       </div>
       <div id="manga-panel-list">
         <div class="media-stats" id="manga-stats"></div>
         <div class="media-tb">
-          <input type="text" id="manga-q" placeholder="搜索漫画标题…" oninput="renderMedia('manga')" autocomplete="off">
-          <select id="manga-fst" onchange="renderMedia('manga')"><option value="">全部状态</option><option value="reading">阅读中</option><option value="completed">已读完</option><option value="planned">想读</option><option value="paused">暂停</option><option value="dropped">放弃</option></select>
-          <select id="manga-fso" onchange="renderMedia('manga')"><option value="date">最新添加</option><option value="rating">评分最高</option><option value="title">标题排序</option></select>
-          <button class="btn btn-a" onclick="openMediaAdd('manga')">＋ 添加漫画</button>
+          <input type="text" id="manga-q" placeholder="鎼滅储婕敾鏍囬鈥? oninput="renderMedia('manga')" autocomplete="off">
+          <select id="manga-fst" onchange="renderMedia('manga')"><option value="">鍏ㄩ儴鐘舵€?/option><option value="reading">闃呰涓?/option><option value="completed">宸茶瀹?/option><option value="planned">鎯宠</option><option value="paused">鏆傚仠</option><option value="dropped">鏀惧純</option></select>
+          <select id="manga-fso" onchange="renderMedia('manga')"><option value="date">鏈€鏂版坊鍔?/option><option value="rating">璇勫垎鏈€楂?/option><option value="title">鏍囬鎺掑簭</option></select>
+          <button class="btn btn-a" onclick="openMediaAdd('manga')">锛?娣诲姞婕敾</button>
         </div>
-        <div class="media-grid" id="manga-grid"><div style="text-align:center;padding:3rem;color:var(--t3)">加载中…</div></div>
+        <div class="media-grid" id="manga-grid"><div style="text-align:center;padding:3rem;color:var(--t3)">鍔犺浇涓€?/div></div>
       </div>
       <div id="manga-panel-rank" style="display:none">
         <div class="disc-header" style="margin-bottom:.8rem">
           <div class="disc-tabs">
-            <div class="disc-tab-btn on" data-mode="top" onclick="setMediaRankMode('manga','top',this)">🔥 热门推荐</div>
-            <div class="disc-tab-btn" data-mode="manga" onclick="setMediaRankMode('manga','manga',this)">📖 漫画榜</div>
-            <div class="disc-tab-btn" data-mode="manhwa" onclick="setMediaRankMode('manga','manhwa',this)">🇰🇷 韩漫</div>
-            <div class="disc-tab-btn" data-mode="novel" onclick="setMediaRankMode('manga','novel',this)">📝 轻小说</div>
+            <div class="disc-tab-btn on" data-mode="top" onclick="setMediaRankMode('manga','top',this)">馃敟 鐑棬鎺ㄨ崘</div>
+            <div class="disc-tab-btn" data-mode="manga" onclick="setMediaRankMode('manga','manga',this)">馃摉 婕敾姒?/div>
+            <div class="disc-tab-btn" data-mode="manhwa" onclick="setMediaRankMode('manga','manhwa',this)">馃嚢馃嚪 闊╂极</div>
+            <div class="disc-tab-btn" data-mode="novel" onclick="setMediaRankMode('manga','novel',this)">馃摑 杞诲皬璇?/div>
           </div>
-          <span style="font-size:.72rem;color:var(--t3);font-family:'DM Mono',monospace">数据来源 MAL</span>
+          <span style="font-size:.72rem;color:var(--t3);font-family:'DM Mono',monospace">鏁版嵁鏉ユ簮 MAL</span>
         </div>
-        <div id="manga-rank-list"><div class="disc-loading">加载中<span class="disc-loading-dots"><span></span><span></span><span></span></span></div></div>
+        <div id="manga-rank-list"><div class="disc-loading">鍔犺浇涓?span class="disc-loading-dots"><span></span><span></span><span></span></span></div></div>
       </div>
     </div>
   </div>
-  <!-- ====== 宝可梦对战助手 ====== -->
+  <!-- ====== 瀹濆彲姊﹀鎴樺姪鎵?====== -->
   <div class="pg" id="pg-battle">
     <div style="padding:.9rem 0 .4rem;display:flex;align-items:baseline;gap:.5rem">
-      <span style="font-size:1.05rem;font-weight:700;font-family:'Noto Serif SC',serif;color:var(--t)">对战助手</span>
+      <span style="font-size:1.05rem;font-weight:700;font-family:'Noto Serif SC',serif;color:var(--t)">瀵规垬鍔╂墜</span>
       <span style="font-size:.72rem;color:var(--acc);font-family:'DM Mono',monospace;letter-spacing:.04em">Pokemon Champions</span>
     </div>
     <div style="background:var(--bg2);border:1px solid var(--b2);border-radius:var(--rl) var(--rl) 0 0;overflow:hidden;margin-bottom:0">
       <div class="btab-bar">
-        <button class="btab on" onclick="switchBattleTab('team',this)">🗂 我的队伍</button>
-        <button class="btab" onclick="switchBattleTab('analysis',this)">⚔️ 赛前分析</button>
-        <button class="btab" onclick="switchBattleTab('calc',this)">📊 数值工具</button>
+        <button class="btab on" onclick="switchBattleTab('team',this)">馃梻 鎴戠殑闃熶紞</button>
+        <button class="btab" onclick="switchBattleTab('analysis',this)">鈿旓笍 璧涘墠鍒嗘瀽</button>
+        <button class="btab" onclick="switchBattleTab('calc',this)">馃搳 鏁板€煎伐鍏?/button>
       </div>
     </div>
 
-    <!-- 我的队伍 -->
+    <!-- 鎴戠殑闃熶紞 -->
     <div class="btab-panel on" id="btab-team">
       <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 0 .2rem">
-        <div style="font-size:.65rem;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase">我的队伍列表</div>
-        <button class="btn btn-a btn-sm" onclick="openBattleTeamEdit(null,0)">＋ 新建队伍</button>
+        <div style="font-size:.65rem;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase">鎴戠殑闃熶紞鍒楄〃</div>
+        <button class="btn btn-a btn-sm" onclick="openBattleTeamEdit(null,0)">锛?鏂板缓闃熶紞</button>
       </div>
       <div id="battle-team-list" class="battle-team-list"></div>
       <div class="battle-datasrc-note" style="margin-top:1rem">
-        数据参考来源：
-        <a class="battle-datasrc-link" href="https://wiki.52poke.com" target="_blank" rel="noopener">52Poke Wiki（中文标准）</a> ·
-        <a class="battle-datasrc-link" href="https://bulbapedia.bulbagarden.net" target="_blank" rel="noopener">Bulbapedia</a> ·
+        鏁版嵁鍙傝€冩潵婧愶細
+        <a class="battle-datasrc-link" href="https://wiki.52poke.com" target="_blank" rel="noopener">52Poke Wiki锛堜腑鏂囨爣鍑嗭級</a> 路
+        <a class="battle-datasrc-link" href="https://bulbapedia.bulbagarden.net" target="_blank" rel="noopener">Bulbapedia</a> 路
         <a class="battle-datasrc-link" href="https://gamewith.ai/pokemon-champions/en" target="_blank" rel="noopener">Champions GameWith</a>
       </div>
     </div>
 
-    <!-- 赛前分析 -->
+    <!-- 璧涘墠鍒嗘瀽 -->
     <div class="btab-panel" id="btab-analysis">
       <div class="battle-analysis-layout" style="margin-top:1rem">
         <div class="battle-side-card">
-          <div class="battle-side-hdr">我的队伍</div>
+          <div class="battle-side-hdr">鎴戠殑闃熶紞</div>
           <select class="bpkm-inp" id="battle-my-team-sel" style="width:100%;margin-bottom:8px" onchange="onMyTeamSelect(this.value)">
-            <option value="">选择队伍…</option>
+            <option value="">閫夋嫨闃熶紞鈥?/option>
           </select>
           <div id="battle-my-preview" class="battle-my-preview"></div>
         </div>
         <div class="battle-side-card">
-          <div class="battle-side-hdr">对方队伍（填属性自动分析）</div>
+          <div class="battle-side-hdr">瀵规柟闃熶紞锛堝～灞炴€ц嚜鍔ㄥ垎鏋愶級</div>
           <div id="battle-opp-slots" class="battle-opp-slots"></div>
         </div>
       </div>
-      <button class="btn btn-a" onclick="analyzeMatchups()" style="width:100%;margin-top:8px;padding:10px">⚔️ 开始赛前分析</button>
+      <button class="btn btn-a" onclick="analyzeMatchups()" style="width:100%;margin-top:8px;padding:10px">鈿旓笍 寮€濮嬭禌鍓嶅垎鏋?/button>
       <div id="battle-analysis-result"></div>
     </div>
 
-    <!-- 数值工具 -->
+    <!-- 鏁板€煎伐鍏?-->
     <div class="btab-panel" id="btab-calc" style="padding-top:1rem"></div>
   </div>
 </main>
-<!-- 游戏详情弹窗 -->
+<footer class="site-footer">
+  <p>© 2024-2026 PIXELFISH 版权所有，未经授权禁止转载</p>
+</footer>
+<!-- 娓告垙璇︽儏寮圭獥 -->
 <div class="ov" id="ov-detail" onclick="if(event.target===this)closeOv('ov-detail')">
   <div class="modal d-modal">
     <div class="d-hero"><div class="d-hero-bg" id="dh-bg"></div></div>
@@ -303,93 +307,93 @@
         <div class="d-info"><h2 id="d-name" class="d-name"></h2><div class="d-meta" id="d-meta"></div><div class="d-tags" id="d-tags"></div></div>
       </div>
       <div class="d-stats">
-        <div class="d-stat"><span id="d-st-val" class="d-val"></span><span class="d-lbl">状态</span></div>
-        <div class="d-stat"><span id="d-hr-val" class="d-val"></span><span class="d-lbl">时长</span></div>
-        <div class="d-stat"><span id="d-rt-val" class="d-val stars"></span><span class="d-lbl">评分</span></div>
-        <div class="d-stat"><span id="d-cp-val" class="d-val"></span><span class="d-lbl">进度</span></div>
+        <div class="d-stat"><span id="d-st-val" class="d-val"></span><span class="d-lbl">鐘舵€?/span></div>
+        <div class="d-stat"><span id="d-hr-val" class="d-val"></span><span class="d-lbl">鏃堕暱</span></div>
+        <div class="d-stat"><span id="d-rt-val" class="d-val stars"></span><span class="d-lbl">璇勫垎</span></div>
+        <div class="d-stat"><span id="d-cp-val" class="d-val"></span><span class="d-lbl">杩涘害</span></div>
       </div>
-      <div class="d-rev-box" id="d-rev-box"><div class="d-rev-lbl">评测与高光</div><div id="d-rev-val" class="d-rev-val"></div></div>
-      <!-- 游戏时间轴挂载点 -->
+      <div class="d-rev-box" id="d-rev-box"><div class="d-rev-lbl">璇勬祴涓庨珮鍏?/div><div id="d-rev-val" class="d-rev-val"></div></div>
+      <!-- 娓告垙鏃堕棿杞存寕杞界偣 -->
       <div id="game-timeline-slot"></div>
       <div id="game-moments-slot"></div>
-      <button class="d-ai-btn" onclick="toggleAIChat()"><span>⬡</span><span id="d-ai-btn-txt">和 AI 聊聊这款游戏</span></button>
+      <button class="d-ai-btn" onclick="toggleAIChat()"><span>猬?/span><span id="d-ai-btn-txt">鍜?AI 鑱婅亰杩欐娓告垙</span></button>
       <div id="sum-box" style="display:none" class="sum-box">
-        <div class="sum-latest"><div class="sum-latest-hdr"><span class="sum-lbl">⬡ 情报存档</span><span class="sum-date" id="sum-latest-date"></span></div><div class="sum-text" id="sum-latest-text"></div></div>
+        <div class="sum-latest"><div class="sum-latest-hdr"><span class="sum-lbl">猬?鎯呮姤瀛樻。</span><span class="sum-date" id="sum-latest-date"></span></div><div class="sum-text" id="sum-latest-text"></div></div>
         <button class="sum-old-toggle" id="sum-old-toggle" onclick="toggleOldSums()" style="display:none"></button>
         <div class="sum-old-list" id="sum-old-list"></div>
       </div>
     </div>
     <div class="chat-panel" id="chat-panel">
-      <div class="chat-hdr"><div class="chat-hdr-l"><div class="ai-pulse"></div><div class="chat-htitle">AI 情报员 · <em id="chat-game-name"></em></div></div><button class="btn btn-sm" onclick="toggleAIChat()">✕</button></div>
+      <div class="chat-hdr"><div class="chat-hdr-l"><div class="ai-pulse"></div><div class="chat-htitle">AI 鎯呮姤鍛?路 <em id="chat-game-name"></em></div></div><button class="btn btn-sm" onclick="toggleAIChat()">鉁?/button></div>
       <div class="chat-msgs" id="chat-msgs"></div>
       <div class="quick-qs" id="chat-quick"></div>
       <div class="chat-inp-row">
-        <input class="chat-inp" id="chat-inp" placeholder="问 AI 任何关于这款游戏的问题…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAIMsg();}">
-        <button class="chat-snd" id="chat-snd" onclick="sendAIMsg()">发送</button>
+        <input class="chat-inp" id="chat-inp" placeholder="闂?AI 浠讳綍鍏充簬杩欐娓告垙鐨勯棶棰樷€? onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAIMsg();}">
+        <button class="chat-snd" id="chat-snd" onclick="sendAIMsg()">鍙戦€?/button>
       </div>
-      <div class="chat-sum-bar"><button class="chat-sum-btn" id="chat-sum-btn" onclick="generateSummary()">⬡ 封存本次情报</button></div>
+      <div class="chat-sum-bar"><button class="chat-sum-btn" id="chat-sum-btn" onclick="generateSummary()">猬?灏佸瓨鏈鎯呮姤</button></div>
     </div>
     <div class="mfoot">
-      <button class="btn btn-d" onclick="delGame()">删除</button>
-      <button class="btn" onclick="closeOv('ov-detail')">关闭</button>
-      <button class="btn btn-a" onclick="openEditFromDetail()">编辑记录</button>
+      <button class="btn btn-d" onclick="delGame()">鍒犻櫎</button>
+      <button class="btn" onclick="closeOv('ov-detail')">鍏抽棴</button>
+      <button class="btn btn-a" onclick="openEditFromDetail()">缂栬緫璁板綍</button>
     </div>
   </div>
 </div>
-<!-- 动漫/漫画弹窗 -->
+<!-- 鍔ㄦ极/婕敾寮圭獥 -->
 <div class="ov" id="ov-media" onclick="if(event.target===this)closeOv('ov-media')">
   <div class="modal media-modal">
     <div class="media-modal-hero"><div class="media-modal-bg" id="media-modal-bg"></div></div>
     <div class="media-modal-top">
       <img id="media-modal-cover" src="" class="media-modal-cover" onerror="this.style.display='none'">
-      <div class="media-modal-info"><div class="media-modal-title" id="media-modal-title">添加作品</div><div style="font-size:.72rem;color:var(--t3);font-family:'DM Mono',monospace" id="media-modal-sub"></div></div>
+      <div class="media-modal-info"><div class="media-modal-title" id="media-modal-title">娣诲姞浣滃搧</div><div style="font-size:.72rem;color:var(--t3);font-family:'DM Mono',monospace" id="media-modal-sub"></div></div>
     </div>
     <div class="mc" style="padding:0 1.5rem 0;background:none;border:none;cursor:default">
       <div style="margin-bottom:12px" id="media-search-wrap">
-        <div style="font-size:.7rem;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px">🔍 搜索 MAL 数据库</div>
-        <input id="media-search-inp" class="series-inp" style="width:100%" placeholder="输入标题搜索…" oninput="onMediaSearch(this.value)" autocomplete="off">
+        <div style="font-size:.7rem;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px">馃攳 鎼滅储 MAL 鏁版嵁搴?/div>
+        <input id="media-search-inp" class="series-inp" style="width:100%" placeholder="杈撳叆鏍囬鎼滅储鈥? oninput="onMediaSearch(this.value)" autocomplete="off">
         <div id="jikan-results" class="jikan-results" style="display:none"></div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-        <div class="series-inp-group"><span class="series-inp-label">状态</span>
-          <select id="media-status" class="series-inp"><option value="watching">观看中</option><option value="completed">已看完</option><option value="planned">想看</option><option value="paused">暂停</option><option value="dropped">放弃</option></select>
+        <div class="series-inp-group"><span class="series-inp-label">鐘舵€?/span>
+          <select id="media-status" class="series-inp"><option value="watching">瑙傜湅涓?/option><option value="completed">宸茬湅瀹?/option><option value="planned">鎯崇湅</option><option value="paused">鏆傚仠</option><option value="dropped">鏀惧純</option></select>
         </div>
-        <div class="series-inp-group" id="media-prog-wrap"><span class="series-inp-label" id="media-prog-label">看到第几集</span>
+        <div class="series-inp-group" id="media-prog-wrap"><span class="series-inp-label" id="media-prog-label">鐪嬪埌绗嚑闆?/span>
           <div style="display:flex;gap:6px;align-items:center"><input type="number" id="media-current" class="series-inp" placeholder="0" min="0" style="flex:1"><span style="color:var(--t3);font-size:.8rem">/</span><input type="number" id="media-total" class="series-inp" placeholder="?" min="0" style="flex:1"></div>
         </div>
       </div>
-      <div class="series-inp-group" style="margin-bottom:10px"><span class="series-inp-label">评分</span>
+      <div class="series-inp-group" style="margin-bottom:10px"><span class="series-inp-label">璇勫垎</span>
         <div style="display:flex;gap:6px">
-          <button class="media-star" data-v="1" onclick="setMediaRating(1)">★</button><button class="media-star" data-v="2" onclick="setMediaRating(2)">★</button><button class="media-star" data-v="3" onclick="setMediaRating(3)">★</button><button class="media-star" data-v="4" onclick="setMediaRating(4)">★</button><button class="media-star" data-v="5" onclick="setMediaRating(5)">★</button>
+          <button class="media-star" data-v="1" onclick="setMediaRating(1)">鈽?/button><button class="media-star" data-v="2" onclick="setMediaRating(2)">鈽?/button><button class="media-star" data-v="3" onclick="setMediaRating(3)">鈽?/button><button class="media-star" data-v="4" onclick="setMediaRating(4)">鈽?/button><button class="media-star" data-v="5" onclick="setMediaRating(5)">鈽?/button>
           <span id="media-rating-lbl" style="color:var(--t3);font-size:.78rem;margin-left:4px;align-self:center"></span>
         </div>
       </div>
-      <div class="series-inp-group" style="margin-bottom:10px"><span class="series-inp-label">类型标签</span><div class="genre-chips" id="media-genre-chips"></div></div>
-      <div class="series-inp-group" style="margin-bottom:10px"><span class="series-inp-label">评测 / 短评</span><textarea id="media-review" class="series-textarea" style="height:70px" placeholder="写下你的感受…"></textarea></div>
-      <!-- 动漫/漫画时间轴挂载点 -->
+      <div class="series-inp-group" style="margin-bottom:10px"><span class="series-inp-label">绫诲瀷鏍囩</span><div class="genre-chips" id="media-genre-chips"></div></div>
+      <div class="series-inp-group" style="margin-bottom:10px"><span class="series-inp-label">璇勬祴 / 鐭瘎</span><textarea id="media-review" class="series-textarea" style="height:70px" placeholder="鍐欎笅浣犵殑鎰熷彈鈥?></textarea></div>
+      <!-- 鍔ㄦ极/婕敾鏃堕棿杞存寕杞界偣 -->
       <div id="media-timeline-slot"></div>
       <div id="media-chat-wrap" style="margin-bottom:10px;border:1px solid var(--b);border-radius:10px;overflow:hidden;display:none">
-        <div style="padding:8px 12px;background:var(--bg3);border-bottom:1px solid var(--b);display:flex;align-items:center;gap:8px"><div class="ai-pulse"></div><span style="font-size:.75rem;font-family:'DM Mono',monospace;color:var(--t2)">AI 情报员 · <em id="media-chat-title" style="color:var(--acc);font-style:normal"></em></span></div>
+        <div style="padding:8px 12px;background:var(--bg3);border-bottom:1px solid var(--b);display:flex;align-items:center;gap:8px"><div class="ai-pulse"></div><span style="font-size:.75rem;font-family:'DM Mono',monospace;color:var(--t2)">AI 鎯呮姤鍛?路 <em id="media-chat-title" style="color:var(--acc);font-style:normal"></em></span></div>
         <div id="media-chat-msgs" style="height:220px;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px;background:var(--bg)"></div>
         <div style="padding:4px 10px 8px;display:flex;gap:6px;flex-wrap:wrap;background:var(--bg)" id="media-chat-quick"></div>
         <div style="display:flex;gap:6px;padding:6px 10px 10px;background:var(--bg);border-top:1px solid var(--b)">
-          <input id="media-chat-inp" style="flex:1;background:var(--bg3);border:1px solid var(--b);border-radius:8px;padding:6px 10px;color:var(--t);font-family:inherit;font-size:.82rem;outline:none" placeholder="问 AI 任何关于这部作品的问题…" onkeydown="if(event.key==='Enter')sendMediaAIMsg()">
-          <button onclick="sendMediaAIMsg()" style="padding:6px 12px;border-radius:8px;background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.3);color:var(--acc);font-size:.78rem;cursor:pointer;font-family:'DM Mono',monospace" id="media-ai-snd">发送</button>
+          <input id="media-chat-inp" style="flex:1;background:var(--bg3);border:1px solid var(--b);border-radius:8px;padding:6px 10px;color:var(--t);font-family:inherit;font-size:.82rem;outline:none" placeholder="闂?AI 浠讳綍鍏充簬杩欓儴浣滃搧鐨勯棶棰樷€? onkeydown="if(event.key==='Enter')sendMediaAIMsg()">
+          <button onclick="sendMediaAIMsg()" style="padding:6px 12px;border-radius:8px;background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.3);color:var(--acc);font-size:.78rem;cursor:pointer;font-family:'DM Mono',monospace" id="media-ai-snd">鍙戦€?/button>
         </div>
       </div>
     </div>
     <div id="media-sum-box" style="margin:0 1.5rem 10px;display:none"></div>
     <div class="mfoot" style="padding:.8rem 1.5rem">
       <div style="display:flex;gap:6px;flex-wrap:wrap">
-        <button class="btn btn-d" id="media-del-btn" onclick="delMedia()" style="display:none">删除</button>
-        <button class="btn" onclick="toggleMediaChat()" id="media-ai-btn" style="color:var(--acc);border-color:rgba(96,165,250,.3)">⬡ 和 AI 聊聊</button>
-        <button class="chat-sum-btn" id="media-sum-btn" onclick="generateMediaSummary()" style="display:none">📋 生成存档</button>
+        <button class="btn btn-d" id="media-del-btn" onclick="delMedia()" style="display:none">鍒犻櫎</button>
+        <button class="btn" onclick="toggleMediaChat()" id="media-ai-btn" style="color:var(--acc);border-color:rgba(96,165,250,.3)">猬?鍜?AI 鑱婅亰</button>
+        <button class="chat-sum-btn" id="media-sum-btn" onclick="generateMediaSummary()" style="display:none">馃搵 鐢熸垚瀛樻。</button>
       </div>
-      <div style="display:flex;gap:8px"><button class="btn" onclick="closeOv('ov-media')">取消</button><button class="btn btn-a" id="media-save-btn" onclick="saveMedia()">保存</button></div>
+      <div style="display:flex;gap:8px"><button class="btn" onclick="closeOv('ov-media')">鍙栨秷</button><button class="btn btn-a" id="media-save-btn" onclick="saveMedia()">淇濆瓨</button></div>
     </div>
   </div>
 </div>
-<!-- 宝可梦详情弹窗 -->
+<!-- 瀹濆彲姊﹁鎯呭脊绐?-->
 <div class="ov" id="ov-pkm" onclick="if(event.target===this)closeOv('ov-pkm')">
   <div class="modal pkm-detail-modal">
     <div class="pkm-detail-hero"><div class="pkm-detail-bg" id="pkm-detail-bg"></div><img id="pkm-detail-img" src="" alt="" class="pkm-detail-img"></div>
@@ -404,118 +408,118 @@
       <div id="pkm-detail-abilities" style="margin-bottom:12px"></div>
       <div id="pkm-detail-evo" style="margin-bottom:12px"></div>
       <div class="pkm-action-row">
-        <button class="pkm-btn" id="pkm-detail-caught" onclick="togglePkmStatusModal('caught')">✓ 已捕获</button>
-        <button class="pkm-btn" id="pkm-detail-liked" onclick="togglePkmStatusModal('liked')">♥ 喜欢</button>
-        <button class="pkm-btn" id="pkm-detail-wanted" onclick="togglePkmStatusModal('wanted')">★ 想要</button>
+        <button class="pkm-btn" id="pkm-detail-caught" onclick="togglePkmStatusModal('caught')">鉁?宸叉崟鑾?/button>
+        <button class="pkm-btn" id="pkm-detail-liked" onclick="togglePkmStatusModal('liked')">鈾?鍠滄</button>
+        <button class="pkm-btn" id="pkm-detail-wanted" onclick="togglePkmStatusModal('wanted')">鈽?鎯宠</button>
       </div>
-      <button class="pkm-btn-ai" style="margin-top:8px" onclick="openPkmChatFromModal()">⬡ 和 AI 聊聊它</button>
+      <button class="pkm-btn-ai" style="margin-top:8px" onclick="openPkmChatFromModal()">猬?鍜?AI 鑱婅亰瀹?/button>
     </div>
-    <div class="mfoot"><button class="btn" onclick="closeOv('ov-pkm')">关闭</button></div>
+    <div class="mfoot"><button class="btn" onclick="closeOv('ov-pkm')">鍏抽棴</button></div>
   </div>
 </div>
-<!-- 宝可梦AI聊天弹窗 -->
+<!-- 瀹濆彲姊I鑱婂ぉ寮圭獥 -->
 <div class="ov" id="ov-pkm-chat" onclick="if(event.target===this)closeOv('ov-pkm-chat')">
   <div class="modal" style="max-width:560px">
-    <div class="mh" style="padding-bottom:1rem;border-bottom:1px solid var(--b)"><h2 id="pkm-chat-title" style="font-family:'Noto Serif SC',serif">和 AI 聊聊</h2><button class="btn btn-sm" onclick="closeOv('ov-pkm-chat')">✕</button></div>
+    <div class="mh" style="padding-bottom:1rem;border-bottom:1px solid var(--b)"><h2 id="pkm-chat-title" style="font-family:'Noto Serif SC',serif">鍜?AI 鑱婅亰</h2><button class="btn btn-sm" onclick="closeOv('ov-pkm-chat')">鉁?/button></div>
     <div class="chat-msgs" id="pkm-ai-msgs" style="height:300px;padding:12px 1.5rem;display:flex;flex-direction:column;gap:8px;overflow-y:auto"></div>
     <div class="quick-qs" id="pkm-ai-quick" style="padding:0 1.5rem 8px"></div>
-    <div style="padding:0 1.5rem 8px"><div style="font-size:.72rem;color:var(--t3);font-family:'DM Mono',monospace;margin-bottom:4px">游戏系列（可选）</div><input id="pkm-series-inp" style="width:100%;background:var(--bg3);border:1px solid var(--b);border-radius:8px;padding:6px 12px;color:var(--t);font-family:inherit;font-size:.82rem;outline:none" placeholder="例：宝可梦朱/紫…" autocomplete="off"></div>
+    <div style="padding:0 1.5rem 8px"><div style="font-size:.72rem;color:var(--t3);font-family:'DM Mono',monospace;margin-bottom:4px">娓告垙绯诲垪锛堝彲閫夛級</div><input id="pkm-series-inp" style="width:100%;background:var(--bg3);border:1px solid var(--b);border-radius:8px;padding:6px 12px;color:var(--t);font-family:inherit;font-size:.82rem;outline:none" placeholder="渚嬶細瀹濆彲姊︽湵/绱€? autocomplete="off"></div>
     <div class="chat-inp-row" style="padding:8px 1.5rem">
-      <input class="chat-inp" id="pkm-ai-inp" placeholder="问 AI 任何关于这只宝可梦的问题…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendPkmAIMsg();}">
-      <button class="chat-snd" id="pkm-ai-snd" onclick="sendPkmAIMsg()">发送</button>
+      <input class="chat-inp" id="pkm-ai-inp" placeholder="闂?AI 浠讳綍鍏充簬杩欏彧瀹濆彲姊︾殑闂鈥? onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendPkmAIMsg();}">
+      <button class="chat-snd" id="pkm-ai-snd" onclick="sendPkmAIMsg()">鍙戦€?/button>
     </div>
-    <div class="chat-sum-bar" style="padding:4px 1.5rem 10px"><button class="chat-sum-btn" id="pkm-sum-btn" onclick="generatePkmLog()">📋 生成游戏日志</button></div>
+    <div class="chat-sum-bar" style="padding:4px 1.5rem 10px"><button class="chat-sum-btn" id="pkm-sum-btn" onclick="generatePkmLog()">馃搵 鐢熸垚娓告垙鏃ュ織</button></div>
   </div>
 </div>
-<!-- 系列追踪弹窗 -->
+<!-- 绯诲垪杩借釜寮圭獥 -->
 <div class="ov" id="ov-series" onclick="if(event.target===this)closeOv('ov-series')">
   <div class="modal series-modal">
     <div class="series-hero" id="series-hero">
       <div class="series-hero-bg" id="series-hero-bg"></div>
       <div class="series-hero-content">
-        <div class="series-hero-title" id="series-modal-title">系列名称</div>
+        <div class="series-hero-title" id="series-modal-title">绯诲垪鍚嶇О</div>
         <div class="series-hero-year" id="series-modal-year"></div>
         <div class="series-status-pills">
-          <div class="series-pill" id="spill-none" onclick="setSeriesStatus('none')">— 未游玩</div>
-          <div class="series-pill" id="spill-played" onclick="setSeriesStatus('played')">▶ 游玩中</div>
-          <div class="series-pill" id="spill-cleared" onclick="setSeriesStatus('cleared')">✓ 已通关</div>
+          <div class="series-pill" id="spill-none" onclick="setSeriesStatus('none')">鈥?鏈父鐜?/div>
+          <div class="series-pill" id="spill-played" onclick="setSeriesStatus('played')">鈻?娓哥帺涓?/div>
+          <div class="series-pill" id="spill-cleared" onclick="setSeriesStatus('cleared')">鉁?宸查€氬叧</div>
         </div>
       </div>
-      <button class="btn btn-sm" onclick="closeOv('ov-series')" style="position:absolute;top:10px;right:10px;z-index:3">✕</button>
+      <button class="btn btn-sm" onclick="closeOv('ov-series')" style="position:absolute;top:10px;right:10px;z-index:3">鉁?/button>
     </div>
-    <!-- Tab 导航 -->
+    <!-- Tab 瀵艰埅 -->
     <div class="series-tab-bar">
-      <button class="stab on" onclick="switchSeriesTab(this,'overview')">概览</button>
-      <button class="stab" onclick="switchSeriesTab(this,'party')">队伍</button>
-      <button class="stab" onclick="switchSeriesTab(this,'progress')">进度</button>
-      <button class="stab" onclick="switchSeriesTab(this,'training')">训练</button>
-      <button class="stab" onclick="switchSeriesTab(this,'explore')">探索</button>
-      <button class="stab" onclick="switchSeriesTab(this,'hunting')">狩猎</button>
-      <button class="stab" onclick="switchSeriesTab(this,'catches')">图鉴录入</button>
+      <button class="stab on" onclick="switchSeriesTab(this,'overview')">姒傝</button>
+      <button class="stab" onclick="switchSeriesTab(this,'party')">闃熶紞</button>
+      <button class="stab" onclick="switchSeriesTab(this,'progress')">杩涘害</button>
+      <button class="stab" onclick="switchSeriesTab(this,'training')">璁粌</button>
+      <button class="stab" onclick="switchSeriesTab(this,'explore')">鎺㈢储</button>
+      <button class="stab" onclick="switchSeriesTab(this,'hunting')">鐙╃寧</button>
+      <button class="stab" onclick="switchSeriesTab(this,'catches')">鍥鹃壌褰曞叆</button>
     </div>
 
-    <!-- 概览 -->
+    <!-- 姒傝 -->
     <div class="stab-panel on" id="stab-overview">
       <div class="series-body">
         <div class="series-grid2">
-          <div class="series-inp-group"><span class="series-inp-label">📅 开始日期</span><input type="date" id="series-start-inp" class="series-inp"></div>
-          <div class="series-inp-group"><span class="series-inp-label">🏁 通关日期</span><input type="date" id="series-end-inp" class="series-inp"></div>
-          <div class="series-inp-group"><span class="series-inp-label">⏱ 游玩时长（小时）</span><input type="number" id="series-hours-inp" class="series-inp" placeholder="例：40" min="0" max="9999"></div>
-          <div class="series-inp-group"><span class="series-inp-label">🏆 王牌宝可梦</span><input type="text" id="series-ace-inp" class="series-inp" placeholder="例：妙蛙花" autocomplete="off"></div>
+          <div class="series-inp-group"><span class="series-inp-label">馃搮 寮€濮嬫棩鏈?/span><input type="date" id="series-start-inp" class="series-inp"></div>
+          <div class="series-inp-group"><span class="series-inp-label">馃弫 閫氬叧鏃ユ湡</span><input type="date" id="series-end-inp" class="series-inp"></div>
+          <div class="series-inp-group"><span class="series-inp-label">鈴?娓哥帺鏃堕暱锛堝皬鏃讹級</span><input type="number" id="series-hours-inp" class="series-inp" placeholder="渚嬶細40" min="0" max="9999"></div>
+          <div class="series-inp-group"><span class="series-inp-label">馃弳 鐜嬬墝瀹濆彲姊?/span><input type="text" id="series-ace-inp" class="series-inp" placeholder="渚嬶細濡欒洐鑺? autocomplete="off"></div>
         </div>
-        <div class="series-inp-label" style="margin-bottom:5px">⚡ 游玩快记</div>
+        <div class="series-inp-label" style="margin-bottom:5px">鈿?娓哥帺蹇</div>
         <div style="display:flex;gap:6px;margin-bottom:6px">
-          <input id="quicknote-inp" class="series-inp" placeholder="随手记录当前进展…" style="flex:1" onkeydown="if(event.key==='Enter')addQuickNote()">
-          <button class="btn btn-sm" onclick="addQuickNote()">记录</button>
+          <input id="quicknote-inp" class="series-inp" placeholder="闅忔墜璁板綍褰撳墠杩涘睍鈥? style="flex:1" onkeydown="if(event.key==='Enter')addQuickNote()">
+          <button class="btn btn-sm" onclick="addQuickNote()">璁板綍</button>
         </div>
         <div id="quicknote-list" class="quicknote-list"></div>
-        <button class="series-ai-btn" onclick="genAdventureLog()" id="gen-diary-btn" style="margin-top:8px;width:100%">✦ AI 润色成冒险日记</button>
+        <button class="series-ai-btn" onclick="genAdventureLog()" id="gen-diary-btn" style="margin-top:8px;width:100%">鉁?AI 娑﹁壊鎴愬啋闄╂棩璁?/button>
         <div id="adventure-diary" class="adventure-diary-box" style="display:none"></div>
         <div id="series-chat-wrap" style="margin-top:10px;border:1px solid var(--b);border-radius:10px;overflow:hidden;display:none">
-          <div style="padding:8px 12px;background:var(--bg3);border-bottom:1px solid var(--b);display:flex;align-items:center;gap:8px"><div class="ai-pulse"></div><span style="font-size:.75rem;font-family:'DM Mono',monospace;color:var(--t2)">AI 游玩顾问 · <em id="series-chat-game-name" style="color:var(--acc);font-style:normal"></em></span></div>
+          <div style="padding:8px 12px;background:var(--bg3);border-bottom:1px solid var(--b);display:flex;align-items:center;gap:8px"><div class="ai-pulse"></div><span style="font-size:.75rem;font-family:'DM Mono',monospace;color:var(--t2)">AI 娓哥帺椤鹃棶 路 <em id="series-chat-game-name" style="color:var(--acc);font-style:normal"></em></span></div>
           <div id="series-chat-msgs" style="height:200px;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px;background:var(--bg)"></div>
           <div style="padding:4px 10px 8px;display:flex;gap:6px;flex-wrap:wrap;background:var(--bg)" id="series-quick-qs"></div>
           <div style="display:flex;gap:6px;padding:6px 10px 10px;background:var(--bg);border-top:1px solid var(--b)">
-            <input id="series-chat-inp" style="flex:1;background:var(--bg3);border:1px solid var(--b);border-radius:8px;padding:6px 10px;color:var(--t);font-family:inherit;font-size:.82rem;outline:none" placeholder="和 AI 聊聊这部作品…" onkeydown="if(event.key==='Enter'){sendSeriesAIMsg();}">
-            <button onclick="sendSeriesAIMsg()" style="padding:6px 12px;border-radius:8px;background:rgba(96,165,250,.12);border:1px solid rgba(96,165,250,.3);color:var(--acc);font-size:.78rem;cursor:pointer;font-family:'DM Mono',monospace" id="series-ai-snd">发送</button>
+            <input id="series-chat-inp" style="flex:1;background:var(--bg3);border:1px solid var(--b);border-radius:8px;padding:6px 10px;color:var(--t);font-family:inherit;font-size:.82rem;outline:none" placeholder="鍜?AI 鑱婅亰杩欓儴浣滃搧鈥? onkeydown="if(event.key==='Enter'){sendSeriesAIMsg();}">
+            <button onclick="sendSeriesAIMsg()" style="padding:6px 12px;border-radius:8px;background:rgba(96,165,250,.12);border:1px solid rgba(96,165,250,.3);color:var(--acc);font-size:.78rem;cursor:pointer;font-family:'DM Mono',monospace" id="series-ai-snd">鍙戦€?/button>
           </div>
-          <div style="padding:4px 10px 8px;display:flex;justify-content:flex-end;background:var(--bg)"><button onclick="genSeriesLogFromChat()" class="chat-sum-btn" id="series-log-btn">📋 生成游玩日志</button></div>
+          <div style="padding:4px 10px 8px;display:flex;justify-content:flex-end;background:var(--bg)"><button onclick="genSeriesLogFromChat()" class="chat-sum-btn" id="series-log-btn">馃搵 鐢熸垚娓哥帺鏃ュ織</button></div>
         </div>
         <div style="display:flex;gap:8px;margin-top:10px">
-          <button class="series-ai-btn" id="series-ai-btn" onclick="toggleSeriesChat()">⬡ 和 AI 聊聊这部作品</button>
-          <button class="btn btn-a" id="series-save-btn" onclick="saveSeriesDetail()" style="white-space:nowrap">保存记录</button>
+          <button class="series-ai-btn" id="series-ai-btn" onclick="toggleSeriesChat()">猬?鍜?AI 鑱婅亰杩欓儴浣滃搧</button>
+          <button class="btn btn-a" id="series-save-btn" onclick="saveSeriesDetail()" style="white-space:nowrap">淇濆瓨璁板綍</button>
         </div>
-        <!-- 地区地图 -->
+        <!-- 鍦板尯鍦板浘 -->
         <div id="series-map-section" style="margin-top:12px;display:none">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-            <span class="hunt-section-lbl" style="margin-bottom:0" id="series-map-region">🗺 地区地图</span>
-            <a id="series-map-link" href="#" target="_blank" rel="noopener" class="series-map-link">在 52poke 查看 ↗</a>
+            <span class="hunt-section-lbl" style="margin-bottom:0" id="series-map-region">馃椇 鍦板尯鍦板浘</span>
+            <a id="series-map-link" href="#" target="_blank" rel="noopener" class="series-map-link">鍦?52poke 鏌ョ湅 鈫?/a>
           </div>
           <div class="series-map-wrap" id="series-map-wrap">
             <img id="series-map-img" src="" alt="" class="series-map-img"
               onerror="this.style.display='none';document.getElementById('series-map-fallback').style.display='flex'">
             <div id="series-map-fallback" style="display:none" class="series-map-fallback">
-              <span style="font-size:.8rem;color:var(--t3)">地图图片加载失败</span>
-              <a id="series-map-link2" href="#" target="_blank" rel="noopener" class="btn btn-sm" style="margin-top:8px">🗺 在 52poke 查看地图</a>
+              <span style="font-size:.8rem;color:var(--t3)">鍦板浘鍥剧墖鍔犺浇澶辫触</span>
+              <a id="series-map-link2" href="#" target="_blank" rel="noopener" class="btn btn-sm" style="margin-top:8px">馃椇 鍦?52poke 鏌ョ湅鍦板浘</a>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 队伍 -->
+    <!-- 闃熶紞 -->
     <div class="stab-panel" id="stab-party">
       <div class="series-body">
         <div class="party-slots" id="party-slots"></div>
         <div id="party-speak-result" class="party-speak-result" style="display:none"></div>
         <div style="margin-top:12px;position:relative">
-          <input id="party-search-inp" class="series-inp" placeholder="搜索宝可梦加入队伍…" oninput="searchPartyPkm(this.value)" autocomplete="off">
+          <input id="party-search-inp" class="series-inp" placeholder="鎼滅储瀹濆彲姊﹀姞鍏ラ槦浼嶁€? oninput="searchPartyPkm(this.value)" autocomplete="off">
           <div id="party-search-results" class="pkm-inline-results"></div>
         </div>
       </div>
     </div>
 
-    <!-- 进度 -->
+    <!-- 杩涘害 -->
     <div class="stab-panel" id="stab-progress">
       <div class="series-body">
         <div id="gym-briefing-panel" class="gym-brief-panel" style="display:none"></div>
@@ -523,136 +527,136 @@
       </div>
     </div>
 
-    <!-- 训练 -->
+    <!-- 璁粌 -->
     <div class="stab-panel" id="stab-training">
       <div class="series-body">
-        <!-- 训练对象 -->
-        <div class="hunt-section-lbl">🎯 训练对象（从队伍中选择）</div>
+        <!-- 璁粌瀵硅薄 -->
+        <div class="hunt-section-lbl">馃幆 璁粌瀵硅薄锛堜粠闃熶紞涓€夋嫨锛?/div>
         <div id="train-pkm-slots" class="train-pkm-slots"></div>
-        <!-- EV 面板 -->
+        <!-- EV 闈㈡澘 -->
         <div id="train-ev-panel" style="display:none">
           <div class="train-ev-header">
-            <span class="hunt-section-lbl" style="margin-bottom:0">📊 努力值 EV</span>
+            <span class="hunt-section-lbl" style="margin-bottom:0">馃搳 鍔姏鍊?EV</span>
             <div style="display:flex;gap:6px;align-items:center">
               <select id="train-boost-sel" class="series-inp" style="font-size:.72rem;padding:4px 8px" onchange="renderTrainEVs()">
-                <option value="1">基础 ×1</option>
-                <option value="2b">力量腰带 ×2</option>
-                <option value="2p">传染病毒 ×2</option>
-                <option value="4">腰带+病毒 ×4</option>
+                <option value="1">鍩虹 脳1</option>
+                <option value="2b">鍔涢噺鑵板甫 脳2</option>
+                <option value="2p">浼犳煋鐥呮瘨 脳2</option>
+                <option value="4">鑵板甫+鐥呮瘨 脳4</option>
               </select>
-              <button class="btn btn-sm btn-d" style="padding:3px 10px;font-size:.7rem" onclick="resetTrainEVs()">重置</button>
+              <button class="btn btn-sm btn-d" style="padding:3px 10px;font-size:.7rem" onclick="resetTrainEVs()">閲嶇疆</button>
             </div>
           </div>
           <div id="train-ev-bars" class="train-ev-bars"></div>
           <div id="train-ev-total" class="train-ev-total"></div>
-          <button class="series-ai-btn" id="train-ai-btn" onclick="getTrainRec()" style="width:100%;margin-top:8px">✦ AI 培养方向建议</button>
+          <button class="series-ai-btn" id="train-ai-btn" onclick="getTrainRec()" style="width:100%;margin-top:8px">鉁?AI 鍩瑰吇鏂瑰悜寤鸿</button>
           <div id="train-ai-result" class="train-ai-rec-box" style="display:none"></div>
         </div>
-        <!-- 刷练地点 -->
+        <!-- 鍒风粌鍦扮偣 -->
         <div style="margin-top:12px">
-          <div class="hunt-section-lbl">📍 选择刷练地点</div>
+          <div class="hunt-section-lbl">馃搷 閫夋嫨鍒风粌鍦扮偣</div>
           <div class="loc-custom-row">
-            <input id="train-custom-loc" class="series-inp" placeholder="输入地点名称（如：茂岩山、101号道路…）" onkeydown="if(event.key==='Enter')loadCustomLocDist('train')">
-            <button class="btn btn-sm btn-a" onclick="loadCustomLocDist('train')">获取分布</button>
+            <input id="train-custom-loc" class="series-inp" placeholder="杈撳叆鍦扮偣鍚嶇О锛堝锛氳寕宀╁北銆?01鍙烽亾璺€︼級" onkeydown="if(event.key==='Enter')loadCustomLocDist('train')">
+            <button class="btn btn-sm btn-a" onclick="loadCustomLocDist('train')">鑾峰彇鍒嗗竷</button>
           </div>
           <div id="train-loc-chips" class="hunt-loc-row"></div>
-          <div id="train-no-loc" style="display:none;font-size:.75rem;color:var(--t3);padding:4px 0 8px">该版本暂无预设地点。</div>
+          <div id="train-no-loc" style="display:none;font-size:.75rem;color:var(--t3);padding:4px 0 8px">璇ョ増鏈殏鏃犻璁惧湴鐐广€?/div>
         </div>
-        <!-- 精灵分布 + 努力值 -->
+        <!-- 绮剧伒鍒嗗竷 + 鍔姏鍊?-->
         <div id="train-dist-section" style="display:none">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-            <span class="hunt-section-lbl" style="margin-bottom:0">💪 <span id="train-dist-title">精灵分布 &amp; 努力值</span></span>
-            <button class="btn btn-sm" id="train-dist-btn" onclick="loadTrainDistribution()" style="font-size:.72rem">✦ 获取</button>
-            <button class="btn btn-sm btn-a" onclick="openImmTrain()" style="font-size:.72rem;margin-left:auto">⚡ 沉浸训练</button>
+            <span class="hunt-section-lbl" style="margin-bottom:0">馃挭 <span id="train-dist-title">绮剧伒鍒嗗竷 &amp; 鍔姏鍊?/span></span>
+            <button class="btn btn-sm" id="train-dist-btn" onclick="loadTrainDistribution()" style="font-size:.72rem">鉁?鑾峰彇</button>
+            <button class="btn btn-sm btn-a" onclick="openImmTrain()" style="font-size:.72rem;margin-left:auto">鈿?娌夋蹈璁粌</button>
           </div>
-          <div class="train-dist-note">努力值数据来源：PokéAPI 官方数据，点击精灵即可累计 EV</div>
+          <div class="train-dist-note">鍔姏鍊兼暟鎹潵婧愶細Pok茅API 瀹樻柟鏁版嵁锛岀偣鍑荤簿鐏靛嵆鍙疮璁?EV</div>
           <div id="train-dist-grid" class="train-dist-grid"></div>
         </div>
       </div>
     </div>
 
-    <!-- 探索 -->
+    <!-- 鎺㈢储 -->
     <div class="stab-panel" id="stab-explore">
       <div class="series-body">
         <div style="display:flex;gap:6px;margin-bottom:8px">
-          <input id="explore-loc-inp" class="series-inp" placeholder="地图位置（如：常磐道路，留空则从截图识别）" style="flex:1" onkeydown="if(event.key==='Enter')exploreLocation()">
-          <button class="btn btn-a btn-sm" onclick="exploreLocation()" id="explore-btn">探索</button>
+          <input id="explore-loc-inp" class="series-inp" placeholder="鍦板浘浣嶇疆锛堝锛氬父纾愰亾璺紝鐣欑┖鍒欎粠鎴浘璇嗗埆锛? style="flex:1" onkeydown="if(event.key==='Enter')exploreLocation()">
+          <button class="btn btn-a btn-sm" onclick="exploreLocation()" id="explore-btn">鎺㈢储</button>
         </div>
         <div class="explore-ctx-row">
           <select id="explore-weather" class="series-inp explore-ctx-sel">
-            <option value="">☁️ 天气（可选）</option>
-            <option value="晴天">☀️ 晴天</option>
-            <option value="雨天">🌧 雨天</option>
-            <option value="沙暴">🌪 沙暴</option>
-            <option value="冰雪">❄️ 冰雪</option>
-            <option value="大雾">🌫 大雾</option>
-            <option value="打雷">⚡ 打雷</option>
+            <option value="">鈽侊笍 澶╂皵锛堝彲閫夛級</option>
+            <option value="鏅村ぉ">鈽€锔?鏅村ぉ</option>
+            <option value="闆ㄥぉ">馃導 闆ㄥぉ</option>
+            <option value="娌欐毚">馃尓 娌欐毚</option>
+            <option value="鍐伴洩">鉂勶笍 鍐伴洩</option>
+            <option value="澶ч浘">馃尗 澶ч浘</option>
+            <option value="鎵撻浄">鈿?鎵撻浄</option>
           </select>
           <select id="explore-time" class="series-inp explore-ctx-sel">
-            <option value="">🕐 时间（可选）</option>
-            <option value="早晨">🌅 早晨</option>
-            <option value="白天">🌞 白天</option>
-            <option value="傍晚">🌇 傍晚</option>
-            <option value="夜晚">🌙 夜晚</option>
+            <option value="">馃晲 鏃堕棿锛堝彲閫夛級</option>
+            <option value="鏃╂櫒">馃寘 鏃╂櫒</option>
+            <option value="鐧藉ぉ">馃尀 鐧藉ぉ</option>
+            <option value="鍌嶆櫄">馃寚 鍌嶆櫄</option>
+            <option value="澶滄櫄">馃寵 澶滄櫄</option>
           </select>
-          <label class="explore-img-label" for="explore-img-inp" id="explore-img-lbl">📷 截图</label>
+          <label class="explore-img-label" for="explore-img-inp" id="explore-img-lbl">馃摲 鎴浘</label>
           <input type="file" id="explore-img-inp" accept="image/*" style="display:none" onchange="onExploreImgChange(this)">
         </div>
         <div id="explore-img-preview" style="display:none" class="explore-img-preview"></div>
         <div id="explore-result" style="display:none" class="explore-result-box"></div>
         <div id="explore-save-row" style="display:none" class="explore-save-row">
-          <button class="btn btn-sm" onclick="saveExploreRecord()">📌 保存到探索日志</button>
-          <span id="explore-save-ok" style="display:none;font-size:.72rem;color:var(--acc2);font-family:'DM Mono',monospace">✓ 已保存</span>
+          <button class="btn btn-sm" onclick="saveExploreRecord()">馃搶 淇濆瓨鍒版帰绱㈡棩蹇?/button>
+          <span id="explore-save-ok" style="display:none;font-size:.72rem;color:var(--acc2);font-family:'DM Mono',monospace">鉁?宸蹭繚瀛?/span>
         </div>
         <div id="explore-history" style="margin-top:14px"></div>
       </div>
     </div>
 
-    <!-- 狩猎 -->
+    <!-- 鐙╃寧 -->
     <div class="stab-panel" id="stab-hunting">
       <div class="series-body">
-        <!-- 地点选择 -->
+        <!-- 鍦扮偣閫夋嫨 -->
         <div id="hunt-phase-loc">
-          <div class="hunt-section-lbl">📍 选择捕猎地点</div>
+          <div class="hunt-section-lbl">馃搷 閫夋嫨鎹曠寧鍦扮偣</div>
           <div class="loc-custom-row">
-            <input id="hunt-custom-loc" class="series-inp" placeholder="输入地点名称（如：茂岩山、101号道路…）" onkeydown="if(event.key==='Enter')loadCustomLocDist('hunt')">
-            <button class="btn btn-sm btn-a" onclick="loadCustomLocDist('hunt')">获取分布</button>
+            <input id="hunt-custom-loc" class="series-inp" placeholder="杈撳叆鍦扮偣鍚嶇О锛堝锛氳寕宀╁北銆?01鍙烽亾璺€︼級" onkeydown="if(event.key==='Enter')loadCustomLocDist('hunt')">
+            <button class="btn btn-sm btn-a" onclick="loadCustomLocDist('hunt')">鑾峰彇鍒嗗竷</button>
           </div>
           <div id="hunt-loc-chips" class="hunt-loc-row"></div>
-          <div id="hunt-no-loc" style="display:none;font-size:.75rem;color:var(--t3);padding:4px 0 10px">该版本暂无预设地点，请直接从下方添加目标精灵。</div>
+          <div id="hunt-no-loc" style="display:none;font-size:.75rem;color:var(--t3);padding:4px 0 10px">璇ョ増鏈殏鏃犻璁惧湴鐐癸紝璇风洿鎺ヤ粠涓嬫柟娣诲姞鐩爣绮剧伒銆?/div>
         </div>
-        <!-- 精灵分布 -->
+        <!-- 绮剧伒鍒嗗竷 -->
         <div id="hunt-phase-dist" style="display:none">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-            <div class="hunt-section-lbl" style="margin-bottom:0">🎯 <span id="hunt-dist-title">精灵分布</span></div>
-            <button class="btn btn-sm" id="hunt-dist-btn" onclick="loadHuntDistribution()" style="font-size:.72rem">✦ 获取分布</button>
+            <div class="hunt-section-lbl" style="margin-bottom:0">馃幆 <span id="hunt-dist-title">绮剧伒鍒嗗竷</span></div>
+            <button class="btn btn-sm" id="hunt-dist-btn" onclick="loadHuntDistribution()" style="font-size:.72rem">鉁?鑾峰彇鍒嗗竷</button>
           </div>
           <div id="hunt-dist-grid" class="hunt-dist-grid"></div>
         </div>
-        <!-- 狩猎目标列表 -->
+        <!-- 鐙╃寧鐩爣鍒楄〃 -->
         <div id="hunt-list" style="margin-top:4px"></div>
       </div>
     </div>
 
-    <!-- 图鉴录入 -->
+    <!-- 鍥鹃壌褰曞叆 -->
     <div class="stab-panel" id="stab-catches">
       <div class="series-body">
         <div style="position:relative;margin-bottom:8px">
-          <input id="catch-search-inp" class="series-inp" placeholder="搜索抓到的宝可梦…" oninput="searchCatchPkm(this.value)" autocomplete="off">
+          <input id="catch-search-inp" class="series-inp" placeholder="鎼滅储鎶撳埌鐨勫疂鍙ⅵ鈥? oninput="searchCatchPkm(this.value)" autocomplete="off">
           <div id="catch-search-results" class="pkm-inline-results"></div>
         </div>
         <div id="catch-form-body" style="display:none">
           <div id="catch-pkm-preview" class="catch-pkm-header"></div>
           <div class="series-grid2" style="margin-top:8px">
-            <div class="series-inp-group"><span class="series-inp-label">昵称</span><input id="catch-nickname" class="series-inp" placeholder="可选"></div>
-            <div class="series-inp-group"><span class="series-inp-label">性格</span><select id="catch-nature" class="series-inp" onchange="updateCatchNatureHint()"></select></div>
+            <div class="series-inp-group"><span class="series-inp-label">鏄电О</span><input id="catch-nickname" class="series-inp" placeholder="鍙€?></div>
+            <div class="series-inp-group"><span class="series-inp-label">鎬ф牸</span><select id="catch-nature" class="series-inp" onchange="updateCatchNatureHint()"></select></div>
           </div>
           <div id="catch-nature-hint" class="nature-hint"></div>
           <div id="catch-basestats" class="catch-stats-block"></div>
           <div id="catch-ev-yields" class="catch-ev-yields"></div>
           <div style="display:flex;gap:6px;margin-bottom:8px">
-            <button class="series-ai-btn" onclick="getCatchAIRec()" id="catch-ai-btn">✦ AI推荐性格 + 努力值</button>
-            <button class="btn btn-a btn-sm" onclick="saveCatch()" style="white-space:nowrap">保存记录</button>
+            <button class="series-ai-btn" onclick="getCatchAIRec()" id="catch-ai-btn">鉁?AI鎺ㄨ崘鎬ф牸 + 鍔姏鍊?/button>
+            <button class="btn btn-a btn-sm" onclick="saveCatch()" style="white-space:nowrap">淇濆瓨璁板綍</button>
           </div>
           <div id="catch-ai-result" style="display:none" class="catch-ai-box"></div>
         </div>
@@ -661,63 +665,63 @@
     </div>
   </div>
 </div>
-<!-- 沉浸式狩猎界面 -->
+<!-- 娌夋蹈寮忕嫨鐚庣晫闈?-->
 <div id="ov-hunt-imm" class="hunt-imm-ov">
   <div class="hunt-imm-bg-blur" id="hunt-imm-bg"></div>
   <div class="hunt-imm-particles" id="hunt-imm-particles"></div>
-  <button class="hunt-imm-close" onclick="closeImmHunt()">✕</button>
-  <div class="hunt-imm-loc-badge" id="hunt-imm-loc">📍 野外</div>
+  <button class="hunt-imm-close" onclick="closeImmHunt()">鉁?/button>
+  <div class="hunt-imm-loc-badge" id="hunt-imm-loc">馃搷 閲庡</div>
 
-  <!-- 目标精灵（居中大图） -->
+  <!-- 鐩爣绮剧伒锛堝眳涓ぇ鍥撅級 -->
   <div class="hunt-imm-hero">
     <div class="hunt-imm-target-badge" id="hunt-imm-target"></div>
     <img class="hunt-imm-sprite" id="hunt-imm-sprite" src="" alt="">
     <div class="hunt-imm-name" id="hunt-imm-name"></div>
     <div class="hunt-imm-counter">
       <span class="hunt-imm-num" id="hunt-imm-num">0</span>
-      <span class="hunt-imm-unit">次遭遇</span>
+      <span class="hunt-imm-unit">娆￠伃閬?/span>
     </div>
     <div class="hunt-imm-narration" id="hunt-imm-narration" style="display:none"></div>
   </div>
 
-  <!-- 区域精灵分布（点击=遭遇到了那只） -->
+  <!-- 鍖哄煙绮剧伒鍒嗗竷锛堢偣鍑?閬亣鍒颁簡閭ｅ彧锛?-->
   <div class="hunt-area-section" id="hunt-area-section" style="display:none">
-    <div class="hunt-area-label">遇到了哪只？点击它</div>
+    <div class="hunt-area-label">閬囧埌浜嗗摢鍙紵鐐瑰嚮瀹?/div>
     <div class="hunt-area-grid" id="hunt-area-grid"></div>
   </div>
 
-  <!-- 无分布时：传统战斗按钮 -->
+  <!-- 鏃犲垎甯冩椂锛氫紶缁熸垬鏂楁寜閽?-->
   <div class="hunt-battle-actions" id="hunt-battle-actions">
-    <button class="hunt-action-btn hunt-action-fight" onclick="huntActionFight()">⚔️<br><span>战斗</span></button>
-    <button class="hunt-action-btn hunt-action-run"  onclick="huntActionRun()">💨<br><span>逃跑</span></button>
-    <button class="hunt-action-btn hunt-action-catch" onclick="huntActionCatch()">⚫<br><span>捕捉</span></button>
+    <button class="hunt-action-btn hunt-action-fight" onclick="huntActionFight()">鈿旓笍<br><span>鎴樻枟</span></button>
+    <button class="hunt-action-btn hunt-action-run"  onclick="huntActionRun()">馃挩<br><span>閫冭窇</span></button>
+    <button class="hunt-action-btn hunt-action-catch" onclick="huntActionCatch()">鈿?br><span>鎹曟崏</span></button>
   </div>
 
-  <!-- 性格确认层 -->
+  <!-- 鎬ф牸纭灞?-->
   <div class="hunt-nature-pick" id="hunt-nature-pick" style="display:none">
-    <div class="hunt-np-title">捕获到了！选择性格</div>
+    <div class="hunt-np-title">鎹曡幏鍒颁簡锛侀€夋嫨鎬ф牸</div>
     <div class="hunt-np-target" id="hunt-np-target"></div>
     <div class="hunt-np-grid" id="hunt-np-grid"></div>
-    <button class="hunt-np-cancel" onclick="cancelHuntNaturePick()">✕ 没捕到，继续</button>
+    <button class="hunt-np-cancel" onclick="cancelHuntNaturePick()">鉁?娌℃崟鍒帮紝缁х画</button>
   </div>
 
-  <!-- 捕获成功层 -->
+  <!-- 鎹曡幏鎴愬姛灞?-->
   <div class="hunt-imm-success" id="hunt-imm-success" style="display:none">
     <div class="hunt-success-sparks" id="hunt-success-sparks"></div>
     <img class="hunt-success-sprite" id="hunt-success-sprite" src="" alt="">
-    <div class="hunt-success-title">捕获成功！</div>
+    <div class="hunt-success-title">鎹曡幏鎴愬姛锛?/div>
     <div class="hunt-success-name" id="hunt-success-name"></div>
     <div class="hunt-success-count" id="hunt-success-count"></div>
   </div>
 </div>
 
-<!-- 沉浸式训练界面 -->
+<!-- 娌夋蹈寮忚缁冪晫闈?-->
 <div id="ov-train-imm" class="hunt-imm-ov">
   <div class="hunt-imm-bg-blur" id="train-imm-bg"></div>
   <div class="hunt-imm-particles" id="train-imm-particles"></div>
-  <button class="hunt-imm-close" onclick="closeImmTrain()">✕</button>
+  <button class="hunt-imm-close" onclick="closeImmTrain()">鉁?/button>
 
-  <!-- 顶部：训练精灵（居中大图）+ EV 条 -->
+  <!-- 椤堕儴锛氳缁冪簿鐏碉紙灞呬腑澶у浘锛? EV 鏉?-->
   <div class="tim-hero">
     <img class="tim-sprite" id="train-imm-sprite" src="" alt="">
     <div class="tim-name" id="train-imm-name"></div>
@@ -725,13 +729,13 @@
     <div class="tim-ev-total" id="train-imm-ev-total"></div>
   </div>
 
-  <!-- 底部：刷练目标精灵（图片网格） -->
+  <!-- 搴曢儴锛氬埛缁冪洰鏍囩簿鐏碉紙鍥剧墖缃戞牸锛?-->
   <div class="tim-grid-section">
-    <div class="tim-section-lbl">击败以下精灵 获取 EV → 点击它</div>
+    <div class="tim-section-lbl">鍑昏触浠ヤ笅绮剧伒 鑾峰彇 EV 鈫?鐐瑰嚮瀹?/div>
     <div class="tim-dist-grid" id="train-imm-dist-grid"></div>
   </div>
 </div>
-<!-- 发现页详情弹窗 -->
+<!-- 鍙戠幇椤佃鎯呭脊绐?-->
 <div class="ov" id="ov-disc" onclick="if(event.target===this)closeOv('ov-disc')">
   <div class="modal disc-modal">
     <div class="disc-hero" id="disc-hero"><div class="disc-hero-bg" id="disc-hero-bg"></div><img id="disc-cover" src="" alt="" class="disc-cover" onerror="this.style.display='none'"></div>
@@ -743,70 +747,70 @@
       <div class="disc-storyline" id="disc-storyline" style="display:none"></div>
     </div>
     <div class="disc-actions">
-      <a id="disc-igdb-link" href="#" target="_blank" class="disc-igdb-btn">↗ IGDB</a>
-      <button class="disc-ai-btn" id="disc-ai-btn" onclick="toggleDiscChat()">⬡ 和 AI 聊聊这款游戏</button>
-      <button class="rank-add-btn" id="disc-add-btn" onclick="discAddGame()">+ 想玩</button>
+      <a id="disc-igdb-link" href="#" target="_blank" class="disc-igdb-btn">鈫?IGDB</a>
+      <button class="disc-ai-btn" id="disc-ai-btn" onclick="toggleDiscChat()">猬?鍜?AI 鑱婅亰杩欐娓告垙</button>
+      <button class="rank-add-btn" id="disc-add-btn" onclick="discAddGame()">+ 鎯崇帺</button>
     </div>
     <div class="disc-chat-area" id="disc-chat-area">
-      <div class="chat-hdr"><div class="chat-hdr-l"><div class="ai-pulse"></div><div class="chat-htitle">AI 情报员 · <em id="disc-chat-name"></em></div></div><button class="btn btn-sm" onclick="toggleDiscChat()">✕</button></div>
+      <div class="chat-hdr"><div class="chat-hdr-l"><div class="ai-pulse"></div><div class="chat-htitle">AI 鎯呮姤鍛?路 <em id="disc-chat-name"></em></div></div><button class="btn btn-sm" onclick="toggleDiscChat()">鉁?/button></div>
       <div class="chat-msgs" id="disc-chat-msgs"></div>
       <div class="quick-qs" id="disc-chat-quick"></div>
       <div class="chat-inp-row">
-        <input class="chat-inp" id="disc-chat-inp" placeholder="问 AI 任何关于这款游戏的问题…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendDiscAIMsg();}">
-        <button class="chat-snd" id="disc-chat-snd" onclick="sendDiscAIMsg()">发送</button>
+        <input class="chat-inp" id="disc-chat-inp" placeholder="闂?AI 浠讳綍鍏充簬杩欐娓告垙鐨勯棶棰樷€? onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendDiscAIMsg();}">
+        <button class="chat-snd" id="disc-chat-snd" onclick="sendDiscAIMsg()">鍙戦€?/button>
       </div>
     </div>
-    <div class="mfoot"><button class="btn" onclick="closeOv('ov-disc')">关闭</button></div>
+    <div class="mfoot"><button class="btn" onclick="closeOv('ov-disc')">鍏抽棴</button></div>
   </div>
 </div>
-<!-- 编辑/添加弹窗 -->
+<!-- 缂栬緫/娣诲姞寮圭獥 -->
 <div class="ov" id="ov-edit" onclick="if(event.target===this)closeOv('ov-edit')">
   <div class="modal">
-    <div class="mh"><h2 id="m-title">添加游戏</h2><button class="btn btn-sm" onclick="closeOv('ov-edit')">✕</button></div>
+    <div class="mh"><h2 id="m-title">娣诲姞娓告垙</h2><button class="btn btn-sm" onclick="closeOv('ov-edit')">鉁?/button></div>
     <div class="mc">
-      <div class="sbox"><span class="sico">🔍</span><input type="text" id="gs" placeholder="搜索游戏名称自动填入…" oninput="onSrch(this.value)" autocomplete="off"><div class="sr" id="sr" style="display:none"></div></div>
+      <div class="sbox"><span class="sico">馃攳</span><input type="text" id="gs" placeholder="鎼滅储娓告垙鍚嶇О鑷姩濉叆鈥? oninput="onSrch(this.value)" autocomplete="off"><div class="sr" id="sr" style="display:none"></div></div>
       <div class="row2">
-        <div class="field"><label>游戏名称 *</label><input type="text" id="fn" placeholder="例：《黑神话：悟空》" autocomplete="off"></div>
-        <div class="field"><label>开发商 / 发行商</label><input type="text" id="fdev" placeholder="例：Game Science" autocomplete="off"></div>
+        <div class="field"><label>娓告垙鍚嶇О *</label><input type="text" id="fn" placeholder="渚嬶細銆婇粦绁炶瘽锛氭偀绌恒€? autocomplete="off"></div>
+        <div class="field"><label>寮€鍙戝晢 / 鍙戣鍟?/label><input type="text" id="fdev" placeholder="渚嬶細Game Science" autocomplete="off"></div>
       </div>
-      <div class="field"><label>游玩平台（可多选）</label><div class="chips" id="pc">
-        <div class="chip" data-v="xbox" onclick="tc(this,'x')">Xbox Series X|S</div><div class="chip" data-v="xbox360" onclick="tc(this,'x')">Xbox 360/One</div><div class="chip" data-v="ps5" onclick="tc(this,'p')">PS5</div><div class="chip" data-v="ps4" onclick="tc(this,'p')">PS4</div><div class="chip" data-v="switch" onclick="tc(this,'sw')">Nintendo Switch</div><div class="chip" data-v="switch2" onclick="tc(this,'sw')">Switch 2</div><div class="chip" data-v="steam" onclick="tc(this,'st')">Steam / PC</div><div class="chip" data-v="mobile" onclick="tc(this)">手机</div><div class="chip" data-v="other" onclick="tc(this)">其他</div>
+      <div class="field"><label>娓哥帺骞冲彴锛堝彲澶氶€夛級</label><div class="chips" id="pc">
+        <div class="chip" data-v="xbox" onclick="tc(this,'x')">Xbox Series X|S</div><div class="chip" data-v="xbox360" onclick="tc(this,'x')">Xbox 360/One</div><div class="chip" data-v="ps5" onclick="tc(this,'p')">PS5</div><div class="chip" data-v="ps4" onclick="tc(this,'p')">PS4</div><div class="chip" data-v="switch" onclick="tc(this,'sw')">Nintendo Switch</div><div class="chip" data-v="switch2" onclick="tc(this,'sw')">Switch 2</div><div class="chip" data-v="steam" onclick="tc(this,'st')">Steam / PC</div><div class="chip" data-v="mobile" onclick="tc(this)">鎵嬫満</div><div class="chip" data-v="other" onclick="tc(this)">鍏朵粬</div>
       </div></div>
-      <div class="field"><label>游戏类型（可多选）</label><div class="chips" id="gc">
-        <div class="chip" data-v="action" onclick="tc(this)">动作</div><div class="chip" data-v="adventure" onclick="tc(this)">冒险</div><div class="chip" data-v="rpg" onclick="tc(this)">RPG</div><div class="chip" data-v="strategy" onclick="tc(this)">策略</div><div class="chip" data-v="shooter" onclick="tc(this)">射击</div><div class="chip" data-v="puzzle" onclick="tc(this)">解谜</div><div class="chip" data-v="sim" onclick="tc(this)">模拟经营</div><div class="chip" data-v="sports" onclick="tc(this)">运动</div><div class="chip" data-v="fighting" onclick="tc(this)">格斗</div><div class="chip" data-v="horror" onclick="tc(this)">恐怖</div><div class="chip" data-v="indie" onclick="tc(this)">独立游戏</div><div class="chip" data-v="music" onclick="tc(this)">音乐节奏</div><div class="chip" data-v="visual" onclick="tc(this)">视觉小说</div><div class="chip" data-v="racing" onclick="tc(this)">竞速</div><div class="chip" data-v="moba" onclick="tc(this)">MOBA</div><div class="chip" data-v="mmorpg" onclick="tc(this)">MMORPG</div><div class="chip" data-v="open" onclick="tc(this)">开放世界</div><div class="chip" data-v="souls" onclick="tc(this)">魂类</div><div class="chip" data-v="metroid" onclick="tc(this)">银河城</div><div class="chip" data-v="roguelike" onclick="tc(this)">Roguelike</div>
+      <div class="field"><label>娓告垙绫诲瀷锛堝彲澶氶€夛級</label><div class="chips" id="gc">
+        <div class="chip" data-v="action" onclick="tc(this)">鍔ㄤ綔</div><div class="chip" data-v="adventure" onclick="tc(this)">鍐掗櫓</div><div class="chip" data-v="rpg" onclick="tc(this)">RPG</div><div class="chip" data-v="strategy" onclick="tc(this)">绛栫暐</div><div class="chip" data-v="shooter" onclick="tc(this)">灏勫嚮</div><div class="chip" data-v="puzzle" onclick="tc(this)">瑙ｈ皽</div><div class="chip" data-v="sim" onclick="tc(this)">妯℃嫙缁忚惀</div><div class="chip" data-v="sports" onclick="tc(this)">杩愬姩</div><div class="chip" data-v="fighting" onclick="tc(this)">鏍兼枟</div><div class="chip" data-v="horror" onclick="tc(this)">鎭愭€?/div><div class="chip" data-v="indie" onclick="tc(this)">鐙珛娓告垙</div><div class="chip" data-v="music" onclick="tc(this)">闊充箰鑺傚</div><div class="chip" data-v="visual" onclick="tc(this)">瑙嗚灏忚</div><div class="chip" data-v="racing" onclick="tc(this)">绔為€?/div><div class="chip" data-v="moba" onclick="tc(this)">MOBA</div><div class="chip" data-v="mmorpg" onclick="tc(this)">MMORPG</div><div class="chip" data-v="open" onclick="tc(this)">寮€鏀句笘鐣?/div><div class="chip" data-v="souls" onclick="tc(this)">榄傜被</div><div class="chip" data-v="metroid" onclick="tc(this)">閾舵渤鍩?/div><div class="chip" data-v="roguelike" onclick="tc(this)">Roguelike</div>
       </div></div>
-      <div class="field"><label>风格 / 氛围（可多选）</label><div class="chips" id="sc">
-        <div class="chip" data-v="dark" onclick="tc(this)">黑暗沉重</div><div class="chip" data-v="lighthearted" onclick="tc(this)">轻松愉快</div><div class="chip" data-v="fantasy" onclick="tc(this)">奇幻</div><div class="chip" data-v="scifi" onclick="tc(this)">科幻</div><div class="chip" data-v="historical" onclick="tc(this)">历史</div><div class="chip" data-v="modern" onclick="tc(this)">现代都市</div><div class="chip" data-v="postapoc" onclick="tc(this)">末日废土</div><div class="chip" data-v="cyberpunk" onclick="tc(this)">赛博朋克</div><div class="chip" data-v="pixel" onclick="tc(this)">像素风</div><div class="chip" data-v="anime" onclick="tc(this)">二次元</div><div class="chip" data-v="realistic" onclick="tc(this)">写实风格</div><div class="chip" data-v="cartoon" onclick="tc(this)">卡通风格</div><div class="chip" data-v="narrative" onclick="tc(this)">剧情驱动</div><div class="chip" data-v="casual" onclick="tc(this)">休闲向</div><div class="chip" data-v="hard" onclick="tc(this)">高难度挑战</div>
+      <div class="field"><label>椋庢牸 / 姘涘洿锛堝彲澶氶€夛級</label><div class="chips" id="sc">
+        <div class="chip" data-v="dark" onclick="tc(this)">榛戞殫娌夐噸</div><div class="chip" data-v="lighthearted" onclick="tc(this)">杞绘澗鎰夊揩</div><div class="chip" data-v="fantasy" onclick="tc(this)">濂囧够</div><div class="chip" data-v="scifi" onclick="tc(this)">绉戝够</div><div class="chip" data-v="historical" onclick="tc(this)">鍘嗗彶</div><div class="chip" data-v="modern" onclick="tc(this)">鐜颁唬閮藉競</div><div class="chip" data-v="postapoc" onclick="tc(this)">鏈棩搴熷湡</div><div class="chip" data-v="cyberpunk" onclick="tc(this)">璧涘崥鏈嬪厠</div><div class="chip" data-v="pixel" onclick="tc(this)">鍍忕礌椋?/div><div class="chip" data-v="anime" onclick="tc(this)">浜屾鍏?/div><div class="chip" data-v="realistic" onclick="tc(this)">鍐欏疄椋庢牸</div><div class="chip" data-v="cartoon" onclick="tc(this)">鍗￠€氶鏍?/div><div class="chip" data-v="narrative" onclick="tc(this)">鍓ф儏椹卞姩</div><div class="chip" data-v="casual" onclick="tc(this)">浼戦棽鍚?/div><div class="chip" data-v="hard" onclick="tc(this)">楂橀毦搴︽寫鎴?/div>
       </div></div>
       <div class="row2">
-        <div class="field"><label>游玩状态</label><select id="fst2"><option value="playing">游玩中 🎮</option><option value="wishlist">想玩 📌</option><option value="done">已通关 ✓</option><option value="dropped">放弃 ✕</option></select></div>
-        <div class="field"><label>发行年份</label><input type="number" id="fyr" placeholder="例：2024" min="1970" max="2030"></div>
+        <div class="field"><label>娓哥帺鐘舵€?/label><select id="fst2"><option value="playing">娓哥帺涓?馃幃</option><option value="wishlist">鎯崇帺 馃搶</option><option value="done">宸查€氬叧 鉁?/option><option value="dropped">鏀惧純 鉁?/option></select></div>
+        <div class="field"><label>鍙戣骞翠唤</label><input type="number" id="fyr" placeholder="渚嬶細2024" min="1970" max="2030"></div>
       </div>
-      <div class="field"><label>游玩时长（小时）</label><div class="slwrap"><input type="range" id="fhr" min="0" max="500" step="1" value="0" oninput="document.getElementById('fhrv').textContent=this.value+'h'"><span class="slval" id="fhrv">0h</span></div></div>
-      <div class="field"><label>我的评分</label><div class="starrow"><button class="sb" onclick="setStar(1)">★</button><button class="sb" onclick="setStar(2)">★</button><button class="sb" onclick="setStar(3)">★</button><button class="sb" onclick="setStar(4)">★</button><button class="sb" onclick="setStar(5)">★</button><span class="shint" id="shint">未评分</span></div></div>
-      <div class="field"><label>完成度</label><select id="fcp"><option value="">未记录</option><option value="main">主线通关</option><option value="side">主线+支线</option><option value="full">全收集/铂金</option><option value="partial">部分完成</option><option value="dropped">中途放弃</option></select></div>
-      <div class="field"><label>我的评测</label><textarea id="frev" placeholder="记录你的感受…"></textarea></div>
-      <div class="field"><label>封面图片 URL（可选）</label><input type="url" id="fcv" placeholder="粘贴图片链接，或留空使用 IGDB 自动填入"></div>
+      <div class="field"><label>娓哥帺鏃堕暱锛堝皬鏃讹級</label><div class="slwrap"><input type="range" id="fhr" min="0" max="500" step="1" value="0" oninput="document.getElementById('fhrv').textContent=this.value+'h'"><span class="slval" id="fhrv">0h</span></div></div>
+      <div class="field"><label>鎴戠殑璇勫垎</label><div class="starrow"><button class="sb" onclick="setStar(1)">鈽?/button><button class="sb" onclick="setStar(2)">鈽?/button><button class="sb" onclick="setStar(3)">鈽?/button><button class="sb" onclick="setStar(4)">鈽?/button><button class="sb" onclick="setStar(5)">鈽?/button><span class="shint" id="shint">鏈瘎鍒?/span></div></div>
+      <div class="field"><label>瀹屾垚搴?/label><select id="fcp"><option value="">鏈褰?/option><option value="main">涓荤嚎閫氬叧</option><option value="side">涓荤嚎+鏀嚎</option><option value="full">鍏ㄦ敹闆?閾傞噾</option><option value="partial">閮ㄥ垎瀹屾垚</option><option value="dropped">涓€旀斁寮?/option></select></div>
+      <div class="field"><label>鎴戠殑璇勬祴</label><textarea id="frev" placeholder="璁板綍浣犵殑鎰熷彈鈥?></textarea></div>
+      <div class="field"><label>灏侀潰鍥剧墖 URL锛堝彲閫夛級</label><input type="url" id="fcv" placeholder="绮樿创鍥剧墖閾炬帴锛屾垨鐣欑┖浣跨敤 IGDB 鑷姩濉叆"></div>
     </div>
     <div class="mfoot">
-      <button class="btn btn-d" id="bdel" style="display:none" onclick="delGame()">删除</button>
-      <button class="btn" onclick="closeOv('ov-edit')">取消</button>
-      <button class="btn btn-a" onclick="saveGame()">保存记录</button>
+      <button class="btn btn-d" id="bdel" style="display:none" onclick="delGame()">鍒犻櫎</button>
+      <button class="btn" onclick="closeOv('ov-edit')">鍙栨秷</button>
+      <button class="btn btn-a" onclick="saveGame()">淇濆瓨璁板綍</button>
     </div>
   </div>
 </div>
 
-<!-- 宝可梦队伍编辑弹窗 -->
+<!-- 瀹濆彲姊﹂槦浼嶇紪杈戝脊绐?-->
 <div class="ov" id="ov-battle-team" onclick="if(event.target===this)closeBattleTeamEdit()">
   <div class="modal battle-team-modal">
     <div class="mh" style="padding-bottom:.8rem;border-bottom:1px solid var(--b)">
-      <h2 id="battle-team-modal-title" style="font-family:'Noto Serif SC',serif">编辑队伍</h2>
-      <button class="btn btn-sm" onclick="closeBattleTeamEdit()">✕</button>
+      <h2 id="battle-team-modal-title" style="font-family:'Noto Serif SC',serif">缂栬緫闃熶紞</h2>
+      <button class="btn btn-sm" onclick="closeBattleTeamEdit()">鉁?/button>
     </div>
     <div style="padding:10px 16px 6px;background:var(--bg3);border-bottom:1px solid var(--b)">
       <div style="display:flex;align-items:center;gap:10px">
-        <span style="font-size:.65rem;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.07em;text-transform:uppercase;flex-shrink:0">队伍名称</span>
-        <input id="battle-team-name-inp" class="bpkm-inp" placeholder="例：主力战队" style="flex:1">
+        <span style="font-size:.65rem;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.07em;text-transform:uppercase;flex-shrink:0">闃熶紞鍚嶇О</span>
+        <input id="battle-team-name-inp" class="bpkm-inp" placeholder="渚嬶細涓诲姏鎴橀槦" style="flex:1">
       </div>
     </div>
     <div class="battle-slot-tabs" id="battle-slot-tabs"></div>
@@ -814,14 +818,14 @@
       <div id="battle-pokemon-form"></div>
     </div>
     <div class="mfoot">
-      <button class="btn btn-d btn-sm" id="battle-team-del-btn" onclick="deleteBattleTeamFromModal()" style="display:none;margin-right:auto">删除队伍</button>
-      <button class="btn" onclick="closeBattleTeamEdit()">取消</button>
-      <button class="btn btn-a" onclick="saveBattleTeam()">保存队伍</button>
+      <button class="btn btn-d btn-sm" id="battle-team-del-btn" onclick="deleteBattleTeamFromModal()" style="display:none;margin-right:auto">鍒犻櫎闃熶紞</button>
+      <button class="btn" onclick="closeBattleTeamEdit()">鍙栨秷</button>
+      <button class="btn btn-a" onclick="saveBattleTeam()">淇濆瓨闃熶紞</button>
     </div>
   </div>
 </div>
 
-<!-- JS Modules (按依赖顺序加载) -->
+<!-- JS Modules (鎸変緷璧栭『搴忓姞杞? -->
 <script src="js/config.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/auth.js"></script>
@@ -838,177 +842,178 @@
 <script>init();</script>
 
 
-<!-- 游戏时刻记录悬浮按钮 -->
-<button class="moment-fab" id="moment-fab" onclick="toggleMomentPanel()" title="记录游戏时刻">✏️</button>
+<!-- 娓告垙鏃跺埢璁板綍鎮诞鎸夐挳 -->
+<button class="moment-fab" id="moment-fab" onclick="toggleMomentPanel()" title="璁板綍娓告垙鏃跺埢">鉁忥笍</button>
 <div class="moment-panel" id="moment-panel">
   <div class="moment-panel-hdr">
-    <h3>📸 记录时刻</h3>
-    <button onclick="toggleMomentPanel()" style="background:none;border:none;color:var(--t3);cursor:pointer;font-size:1rem">✕</button>
+    <h3>馃摳 璁板綍鏃跺埢</h3>
+    <button onclick="toggleMomentPanel()" style="background:none;border:none;color:var(--t3);cursor:pointer;font-size:1rem">鉁?/button>
   </div>
   <select class="moment-game-select" id="moment-game-select">
-    <option value="">选择游戏…</option>
+    <option value="">閫夋嫨娓告垙鈥?/option>
   </select>
   <div class="moment-type-row">
-    <button class="moment-type-btn active" data-type="highlight" onclick="setMomentType(this)">🌟 高光</button>
-    <button class="moment-type-btn" data-type="rant" onclick="setMomentType(this)">💢 吐槽</button>
-    <button class="moment-type-btn" data-type="idea" onclick="setMomentType(this)">💡 想法</button>
-    <button class="moment-type-btn" data-type="stuck" onclick="setMomentType(this)">🧱 卡关</button>
+    <button class="moment-type-btn active" data-type="highlight" onclick="setMomentType(this)">馃専 楂樺厜</button>
+    <button class="moment-type-btn" data-type="rant" onclick="setMomentType(this)">馃挗 鍚愭Ы</button>
+    <button class="moment-type-btn" data-type="idea" onclick="setMomentType(this)">馃挕 鎯虫硶</button>
+    <button class="moment-type-btn" data-type="stuck" onclick="setMomentType(this)">馃П 鍗″叧</button>
   </div>
-  <textarea class="moment-textarea" id="moment-text" placeholder="写下此刻的想法…" maxlength="500"></textarea>
+  <textarea class="moment-textarea" id="moment-text" placeholder="鍐欎笅姝ゅ埢鐨勬兂娉曗€? maxlength="500"></textarea>
   <div class="moment-img-row">
-    <label class="moment-img-label" for="moment-img-input">📷 上传截图
+    <label class="moment-img-label" for="moment-img-input">馃摲 涓婁紶鎴浘
       <input type="file" id="moment-img-input" accept="image/*" style="display:none" onchange="onMomentImgSelect(this)">
     </label>
     <img id="moment-img-preview" class="moment-img-preview" alt="">
     <span id="moment-img-name" style="font-size:.7rem;color:var(--t3);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
   </div>
-  <button class="moment-submit" id="moment-submit" onclick="submitMoment()">发布时刻</button>
+  <button class="moment-submit" id="moment-submit" onclick="submitMoment()">鍙戝竷鏃跺埢</button>
 </div>
 
-<!-- ===== 快照历史弹窗 ===== -->
+<!-- ===== 蹇収鍘嗗彶寮圭獥 ===== -->
 <div id="ov-snap-hist">
   <div class="snap-hist-modal">
     <div class="snap-hist-hdr">
-      <div class="snap-hist-title" id="snap-hist-title">进度快照历史</div>
-      <button class="snap-hist-close" onclick="closeSnapHist()">✕</button>
+      <div class="snap-hist-title" id="snap-hist-title">杩涘害蹇収鍘嗗彶</div>
+      <button class="snap-hist-close" onclick="closeSnapHist()">鉁?/button>
     </div>
     <div class="snap-hist-body" id="snap-hist-body">
-      <div class="snap-hist-empty">加载中…</div>
+      <div class="snap-hist-empty">鍔犺浇涓€?/div>
     </div>
     <div class="snap-hist-ai">
       <div class="snap-hist-ai-hdr">
-        <span class="snap-hist-ai-title">AI 情报员 · 快照分析</span>
+        <span class="snap-hist-ai-title">AI 鎯呮姤鍛?路 蹇収鍒嗘瀽</span>
         <div class="snap-hist-ai-btns">
-          <button class="snap-hist-ai-btn" id="snap-ai-sum-btn" onclick="snapAISummary()">📋 AI 总结历程</button>
+          <button class="snap-hist-ai-btn" id="snap-ai-sum-btn" onclick="snapAISummary()">馃搵 AI 鎬荤粨鍘嗙▼</button>
         </div>
       </div>
-      <div class="snap-hist-ai-loading" id="snap-ai-loading">AI 思考中…</div>
+      <div class="snap-hist-ai-loading" id="snap-ai-loading">AI 鎬濊€冧腑鈥?/div>
       <div class="snap-hist-ai-resp" id="snap-ai-resp"></div>
       <div class="snap-hist-ai-inp-row">
-        <input class="snap-hist-ai-inp" id="snap-ai-inp" placeholder="讨论这段游玩历程…" onkeydown="if(event.key==='Enter')snapAIChat()">
-        <button class="snap-hist-ai-send" onclick="snapAIChat()">发送</button>
+        <input class="snap-hist-ai-inp" id="snap-ai-inp" placeholder="璁ㄨ杩欐娓哥帺鍘嗙▼鈥? onkeydown="if(event.key==='Enter')snapAIChat()">
+        <button class="snap-hist-ai-send" onclick="snapAIChat()">鍙戦€?/button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ===== 沉浸式游玩模式 Overlay ===== -->
+<!-- ===== 娌夋蹈寮忔父鐜╂ā寮?Overlay ===== -->
 <div id="ov-play">
   <div class="play-overlay">
-    <!-- 顶栏 -->
+    <!-- 椤舵爮 -->
     <div class="play-topbar">
       <div id="play-cover-wrap"></div>
       <div class="play-info">
-        <div class="play-title" id="play-title">—</div>
+        <div class="play-title" id="play-title">鈥?/div>
         <div class="play-meta" id="play-meta"></div>
       </div>
-      <div class="play-status-badge" id="play-status-badge">游玩中</div>
-      <button class="play-close" onclick="closePlayMode()">✕</button>
+      <div class="play-status-badge" id="play-status-badge">娓哥帺涓?/div>
+      <button class="play-close" onclick="closePlayMode()">鉁?/button>
     </div>
 
-    <!-- 主体双栏 -->
+    <!-- 涓讳綋鍙屾爮 -->
     <div class="play-body">
-      <!-- 左栏 -->
+      <!-- 宸︽爮 -->
       <div class="play-col">
-        <!-- 计时器 -->
+        <!-- 璁℃椂鍣?-->
         <div class="play-module">
           <div class="play-mhdr">
-            <span class="play-mlbl">本次会话计时</span>
-            <span class="play-mact" id="play-timer-toggle" onclick="togglePlayTimer()">暂停</span>
+            <span class="play-mlbl">鏈浼氳瘽璁℃椂</span>
+            <span class="play-mact" id="play-timer-toggle" onclick="togglePlayTimer()">鏆傚仠</span>
           </div>
           <div class="play-timer-num" id="play-timer-display">00:00:00</div>
-          <div class="play-timer-sub" id="play-timer-total">累计总时长：—</div>
+          <div class="play-timer-sub" id="play-timer-total">绱鎬绘椂闀匡細鈥?/div>
           <div class="play-timer-btns">
-            <button class="play-btn-end" onclick="endPlaySession()">结束本次游玩</button>
-            <button class="play-btn-pause" onclick="togglePlayTimer()" id="play-pause-btn">⏸</button>
+            <button class="play-btn-end" onclick="endPlaySession()">缁撴潫鏈娓哥帺</button>
+            <button class="play-btn-pause" onclick="togglePlayTimer()" id="play-pause-btn">鈴?/button>
           </div>
         </div>
 
-        <!-- 进度快照 -->
+        <!-- 杩涘害蹇収 -->
         <div class="play-module play-snap-module" id="play-snap-module">
           <div class="play-snap-bg" id="play-snap-bg"></div>
           <div class="play-snap-overlay"></div>
           <div class="play-snap-inner">
             <div class="play-mhdr">
-              <span class="play-mlbl">当前进度快照</span>
-              <span class="play-mact" onclick="openSnapHist()" id="play-snap-hist-btn">历史快照</span>
+              <span class="play-mlbl">褰撳墠杩涘害蹇収</span>
+              <span class="play-mact" onclick="openSnapHist()" id="play-snap-hist-btn">鍘嗗彶蹇収</span>
             </div>
             <div class="play-snap-img-row">
               <img class="play-snap-img-preview" id="play-snap-img-preview" alt="">
-              <button class="play-snap-upload-btn" id="play-snap-upload-btn" onclick="_playSnapUpload()">📷 上传截图</button>
+              <button class="play-snap-upload-btn" id="play-snap-upload-btn" onclick="_playSnapUpload()">馃摲 涓婁紶鎴浘</button>
               <span class="play-snap-img-name" id="play-snap-img-name"></span>
-              <span class="play-snap-img-del" id="play-snap-img-del" onclick="_playSnapClearImg()" style="display:none">✕</span>
+              <span class="play-snap-img-del" id="play-snap-img-del" onclick="_playSnapClearImg()" style="display:none">鉁?/span>
             </div>
-            <textarea class="play-snap-inp" id="play-snap-inp" rows="2" placeholder="现在玩到哪了？记录当前进度…"></textarea>
+            <textarea class="play-snap-inp" id="play-snap-inp" rows="2" placeholder="鐜板湪鐜╁埌鍝簡锛熻褰曞綋鍓嶈繘搴︹€?></textarea>
             <div class="play-snap-row">
-              <span class="play-snap-hint" id="play-snap-hint">截图将作为快照背景</span>
-              <button class="play-btn-save" onclick="savePlaySnapshot()">保存快照</button>
+              <span class="play-snap-hint" id="play-snap-hint">鎴浘灏嗕綔涓哄揩鐓ц儗鏅?/span>
+              <button class="play-btn-save" onclick="savePlaySnapshot()">淇濆瓨蹇収</button>
             </div>
           </div>
         </div>
 
-        <!-- AI 情报员快捷 -->
+        <!-- AI 鎯呮姤鍛樺揩鎹?-->
         <div class="play-module flex-grow">
           <div class="play-mhdr">
-            <span class="play-mlbl">AI 情报员</span>
+            <span class="play-mlbl">AI 鎯呮姤鍛?/span>
           </div>
           <div class="play-ai-chips" id="play-ai-chips"></div>
           <div class="play-ai-row">
-            <input class="play-ai-inp" id="play-ai-inp" placeholder="快速问点什么…" onkeydown="if(event.key==='Enter')sendPlayAI()">
-            <button class="play-btn-ai" onclick="sendPlayAI()">发送</button>
+            <input class="play-ai-inp" id="play-ai-inp" placeholder="蹇€熼棶鐐逛粈涔堚€? onkeydown="if(event.key==='Enter')sendPlayAI()">
+            <button class="play-btn-ai" onclick="sendPlayAI()">鍙戦€?/button>
           </div>
-          <div class="play-ai-loading" id="play-ai-loading">AI 思考中…</div>
+          <div class="play-ai-loading" id="play-ai-loading">AI 鎬濊€冧腑鈥?/div>
           <div class="play-ai-resp" id="play-ai-resp"></div>
         </div>
       </div>
 
-      <!-- 右栏 -->
+      <!-- 鍙虫爮 -->
       <div class="play-col">
-        <!-- 即时日志 -->
+        <!-- 鍗虫椂鏃ュ織 -->
         <div class="play-module" style="flex-shrink:0">
           <div class="play-mhdr">
-            <span class="play-mlbl">即时游戏日志</span>
+            <span class="play-mlbl">鍗虫椂娓告垙鏃ュ織</span>
             <span class="play-mact" id="play-log-count"></span>
           </div>
           <div class="play-log-list" id="play-log-list" style="max-height:140px"></div>
           <div class="play-log-inp-row">
-            <input class="play-log-inp" id="play-log-inp" placeholder="记录当前想法、心得…" onkeydown="if(event.key==='Enter')addPlayLog()">
-            <button class="play-btn-add" onclick="addPlayLog()">+ 记录</button>
+            <input class="play-log-inp" id="play-log-inp" placeholder="璁板綍褰撳墠鎯虫硶銆佸績寰椻€? onkeydown="if(event.key==='Enter')addPlayLog()">
+            <button class="play-btn-add" onclick="addPlayLog()">+ 璁板綍</button>
           </div>
         </div>
 
-        <!-- 游玩时间线（复用现有时间线数据） -->
+        <!-- 娓哥帺鏃堕棿绾匡紙澶嶇敤鐜版湁鏃堕棿绾挎暟鎹級 -->
         <div class="play-module flex-grow">
           <div class="play-mhdr">
-            <span class="play-mlbl">游玩时间线</span>
-            <span class="play-mact" onclick="_regenPlayTimeline()">↻ 重新生成</span>
+            <span class="play-mlbl">娓哥帺鏃堕棿绾?/span>
+            <span class="play-mact" onclick="_regenPlayTimeline()">鈫?閲嶆柊鐢熸垚</span>
           </div>
           <div class="play-tl" id="play-tl" style="overflow-y:auto;flex:1;min-height:0;-webkit-overflow-scrolling:touch"></div>
         </div>
       </div>
     </div>
 
-    <!-- 底部统计栏 -->
+    <!-- 搴曢儴缁熻鏍?-->
     <div class="play-sumbar">
       <div class="play-stat-block">
         <div class="play-stat-val" id="play-sum-time">0min</div>
-        <div class="play-stat-lbl">本次时长</div>
+        <div class="play-stat-lbl">鏈鏃堕暱</div>
       </div>
       <div class="play-stat-block">
         <div class="play-stat-val" id="play-sum-logs">0</div>
-        <div class="play-stat-lbl">今日日志</div>
+        <div class="play-stat-lbl">浠婃棩鏃ュ織</div>
       </div>
       <div class="play-stat-block">
-        <div class="play-stat-val" id="play-sum-total">—</div>
-        <div class="play-stat-lbl">累计时长</div>
+        <div class="play-stat-val" id="play-sum-total">鈥?/div>
+        <div class="play-stat-lbl">绱鏃堕暱</div>
       </div>
       <div class="play-stat-block">
-        <div class="play-stat-val" id="play-sum-cp">—</div>
-        <div class="play-stat-lbl">完成度</div>
+        <div class="play-stat-val" id="play-sum-cp">鈥?/div>
+        <div class="play-stat-lbl">瀹屾垚搴?/div>
       </div>
-      <button class="play-end-session-btn" onclick="endPlaySession()">结束游玩</button>
+      <button class="play-end-session-btn" onclick="endPlaySession()">缁撴潫娓哥帺</button>
     </div>
   </div>
 </div>
 </body>
 </html>
+
