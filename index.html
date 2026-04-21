@@ -275,7 +275,6 @@
         <div class="btab-bar">
           <button class="btab on" onclick="switchBattleTab('team',this)">🎮 我的阵容</button>
           <button class="btab" onclick="switchBattleTab('analysis',this)">⚔️ 赛前分析</button>
-          <button class="btab" onclick="switchBattleTab('builds',this)">🏆 阵容推荐</button>
           <button class="btab" onclick="switchBattleTab('calc',this)">📊 数值工具</button>
         </div>
       </div>
@@ -286,10 +285,18 @@
         </div>
         <div id="battle-team-list" class="battle-team-list"></div>
         <div class="battle-datasrc-note" style="margin-top:1rem">
-          数据参考来源：
-          <a class="battle-datasrc-link" href="https://wiki.52poke.com" target="_blank" rel="noopener">52Poke Wiki（中文标准）</a> ·
+          数据参考：
+          <a class="battle-datasrc-link" href="https://wiki.52poke.com" target="_blank" rel="noopener">52Poke Wiki</a> ·
           <a class="battle-datasrc-link" href="https://bulbapedia.bulbagarden.net" target="_blank" rel="noopener">Bulbapedia</a> ·
-          <a class="battle-datasrc-link" href="https://gamewith.ai/pokemon-champions/en" target="_blank" rel="noopener">Champions GameWith</a>
+          <a class="battle-datasrc-link" href="https://gamewith.ai/pokemon-champions/en" target="_blank" rel="noopener">GameWith</a>
+        </div>
+        <div class="battle-datasrc-note" style="margin-top:.5rem">
+          单打构建参考：
+          <a class="battle-datasrc-link" href="https://game8.co/games/Pokemon-Champions/archives/592129" target="_blank" rel="noopener">game8 配置推荐</a> ·
+          <a class="battle-datasrc-link" href="https://www.pikalytics.com/champions" target="_blank" rel="noopener">Pikalytics 使用率</a> ·
+          <a class="battle-datasrc-link" href="https://insider-gaming.com/best-pokemon-champions-singles-team-tier-list/" target="_blank" rel="noopener">Insider Gaming 单打</a> ·
+          <a class="battle-datasrc-link" href="https://www.pokemon-zone.com/champions/tier-list/" target="_blank" rel="noopener">Pokemon Zone Tier</a> ·
+          <a class="battle-datasrc-link" href="https://smogon.com/forums/threads/regulation-set-m-a-pokemon-champions-bss-role-compendium.3780409/" target="_blank" rel="noopener">Smogon BSS</a>
         </div>
       </div>
       <div class="btab-panel" id="btab-analysis">
@@ -309,7 +316,6 @@
         <button class="btn btn-a" onclick="analyzeMatchups()" style="width:100%;margin-top:8px;padding:10px">⚔️ 开始赛前分析</button>
         <div id="battle-analysis-result"></div>
       </div>
-      <div class="btab-panel" id="btab-builds" style="padding-top:.5rem"></div>
       <div class="btab-panel" id="btab-calc" style="padding-top:1rem"></div>
     </div>
 
@@ -320,7 +326,6 @@
         <div class="btab-bar">
           <button class="btab on" onclick="switchDTab('team',this)">🎮 我的阵容</button>
           <button class="btab" onclick="switchDTab('analysis',this)">⚔️  赛前分析</button>
-          <button class="btab" onclick="switchDTab('builds',this)">🏆 阵容推荐</button>
           <button class="btab" onclick="switchDTab('calc',this)">📊 数值工具</button>
         </div>
       </div>
@@ -332,10 +337,18 @@
         </div>
         <div id="bd-team-list" class="battle-team-list"></div>
         <div class="battle-datasrc-note" style="margin-top:1rem">
-          数据参考来源：
-          <a class="battle-datasrc-link" href="https://wiki.52poke.com" target="_blank" rel="noopener">52Poke Wiki（中文标准）</a> ·
+          数据参考：
+          <a class="battle-datasrc-link" href="https://wiki.52poke.com" target="_blank" rel="noopener">52Poke Wiki</a> ·
           <a class="battle-datasrc-link" href="https://bulbapedia.bulbagarden.net" target="_blank" rel="noopener">Bulbapedia</a> ·
-          <a class="battle-datasrc-link" href="https://gamewith.ai/pokemon-champions/en" target="_blank" rel="noopener">Champions GameWith</a>
+          <a class="battle-datasrc-link" href="https://gamewith.ai/pokemon-champions/en" target="_blank" rel="noopener">GameWith</a>
+        </div>
+        <div class="battle-datasrc-note" style="margin-top:.5rem">
+          双打构建参考：
+          <a class="battle-datasrc-link" href="https://championsmeta.io/teams" target="_blank" rel="noopener">ChampionsMeta 锦标赛队伍</a> ·
+          <a class="battle-datasrc-link" href="https://www.pikalytics.com/topteams" target="_blank" rel="noopener">Pikalytics Top Teams</a> ·
+          <a class="battle-datasrc-link" href="https://www.pokemon-zone.com/champions/teams/" target="_blank" rel="noopener">Pokemon Zone 队伍核心</a> ·
+          <a class="battle-datasrc-link" href="https://game8.co/games/Pokemon-Champions/archives/593883" target="_blank" rel="noopener">game8 双打 Tier</a> ·
+          <a class="battle-datasrc-link" href="https://insider-gaming.com/best-pokemon-champions-doubles-teams-tier-list/" target="_blank" rel="noopener">Insider Gaming 双打</a>
         </div>
       </div>
 
@@ -357,7 +370,6 @@
         <div id="bd-analysis-result"></div>
       </div>
 
-      <div class="btab-panel" id="bdtab-builds" style="padding-top:.5rem"></div>
       <div class="btab-panel" id="bdtab-calc" style="padding-top:1rem"></div>
     </div>
   </div>
