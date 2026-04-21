@@ -2503,6 +2503,20 @@ function renderTeamWeaknessWarning(scored){
   return`<div class="battle-warn-list">${warnings.map(w=>`<div class="battle-warn-item">⚠ ${w}</div>`).join('')}</div>`;
 }
 
+function renderTeamWeaknessWarningD(scored4){
+  const top4=scored4.slice(0,4).map(s=>s.pkm).filter(p=>p.type1);
+  if(!top4.length)return`<div class="battle-warn-ok">属性数据不足，无法分析</div>`;
+  const warnings=[];
+  B_TYPES.forEach(t=>{
+    const hits=top4.filter(p=>getTypeEff(t,p.type1,p.type2)>=2);
+    if(hits.length>=3)
+      warnings.push(`<b>${TYPE_ZH[t]||t}系</b>可克制 ${hits.map(p=>esc(p.name)).join('、')}（${hits.length}/4只）`);
+  });
+  if(!warnings.length)
+    return`<div class="battle-warn-ok">✓ 出战四只对各属性无明显集体弱点</div>`;
+  return`<div class="battle-warn-list">${warnings.map(w=>`<div class="battle-warn-item">⚠ ${w}</div>`).join('')}</div>`;
+}
+
 /* ── 速度档位对比（含天气/特性速度修正）── */
 function renderSpeedAnalysis(scored, opp){
   const myPkmAll=scored.map(s=>s.pkm);
@@ -3340,6 +3354,86 @@ function renderDoublesRec(top4, leadPairScored, targetOpp) {
   return leadHtml+`<div class="battle-rec-list">${cardsHtml}</div>`;
 }
 
+function renderDFieldControl(myPkm, oppValid) {
+  const terrainMoves = new Set(['electric-terrain','grassy-terrain','misty-terrain','psychic-terrain']);
+  const weatherMoves = new Set(['rain-dance','sunny-day','sandstorm','snowscape']);
+  const sharedControlRows = [
+    { label:'顺风', has:(slugs)=>slugs.includes('tailwind') },
+    { label:'奇异空间', has:(slugs)=>slugs.includes('trick-room') },
+    { label:'假哭/跟我来', has:(slugs)=>slugs.includes('fake-out') || slugs.includes('follow-me') || slugs.includes('rage-powder') },
+    { label:'鼓气加油', has:(slugs)=>slugs.includes('helping-hand') },
+    { label:'天气', has:(slugs, pkm, fromMoves)=>Boolean(ABILITY_WEATHER_SET[pkm.ability||'']) || fromMoves.some(s=>weatherMoves.has(s)) },
+    { label:'地形', has:(slugs, pkm, fromMoves)=>fromMoves.some(s=>terrainMoves.has(s)) },
+  ];
+  const getMyControl = (pkm) => {
+    const slugs = [pkm.move1,pkm.move2,pkm.move3,pkm.move4].filter(Boolean).map(m=>m.slug||'').filter(Boolean);
+    return sharedControlRows.filter(row => row.has(slugs, pkm, slugs)).map(row => row.label);
+  };
+  const getOppControl = (pkm) => {
+    const slugs = (pkm.predictedMoves||[]).map(m=>m.slug||'').filter(Boolean);
+    return sharedControlRows.filter(row => row.has(slugs, pkm, slugs)).map(row => row.label);
+  };
+  const spriteFor = (pkm, isOpp=false) => {
+    if (!isOpp && pkm._spriteUrl) return pkm._spriteUrl;
+    if (isOpp && pkm.spriteUrl) return pkm.spriteUrl;
+    if (pkm.slug && PKM_PC_BY_SLUG[pkm.slug]?.spriteUrl) return PKM_PC_BY_SLUG[pkm.slug].spriteUrl;
+    return '';
+  };
+  const renderSide = (rows, emptyText, isOpp=false) => {
+    const map = new Map();
+    rows.forEach(pkm => {
+      const labels = isOpp ? getOppControl(pkm) : getMyControl(pkm);
+      labels.forEach(label => {
+        if (!map.has(label)) map.set(label, []);
+        map.get(label).push(pkm);
+      });
+    });
+    if (!map.size) return `<div style="color:var(--t3);font-size:.78rem">${emptyText}</div>`;
+    return sharedControlRows.map(row => {
+      const holders = map.get(row.label) || [];
+      if (!holders.length) return '';
+      const chips = holders.map(pkm => {
+        const sprite = spriteFor(pkm, isOpp);
+        return `<div class="battle-my-pkm-chip">${sprite?`<img src="${esc(sprite)}" alt="" onerror="this.style.display='none'">`:''}${esc(pkm.name||'?')}</div>`;
+      }).join('');
+      return `<div style="margin-bottom:10px"><div class="opp-pred-row-label">${row.label}</div><div class="battle-my-preview">${chips}</div></div>`;
+    }).join('');
+  };
+  return `<div class="battle-analysis-layout" style="margin-top:4px">
+    <div class="battle-side-card">
+      <div class="battle-side-hdr">我方</div>
+      ${renderSide(myPkm, '我方无场控手段')}
+    </div>
+    <div class="battle-side-card">
+      <div class="battle-side-hdr">对方</div>
+      ${renderSide(oppValid, '对方未识别到场控手段', true)}
+    </div>
+  </div>`;
+}
+
+function renderDSpreadRisk(myPkm) {
+  const rows = [];
+  const getMoveObjs = pkm => [pkm.move1,pkm.move2,pkm.move3,pkm.move4].filter(m => m?.slug && BD_SPREAD_SLUGS.has(m.slug));
+  myPkm.forEach(pkm => {
+    getMoveObjs(pkm).forEach(move => {
+      const teammates = myPkm.filter(other => other !== pkm);
+      let note = '注意队友站位';
+      if (move.slug === 'earthquake' || move.slug === 'magnitude') {
+        const allImmune = teammates.length > 0 && teammates.every(tm => tm.type1 === 'flying' || tm.type2 === 'flying' || tm.ability === 'levitate');
+        note = allImmune ? '无自伤风险' : '注意地面免疫搭档';
+      } else if (move.slug === 'surf') {
+        note = teammates.some(tm => tm.ability === 'water-absorb' || tm.ability === 'storm-drain') ? '队友吸收' : '注意波及队友';
+      } else if (move.slug === 'discharge') {
+        note = teammates.some(tm => tm.ability === 'lightning-rod' || tm.ability === 'volt-absorb') ? '队友吸收' : '注意波及队友';
+      }
+      const mv = MOVES_BY_SLUG?.[move.slug];
+      rows.push(`<div class="battle-warn-item">${esc(pkm.name)} 的 ${esc(mv?.name||move.name||move.slug)}：${esc(note)}</div>`);
+    });
+  });
+  if (!rows.length) return `<div class="battle-warn-ok">出战阵容无范围技</div>`;
+  return `<div class="battle-warn-list">${rows.join('')}</div>`;
+}
+
 /* ── 主分析入口 ── */
 function analyzeDoubles() {
   [0,1,2,3,4,5].forEach(i=>{
@@ -3379,9 +3473,14 @@ function analyzeDoubles() {
       const leadPairScored=selectBestLeadPair(top4,predResult.leadPair);
       const oppPredHtml=renderDOppPrediction(oppValid,predResult);
       const myRecHtml=renderDoublesRec(top4,leadPairScored,targetOpp);
+      const fieldCtrlHtml=renderDFieldControl(myPkm, oppValid);
+      const spreadRiskHtml=renderDSpreadRisk(top4.map(s=>s.pkm));
       const matrixHtml=renderBattleMatrix(myPkm,opp);
       const speedHtml=renderSpeedAnalysis(rawScored,opp);
-      const weakHtml=renderTeamWeaknessWarning(rawScored);
+      const weakHtml=renderTeamWeaknessWarningD(top4scored);
+      const coverageHtml=renderBattleCoverage(myPkm, opp);
+      const dmgHtml=renderBattleDamage(myPkm, opp, activeWeather);
+      const oppDmgHtml=renderOppDamage(opp, myPkm, activeWeather);
       resultBox.innerHTML=`<div class="battle-result-box">
         ${oppPredHtml?`<div class="battle-result-section">
           <div class="battle-result-hdr"><span class="battle-result-title">🔮 对方出战预测</span><span class="battle-datasrc-note">协同40%+克制我方60% · 先发另行预测</span></div>
@@ -3389,6 +3488,12 @@ function analyzeDoubles() {
         <div class="battle-result-section">
           <div class="battle-result-hdr"><span class="battle-result-title">推荐出战阵容（双打 6选4）</span></div>
           ${myRecHtml}</div>
+        <div class="battle-result-section">
+          <div class="battle-result-hdr"><span class="battle-result-title">场地控制分析</span></div>
+          ${fieldCtrlHtml}</div>
+        <div class="battle-result-section">
+          <div class="battle-result-hdr"><span class="battle-result-title">范围技自伤提示</span></div>
+          ${spreadRiskHtml}</div>
         <div class="battle-result-section">
           <div class="battle-result-hdr"><span class="battle-result-title">⚠ 队伍脆弱性预警</span></div>
           ${weakHtml}</div>
@@ -3398,6 +3503,15 @@ function analyzeDoubles() {
         <div class="battle-result-section">
           <div class="battle-result-hdr"><span class="battle-result-title">属性相克矩阵</span></div>
           ${matrixHtml}</div>
+        <div class="battle-result-section">
+          <div class="battle-result-hdr"><span class="battle-result-title">技能覆盖分析</span></div>
+          ${coverageHtml}</div>
+        <div class="battle-result-section">
+          <div class="battle-result-hdr"><span class="battle-result-title">伤害估算（我方 → 对方）</span><span class="battle-datasrc-note">Champions Lv.50 公式</span></div>
+          ${dmgHtml}</div>
+        ${oppDmgHtml?`<div class="battle-result-section">
+          <div class="battle-result-hdr"><span class="battle-result-title">对方热门技能 → 我方伤害</span><span class="battle-datasrc-note">基于锦标赛使用率 top4 技能</span></div>
+          ${oppDmgHtml}</div>`:''}
       </div>`;
     }catch(e){
       resultBox.innerHTML=`<div class="battle-analyzing">分析出错：${esc(e.message)}</div>`;
