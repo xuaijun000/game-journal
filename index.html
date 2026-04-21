@@ -311,7 +311,48 @@
 
     <div id="battle-doubles" class="battle-subview">
       <button class="bhub-back-btn" onclick="showBattleHub()">← 返回</button>
-      <div style="padding:2rem;text-align:center;color:var(--t3)">双打助手开发中…</div>
+
+      <div style="background:var(--bg2);border:1px solid var(--b2);border-radius:var(--rl) var(--rl) 0 0;overflow:hidden;margin-bottom:0">
+        <div class="btab-bar">
+          <button class="btab on" onclick="switchDTab('team',this)">🎮 我的阵容</button>
+          <button class="btab" onclick="switchDTab('analysis',this)">⚔️  赛前分析</button>
+          <button class="btab" onclick="switchDTab('calc',this)">📊 数值工具</button>
+        </div>
+      </div>
+
+      <div class="btab-panel on" id="bdtab-team">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 0 .2rem">
+          <div style="font-size:.65rem;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase">我的阵容列表</div>
+          <button class="btn btn-a btn-sm" onclick="openBattleTeamEdit(null,0)">+ 新建阵容</button>
+        </div>
+        <div id="bd-team-list" class="battle-team-list"></div>
+        <div class="battle-datasrc-note" style="margin-top:1rem">
+          数据参考来源：
+          <a class="battle-datasrc-link" href="https://wiki.52poke.com" target="_blank" rel="noopener">52Poke Wiki（中文标准）</a> ·
+          <a class="battle-datasrc-link" href="https://bulbapedia.bulbagarden.net" target="_blank" rel="noopener">Bulbapedia</a> ·
+          <a class="battle-datasrc-link" href="https://gamewith.ai/pokemon-champions/en" target="_blank" rel="noopener">Champions GameWith</a>
+        </div>
+      </div>
+
+      <div class="btab-panel" id="bdtab-analysis">
+        <div class="battle-analysis-layout" style="margin-top:1rem">
+          <div class="battle-side-card">
+            <div class="battle-side-hdr">我的阵容</div>
+            <select class="bpkm-inp" id="bd-my-team-sel" style="width:100%;margin-bottom:8px" onchange="onDMyTeamSelect(this.value)">
+              <option value="">选择阵容…</option>
+            </select>
+            <div id="bd-my-preview" class="battle-my-preview"></div>
+          </div>
+          <div class="battle-side-card">
+            <div class="battle-side-hdr">对方阵容（填属性自动分析）</div>
+            <div id="bd-opp-slots" class="battle-opp-slots"></div>
+          </div>
+        </div>
+        <button class="btn btn-a" onclick="analyzeDoubles()" style="width:100%;margin-top:8px;padding:10px">⚔️  开始双打赛前分析</button>
+        <div id="bd-analysis-result"></div>
+      </div>
+
+      <div class="btab-panel" id="bdtab-calc" style="padding-top:1rem"></div>
     </div>
   </div>
 </main>

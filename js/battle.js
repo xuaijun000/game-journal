@@ -985,6 +985,17 @@ function enterBattleFormat(version, format) {
   document.querySelectorAll('.battle-subview').forEach(v => v.classList.remove('on'));
   if (format === 'doubles') {
     document.getElementById('battle-doubles').classList.add('on');
+    if (!window._battleDoublesInited) {
+      window._battleDoublesInited = true;
+      if (!window._battlePkmcInited) {
+        loadBattleGameData('champions');
+        loadBattleTeams().then(() => { renderDTeamList(); renderDTeamSel(); });
+      } else {
+        renderDTeamList();
+        renderDTeamSel();
+      }
+      renderDOppSlots();
+    }
     document.getElementById('battle-mode-label').textContent = 'Pokemon Champions · 双打';
   } else {
     document.getElementById('battle-pkmc').classList.add('on');
@@ -1797,6 +1808,7 @@ async function saveBattleTeam(){
       if(idx>=0)battleTeams[idx].id=newId;
     }
     renderTeamList();
+    if (window._battleDoublesInited) { renderDTeamList(); renderDTeamSel(); }
     renderBattleTeamSel();
     closeBattleTeamEdit();
     showToast('队伍已保存 ✓');
@@ -1813,6 +1825,7 @@ async function confirmDeleteBattleTeam(id){
     battleTeams=battleTeams.filter(t=>t.id!==id);
     try{localStorage.setItem('battle_teams',JSON.stringify(battleTeams));}catch{}
     renderTeamList();
+    if (window._battleDoublesInited) { renderDTeamList(); renderDTeamSel(); }
     renderBattleTeamSel();
     showToast('已删除');
   }catch(e){
@@ -1829,6 +1842,7 @@ async function deleteBattleTeamFromModal(){
     battleTeams=battleTeams.filter(t=>t.id!==battleEditTeam.id);
     try{localStorage.setItem('battle_teams',JSON.stringify(battleTeams));}catch{}
     renderTeamList();
+    if (window._battleDoublesInited) { renderDTeamList(); renderDTeamSel(); }
     renderBattleTeamSel();
     closeBattleTeamEdit();
     showToast('已删除');
@@ -2944,4 +2958,504 @@ function calcAllStats(){
       </div>`;
     }).join('')}
   </div>`;
+}
+
+/* ═══════════════════════════════════════
+   双打模块
+   ═══════════════════════════════════════ */
+
+/* ── 状态 ── */
+let bdMyTeamId = null;
+let bdOppPkm = [{},{},{},{},{},{}];
+const bdOppComposing = {};
+const bdOppSearchTimers = {};
+
+/* ── Tab 切换 ── */
+function switchDTab(tab, btn) {
+  document.querySelectorAll('#battle-doubles .btab').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('#battle-doubles .btab-panel').forEach(p => p.classList.remove('on'));
+  document.getElementById('bdtab-' + tab).classList.add('on');
+  btn.classList.add('on');
+  if (tab === 'calc') renderDCalc();
+}
+
+/* ── 初始化 ── */
+function initDoubles() {
+  renderDTeamList();
+  renderDTeamSel();
+  renderDOppSlots();
+}
+
+/* ── 队伍列表（共用 battleTeams，渲染到 #bd-team-list） ── */
+function renderDTeamList() {
+  const el = document.getElementById('bd-team-list');
+  if (!el) return;
+  if (!battleTeams.length) {
+    el.innerHTML = `<div class="btc-empty"><div class="btc-empty-ico">⚔️ </div>还没有队伍，点击「新建阵容」开始吧！</div>`;
+    return;
+  }
+  el.innerHTML = battleTeams.map(t => {
+    const pkm = Array.isArray(t.pokemon) ? t.pokemon : [];
+    const sprites = pkm.map((p, i) => {
+      const img = p._spriteUrl ? `<img src="${esc(p._spriteUrl)}" alt="" onerror="this.style.display='none'">` : '<span style="font-size:1.4rem;color:var(--b2)">·</span>';
+      const dots = (p.type1 ? `<div class="btc-type-dot" style="background:${TYPE_COLOR[p.type1]||'#888'}"></div>` : '') + (p.type2 ? `<div class="btc-type-dot" style="background:${TYPE_COLOR[p.type2]||'#888'}"></div>` : '');
+      return `<div class="btc-pkm" onclick="event.stopPropagation();openBattleTeamEdit('${t.id}',${i})" title="${esc(p.name||'空位')}">${img}<div class="btc-pkm-name">${esc(p.name||'—')}</div><div class="btc-pkm-types">${dots}</div></div>`;
+    });
+    while (sprites.length < 6) sprites.push(`<div class="btc-pkm"><span style="font-size:1.4rem;color:var(--b2)">+</span><div class="btc-pkm-name" style="color:var(--t3)">空</div></div>`);
+    return `<div class="battle-team-card"><div class="btc-header"><div class="btc-name">${esc(t.team_name||'我的队伍')}</div><div class="btc-meta">${pkm.filter(p=>p.name).length}/6 已录入</div><div class="btc-actions"><button class="btn btn-sm" onclick="openBattleTeamEdit('${t.id}',0)">✏️ 编辑</button><button class="btn btn-sm btn-d" onclick="confirmDeleteBattleTeam('${t.id}')">删除</button></div></div><div class="btc-sprites">${sprites.join('')}</div></div>`;
+  }).join('');
+}
+
+function renderDTeamSel() {
+  const sel = document.getElementById('bd-my-team-sel');
+  if (!sel) return;
+  sel.innerHTML = `<option value="">选择阵容…</option>` + battleTeams.map(t => `<option value="${t.id}">${esc(t.team_name||'我的队伍')}</option>`).join('');
+}
+
+function onDMyTeamSelect(teamId) {
+  bdMyTeamId = teamId;
+  const team = battleTeams.find(t => t.id === teamId);
+  const preview = document.getElementById('bd-my-preview');
+  if (!team || !preview) return;
+  preview.innerHTML = (Array.isArray(team.pokemon) ? team.pokemon.filter(p => p.name) : []).map(p => {
+    const img = p._spriteUrl ? `<img src="${esc(p._spriteUrl)}" alt="" onerror="this.style.display='none'">` : '';
+    return `<div class="battle-my-pkm-chip">${img}${esc(p.name)}</div>`;
+  }).join('');
+}
+
+/* ── 对方6槽输入（前缀 bdopp-，独立于单打） ── */
+function renderDOppSlots() {
+  const el = document.getElementById('bd-opp-slots');
+  if (!el) return;
+  const typeOpts = B_TYPES.map(t => `<option value="${t}">${TYPE_ZH[t]||t}</option>`).join('');
+  el.innerHTML = [0,1,2,3,4,5].map(i => `
+    <div class="battle-opp-row">
+      <span class="battle-opp-num">${i+1}</span>
+      <div class="battle-opp-inp-wrap">
+        <input class="battle-opp-inp" id="bdopp-name-${i}" placeholder="搜索宝可梦…"
+          oninput="if(!bdOppComposing[${i}])onDOppInput(${i},this.value)"
+          oncompositionstart="bdOppComposing[${i}]=true"
+          oncompositionend="bdOppComposing[${i}]=false;onDOppInput(${i},this.value)"
+          onblur="setTimeout(()=>closeDOppDrop(${i}),350)" autocomplete="off">
+        <div class="bpkm-search-drop" id="bdopp-drop-${i}"></div>
+      </div>
+      <select class="battle-opp-type-sel" id="bdopp-t1-${i}" title="属性1">
+        <option value="">属性1</option>${typeOpts}
+      </select>
+      <select class="battle-opp-type-sel" id="bdopp-t2-${i}" title="属性2（可选）">
+        <option value="">属性2</option>${typeOpts}
+      </select>
+    </div>`).join('');
+}
+
+function closeDOppDrop(i) {
+  const d = document.getElementById(`bdopp-drop-${i}`);
+  if (d) { d.classList.remove('open'); d.innerHTML = ''; }
+}
+
+function onDOppInput(i, q) {
+  clearTimeout(bdOppSearchTimers[i]);
+  const drop = document.getElementById(`bdopp-drop-${i}`);
+  if (!drop) return;
+  if (!q || q.length < 1) { drop.classList.remove('open'); drop.innerHTML = ''; return; }
+  drop.innerHTML = '<div style="padding:8px 10px;color:var(--t3);font-size:.78rem">搜索中…</div>';
+  drop.classList.add('open');
+  bdOppSearchTimers[i] = setTimeout(async () => {
+    try {
+      let results = PKM_LIST.filter(p => p.name.includes(q)).slice(0, 8).map(p => ({id:p.num, cnName:p.name, slug:p.slug, spriteUrl:p.spriteUrl||''}));
+      if (!results.length && /^\d+$/.test(q)) { const p = PKM_PC_BY_NUM[parseInt(q)]; results = p ? [{id:p.num,cnName:p.name,slug:p.slug,spriteUrl:p.spriteUrl||''}] : []; }
+      if (!results.length) { drop.innerHTML = '<div style="padding:8px 10px;color:var(--t3);font-size:.78rem">未找到</div>'; return; }
+      drop.innerHTML = results.map(r => `<div class="bpkm-drop-item" onclick="selectDOpp(${i},${r.id},'${esc(r.cnName||'')}','${r.slug||''}')">
+        <img src="${r.spriteUrl||''}" alt="" onerror="this.style.display='none'">
+        <div class="bpkm-drop-name">${esc(r.cnName||'')}</div>
+        <div class="bpkm-drop-num">#${r.id}</div>
+      </div>`).join('');
+    } catch(e) { drop.innerHTML = '<div style="padding:8px 10px;color:var(--t3);font-size:.78rem">搜索出错</div>'; }
+  }, 300);
+}
+
+function selectDOpp(i, pkmId, cnName, slug='') {
+  closeDOppDrop(i);
+  const inp = document.getElementById(`bdopp-name-${i}`);
+  if (inp) inp.value = cnName;
+  const lp = PKM_PC_BY_SLUG[slug] || PKM_PC_BY_NUM[pkmId];
+  const builds = window.PKM_CHAMPIONS_BUILDS?.[slug] || null;
+  if (lp) {
+    document.getElementById(`bdopp-t1-${i}`)?.setAttribute('value', lp.type1||'');
+    document.getElementById(`bdopp-t2-${i}`)?.setAttribute('value', lp.type2||'');
+    const s1 = document.getElementById(`bdopp-t1-${i}`); if(s1) s1.value = lp.type1||'';
+    const s2 = document.getElementById(`bdopp-t2-${i}`); if(s2) s2.value = lp.type2||'';
+    bdOppPkm[i] = { name:cnName, slug, type1:lp.type1||'', type2:lp.type2||'', base:lp.stats||{},
+      predictedMoves:builds?.moves||[], predictedItem:builds?.item||null,
+      predictedAbility:builds?.ability||null, predictedTeammates:builds?.teammates||[] };
+  } else {
+    bdOppPkm[i] = { name:cnName, slug, type1:'', type2:'', base:{} };
+    fetch(`https://pokeapi.co/api/v2/pokemon/${encodeURIComponent(slug||cnName.toLowerCase())}`)
+      .then(r => r.ok ? r.json() : null).then(d => {
+        if (!d) return;
+        const t1 = d.types[0]?.type?.name||'', t2 = d.types[1]?.type?.name||'';
+        const s1 = document.getElementById(`bdopp-t1-${i}`); if(s1) s1.value = t1;
+        const s2 = document.getElementById(`bdopp-t2-${i}`); if(s2) s2.value = t2;
+        bdOppPkm[i] = {...bdOppPkm[i], type1:t1, type2:t2};
+      }).catch(()=>{});
+  }
+}
+
+/* ── 双打支援角色识别 ── */
+const BD_SUPPORT_SLUGS = {
+  'fake-out':'假哭', 'tailwind':'顺风', 'trick-room':'奇异空间',
+  'follow-me':'引导', 'rage-powder':'引导', 'helping-hand':'鼓气加油',
+  'icy-wind':'速控', 'electroweb':'速控', 'bulldoze':'速控',
+  'rain-dance':'天气', 'sunny-day':'天气', 'sandstorm':'天气', 'snowscape':'天气',
+};
+const BD_SPREAD_SLUGS = new Set([
+  'earthquake','magnitude','surf','muddy-water','discharge','lava-plume',
+  'heat-wave','blizzard','hyper-voice','dazzling-gleam','rock-slide',
+  'icy-wind','bulldoze','electroweb','snarl','breaking-swipe',
+]);
+
+function detectDSupportRoles(pkm) {
+  const roles = new Set();
+  [pkm.move1,pkm.move2,pkm.move3,pkm.move4].filter(Boolean).forEach(m => {
+    const slug = m.slug||'';
+    if (BD_SUPPORT_SLUGS[slug]) roles.add(BD_SUPPORT_SLUGS[slug]);
+    if (BD_SPREAD_SLUGS.has(slug)) roles.add('范围技');
+  });
+  const ab = pkm.ability||'';
+  if (ABILITY_WEATHER_SET[ab]) roles.add('天气');
+  if (ab === 'intimidate') roles.add('恐吓');
+  if (ab === 'prankster') roles.add('恶作剧之心');
+  return [...roles];
+}
+
+function detectDOppSupportRoles(op) {
+  const roles = new Set();
+  (op.predictedMoves||[]).forEach(m => {
+    const slug = m.slug||'';
+    if (BD_SUPPORT_SLUGS[slug]) roles.add(BD_SUPPORT_SLUGS[slug]);
+    if (BD_SPREAD_SLUGS.has(slug)) roles.add('范围技');
+  });
+  const ab = (op.predictedAbility?.slug)||'';
+  if (ABILITY_WEATHER_SET[ab]) roles.add('天气');
+  if (ab === 'intimidate') roles.add('恐吓');
+  return [...roles];
+}
+
+/* ── 先发2只搭档协同评分 ── */
+function pairSynergyScore(a, b) {
+  let score = 0;
+  const rolesA = detectDSupportRoles(a), rolesB = detectDSupportRoles(b);
+  const roleA = classifyRole(a), roleB = classifyRole(b);
+  const aIsSupport = roleA.cls==='role-support' || rolesA.length>0;
+  const bIsSupport = roleB.cls==='role-support' || rolesB.length>0;
+  if (aIsSupport !== bIsSupport) score += 4;
+  if (rolesA.includes('假哭') || rolesB.includes('假哭')) score += 3;
+  if ((rolesA.includes('顺风')||rolesB.includes('顺风')) && Math.abs((a.base?.spe||0)-(b.base?.spe||0))>40) score += 2;
+  const getWeaks = p => { const im=ABILITY_TYPE_IMMUNE[p.ability||'']||[]; return B_TYPES.filter(t=>getTypeEff(t,p.type1,p.type2)>=2&&!im.includes(t)); };
+  score -= getWeaks(a).filter(t=>getWeaks(b).includes(t)).length * 0.8;
+  if ((a.base?.spe||0)>0&&(b.base?.spe||0)>0&&Math.abs((a.base.spe||0)-(b.base.spe||0))>30) score += 1;
+  if (roleA.cls===roleB.cls&&roleA.cls!=='role-support') score -= 1;
+  return score;
+}
+
+/* ── 从4只中选最佳先发2只 ── */
+function selectBestLeadPair(top4, oppLead) {
+  if (top4.length <= 2) return top4;
+  let best = null, bestScore = -Infinity;
+  for (let a = 0; a < top4.length-1; a++) {
+    for (let b = a+1; b < top4.length; b++) {
+      const pa = top4[a].pkm, pb = top4[b].pkm;
+      const syn = pairSynergyScore(pa, pb);
+      let threat = 0;
+      (oppLead||[]).slice(0,2).forEach(op => { threat += oppThreatScore(op,pa)+oppThreatScore(op,pb); });
+      const total = syn*1.5 + threat;
+      if (total > bestScore) { bestScore=total; best=[top4[a],top4[b]]; }
+    }
+  }
+  return best || top4.slice(0,2);
+}
+
+/* ── 协同Top4选择 ── */
+function selectSynTop4(scored) {
+  if (scored.length <= 4) return scored;
+  const getWeaks = p => { const im=ABILITY_TYPE_IMMUNE[p.ability||'']||[]; return B_TYPES.filter(t=>getTypeEff(t,p.type1,p.type2)>=2&&!im.includes(t)); };
+  const first = scored[0];
+  const fw = getWeaks(first.pkm);
+  const second = scored.slice(1).map(s=>({s,syn:s.total+fw.filter(t=>getTypeEff(t,s.pkm.type1,s.pkm.type2)<=0.5).length*2})).sort((a,b)=>b.syn-a.syn)[0].s;
+  const pool2 = scored.slice(1).filter(s=>s!==second);
+  const cw12 = [...new Set([...fw,...getWeaks(second.pkm)])];
+  const third = pool2.map(s=>({s,syn:s.total+cw12.filter(t=>getTypeEff(t,s.pkm.type1,s.pkm.type2)<=0.5).length*2})).sort((a,b)=>b.syn-a.syn)[0].s;
+  const pool3 = pool2.filter(s=>s!==third);
+  const cw123 = [...new Set([...cw12,...getWeaks(third.pkm)])];
+  const fourth = pool3.map(s=>({s,syn:s.total+cw123.filter(t=>getTypeEff(t,s.pkm.type1,s.pkm.type2)<=0.5).length*2+(detectDSupportRoles(s.pkm).length>0?3:0)})).sort((a,b)=>b.syn-a.syn)[0].s;
+  const top4set = new Set([first,second,third,fourth]);
+  return [first,second,third,fourth,...scored.filter(s=>!top4set.has(s))];
+}
+
+/* ── 预测对方最优出战4只 + 先发2只（C(n,4) + 角色标签） ── */
+function predictOppDoubles(valid, myPkm) {
+  if (!valid.length) return {combo4:[],leadPair:[],threatMap:{},spreadWarn:[]};
+  if (valid.length <= 4) {
+    const lp = selectBestLeadPair(valid.map(p=>({pkm:p})), myPkm).map(s=>s.pkm||s);
+    return {combo4:valid, leadPair:lp, threatMap:buildThreatMap(valid,myPkm), spreadWarn:collectSpreadWarn(valid)};
+  }
+  const synScore = combo => {
+    let s=0;
+    for(let a=0;a<combo.length;a++){
+      const ma={}; (combo[a].predictedTeammates||[]).forEach(t=>{ma[t.slug]=t.pct;});
+      for(let b=a+1;b<combo.length;b++){
+        const mb={}; (combo[b].predictedTeammates||[]).forEach(t=>{mb[t.slug]=t.pct;});
+        s+=(ma[combo[b].slug||'']||0)+(mb[combo[a].slug||'']||0);
+      }
+    }
+    return s;
+  };
+  const antiScore = combo => { if(!myPkm.length)return 0; let t=0; myPkm.forEach(mp=>{t+=combo.reduce((m,op)=>Math.max(m,oppThreatScore(op,mp)),0);}); return t; };
+  const all=[];
+  for(let a=0;a<valid.length-3;a++) for(let b=a+1;b<valid.length-2;b++) for(let c=b+1;c<valid.length-1;c++) for(let d=c+1;d<valid.length;d++) all.push([valid[a],valid[b],valid[c],valid[d]]);
+  const raw=all.map(combo=>({combo,syn:synScore(combo),anti:antiScore(combo)}));
+  const mxS=Math.max(...raw.map(r=>r.syn),1), mxA=Math.max(...raw.map(r=>r.anti),1);
+  let best=raw[0],bv=-1;
+  raw.forEach(r=>{const v=(r.syn/mxS)*0.4+(r.anti/mxA)*0.6; if(v>bv){bv=v;best=r;}});
+  const combo4=best.combo;
+  const leadPair=selectBestLeadPair(combo4.map(p=>({pkm:p})),myPkm.slice(0,2)).map(s=>s.pkm||s);
+  return {combo4, leadPair, threatMap:buildThreatMap(combo4,myPkm), spreadWarn:collectSpreadWarn(combo4)};
+}
+
+/* ── 收集对方范围技警告 ── */
+function collectSpreadWarn(combo) {
+  const warns=[];
+  combo.forEach(op=>{
+    const spreadMoves=(op.predictedMoves||[]).filter(m=>BD_SPREAD_SLUGS.has(m.slug||''));
+    spreadMoves.forEach(m=>{
+      const mv=MOVES_BY_SLUG?.[m.slug];
+      if(mv) warns.push({pkmName:op.name||'?', moveName:mv.name||m.slug, type:mv.type||''});
+    });
+  });
+  return warns;
+}
+
+/* ── 渲染对方出战预测（双打） ── */
+function renderDOppPrediction(valid, predResult) {
+  if (!valid.length) return '';
+  const {combo4, leadPair, threatMap, spreadWarn} = predResult;
+  const c4slugs = new Set(combo4.map(op=>op.slug||op.name||''));
+  const leadSlugs = new Set(leadPair.map(op=>op.slug||op.name||''));
+
+  const makePkmEl = (op, isCombo) => {
+    const img = op.slug?(PKM_PC_BY_SLUG[op.slug]?.spriteUrl||''):'';
+    const isLead = leadSlugs.has(op.slug||op.name||'');
+    const roles = detectDOppSupportRoles(op);
+    const threats = isCombo?(threatMap[op.slug||op.name||'']||[]):[];
+    const threatTag = threats.length?`<span class="opp-pred-threat">克制 ${threats.map(n=>esc(n)).join('、')}</span>`:'';
+    const leadTag = isLead&&isCombo?`<span class="bd-lead-tag">先发</span>`:'';
+    const roleTags = roles.filter(r=>r!=='范围技').map(r=>`<span class="bd-role-tag-opp">${r}</span>`).join('');
+    const spreadTag = roles.includes('范围技')?`<span class="bd-spread-tag">范围技</span>`:'';
+    return `<div class="battle-opp-pred-item ${isCombo?'':'opp-pred-dim'}">
+      ${img?`<img src="${esc(img)}" alt="" onerror="this.style.display='none'">` :''}
+      <span class="battle-opp-pred-name">${esc(op.name||'?')}</span>
+      ${leadTag}${roleTags}${spreadTag}${threatTag}
+    </div>`;
+  };
+
+  const c4Html = combo4.map(op=>makePkmEl(op,true)).join('');
+  const restHtml = valid.filter(op=>!c4slugs.has(op.slug||op.name||'')).map(op=>makePkmEl(op,false)).join('');
+
+  const leadHtml = leadPair.length>=2?`
+    <div class="bd-opp-lead-wrap">
+      <div class="opp-pred-row-label">预测先发搭档</div>
+      <div class="bd-opp-lead-row">
+        ${leadPair.map(op=>{
+          const img=op.slug?(PKM_PC_BY_SLUG[op.slug]?.spriteUrl||''):'';
+          const roles=detectDOppSupportRoles(op).filter(r=>r!=='范围技');
+          return `<div class="bd-opp-lead-pkm">
+            ${img?`<img src="${esc(img)}" alt="" onerror="this.style.display='none'">` :''}
+            <div class="bd-opp-lead-name">${esc(op.name||'?')}</div>
+            ${roles.map(r=>`<span class="bd-role-tag-opp">${r}</span>`).join('')}
+          </div>`;
+        }).join('<div class="bd-lead-plus">+</div>')}
+      </div>
+    </div>`:'' ;
+
+  const spreadWarnHtml = spreadWarn.length?`
+    <div class="bd-spread-warn">
+      ⚠ 范围技注意：${spreadWarn.map(w=>`${esc(w.pkmName)} 的 ${esc(w.moveName)}`).join('、')}
+    </div>`:'' ;
+
+  return `<div class="battle-opp-pred-wrap">
+    <div class="opp-pred-row-label">预测出战4只</div>
+    <div class="opp-pred-combo">${c4Html}</div>
+    ${restHtml?`<div class="opp-pred-row-label opp-pred-row-label--rest">备选</div><div class="opp-pred-combo">${restHtml}</div>`:''}
+    ${leadHtml}
+    ${spreadWarnHtml}
+  </div>`;
+}
+
+/* ── 渲染我方推荐（4只 + 先发搭档） ── */
+function renderDoublesRec(top4, leadPairScored, targetOpp) {
+  const oppHasIntimidate = targetOpp.some(op=>getOppAbilityList(op).includes('intimidate'));
+  const leadSet = new Set(leadPairScored.map(s=>s.pkm?.name||''));
+  const rankLabel = ['#1 首选','#2 次选','#3 三选','#4 四选'];
+  const rankClass = ['rank-1','rank-2','rank-3','rank-4'];
+
+  const leadHtml = leadPairScored.length>=2?`
+    <div class="bd-lead-pair-card">
+      <div class="bd-lead-pair-label">推荐先发搭档</div>
+      <div class="bd-lead-pair-row">
+        ${leadPairScored.map(s=>{
+          const p=s.pkm;
+          const img=p._spriteUrl?`<img src="${esc(p._spriteUrl)}" alt="" onerror="this.style.display='none'">` :'';
+          const roles=detectDSupportRoles(p).filter(r=>r!=='范围技');
+          return `<div class="bd-lead-pkm">
+            <div class="bd-lead-sprite">${img}</div>
+            <div class="bd-lead-name">${esc(p.name)}</div>
+            ${roles.map(r=>`<span class="bd-role-tag">${r}</span>`).join('')}
+          </div>`;
+        }).join('<div class="bd-lead-plus">+</div>')}
+      </div>
+    </div>`:'' ;
+
+  const cardsHtml = top4.map((s,i)=>{
+    const pkm=s.pkm;
+    const img=pkm._spriteUrl?`<img src="${esc(pkm._spriteUrl)}" alt="" onerror="this.style.display='none'">` :'';
+    const role=classifyRole(pkm);
+    const isLead=leadSet.has(pkm.name);
+    const leadBadge=isLead?`<span class="bd-lead-badge">先发</span>`:'';
+    const sRoles=detectDSupportRoles(pkm).filter(r=>r!=='范围技');
+    const spreadRoles=detectDSupportRoles(pkm).filter(r=>r==='范围技');
+    const supportTag=sRoles.length?`<span class="battle-ability-tag ab-speed">${sRoles[0]}</span>`:'';
+    const spreadTag=spreadRoles.length?`<span class="battle-ability-tag ab-weather">范围技</span>`:'';
+    const intimidateWarn=oppHasIntimidate&&(role.cls==='role-phys'||role.cls==='role-mixed')?`<div class="battle-rec-reason warn-intimidate">⚠ 对方有恐吓，物攻约降33%</div>`:'';
+    return `<div class="battle-rec-card ${rankClass[i]||''}">
+      <span class="battle-rec-rank">${rankLabel[i]||''}</span>${leadBadge}
+      <div class="battle-rec-sprite">${img}</div>
+      <div class="battle-rec-body">
+        <div class="battle-rec-name">${esc(pkm.name)}<span class="battle-role-tag ${role.cls}">${role.label}</span>${supportTag}${spreadTag}</div>
+        <div class="battle-rec-score">进攻+${s.offScore.toFixed(1)} 防御-${s.defScore.toFixed(1)} 综合${s.total.toFixed(1)}</div>
+        <div class="battle-rec-reasons">${s.reasons.map(r=>`<div class="battle-rec-reason">${r}</div>`).join('')}${intimidateWarn}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  return leadHtml+`<div class="battle-rec-list">${cardsHtml}</div>`;
+}
+
+/* ── 主分析入口 ── */
+function analyzeDoubles() {
+  [0,1,2,3,4,5].forEach(i=>{
+    const name=document.getElementById(`bdopp-name-${i}`)?.value.trim()||'';
+    const type1=document.getElementById(`bdopp-t1-${i}`)?.value||'';
+    const type2=document.getElementById(`bdopp-t2-${i}`)?.value||'';
+    const lp=name?PKM_LIST.find(p=>p.name===name):null;
+    const sl=lp?.slug||bdOppPkm[i]?.slug||'';
+    const builds=window.PKM_CHAMPIONS_BUILDS?.[sl]||null;
+    const prev=bdOppPkm[i]||{};
+    bdOppPkm[i]={name,type1,type2,base:lp?.stats||{},slug:sl,
+      predictedMoves:prev.predictedMoves||builds?.moves||[],
+      predictedItem:prev.predictedItem??builds?.item??null,
+      predictedAbility:prev.predictedAbility??builds?.ability??null,
+      predictedTeammates:prev.predictedTeammates||builds?.teammates||[]};
+  });
+  const opp=bdOppPkm.filter(p=>p.name||p.type1);
+  if(!opp.length){showToast('请至少填入对方一只宝可梦的属性');return;}
+  const myTeam=battleTeams.find(t=>t.id===bdMyTeamId);
+  if(!myTeam){showToast('请先选择我的阵容');return;}
+  const myPkm=(myTeam.pokemon||[]).filter(p=>p.name);
+  if(!myPkm.length){showToast('阵容为空，请先录入队伍成员');return;}
+
+  const resultBox=document.getElementById('bd-analysis-result');
+  resultBox.style.display='block';
+  resultBox.innerHTML=`<div class="battle-analyzing">分析中<span class="battle-analyzing-dots"><span>.</span><span>.</span><span>.</span></span></div>`;
+
+  setTimeout(()=>{
+    try{
+      const activeWeather=detectMyWeather(myPkm);
+      const oppValid=opp.filter(op=>op.name||op.type1);
+      const predResult=predictOppDoubles(oppValid,myPkm);
+      const targetOpp=predResult.combo4.length>=2?predResult.combo4:oppValid;
+      const rawScored=scorePkmForBattle(myPkm,targetOpp,activeWeather);
+      const top4scored=selectSynTop4(rawScored);
+      const top4=top4scored.slice(0,4);
+      const leadPairScored=selectBestLeadPair(top4,predResult.leadPair);
+      const oppPredHtml=renderDOppPrediction(oppValid,predResult);
+      const myRecHtml=renderDoublesRec(top4,leadPairScored,targetOpp);
+      const matrixHtml=renderBattleMatrix(myPkm,opp);
+      const speedHtml=renderSpeedAnalysis(rawScored,opp);
+      const weakHtml=renderTeamWeaknessWarning(rawScored);
+      resultBox.innerHTML=`<div class="battle-result-box">
+        ${oppPredHtml?`<div class="battle-result-section">
+          <div class="battle-result-hdr"><span class="battle-result-title">🔮 对方出战预测</span><span class="battle-datasrc-note">协同40%+克制我方60% · 先发另行预测</span></div>
+          ${oppPredHtml}</div>`:''}
+        <div class="battle-result-section">
+          <div class="battle-result-hdr"><span class="battle-result-title">推荐出战阵容（双打 6选4）</span></div>
+          ${myRecHtml}</div>
+        <div class="battle-result-section">
+          <div class="battle-result-hdr"><span class="battle-result-title">⚠ 队伍脆弱性预警</span></div>
+          ${weakHtml}</div>
+        <div class="battle-result-section">
+          <div class="battle-result-hdr"><span class="battle-result-title">速度档位</span></div>
+          ${speedHtml}</div>
+        <div class="battle-result-section">
+          <div class="battle-result-hdr"><span class="battle-result-title">属性相克矩阵</span></div>
+          ${matrixHtml}</div>
+      </div>`;
+    }catch(e){
+      resultBox.innerHTML=`<div class="battle-analyzing">分析出错：${esc(e.message)}</div>`;
+    }
+  },80);
+}
+
+/* ── 数值工具（双打独立实例，前缀 bdcalc-） ── */
+function renderDCalc() {
+  const el=document.getElementById('bdtab-calc');
+  if(!el||el.dataset.rendered)return;
+  el.dataset.rendered='1';
+  const natOpts=['', ...Object.keys(NATURES_ZH)].map(n=>`<option value="${n}">${n||'无/中性'}</option>`).join('');
+  const statsRows=STAT_KEYS_B.map(k=>`
+    <div class="battle-calc-col">
+      <span class="bpkm-stat-lbl">${STAT_ZH_B[k]}</span>
+      <input class="bpkm-inp-num" id="bdcalc-base-${k}" type="number" min="0" max="255" placeholder="种族" oninput="calcDAllStats()" style="width:52px">
+      <input class="bpkm-inp-num" id="bdcalc-iv-${k}" type="number" min="0" max="31" placeholder="个体" value="31" oninput="calcDAllStats()" style="width:52px">
+      <input class="bpkm-inp-num" id="bdcalc-ev-${k}" type="number" min="0" max="252" placeholder="努力" value="0" oninput="calcDAllStats()" style="width:52px">
+    </div>`).join('');
+  el.innerHTML=`<div class="battle-calc-layout">
+    <div class="battle-calc-section">
+      <div class="battle-side-hdr">输入参数</div>
+      <div class="bpkm-form-grid" style="margin-bottom:10px">
+        <div class="bpkm-inp-group"><span class="bpkm-inp-label">等级</span><input class="bpkm-inp" id="bdcalc-level" type="number" min="1" max="100" value="50" oninput="calcDAllStats()"></div>
+        <div class="bpkm-inp-group"><span class="bpkm-inp-label">性格</span><select class="bpkm-inp" id="bdcalc-nature" onchange="calcDAllStats()">${natOpts}</select></div>
+      </div>
+      <div class="bpkm-section-hdr" style="margin-bottom:8px">种族值 / 个体值 / 努力值</div>
+      <div class="bpkm-stats-block" style="gap:8px">${statsRows}</div>
+      <div class="battle-datasrc-note" style="margin-top:10px">※ Champions 格式默认 Lv.50，公式同官方。</div>
+    </div>
+    <div class="battle-calc-section">
+      <div class="battle-side-hdr">计算结果</div>
+      <div id="bdcalc-result"><div style="color:var(--t3);font-size:.82rem;padding:.8rem 0">填写左侧数据后自动计算</div></div>
+    </div>
+  </div>`;
+}
+
+function calcDAllStats() {
+  const level=parseInt(document.getElementById('bdcalc-level')?.value)||50;
+  const nature=document.getElementById('bdcalc-nature')?.value||'';
+  const results=STAT_KEYS_B.map(k=>{
+    const base=parseInt(document.getElementById(`bdcalc-base-${k}`)?.value)||0;
+    const iv=parseInt(document.getElementById(`bdcalc-iv-${k}`)?.value)??31;
+    const ev=parseInt(document.getElementById(`bdcalc-ev-${k}`)?.value)||0;
+    return {k, val:calcActualStatVal(base,iv,ev,nature,k,level)};
+  });
+  const el=document.getElementById('bdcalc-result');
+  if(!el)return;
+  if(!results.some(r=>r.val>0)){el.innerHTML='<div style="color:var(--t3);font-size:.82rem;padding:.8rem 0">填写左侧数据后自动计算</div>';return;}
+  const maxV=Math.max(...results.map(r=>r.val),1);
+  el.innerHTML=`<div class="battle-calc-result">${results.map(r=>{
+    const pct=Math.round(r.val/maxV*100);
+    const barColor=r.val>=120?'var(--acc2)':r.val>=80?'var(--acc)':'var(--warn)';
+    return `<div class="battle-calc-result-row">
+      <span class="battle-calc-stat-name">${STAT_ZH_B[r.k]}</span>
+      <div class="battle-calc-stat-bar"><div class="battle-calc-stat-fill" style="width:${pct}%;background:${barColor}"></div></div>
+      <span class="battle-calc-stat-val">${r.val}</span>
+    </div>`;
+  }).join('')}</div>`;
 }
