@@ -232,18 +232,41 @@
 .battle-warn-item{font-size:.82rem;color:#ffa502;padding:6px 10px;background:rgba(255,165,2,.08);border-left:3px solid #ffa502;border-radius:2px}
 .battle-warn-item b{color:#ff6348}
 
-/* ── 速度档位 ── */
-.battle-speed-wrap{overflow-x:auto}
-.battle-speed-table{border-collapse:collapse;font-size:.78rem;min-width:100%}
-.battle-speed-table th,.battle-speed-table td{padding:6px 10px;border:1px solid var(--bdr,#333);text-align:center;white-space:nowrap}
-.battle-speed-table th{background:var(--bg2);font-size:.72rem;color:var(--t3)}
-.spd-name{text-align:left!important;font-weight:500}
-.spd-base{font-size:.65rem;color:var(--t3);margin-left:3px}
-.spd-win{color:#2ed573;font-weight:700}
-.spd-lose{color:#ff6b81}
-.spd-unclear{color:var(--t3);font-style:italic}
+/* ── 速度档位（可视化梯队）── */
+.battle-speed-visual{padding:4px 14px 10px}
+.spd-weather-note{font-size:.72rem;color:#ffa502;padding:4px 0 6px}
+.spd-legend{display:flex;gap:12px;margin-bottom:8px;font-size:.7rem}
+.spd-legend-my::before{content:'';display:inline-block;width:10px;height:10px;background:#70a1ff;border-radius:2px;margin-right:4px;vertical-align:middle}
+.spd-legend-opp::before{content:'';display:inline-block;width:10px;height:10px;background:#ff6b81;border-radius:2px;margin-right:4px;vertical-align:middle}
+.spd-legend-my{color:#70a1ff}
+.spd-legend-opp{color:#ff6b81}
+.spd-bar-row{display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid var(--b)}
+.spd-bar-row:last-child{border-bottom:none}
+.spd-row-my{background:rgba(112,161,255,.04)}
+.spd-row-opp{background:rgba(255,107,129,.03)}
+.spd-sprite{width:32px;height:32px;object-fit:contain;image-rendering:pixelated;flex-shrink:0}
+.spd-sprite-ph{width:32px;height:32px;flex-shrink:0}
+.spd-bar-left{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+.spd-bar-meta{flex:1;min-width:0}
+.spd-bar-name{font-size:.78rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px}
+.spd-row-my .spd-bar-name{color:#a0b8ff}
+.spd-row-opp .spd-bar-name{color:#ff8fa3}
+.spd-bar-track{height:6px;background:var(--b2);border-radius:3px;overflow:hidden}
+.spd-bar-fill{height:100%;border-radius:3px;transition:width .3s}
+.spd-fill-my{background:linear-gradient(90deg,#3742fa,#70a1ff)}
+.spd-fill-opp{background:linear-gradient(90deg,#c0392b,#ff6b81)}
+.spd-bar-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:80px;flex-shrink:0}
+.spd-val{font-size:.82rem;font-weight:700;font-family:'DM Mono',monospace;color:var(--t1)}
+.spd-base-tiny{font-size:.65rem;color:var(--t3);font-weight:400;margin-left:3px}
+.spd-vs-tags{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.spd-vs-win{font-size:.62rem;color:#2ed573;background:rgba(46,213,115,.1);border:1px solid rgba(46,213,115,.3);border-radius:3px;padding:0 4px}
+.spd-vs-lose{font-size:.62rem;color:#ff6b81;background:rgba(255,107,129,.1);border:1px solid rgba(255,107,129,.3);border-radius:3px;padding:0 4px}
+.spd-vs-unclear{font-size:.62rem;color:var(--t3);border:1px solid var(--b2);border-radius:3px;padding:0 4px}
 .spd-ability-tag{display:inline-block;font-size:.6rem;color:#ffd32a;background:rgba(255,211,42,.12);border:1px solid rgba(255,211,42,.3);border-radius:3px;padding:0 4px;margin-left:4px;vertical-align:middle}
-.spd-weather-note{font-size:.72rem;color:#ffa502;padding:4px 0 6px;margin-bottom:2px}
+.spd-rank-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;vertical-align:middle}
+.spd-rank-0{background:#ffd32a}
+.spd-rank-1{background:#b2bec3}
+.spd-rank-2{background:#a07040}
 
 /* ── 特性徽章 ── */
 .battle-ability-tag{display:inline-block;font-size:.6rem;border-radius:3px;padding:1px 5px;margin-left:5px;vertical-align:middle;font-weight:600;cursor:default}
@@ -259,6 +282,60 @@
 
 /* ── 伤害估算生存标注 ── */
 .dmg-survive-note{display:inline-block;font-size:.62rem;color:#a29bfe;background:rgba(162,155,254,.12);border:1px solid rgba(162,155,254,.3);border-radius:3px;padding:0 4px;margin-left:4px;cursor:default}
+
+/* ── 伤害估算热力矩阵 ── */
+.bdmg-wrap{overflow-x:auto;padding:4px 14px 10px}
+.bdmg-table{border-collapse:collapse;font-size:.72rem;min-width:100%}
+.bdmg-corner{background:var(--bg2);font-size:.65rem;color:var(--t3);padding:6px 10px;border:1px solid var(--b2);min-width:110px;text-align:left;white-space:nowrap}
+.bdmg-col-hdr{padding:6px 8px;border:1px solid var(--b2);text-align:center;background:var(--bg2);min-width:80px;white-space:nowrap}
+.bdmg-hdr-sprite{width:36px;height:36px;object-fit:contain;image-rendering:pixelated;display:block;margin:0 auto 3px}
+.bdmg-hdr-name{font-size:.65rem;color:var(--t2);text-align:center;display:flex;align-items:center;justify-content:center;gap:3px;flex-wrap:wrap}
+.bdmg-row-hdr{padding:6px 10px;border:1px solid var(--b2);background:var(--bg2);white-space:nowrap}
+.bdmg-row-hdr{display:flex;align-items:center;gap:8px}
+.bdmg-row-info{display:flex;flex-direction:column;gap:3px}
+.bdmg-row-name{font-size:.78rem;font-weight:500;color:var(--t1)}
+.bdmg-row-types{display:flex;gap:3px;flex-wrap:wrap}
+.bdmg-cell{padding:6px 8px;border:1px solid var(--b2);text-align:center;vertical-align:middle;cursor:default;transition:filter .1s}
+.bdmg-cell:hover{filter:brightness(1.15)}
+.bdmg-pct-row{display:flex;align-items:center;justify-content:center;gap:4px;margin-bottom:3px}
+.bdmg-pct-num{font-size:.82rem;font-weight:700;font-family:'DM Mono',monospace}
+.bdmg-ko-badge{font-size:.55rem;font-weight:700;padding:1px 4px;border-radius:2px;white-space:nowrap}
+.bdmg-survive-dot{font-size:.65rem;color:#a29bfe;cursor:default}
+.bdmg-bar{height:4px;background:var(--b2);border-radius:2px;overflow:hidden;margin:0 4px 3px}
+.bdmg-bar-fill{height:100%;background:currentColor;border-radius:2px;opacity:.7}
+.bdmg-move-name{font-size:.6rem;color:var(--t3);font-family:'DM Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:72px;margin:0 auto}
+.bdmg-ohko{background:rgba(255,71,87,.18);color:#ff4757}
+.bdmg-ohko .bdmg-ko-badge{background:#ff4757;color:#fff}
+.bdmg-ohko .bdmg-bar-fill{background:#ff4757}
+.bdmg-2hko{background:rgba(255,165,2,.12);color:#ffa502}
+.bdmg-2hko .bdmg-ko-badge{background:#ffa502;color:#000}
+.bdmg-2hko .bdmg-bar-fill{background:#ffa502}
+.bdmg-mid{background:rgba(255,211,42,.08);color:#e6c619}
+.bdmg-mid .bdmg-bar-fill{background:#ffd32a}
+.bdmg-low{color:var(--t3)}
+.bdmg-low .bdmg-bar-fill{background:var(--t3)}
+.bdmg-immune{color:var(--t3);background:rgba(0,0,0,.15)}
+.bdmg-resist{color:#2ed573;background:rgba(46,213,115,.08)}
+.bdmg-unknown{color:var(--t3)}
+.bdmg-nodata{color:var(--t3)}
+
+/* ── 技能覆盖对方效果徽章 ── */
+.cov-sprite{width:28px;height:28px;object-fit:contain;image-rendering:pixelated}
+.cov-opp-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;padding-top:6px;border-top:1px solid var(--b)}
+.cov-opp-badge{display:flex;align-items:center;gap:3px;padding:2px 6px 2px 3px;border-radius:4px;border:1px solid var(--b2);font-size:.65rem;background:var(--bg3)}
+.cov-opp-sprite{width:20px;height:20px;object-fit:contain;image-rendering:pixelated}
+.cov-badge-name{color:var(--t2);white-space:nowrap}
+.cov-badge-eff{font-weight:700;font-family:'DM Mono',monospace;margin-left:2px}
+.cov-badge-x4{border-color:rgba(255,71,87,.5);background:rgba(255,71,87,.12)}
+.cov-badge-x4 .cov-badge-eff{color:#ff4757}
+.cov-badge-x2{border-color:rgba(255,165,2,.5);background:rgba(255,165,2,.1)}
+.cov-badge-x2 .cov-badge-eff{color:#ffa502}
+.cov-badge-x1{border-color:var(--b2)}
+.cov-badge-x1 .cov-badge-eff{color:var(--t3)}
+.cov-badge-resist{border-color:rgba(116,185,255,.4);background:rgba(116,185,255,.08)}
+.cov-badge-resist .cov-badge-eff{color:#74b9ff}
+.cov-badge-immune{border-color:var(--b2);background:rgba(0,0,0,.15)}
+.cov-badge-immune .cov-badge-eff{color:var(--t3)}
 
 /* ── 响应式 ── */
 @media(max-width:700px){

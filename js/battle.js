@@ -2125,12 +2125,12 @@ function analyzeMatchups(){
       const targetOpp=predResult.combo.length>=2?predResult.combo:oppValid;
       const scored=scorePkmForBattle(myPkm,targetOpp,activeWeather);
       const matrixHtml=renderBattleMatrix(myPkm,opp);
-      const coverageHtml=renderBattleCoverage(myPkm);
+      const coverageHtml=renderBattleCoverage(myPkm,opp);
       const dmgHtml=renderBattleDamage(myPkm,opp,activeWeather);
       const oppDmgHtml=renderOppDamage(opp,myPkm,activeWeather);
       const recHtml=renderBattleRec(scored,targetOpp);
       const weakHtml=renderTeamWeaknessWarning(scored);
-      const speedHtml=renderSpeedAnalysis(scored,targetOpp);
+      const speedHtml=renderSpeedAnalysis(scored,opp);
       const oppPredHtml=renderOppTeamPrediction(oppValid,predResult);
       const recSubtitle=targetOpp.length<oppValid.length
         ?`针对预测出战阵容（${targetOpp.map(op=>esc(op.name||'?')).join('、')}）`
@@ -2198,57 +2198,109 @@ function renderBattleMatrix(myPkm, opp){
 }
 
 /* ── 技能覆盖 ── */
-function renderBattleCoverage(myPkm){
+function renderBattleCoverage(myPkm, opp=[]){
+  const oppValid=opp.filter(op=>op.name||op.type1);
   const cards=myPkm.map(p=>{
     const moves=[p.move1,p.move2,p.move3,p.move4].filter(m=>m&&m.type&&m.cat!=='status');
     const unique=[...new Set(moves.map(m=>m.type))];
-    const tags=unique.map(t=>`<span class="coverage-type-tag type-${t}">${TYPE_ZH[t]||t}</span>`).join('');
-    const img=p._spriteUrl?`<img src="${esc(p._spriteUrl)}" alt="" onerror="this.style.display='none'">`:'';
+    const typeTags=unique.map(t=>`<span class="coverage-type-tag type-${t}">${TYPE_ZH[t]||t}</span>`).join('');
+    const img=p._spriteUrl?`<img src="${esc(p._spriteUrl)}" class="cov-sprite" alt="" onerror="this.style.display='none'">`:'';
+
+    // 对方覆盖徽章：每只对方 → 最高效果倍率
+    let oppBadges='';
+    if(oppValid.length){
+      const atkAbility=p.ability||'';
+      oppBadges=oppValid.map(op=>{
+        if(!op.name&&!op.type1)return'';
+        const eff=getBestMoveEff(p,op);
+        if(eff===null)return'';
+        const oppSprite=op.slug?(PKM_PC_BY_SLUG[op.slug]?.spriteUrl||''):'';
+        const cls=eff>=4?'cov-badge-x4':eff>=2?'cov-badge-x2':eff===1?'cov-badge-x1':eff<=0?'cov-badge-immune':'cov-badge-resist';
+        const label=eff===0?'×0':eff===0.25?'¼×':eff===0.5?'½×':eff===1?'1×':eff===2?'2×':eff===4?'4×':`${eff}×`;
+        return`<div class="cov-opp-badge ${cls}">
+          ${oppSprite?`<img src="${esc(oppSprite)}" class="cov-opp-sprite" alt="" onerror="this.style.display='none'">`:''}
+          <span class="cov-badge-name">${esc(op.name||'?')}</span>
+          <span class="cov-badge-eff">${label}</span>
+        </div>`;
+      }).filter(Boolean).join('');
+    }
+
     return`<div class="coverage-card">
       <div class="coverage-card-name">${img}${esc(p.name)}</div>
-      <div class="coverage-type-tags">${tags||'<span style="color:var(--t3);font-size:.72rem">无技能数据</span>'}</div>
+      ${typeTags?`<div class="coverage-type-tags">${typeTags}</div>`:'<div class="coverage-type-tags" style="color:var(--t3);font-size:.66rem">无技能数据</div>'}
+      ${oppBadges?`<div class="cov-opp-row">${oppBadges}</div>`:''}
     </div>`;
   }).join('');
   return`<div class="battle-coverage-grid">${cards}</div>`;
 }
 
-/* ── 伤害估算 ── */
+/* ── 伤害估算（热力矩阵） ── */
 function renderBattleDamage(myPkm, opp, activeWeather=''){
-  const rows=myPkm.map(mp=>{
-    const oppRows=opp.map(op=>{
-      if(!op.name&&!op.type1)return'';
-      const moves=[mp.move1,mp.move2,mp.move3,mp.move4].filter(m=>m&&m.power>0&&m.cat!=='status');
-      let bestResult=null;
-      moves.forEach(m=>{
-        const r=calcDamageEst(mp,op,m,activeWeather);
-        if(r&&(!bestResult||r.pct>bestResult.pct))bestResult={...r,moveName:m.name||m.type};
-      });
-      if(!bestResult){
-        const eff=getBestMoveEff(mp,op);
-        if(eff===null)return`<div class="battle-dmg-row">
-          <span class="battle-dmg-vs">${esc(mp.name)} → ${esc(op.name||'?')}</span>
-          <span class="battle-dmg-ko dmg-survive">属性未知</span>
-        </div>`;
-        const koCls=eff>=2?'dmg-2hko':'dmg-survive';
-        const koTxt=eff>=2?'属性克制':'普通';
-        return`<div class="battle-dmg-row">
-          <span class="battle-dmg-vs">${esc(mp.name)} → ${esc(op.name||'?')}</span>
-          <span class="battle-dmg-ko ${koCls}">${koTxt}</span>
-        </div>`;
-      }
-      const koClass=bestResult.pct>=100?'dmg-1hko':bestResult.pct>=50?'dmg-2hko':'dmg-survive';
-      const koText=bestResult.pct>=100?'一击KO':bestResult.pct>=50?'两击KO':'无法秒杀';
-      // G类生存特性标注
-      const surviveTag=bestResult.surviveNote?`<span class="dmg-survive-note" title="${esc(bestResult.surviveNote)}">⚑坚守</span>`:'';
-      return`<div class="battle-dmg-row">
-        <span class="battle-dmg-vs">${esc(mp.name)} [${esc(bestResult.moveName)}] → ${esc(op.name||'?')}</span>
-        <span class="battle-dmg-pct">${bestResult.pct}%</span>
-        <span class="battle-dmg-ko ${koClass}">${koText}</span>${surviveTag}
-      </div>`;
-    }).filter(Boolean).join('');
-    return oppRows;
+  const oppValid=opp.filter(op=>op.name||op.type1);
+  if(!oppValid.length)return`<div class="battle-analyzing">请填写对方队伍信息</div>`;
+
+  // 列标题（对方宝可梦）
+  const colHeaders=oppValid.map(op=>{
+    const sprite=op.slug?(PKM_PC_BY_SLUG[op.slug]?.spriteUrl||''):'';
+    const t1=op.type1?`<span class="bm-type-dot" style="background:${TYPE_COLOR[op.type1]||'#888'}"></span>`:'';
+    const t2=op.type2?`<span class="bm-type-dot" style="background:${TYPE_COLOR[op.type2]||'#888'}"></span>`:'';
+    return`<th class="bdmg-col-hdr">
+      ${sprite?`<img src="${esc(sprite)}" class="bdmg-hdr-sprite" alt="" onerror="this.style.display='none'">`:'<div class="bdmg-hdr-sprite"></div>'}
+      <div class="bdmg-hdr-name">${t1}${t2}${esc(op.name||'?')}</div>
+    </th>`;
   }).join('');
-  return`<div class="battle-dmg-list">${rows||'<div class="battle-analyzing">请填写技能和对方队伍信息以估算伤害</div>'}</div>`;
+
+  const tableRows=myPkm.map(mp=>{
+    const mySprite=mp._spriteUrl?`<img src="${esc(mp._spriteUrl)}" class="bdmg-hdr-sprite" alt="" onerror="this.style.display='none'">`:'';
+    const moves=[mp.move1,mp.move2,mp.move3,mp.move4].filter(m=>m&&m.type&&m.cat!=='status');
+    const moveTags=[...new Set(moves.map(m=>m.type))].map(t=>`<span class="coverage-type-tag type-${t}">${TYPE_ZH[t]||t}</span>`).join('');
+
+    const cells=oppValid.map(op=>{
+      if(!op.name&&!op.type1)return`<td class="bdmg-cell bdmg-unknown">—</td>`;
+      const dmgMoves=[mp.move1,mp.move2,mp.move3,mp.move4].filter(m=>m&&m.power>0&&m.cat!=='status');
+      let best=null;
+      dmgMoves.forEach(m=>{
+        const r=calcDamageEst(mp,op,m,activeWeather);
+        if(r&&(!best||r.pct>best.pct))best={...r,moveName:m.name||''};
+      });
+      if(!best){
+        const eff=getBestMoveEff(mp,op);
+        if(eff===null)return`<td class="bdmg-cell bdmg-unknown"><div class="bdmg-pct-num">?</div></td>`;
+        if(eff===0)return`<td class="bdmg-cell bdmg-immune"><div class="bdmg-pct-num">免疫</div></td>`;
+        const cls=eff>=2?'bdmg-resist':'bdmg-nodata';
+        return`<td class="bdmg-cell ${cls}"><div class="bdmg-pct-num">${eff>=2?'克制':'—'}</div></td>`;
+      }
+      const cls=best.pct>=100?'bdmg-ohko':best.pct>=50?'bdmg-2hko':best.pct>=25?'bdmg-mid':'bdmg-low';
+      const koLabel=best.pct>=100?'1KO':best.pct>=50?'2KO':'';
+      const barW=Math.min(best.pct,100);
+      const surviveTip=best.surviveNote?` title="${esc(best.surviveNote)}"`:'' ;
+      return`<td class="bdmg-cell ${cls}"${surviveTip}>
+        <div class="bdmg-pct-row">
+          <span class="bdmg-pct-num">${best.pct}%</span>
+          ${koLabel?`<span class="bdmg-ko-badge">${koLabel}</span>`:''}
+          ${best.surviveNote?`<span class="bdmg-survive-dot" title="${esc(best.surviveNote)}">⚑</span>`:''}
+        </div>
+        <div class="bdmg-bar"><div class="bdmg-bar-fill" style="width:${barW}%"></div></div>
+        <div class="bdmg-move-name">${esc(best.moveName)}</div>
+      </td>`;
+    }).join('');
+
+    return`<tr>
+      <td class="bdmg-row-hdr">
+        ${mySprite}
+        <div class="bdmg-row-info">
+          <div class="bdmg-row-name">${esc(mp.name)}</div>
+          <div class="bdmg-row-types">${moveTags||'<span style="color:var(--t3);font-size:.6rem">无技能</span>'}</div>
+        </div>
+      </td>
+      ${cells}
+    </tr>`;
+  }).join('');
+
+  return`<div class="bdmg-wrap"><table class="bdmg-table">
+    <thead><tr><th class="bdmg-corner">我方 ↓ / 对方 →</th>${colHeaders}</tr></thead>
+    <tbody>${tableRows}</tbody>
+  </table></div>`;
 }
 
 /* ── 评分核心（供多个渲染函数共用） ── */
@@ -2409,53 +2461,91 @@ function renderTeamWeaknessWarning(scored){
 
 /* ── 速度档位对比（含天气/特性速度修正）── */
 function renderSpeedAnalysis(scored, opp){
-  const top3=scored.slice(0,3);
+  const myPkmAll=scored.map(s=>s.pkm);
   const oppWithSpd=opp.filter(op=>(op.name||op.type1)&&op.base?.spe);
   if(!oppWithSpd.length)
     return`<div style="color:var(--t3);font-size:.78rem">需通过搜索选择对方宝可梦才能获取种族值，手动填入属性时无法计算速度</div>`;
 
-  // 检测双方天气
-  const myWeather=detectMyWeather(top3.map(s=>s.pkm));
+  const myWeather=detectMyWeather(myPkmAll);
   const oppWeathers=detectOppWeather(oppWithSpd);
-  // 优先用己方天气；对方天气仅作提示
   const activeWeather=myWeather||'';
-
-  // 天气提示
   const weatherZH={'sun':'晴天','rain':'雨天','sand':'沙暴','snow':'冰雪'};
-  const weatherNote=myWeather?`<div class="spd-weather-note">☀ 己方天气：${weatherZH[myWeather]||myWeather}（影响速度计算）</div>`:
+  const weatherNote=myWeather?`<div class="spd-weather-note">☀ 己方天气：${weatherZH[myWeather]||myWeather}</div>`:
     oppWeathers.length?`<div class="spd-weather-note">⚠ 对方可能设置：${oppWeathers.map(w=>weatherZH[w]||w).join('/')} 天气</div>`:'';
 
-  const header=oppWithSpd.map(op=>{
+  // 收集所有速度条目
+  const entries=[];
+  myPkmAll.forEach((pkm,ri)=>{
+    const base=pkm.base?.spe||0;
+    if(!base)return;
+    const eff=getEffectiveSpeed(pkm,activeWeather);
+    const spdMod=ABILITY_SPD_MOD[pkm.ability||''];
+    const note=eff!==base?`×特性`:spdMod?.perTurn?'每回合↑':spdMod?.onItemUse?'道具后×2':'';
+    entries.push({team:'my',name:pkm.name,sprite:pkm._spriteUrl||'',base,eff,note,rank:ri});
+  });
+  oppWithSpd.forEach(op=>{
     const oppAbilityList=getOppAbilityList(op);
     const oppSpdMod=oppAbilityList.map(a=>ABILITY_SPD_MOD[a]).find(m=>m?.weather);
-    const effSpd=oppSpdMod&&oppWeathers.includes(oppSpdMod.weather)?op.base.spe*oppSpdMod.mul:op.base.spe;
-    const spdNote=effSpd!==op.base.spe?`<span class="spd-ability-tag">${effSpd}↑</span>`:'';
-    return`<th>${esc(op.name||'?')}<br><span class="spd-base">(${op.base.spe})</span>${spdNote}</th>`;
+    const eff=oppSpdMod&&oppWeathers.includes(oppSpdMod.weather)?Math.round(op.base.spe*oppSpdMod.mul):op.base.spe;
+    const note=eff!==op.base.spe?`×特性`:'';
+    const sprite=op.slug?(PKM_PC_BY_SLUG[op.slug]?.spriteUrl||''):'';
+    entries.push({team:'opp',name:op.name||'?',sprite,base:op.base.spe,eff,note});
+  });
+  entries.sort((a,b)=>b.eff-a.eff||b.base-a.base);
+
+  const maxEff=entries[0]?.eff||1;
+  const myEffSpeeds=myPkmAll.map(pkm=>getEffectiveSpeed(pkm,activeWeather));
+
+  const bars=entries.map(e=>{
+    const barW=Math.round((e.eff/maxEff)*100);
+    const isMy=e.team==='my';
+    // 与对方比较：计算先手/后手数量
+    let vsTag='';
+    if(isMy){
+      const wins=oppWithSpd.filter(op=>{
+        const oppAbl=getOppAbilityList(op);
+        const oppMod=oppAbl.map(a=>ABILITY_SPD_MOD[a]).find(m=>m?.weather);
+        const oppEff=oppMod&&oppWeathers.includes(oppMod.weather)?Math.round(op.base.spe*oppMod.mul):op.base.spe;
+        return e.eff-oppEff>=20;
+      }).length;
+      const lose=oppWithSpd.filter(op=>{
+        const oppAbl=getOppAbilityList(op);
+        const oppMod=oppAbl.map(a=>ABILITY_SPD_MOD[a]).find(m=>m?.weather);
+        const oppEff=oppMod&&oppWeathers.includes(oppMod.weather)?Math.round(op.base.spe*oppMod.mul):op.base.spe;
+        return oppEff-e.eff>=20;
+      }).length;
+      const parts=[];
+      if(wins)parts.push(`<span class="spd-vs-win">先手×${wins}</span>`);
+      if(lose)parts.push(`<span class="spd-vs-lose">后手×${lose}</span>`);
+      if(oppWithSpd.length-wins-lose>0)parts.push(`<span class="spd-vs-unclear">±${oppWithSpd.length-wins-lose}</span>`);
+      vsTag=parts.join('');
+    } else {
+      // 对方条目：显示我方中多少只比它快
+      const myFaster=myEffSpeeds.filter(ms=>ms-e.eff>=20).length;
+      const mySlower=myEffSpeeds.filter(ms=>e.eff-ms>=20).length;
+      const parts=[];
+      if(myFaster)parts.push(`<span class="spd-vs-win">被×${myFaster}只先手</span>`);
+      if(mySlower)parts.push(`<span class="spd-vs-lose">压制×${mySlower}只</span>`);
+      vsTag=parts.join('');
+    }
+    const noteTag=e.note?`<span class="spd-ability-tag">${e.note}</span>`:'';
+    const rankDot=isMy&&e.rank<3?`<span class="spd-rank-dot spd-rank-${e.rank}"></span>`:'';
+    return`<div class="spd-bar-row ${isMy?'spd-row-my':'spd-row-opp'}">
+      <div class="spd-bar-left">
+        ${e.sprite?`<img src="${esc(e.sprite)}" class="spd-sprite" alt="" onerror="this.style.display='none'">`:'<div class="spd-sprite-ph"></div>'}
+        <div class="spd-bar-meta">
+          <div class="spd-bar-name">${rankDot}${esc(e.name)}${noteTag}</div>
+          <div class="spd-bar-track"><div class="spd-bar-fill ${isMy?'spd-fill-my':'spd-fill-opp'}" style="width:${barW}%"></div></div>
+        </div>
+      </div>
+      <div class="spd-bar-right">
+        <span class="spd-val">${e.eff}${e.eff!==e.base?`<span class="spd-base-tiny">(${e.base})</span>`:''}</span>
+        <div class="spd-vs-tags">${vsTag}</div>
+      </div>
+    </div>`;
   }).join('');
 
-  const rows=top3.map(s=>{
-    const pkm=s.pkm;
-    const baseSpd=pkm.base?.spe||0;
-    if(!baseSpd)return`<tr><td class="spd-name">${esc(pkm.name)}</td><td colspan="${oppWithSpd.length}" style="color:var(--t3)">种族值未知</td></tr>`;
-    const myEffSpd=getEffectiveSpeed(pkm, activeWeather);
-    const spdMod=ABILITY_SPD_MOD[pkm.ability||''];
-    const spdTag=myEffSpd!==baseSpd?`<span class="spd-ability-tag">${myEffSpd}↑</span>`:
-      spdMod?.perTurn?`<span class="spd-ability-tag">每回合↑</span>`:
-      spdMod?.onItemUse?`<span class="spd-ability-tag">道具消耗后×2</span>`:'';
-    const cells=oppWithSpd.map(op=>{
-      // 对方速度（考虑对方天气特性）
-      const oppAbilityList=getOppAbilityList(op);
-      const oppSpdMod=oppAbilityList.map(a=>ABILITY_SPD_MOD[a]).find(m=>m?.weather);
-      const oppEffSpd=oppSpdMod&&oppWeathers.includes(oppSpdMod.weather)?op.base.spe*oppSpdMod.mul:op.base.spe;
-      const diff=myEffSpd-oppEffSpd;
-      if(diff>=20)return`<td class="spd-win">先手 +${diff}</td>`;
-      if(diff<=-20)return`<td class="spd-lose">后手 ${diff}</td>`;
-      return`<td class="spd-unclear">±${Math.abs(diff)} 不定</td>`;
-    }).join('');
-    return`<tr><td class="spd-name">${esc(pkm.name)}<span class="spd-base">（${baseSpd}）</span>${spdTag}</td>${cells}</tr>`;
-  }).join('');
-
-  return`<div class="battle-speed-wrap">${weatherNote}<table class="battle-speed-table"><tr><th>我方 ↓</th>${header}</tr>${rows}</table></div>`;
+  return`<div class="battle-speed-visual">${weatherNote}<div class="spd-legend"><span class="spd-legend-my">我方</span><span class="spd-legend-opp">对方</span></div>${bars}</div>`;
 }
 
 /* ── 对方热门技能打我方的伤害估算 ── */
