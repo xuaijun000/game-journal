@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  var DEVTOOLS_GAP = 160;
+  var DEVTOOLS_GAP = 250;
   var devtoolsTriggered = false;
 
   function isProtectedCombo(event) {
@@ -88,8 +88,9 @@
       '<div style="max-width:580px;padding:24px 28px;border:1px solid rgba(255,92,92,.35);border-radius:12px;background:#111a1b;color:#f9e1d8;font-family:\'Noto Sans SC\',sans-serif;box-shadow:0 16px 48px rgba(0,0,0,.45);text-align:center;">' +
       '<h2 style="margin:0 0 10px;font-size:22px;letter-spacing:.03em;color:#ffb3a3;">PIXELFISH 安全提示</h2>' +
       '<p style="margin:0 0 8px;font-size:14px;line-height:1.8;">检测到开发者工具已开启。本站内容受版权保护，请勿抓取、复制或未授权转载。</p>' +
-      '<p style="margin:0;font-size:12px;line-height:1.8;color:#8ea6a7;">© 2024-2026 PIXELFISH 版权所有</p>' +
-      "</div>";
+      '<p style="margin:0 0 16px;font-size:12px;line-height:1.8;color:#8ea6a7;">© 2024-2026 PIXELFISH 版权所有</p>' +
+      '<button onclick="document.getElementById(\'pf-devtools-warning\').style.display=\'none\'" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#f9e1d8;padding:8px 24px;border-radius:6px;cursor:pointer;font-size:13px;">我知道了</button>' +
+      '</div>';
     overlay.style.cssText =
       "position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(9,12,13,.95);z-index:2147483647;padding:18px;";
     document.body.appendChild(overlay);
