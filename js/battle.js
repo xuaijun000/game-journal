@@ -964,15 +964,45 @@ let battleMoveDropdownBound=false;
 let battleMyTeamId=null;     // 分析页选中的我方队伍
 let battleOppPkm=[{},{},{},{},{},{} ];  // 对方6只（{name,type1,type2}）
 let battleAnalysisMyTeam=null;
+let battleCurrentVersion = '';
+let battleCurrentFormat  = '';
+
+function showBattleHub() {
+  document.querySelectorAll('.battle-subview').forEach(v => v.classList.remove('on'));
+  document.getElementById('battle-hub').classList.add('on');
+  document.getElementById('battle-mode-label').style.display = 'none';
+  battleCurrentVersion = '';
+  battleCurrentFormat  = '';
+}
+
+function enterBattleVersion(version) {
+  if (version === 'pkmc') enterBattleFormat('pkmc', 'singles');
+}
+
+function enterBattleFormat(version, format) {
+  battleCurrentVersion = version;
+  battleCurrentFormat  = format;
+  document.querySelectorAll('.battle-subview').forEach(v => v.classList.remove('on'));
+  if (format === 'doubles') {
+    document.getElementById('battle-doubles').classList.add('on');
+    document.getElementById('battle-mode-label').textContent = 'Pokemon Champions · 双打';
+  } else {
+    document.getElementById('battle-pkmc').classList.add('on');
+    document.getElementById('battle-mode-label').textContent = 'Pokemon Champions · 单打';
+  }
+  document.getElementById('battle-mode-label').style.display = '';
+  if (format === 'singles' && !window._battlePkmcInited) {
+    window._battlePkmcInited = true;
+    loadBattleGameData('champions');
+    renderBattleOppSlots();
+    loadBattleTeams().then(() => { renderTeamList(); renderBattleTeamSel(); });
+    renderBattleCalc();
+  }
+}
 
 /* ──────── 初始化 ──────── */
 async function initBattle(){
-  loadBattleGameData('champions');
-  renderBattleOppSlots();
-  await loadBattleTeams();
-  renderTeamList();
-  renderBattleTeamSel();
-  renderBattleCalc();
+  showBattleHub();
 }
 
 /* ──────── 标签切换 ──────── */
