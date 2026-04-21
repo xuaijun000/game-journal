@@ -12,6 +12,26 @@
  * ALTER TABLE battle_teams ENABLE ROW LEVEL SECURITY;
  * CREATE POLICY "own_teams" ON battle_teams FOR ALL TO authenticated
  *   USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+ *
+ * -- 阵容推荐表（运行 scripts/browser-scrape-teams.js 自动写入）
+ * CREATE TABLE IF NOT EXISTS pkm_champions_teams (
+ *   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+ *   title text DEFAULT '',
+ *   player text DEFAULT '',
+ *   pokemon jsonb DEFAULT '[]'::jsonb,
+ *   tournament text DEFAULT '',
+ *   date text DEFAULT '',
+ *   record text DEFAULT '',
+ *   placement int DEFAULT 0,
+ *   votes int DEFAULT 0,
+ *   type text DEFAULT 'tournament',
+ *   url text DEFAULT '',
+ *   created_at timestamptz DEFAULT now()
+ * );
+ * ALTER TABLE pkm_champions_teams ENABLE ROW LEVEL SECURITY;
+ * CREATE POLICY "public_read" ON pkm_champions_teams FOR SELECT USING (true);
+ * CREATE POLICY "anon_write"  ON pkm_champions_teams FOR INSERT WITH CHECK (true);
+ * CREATE POLICY "anon_del"    ON pkm_champions_teams FOR DELETE USING (true);
  */
 
 /* ──────── 常量 ──────── */
@@ -54,6 +74,7 @@ let PKM_PC_BY_SLUG = {};
 let PKM_PC_BY_NUM  = {};
 let ITEMS_DATA = [];
 let ITEMS_BY_NAME = {};
+let ITEMS_BY_SLUG = {};
 
 function loadBattleGameData(gameId) {
   const reg = (window.BATTLE_REGISTRY || {})[gameId] || {};
@@ -66,7 +87,8 @@ function loadBattleGameData(gameId) {
   PKM_LIST.forEach(p => { PKM_PC_BY_SLUG[p.slug]=p; if(p.num) PKM_PC_BY_NUM[p.num]=p; });
   ITEMS_DATA = reg.items || [];
   ITEMS_BY_NAME = {};
-  ITEMS_DATA.forEach(it => { ITEMS_BY_NAME[it.name]=it; });
+  ITEMS_BY_SLUG = {};
+  ITEMS_DATA.forEach(it => { ITEMS_BY_NAME[it.name]=it; ITEMS_BY_SLUG[it.slug]=it; });
 }
 
 // ── 以下旧 MOVES_DATA 硬编码已移除，保留占位以避免引用错误 ──
@@ -3580,110 +3602,179 @@ function calcDAllStats() {
  * 阵容推荐
  * ════════════════════════════════════════════════════ */
 
-const TEAMS_CACHE_KEY = 'pkm_teams_cache_v1';
-const TEAMS_CACHE_TTL = 8 * 60 * 60 * 1000; // 8小时
+/* ── 特性中文名表（常用竞技特性） ── */
+const ABILITY_CN = {
+  'adaptability':'适应力','aerilate':'飞翔皮肤','analytic':'分析','anger-point':'愤怒穴位',
+  'battle-armor':'战斗盔甲','blaze':'猛火','bulletproof':'防弹','contrary':'相反',
+  'corrosion':'腐蚀','drizzle':'降雨','drought':'日照','dry-skin':'干燥皮肤',
+  'earth-eater':'食土','electric-surge':'电气场地','filter':'过滤','flash-fire':'引火',
+  'fur-coat':'厚实皮毛','gale-wings':'飞翔之翼','guts':'毅力','hustle':'活力',
+  'huge-power':'大力士','ice-scales':'冰鳞片','ice-body':'冰雪吸收','illuminate':'照亮',
+  'infiltrator':'渗透','innards-out':'内脏爆发','intimidate':'威吓','iron-barbs':'铁刺',
+  'iron-fist':'铁拳','justified':'正义之心','keen-eye':'锐利目光','levitate':'飘浮',
+  'lightning-rod':'避雷针','liquid-ooze':'毒液','magic-bounce':'魔法镜','magic-guard':'魔法防守',
+  'magician':'魔术师','marvel-scale':'神奇鳞片','minus':'负电','mold-breaker':'破格',
+  'multiscale':'多重鳞片','natural-cure':'自然回复','no-guard':'无防守',
+  'parental-bond':'亲子爱','plus':'正电','poison-heal':'毒治愈','poison-point':'毒刺',
+  'poison-touch':'毒手','power-construct':'形态变换','prankster':'恶作剧之心','pressure':'压迫感',
+  'primordial-sea':'始原之海','protean':'变幻自如','psychic-surge':'精神场地',
+  'pure-power':'净化之力','queenly-majesty':'威严','quick-feet':'疾足',
+  'rain-dish':'雨盘','refrigerate':'冻结皮肤','regenerator':'再生力',
+  'rock-head':'岩石头','rough-skin':'鱼鳞伤','run-away':'逃跑',
+  'sand-rush':'砂尘冲击','sand-spit':'砂尘喷射','sand-stream':'扬沙',
+  'sand-veil':'沙雾','sandy-socks':'砂袜','scrappy':'无所畏惧',
+  'serene-grace':'天赐之恩','sheer-force':'强力','shed-skin':'蜕皮',
+  'shell-armor':'硬壳护甲','simple':'单纯','skill-link':'连续技能',
+  'slush-rush':'暴雪冲击','sniper':'狙击手','snow-warning':'降雪',
+  'solar-power':'日光之力','soundproof':'隔音','speed-boost':'加速',
+  'steelworker':'炼钢','stiff-jaw':'坚硬下颚','sturdy':'结实',
+  'super-luck':'超幸运','surge-surfer':'乘浪者','swift-swim':'飞速游泳',
+  'synchronize':'同步','technician':'技术高超','telepathy':'心灵感应',
+  'thick-fat':'厚脂肪','tinted-lens':'色彩镜片','torrent':'激流',
+  'tough-claws':'强硬爪子','toxic-chain':'毒链','triage':'优先治愈',
+  'turboblaze':'强力火焰','unaware':'无知','unburden':'减重',
+  'unnerve':'紧张感','victory-star':'胜利之星','vital-spirit':'活力精神',
+  'volt-absorb':'蓄电','water-absorb':'储水','water-bubble':'水泡',
+  'water-veil':'水幕','weak-armor':'柔软铠甲','white-smoke':'白色烟雾',
+  'wonder-guard':'神奇守护','wonder-skin':'神奇皮肤','wimpout':'恐慌逃跑',
+  'zero-to-hero':'零到英雄',
+};
 
-/* ── 精简宝可梦名（用于显示） ── */
+const abilityName = slug => ABILITY_CN[slug] || slug.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+const itemName    = slug => ITEMS_BY_SLUG[slug]?.name || slug.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+const moveName    = slug => MOVES_BY_SLUG[slug]?.name || slug.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+
+/* ── 精简宝可梦名 ── */
 function pkmDisplayName(slug) {
   if (!slug) return '?';
   const p = PKM_PC_BY_SLUG[slug];
-  if (p?.name) return p.name;
-  // 回退：把 slug 转成可读名
-  return slug.replace(/-/g,' ').replace(/\b\w/g, c => c.toUpperCase());
+  return p?.name || slug.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
 }
 
-/* ── 精简 sprite URL ── */
+/* ── sprite URL ── */
 function pkmSpriteUrl(slug) {
   if (!slug) return '';
   const p = PKM_PC_BY_SLUG[slug];
-  return p?.spriteUrl || `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${p?.num || 0}.png`;
+  return p?.spriteUrl || '';
+}
+
+/* ── 渲染单只宝可梦的完整配置卡片 ── */
+function renderPkmBuildCard(slug) {
+  const b = window.PKM_CHAMPIONS_BUILDS?.[slug] || null;
+  const name = pkmDisplayName(slug);
+  const sprite = pkmSpriteUrl(slug);
+  const spriteHtml = sprite
+    ? `<img src="${esc(sprite)}" alt="${esc(name)}" onerror="this.style.display='none'">`
+    : `<div style="width:54px;height:54px;display:flex;align-items:center;justify-content:center;color:var(--b2);font-size:1.2rem">?</div>`;
+
+  const item    = b?.item?.slug    ? `<span class="builds-build-item">${esc(itemName(b.item.slug))}</span>` : '';
+  const ability = b?.ability?.slug ? `<span class="builds-build-ability">${esc(abilityName(b.ability.slug))}</span>` : '';
+  const moves   = b?.moves?.length
+    ? b.moves.slice(0,4).map(m=>`<span class="builds-build-move">${esc(moveName(m.slug))}</span>`).join('')
+    : '<span style="color:var(--t3);font-size:.6rem">暂无招式数据</span>';
+
+  return `<div class="builds-pkm-card">
+    <div class="builds-pkm-card-top">
+      ${spriteHtml}
+      <div class="builds-pkm-card-name">${esc(name)}</div>
+    </div>
+    <div class="builds-pkm-card-info">
+      ${item ? `<div class="builds-build-row">${item}</div>` : ''}
+      ${ability ? `<div class="builds-build-row">${ability}</div>` : ''}
+      <div class="builds-build-moves">${moves}</div>
+    </div>
+  </div>`;
 }
 
 /* ── 渲染单支队伍卡片 ── */
 function renderTeamCard(t) {
-  const sprites = t.pokemon.map(slug => {
-    const url = pkmSpriteUrl(slug);
-    const name = pkmDisplayName(slug);
-    return `<div class="builds-pkm">
-      <img src="${esc(url)}" alt="${esc(name)}" onerror="this.style.display='none'" title="${esc(name)}">
-      <div class="builds-pkm-name">${esc(name)}</div>
-    </div>`;
-  }).join('');
-
   const typeBadge = t.type === 'tournament'
     ? `<span class="builds-type-badge tournament">锦标赛</span>`
     : `<span class="builds-type-badge community">社区</span>`;
   const recordBadge = t.record ? `<span class="builds-record">${esc(t.record)}</span>` : '';
 
-  const footerLeft = [
-    t.player ? `<span>👤 ${esc(t.player)}</span>` : '',
-    t.tournament ? `<span>🏆 ${esc(t.tournament)}</span>` : '',
-    t.date ? `<span>${esc(t.date.slice(0,10))}</span>` : '',
+  const meta = [
+    t.player     ? `👤 ${esc(t.player)}`     : '',
+    t.tournament ? `🏆 ${esc(t.tournament)}` : '',
+    t.date       ? esc(t.date.slice(0,10))   : '',
   ].filter(Boolean).join(' · ');
 
-  const footerRight = t.url
-    ? `<a href="${esc(t.url)}" target="_blank" rel="noopener">查看完整配置 →</a>` : '';
+  const pkmCards = (t.pokemon || []).map(renderPkmBuildCard).join('');
+
+  const sourceLink = t.url
+    ? `<a href="${esc(t.url)}" target="_blank" rel="noopener" class="builds-source-link">查看原始配置 →</a>` : '';
 
   return `<div class="builds-team-card">
     <div class="builds-team-top">
-      <div class="builds-team-title">${esc(t.title || '锦标赛队伍')}</div>
+      <div class="builds-team-title">${esc(t.title || '锦标赛阵容')}</div>
       <div class="builds-team-badges">${recordBadge}${typeBadge}</div>
     </div>
-    <div class="builds-team-sprites">${sprites}</div>
-    ${(footerLeft || footerRight) ? `<div class="builds-team-footer"><span>${footerLeft}</span>${footerRight}</div>` : ''}
+    <div class="builds-team-pkm-grid">${pkmCards}</div>
+    ${(meta || sourceLink) ? `<div class="builds-team-footer"><span class="builds-team-meta-txt">${meta}</span>${sourceLink}</div>` : ''}
   </div>`;
 }
 
-/* ── 空状态（含操作说明） ── */
-function buildsEmptyHtml(format) {
-  const isSingles = format === 'singles';
+/* ── 空状态 ── */
+function buildsEmptyHtml() {
   return `<div class="builds-empty">
-    <div class="builds-empty-ico">${isSingles ? '⚔️' : '🏆'}</div>
-    <p>暂无${isSingles ? '单打' : '双打'}阵容数据</p>
-    <p style="margin-top:.8rem;font-size:.72rem;line-height:1.8;color:var(--t2)">
-      <b>方式一（推荐）：</b>部署 Edge Function 后点击「在线更新」即可自动拉取<br>
-      <b>方式二：</b>打开 <a href="https://championsmeta.io/teams" target="_blank" rel="noopener" style="color:var(--acc)">championsmeta.io/teams</a>，
-      F12 控制台运行 <code>scripts/browser-scrape-teams.js</code> 脚本，<br>
-      下载 <code>pkm_champions_teams.js</code> 放入 <code>js/data/</code> 目录
+    <div class="builds-empty-ico">🏆</div>
+    <p>暂无双打阵容数据</p>
+    <p style="margin-top:.8rem;font-size:.72rem;line-height:2;color:var(--t2)">
+      <b>步骤：</b><br>
+      1. 在 Supabase SQL Editor 执行 <code>battle.js</code> 顶部的建表 SQL（一次即可）<br>
+      2. 浏览器打开 <a href="https://championsmeta.io/teams" target="_blank" rel="noopener" style="color:var(--acc)">championsmeta.io/teams</a><br>
+      3. F12 控制台粘贴 <code>scripts/browser-scrape-teams.js</code> 内容并运行<br>
+      4. 回到此页面点击「🔄 刷新」即可看到数据
     </p>
   </div>`;
 }
 
 /* ════ 双打阵容推荐 ════ */
 
-let _doublesBuildsLoading = false;
-
 async function fetchDoublesTeamsOnline() {
   const btn = document.getElementById('builds-refresh-btn');
   if (btn) { btn.disabled = true; btn.textContent = '拉取中…'; }
-  _doublesBuildsLoading = true;
 
   try {
-    const res = await fetch(`${SB_URL}/functions/v1/pkm-teams?format=doubles`, {
-      headers: { 'Authorization': `Bearer ${SB_KEY}`, 'apikey': SB_KEY },
-    });
+    const res = await fetch(
+      `${SB_URL}/rest/v1/pkm_champions_teams?order=created_at.desc&limit=60`,
+      { headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}` } }
+    );
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    if (!data.teams?.length) throw new Error('empty');
+    const teams = await res.json();
+    if (!Array.isArray(teams) || !teams.length) throw new Error('empty');
 
-    // 存入缓存
-    try {
-      localStorage.setItem(TEAMS_CACHE_KEY, JSON.stringify({ teams: data.teams, updated: data.updated, ts: Date.now() }));
-    } catch(_) {}
+    // 规范化（Supabase 返回的 pokemon 字段是数组，其余是字符串）
+    const normalized = teams.map(t => ({
+      title: t.title || '',
+      player: t.player || '',
+      pokemon: Array.isArray(t.pokemon) ? t.pokemon : [],
+      tournament: t.tournament || '',
+      date: t.date || '',
+      record: t.record || '',
+      placement: t.placement || 0,
+      votes: t.votes || 0,
+      type: t.type || 'tournament',
+      url: t.url || '',
+    }));
 
-    renderDoublesBuilds(data.teams, data.updated);
+    renderDoublesBuilds(normalized, normalized[0]?.date || new Date().toISOString().slice(0,10));
   } catch(e) {
     const el = document.getElementById('bdtab-builds');
-    if (el) {
-      el.querySelector('.builds-meta')?.remove?.();
-      const errDiv = document.createElement('div');
-      errDiv.style.cssText = 'font-size:.72rem;color:var(--warn);padding:.5rem 0';
-      errDiv.textContent = `拉取失败（${e.message}）。请检查 Edge Function 是否已部署，或使用方式二手动更新数据。`;
-      el.querySelector('.builds-header')?.after?.(errDiv);
+    const errEl = el?.querySelector('.builds-fetch-err');
+    const msg = e.message === 'empty'
+      ? '数据库暂无数据，请先运行 scripts/browser-scrape-teams.js 脚本向 Supabase 写入数据。'
+      : `拉取失败（${e.message}）。请确认 Supabase 表已创建，并已运行爬虫脚本写入数据。`;
+    if (errEl) errEl.textContent = msg;
+    else if (el) {
+      const d = document.createElement('div');
+      d.className = 'builds-fetch-err';
+      d.style.cssText = 'font-size:.72rem;color:var(--warn);padding:.4rem 0 .8rem';
+      d.textContent = msg;
+      el.querySelector('.builds-header')?.insertAdjacentElement('afterend', d);
     }
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = '🔄 在线更新'; }
-    _doublesBuildsLoading = false;
+    if (btn) { btn.disabled = false; btn.textContent = '🔄 刷新'; }
   }
 }
 
@@ -3691,54 +3782,38 @@ function renderDoublesBuilds(teamsArg, updatedArg) {
   const el = document.getElementById('bdtab-builds');
   if (!el) return;
 
-  // 尝试缓存
-  let teams = teamsArg;
-  let updated = updatedArg;
-  if (!teams) {
-    // 1. 本地 JS 文件（pkm_champions_teams.js）
-    if (window.PKM_CHAMPIONS_TEAMS?.doubles?.length) {
-      teams = window.PKM_CHAMPIONS_TEAMS.doubles;
-      updated = window.PKM_CHAMPIONS_TEAMS.updated;
-    } else {
-      // 2. localStorage 缓存
-      try {
-        const cached = JSON.parse(localStorage.getItem(TEAMS_CACHE_KEY) || 'null');
-        if (cached?.teams?.length && (Date.now() - cached.ts) < TEAMS_CACHE_TTL) {
-          teams = cached.teams;
-          updated = cached.updated;
-        }
-      } catch(_) {}
-    }
-  }
+  const teams = teamsArg || null;
+  const updated = updatedArg || '';
 
   const metaText = teams?.length
-    ? `来源：<a href="https://championsmeta.io/teams" target="_blank" rel="noopener" style="color:var(--acc)">ChampionsMeta</a> · 更新：${updated || '—'} · ${teams.length} 支队伍`
-    : '暂无数据';
+    ? `来源：<a href="https://championsmeta.io/teams" target="_blank" rel="noopener" style="color:var(--acc)">ChampionsMeta</a>（通过 Supabase 缓存）· ${teams.length} 支队伍${updated ? ' · ' + updated : ''}`
+    : '暂无数据 — 点击「刷新」从 Supabase 拉取';
 
   el.innerHTML = `
     <div class="builds-header">
       <div class="builds-meta">${metaText}</div>
-      <button class="btn btn-sm" id="builds-refresh-btn" onclick="fetchDoublesTeamsOnline()" style="flex-shrink:0">🔄 在线更新</button>
+      <button class="btn btn-sm" id="builds-refresh-btn" onclick="fetchDoublesTeamsOnline()" style="flex-shrink:0">🔄 刷新</button>
     </div>
-    ${teams?.length ? renderDoublesTeamsList(teams) : buildsEmptyHtml('doubles')}
+    ${teams?.length ? renderDoublesTeamsList(teams) : buildsEmptyHtml()}
   `;
+  // 首次渲染时自动拉取
+  if (!teams) fetchDoublesTeamsOnline();
 }
 
 function renderDoublesTeamsList(teams) {
   const tournament = teams.filter(t => t.type === 'tournament');
-  const community = teams.filter(t => t.type === 'community');
-
+  const community  = teams.filter(t => t.type !== 'tournament');
   let html = '';
   if (tournament.length) {
     html += `<div class="builds-section">
-      <div class="builds-section-hdr">锦标赛实战队伍（${tournament.length}）</div>
-      ${tournament.slice(0, 20).map(renderTeamCard).join('')}
+      <div class="builds-section-hdr">锦标赛实战阵容（${tournament.length}）</div>
+      ${tournament.map(renderTeamCard).join('')}
     </div>`;
   }
   if (community.length) {
     html += `<div class="builds-section">
-      <div class="builds-section-hdr">社区推荐队伍（${community.length}）</div>
-      ${community.slice(0, 10).map(renderTeamCard).join('')}
+      <div class="builds-section-hdr">社区推荐阵容（${community.length}）</div>
+      ${community.map(renderTeamCard).join('')}
     </div>`;
   }
   return html;
@@ -3746,12 +3821,11 @@ function renderDoublesTeamsList(teams) {
 
 /* ════ 单打阵容推荐 ════ */
 
-// 单打角色分类（基于 PKM_CHAMPIONS_BUILDS 使用率数据）
 const SINGLES_ROLES = [
-  { key: 'sweeper',  label: '强攻核', icon: '⚡', slugs: ['garchomp','mega-garchomp','dragonite','mega-dragonite','kingambit','meowscarada','hydreigon','volcarona','greninja','weavile'] },
-  { key: 'wall',     label: '盾墙',   icon: '🛡️', slugs: ['hippowdon','toxapex','corviknight','skarmory','mega-skarmory','slowbro','mega-slowbro','clefable','mega-clefable','milotic'] },
-  { key: 'support',  label: '辅助',   icon: '🌀', slugs: ['whimsicott','incineroar','gardevoir','mega-gardevoir','klefki','sylveon','arcanine','arcanine-hisui','froslass','mega-froslass'] },
-  { key: 'hazard',   label: '钉阵控场', icon: '📍', slugs: ['excadrill','mega-excadrill','garchomp','ferrothorn','skarmory','mega-skarmory','hippowdon','galvantula','crustle','forretress'] },
+  { key:'sweeper', label:'强攻核', icon:'⚡', slugs:['garchomp','mega-garchomp','dragonite','mega-dragonite','kingambit','meowscarada','hydreigon','volcarona','greninja','weavile'] },
+  { key:'wall',    label:'盾墙',   icon:'🛡️', slugs:['hippowdon','toxapex','corviknight','skarmory','mega-skarmory','slowbro','mega-slowbro','clefable','mega-clefable','milotic'] },
+  { key:'support', label:'辅助',   icon:'🌀', slugs:['whimsicott','incineroar','gardevoir','mega-gardevoir','klefki','sylveon','arcanine','arcanine-hisui','froslass','mega-froslass'] },
+  { key:'hazard',  label:'钉阵控场',icon:'📍', slugs:['excadrill','mega-excadrill','garchomp','ferrothorn','skarmory','mega-skarmory','hippowdon','galvantula','crustle','forretress'] },
 ];
 
 function renderSinglesBuilds() {
@@ -3760,33 +3834,34 @@ function renderSinglesBuilds() {
 
   const hasBuilds = !!window.PKM_CHAMPIONS_BUILDS && Object.keys(window.PKM_CHAMPIONS_BUILDS).length > 0;
 
-  // 用 PKM_CHAMPIONS_BUILDS 使用率填充各角色宝可梦
-  const roles = SINGLES_ROLES.map(role => {
-    const pkmList = role.slugs
-      .map(slug => {
-        const b = window.PKM_CHAMPIONS_BUILDS?.[slug];
-        const p = PKM_PC_BY_SLUG[slug];
-        if (!p) return null;
-        const usage = b?.moves?.[0]?.pct || 0;
-        return { slug, name: p.name, spriteUrl: p.spriteUrl || '', usage };
-      })
-      .filter(Boolean)
-      .slice(0, 5);
-    return { ...role, pkmList };
-  });
+  const roles = SINGLES_ROLES.map(role => ({
+    ...role,
+    pkmList: role.slugs.map(slug => {
+      const b = window.PKM_CHAMPIONS_BUILDS?.[slug];
+      const p = PKM_PC_BY_SLUG[slug];
+      if (!p) return null;
+      return { slug, name: p.name, spriteUrl: p.spriteUrl || '', usage: b?.moves?.[0]?.pct || 0 };
+    }).filter(Boolean).slice(0, 5),
+  }));
 
   const roleCards = roles.map(role => `
     <div class="builds-role-card">
       <div class="builds-role-hdr">${role.icon} ${role.label}</div>
       <div class="builds-role-pkm-list">
-        ${role.pkmList.map(p => `
-          <div class="builds-role-pkm-row">
+        ${role.pkmList.map(p => {
+          const b = window.PKM_CHAMPIONS_BUILDS?.[p.slug];
+          const topItem  = b?.item?.slug     ? `<span class="builds-build-item">${esc(itemName(b.item.slug))}</span>` : '';
+          const topAbil  = b?.ability?.slug  ? `<span class="builds-build-ability">${esc(abilityName(b.ability.slug))}</span>` : '';
+          const topMoves = b?.moves?.slice(0,2).map(m=>`<span class="builds-build-move">${esc(moveName(m.slug))}</span>`).join('') || '';
+          return `<div class="builds-role-pkm-row">
             <img src="${esc(p.spriteUrl)}" alt="${esc(p.name)}" onerror="this.style.display='none'">
             <div class="builds-role-pkm-info">
               <div class="builds-role-pkm-name">${esc(p.name)}</div>
-              ${p.usage ? `<div class="builds-role-pkm-usage">锦标赛使用率 ${p.usage.toFixed(1)}%</div>` : ''}
+              ${p.usage ? `<div class="builds-role-pkm-usage">使用率 ${p.usage.toFixed(1)}%</div>` : ''}
+              <div style="display:flex;flex-wrap:wrap;gap:2px;margin-top:2px">${topItem}${topAbil}${topMoves}</div>
             </div>
-          </div>`).join('')}
+          </div>`;
+        }).join('')}
       </div>
     </div>`).join('');
 
@@ -3798,16 +3873,12 @@ function renderSinglesBuilds() {
       </div>
     </div>
     <div class="builds-singles-note">
-      单打（BSS 3v3）赛场锦标赛数据整合度较低，以下展示各角色高频选用宝可梦供参考。
-      建议搭配 <b>1 强攻核 + 1 盾墙 + 1 钉阵/辅助</b> 出战三只组合。
+      单打（BSS 3v3）以按角色推荐为主。搭配思路：<b>强攻核 + 盾墙 + 辅助/钉阵</b> 共三只出战。
     </div>
     <div class="builds-section">
-      <div class="builds-section-hdr">按角色推荐</div>
+      <div class="builds-section-hdr">按角色推荐（含配置参考）</div>
       <div class="builds-role-grid">${roleCards}</div>
     </div>
-    ${!hasBuilds ? `<div style="font-size:.7rem;color:var(--warn);margin-top:.5rem">
-      提示：未加载 pkm_champions_builds.js，使用率数据不可用。
-      运行 <code>scripts/browser-scrape-builds.js</code> 可获取。
-    </div>` : ''}
+    ${!hasBuilds ? `<div style="font-size:.7rem;color:var(--warn);margin-top:.5rem">提示：pkm_champions_builds.js 未加载，使用率与配置数据不可用。</div>` : ''}
   `;
 }

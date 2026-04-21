@@ -8,10 +8,6 @@
     var key = (event.key || "").toLowerCase();
     var ctrlOrMeta = event.ctrlKey || event.metaKey;
 
-    if (key === "f12") {
-      return true;
-    }
-
     if (!ctrlOrMeta) {
       return false;
     }

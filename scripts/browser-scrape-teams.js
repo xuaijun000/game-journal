@@ -1,16 +1,41 @@
 /**
- * 【Pokemon Champions 推荐阵容爬虫】
+ * 【Pokemon Champions 推荐阵容爬虫 — Supabase 直推版】
  * 数据来源: championsmeta.io/teams（双打 VGC 锦标赛队伍，每日更新）
  *
  * 使用方法：
- * 1. 浏览器打开 https://championsmeta.io/teams
- * 2. 等页面加载完成
- * 3. 打开 DevTools → Console（F12）
- * 4. 粘贴以下代码，回车运行
- * 5. 自动下载 pkm_champions_teams.js → 放入 js/data/ 即可
+ * 1. 浏览器打开 https://championsmeta.io/teams，等页面完全加载
+ * 2. F12 打开 DevTools → Console
+ * 3. 粘贴以下全部代码，回车运行
+ * 4. 脚本自动解析队伍数据并推送到 Supabase，无需手动下载文件
+ * 5. 回到游戏日志 → 对战 → 双打 → 阵容推荐 → 点击「🔄 在线更新」即可看到数据
+ *
+ * Supabase 建表 SQL（首次使用前在 Dashboard → SQL Editor 执行一次）:
+ * CREATE TABLE IF NOT EXISTS pkm_champions_teams (
+ *   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+ *   title text DEFAULT '',
+ *   player text DEFAULT '',
+ *   pokemon jsonb DEFAULT '[]'::jsonb,
+ *   tournament text DEFAULT '',
+ *   date text DEFAULT '',
+ *   record text DEFAULT '',
+ *   placement int DEFAULT 0,
+ *   votes int DEFAULT 0,
+ *   type text DEFAULT 'tournament',
+ *   url text DEFAULT '',
+ *   created_at timestamptz DEFAULT now()
+ * );
+ * ALTER TABLE pkm_champions_teams ENABLE ROW LEVEL SECURITY;
+ * CREATE POLICY "public_read" ON pkm_champions_teams FOR SELECT USING (true);
+ * CREATE POLICY "anon_write"  ON pkm_champions_teams FOR INSERT WITH CHECK (true);
+ * CREATE POLICY "anon_del"    ON pkm_champions_teams FOR DELETE USING (true);
  */
 
 (async () => {
+  // ─── 配置 ─────────────────────────────────────────────────────────────────
+  const SB_URL = 'https://qbzxfwnosacwbdumkvoz.supabase.co';
+  const SB_KEY = 'sb_publishable_m-FvqswdlPrigzfyxrBjJA_F9wzPNb2';
+  const TABLE  = 'pkm_champions_teams';
+
   const sleep = ms => new Promise(r => setTimeout(r, ms));
 
   // ── 名称 → slug 标准化 ─────────────────────────────────────────────────────
@@ -20,16 +45,14 @@
       .replace(/[éèê]/g,'e').replace(/[àâ]/g,'a').replace(/[ùûü]/g,'u')
       .replace(/[ïî]/g,'i').replace(/[ôö]/g,'o')
       .replace(/\s+/g,'-').replace(/[^a-z0-9\-]/g,'').replace(/-+/g,'-').replace(/^-|-$/g,'');
-    // 形态前缀重排（Mega Garchomp → mega-garchomp 已正确；Hisui→-hisui 后缀）
-    const regionMap = {
-      'hisuian-':'hisui-', 'alolan-':'alola-', 'galarian-':'galar-', 'paldean-':'paldea-',
-    };
+
+    // 洗翠/阿罗拉等形态后缀重排
+    const regionMap = { 'hisuian-':'hisui', 'alolan-':'alola', 'galarian-':'galar', 'paldean-':'paldea' };
     for (const [k,v] of Object.entries(regionMap)) {
-      if (s.startsWith(k)) { s = s.slice(k.length) + '-' + v.slice(0,-1); break; }
+      if (s.startsWith(k)) { s = s.slice(k.length) + '-' + v; break; }
     }
-    // Rotom forms: "rotom-wash" → "rotom-wash" ✓  "wash-rotom" → "rotom-wash"
-    const rotomForms = ['heat','wash','frost','fan','mow'];
-    for (const f of rotomForms) {
+    // Rotom 形态：wash-rotom → rotom-wash
+    for (const f of ['heat','wash','frost','fan','mow']) {
       if (s === f + '-rotom') { s = 'rotom-' + f; break; }
     }
     return s;
@@ -48,105 +71,65 @@
     return null;
   };
 
-  // ── 从 __NEXT_DATA__ 规范化队伍 ───────────────────────────────────────────
-  const normalizeFromND = (rawTeams) => rawTeams.map(t => ({
+  const normalizeFromND = rawTeams => rawTeams.map(t => ({
     title: t.title || t.name || t.archetype || '',
     player: t.player || t.username || t.author || '',
     pokemon: (t.pokemon || t.team || t.members || []).map(p =>
       toSlug(typeof p === 'string' ? p : (p.name || p.slug || ''))
     ).filter(Boolean).slice(0, 6),
     tournament: t.tournament || t.event || t.source || '',
-    date: t.date || t.createdAt || '',
+    date: (t.date || t.createdAt || '').slice(0, 10),
     record: t.record || t.score || '',
-    placement: t.placement || t.rank || t.place || 0,
-    votes: t.votes || t.likes || 0,
+    placement: +t.placement || +t.rank || +t.place || 0,
+    votes: +t.votes || +t.likes || 0,
     type: t.type || (t.tournament ? 'tournament' : 'community'),
     url: t.url || t.sourceUrl || t.pasteUrl || '',
   })).filter(t => t.pokemon.length >= 3);
 
-  // ── DOM 解析备用策略 ──────────────────────────────────────────────────────
+  // ── DOM 解析备用 ─────────────────────────────────────────────────────────
   const parseFromDOM = () => {
     const teams = [];
-
-    // 策略 1：查找含 6 张宝可梦图片的卡片
     const allCards = Array.from(document.querySelectorAll('[class*="team"],[class*="card"],[class*="Team"],[class*="Card"]'));
     for (const card of allCards) {
-      const imgs = Array.from(card.querySelectorAll('img'));
-      const pkmImgs = imgs.filter(img => {
+      const imgs = Array.from(card.querySelectorAll('img')).filter(img => {
         const src = img.src || '';
-        return src.includes('pokemon') || src.includes('sprites') || src.includes('pkm') ||
-               src.includes('championsmeta') || img.alt?.length > 1;
+        return (src.includes('pokemon') || src.includes('sprites') || src.includes('pkm') ||
+                src.includes('championsmeta')) && img.alt?.length > 1;
       });
-      if (pkmImgs.length < 3) continue;
-
-      const pokemon = pkmImgs.slice(0, 6).map(img =>
+      if (imgs.length < 3) continue;
+      const pokemon = imgs.slice(0, 6).map(img =>
         toSlug(img.alt || img.getAttribute('data-name') || img.src.split('/').pop().replace(/\.\w+$/, ''))
       ).filter(s => s.length > 1);
-
       if (pokemon.length < 3) continue;
-
-      // 提取文本信息
-      const text = card.innerText || card.textContent;
-      const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
-
-      // 尝试识别 record（格式 "9-2-0" 或 "11-2"）
+      const text = card.innerText || '';
       const recordMatch = text.match(/\b(\d{1,2}-\d{1,2}(?:-\d)?)\b/);
-      const record = recordMatch ? recordMatch[1] : '';
-
-      // 尝试识别名称（最长的短行通常是标题）
-      const title = lines.find(l => l.length > 3 && l.length < 60 && !l.match(/^\d/) && !l.match(/^[A-Z][a-z]+(?:\s[A-Z][a-z]+)*$/)) || '';
-
-      // 获取链接
-      const link = card.querySelector('a[href*="vrpastes"],a[href*="limitlesstcg"],a[href*="source"]');
-      const url = link?.href || '';
-
-      teams.push({ title, player: '', pokemon, tournament: '', date: '', record, placement: 0, votes: 0, type: 'tournament', url });
+      const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+      const title = lines.find(l => l.length > 3 && l.length < 60 && !/^\d/.test(l)) || '';
+      const link = card.querySelector('a[href*="vrpastes"],a[href*="limitlesstcg"]');
+      teams.push({ title, player: '', pokemon, tournament: '', date: '', record: recordMatch?.[1]||'', placement: 0, votes: 0, type: 'tournament', url: link?.href||'' });
     }
-
-    // 策略 2：扫描页面所有文本提取 Pokemon 组合
-    if (teams.length < 3) {
-      const rows = Array.from(document.querySelectorAll('tr,li,[role="row"]'));
-      for (const row of rows) {
-        const imgs = Array.from(row.querySelectorAll('img')).filter(img =>
-          img.alt && img.alt.length > 1 && !img.alt.includes(' ')
-        );
-        if (imgs.length >= 3) {
-          const pokemon = imgs.slice(0, 6).map(img => toSlug(img.alt));
-          if (pokemon.filter(Boolean).length >= 3) {
-            teams.push({ title: '', player: '', pokemon, tournament: '', date: '', record: '', placement: 0, votes: 0, type: 'tournament', url: '' });
-          }
-        }
-      }
-    }
-
     return teams;
   };
 
-  // ── 主逻辑 ────────────────────────────────────────────────────────────────
-  console.log('🔍 正在解析 championsmeta.io/teams 页面...');
-
-  let teamsRaw = tryNextData();
+  // ── 解析 ─────────────────────────────────────────────────────────────────
+  console.log('🔍 解析 championsmeta.io/teams...');
+  let rawND = tryNextData();
   let teams;
-
-  if (teamsRaw) {
-    console.log(`✓ 从 __NEXT_DATA__ 获取 ${teamsRaw.length} 支队伍`);
-    teams = normalizeFromND(teamsRaw);
+  if (rawND) {
+    console.log(`✓ __NEXT_DATA__ 获取 ${rawND.length} 支`);
+    teams = normalizeFromND(rawND);
   } else {
     console.log('⚠ 未找到 __NEXT_DATA__，尝试 DOM 解析...');
     teams = parseFromDOM();
-    if (!teams.length) {
-      // 尝试等待 JS 渲染完成
-      await sleep(2000);
-      teams = parseFromDOM();
-    }
+    if (!teams.length) { await sleep(2000); teams = parseFromDOM(); }
   }
 
   if (!teams.length) {
-    console.error('✗ 未能解析到队伍数据。请确保在 championsmeta.io/teams 页面上运行此脚本，且页面已完全加载。');
+    console.error('✗ 未解析到队伍。请确保页面已完全加载后再运行。');
     return;
   }
 
-  // 去重（按 pokemon 组合）
+  // 去重
   const seen = new Set();
   teams = teams.filter(t => {
     const key = [...t.pokemon].sort().join(',');
@@ -154,28 +137,44 @@
     seen.add(key);
     return true;
   });
+  console.log(`✓ 解析完成：${teams.length} 支队伍（锦标赛 ${teams.filter(t=>t.type==='tournament').length}，社区 ${teams.filter(t=>t.type==='community').length}）`);
 
-  // 优先锦标赛队伍
-  teams.sort((a, b) => {
-    if (a.type === 'tournament' && b.type !== 'tournament') return -1;
-    if (b.type === 'tournament' && a.type !== 'tournament') return 1;
-    return (b.votes || 0) - (a.votes || 0);
+  // ── 推送到 Supabase ───────────────────────────────────────────────────────
+  const headers = {
+    'apikey': SB_KEY,
+    'Authorization': `Bearer ${SB_KEY}`,
+    'Content-Type': 'application/json',
+    'Prefer': 'return=minimal',
+  };
+
+  // 先清空旧数据
+  console.log('🗑️  清除旧数据...');
+  await fetch(`${SB_URL}/rest/v1/${TABLE}?id=neq.00000000-0000-0000-0000-000000000000`, {
+    method: 'DELETE', headers
   });
 
-  console.log(`✓ 解析完成！共 ${teams.length} 支队伍（锦标赛：${teams.filter(t=>t.type==='tournament').length}，社区：${teams.filter(t=>t.type==='community').length}）`);
+  // 分批插入（每批 50 条）
+  const BATCH = 50;
+  let inserted = 0;
+  for (let i = 0; i < teams.length; i += BATCH) {
+    const batch = teams.slice(i, i + BATCH);
+    const res = await fetch(`${SB_URL}/rest/v1/${TABLE}`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(batch),
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      console.error(`✗ 批次 ${i}-${i+BATCH} 写入失败：${err}`);
+      // 如果是表不存在，给出提示
+      if (err.includes('relation') || err.includes('does not exist')) {
+        console.error('💡 请先在 Supabase SQL Editor 中执行脚本顶部的建表 SQL，再重新运行此脚本。');
+      }
+      return;
+    }
+    inserted += batch.length;
+    console.log(`  已写入 ${inserted}/${teams.length} 条`);
+  }
 
-  // ── 生成 JS 文件并下载 ─────────────────────────────────────────────────────
-  const today = new Date().toISOString().slice(0, 10);
-  const js =
-`// 自动生成 — Pokemon Champions 推荐阵容数据（双打 VGC）
-// 来源: championsmeta.io/teams，勿手动修改
-// 生成时间: ${today}
-// 字段: title / player / pokemon(6slugs) / tournament / date / record / placement / type
-window.PKM_CHAMPIONS_TEAMS = ${JSON.stringify({ doubles: teams, updated: today }, null, 2)};`;
-
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([js], { type: 'text/javascript' }));
-  a.download = 'pkm_champions_teams.js';
-  a.click();
-  console.log('✓ 已下载 pkm_champions_teams.js → 放入 js/data/ 即可');
+  console.log(`✅ 完成！${inserted} 支队伍已推送到 Supabase，刷新游戏日志即可看到数据。`);
 })();

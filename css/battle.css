@@ -454,3 +454,19 @@
 .builds-role-pkm-name{font-size:.72rem;font-weight:600;color:var(--t)}
 .builds-role-pkm-usage{font-size:.6rem;color:var(--t3);font-family:'DM Mono',monospace}
 .builds-singles-note{font-size:.72rem;color:var(--t2);background:var(--bg2);border-radius:var(--r);border-left:2px solid var(--b2);padding:.6rem .9rem;line-height:1.6;margin-bottom:1rem}
+/* ── 队伍内宝可梦配置展开卡片 ── */
+.builds-team-pkm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin:10px 0 6px}
+.builds-pkm-card{background:var(--bg3);border-radius:calc(var(--rl) - 2px);padding:8px 10px;display:flex;flex-direction:column;gap:5px}
+.builds-pkm-card-top{display:flex;align-items:center;gap:6px}
+.builds-pkm-card-top img{width:42px;height:42px;object-fit:contain;image-rendering:pixelated;flex-shrink:0}
+.builds-pkm-card-name{font-size:.76rem;font-weight:600;color:var(--t);line-height:1.3}
+.builds-pkm-card-info{display:flex;flex-direction:column;gap:3px}
+.builds-build-row{display:flex;flex-wrap:wrap;gap:2px}
+.builds-build-item{font-size:.6rem;padding:1px 5px;border-radius:3px;background:color-mix(in srgb,var(--acc) 15%,transparent);color:var(--acc);font-family:'DM Mono',monospace}
+.builds-build-ability{font-size:.6rem;padding:1px 5px;border-radius:3px;background:color-mix(in srgb,#5b9bd5 15%,transparent);color:#5b9bd5;font-family:'DM Mono',monospace}
+.builds-build-moves{display:flex;flex-wrap:wrap;gap:2px}
+.builds-build-move{font-size:.6rem;padding:1px 5px;border-radius:3px;background:var(--bg2);color:var(--t2);font-family:'DM Mono',monospace}
+.builds-source-link{color:var(--acc);text-decoration:none;font-family:'DM Mono',monospace;font-size:.62rem}
+.builds-source-link:hover{text-decoration:underline}
+.builds-team-meta-txt{font-size:.65rem;color:var(--t3)}
+.builds-fetch-err{font-size:.72rem;color:var(--warn);padding:.4rem 0 .8rem;line-height:1.6}
