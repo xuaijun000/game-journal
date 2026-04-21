@@ -25,6 +25,8 @@
   <script src="js/data/moves_champions_data.js"></script>
   <script src="js/data/items_champions_data.js"></script>
   <script src="js/data/pkm_champions_builds.js"></script>
+  <!-- 可选：运行 scripts/browser-scrape-teams.js 后放入此目录 -->
+  <script>/* pkm_champions_teams.js 可选 — 运行 scripts/browser-scrape-teams.js 后放入 js/data/ */</script>
 </head>
 <body>
 <canvas id="pkm-canvas"></canvas>
@@ -273,6 +275,7 @@
         <div class="btab-bar">
           <button class="btab on" onclick="switchBattleTab('team',this)">🎮 我的阵容</button>
           <button class="btab" onclick="switchBattleTab('analysis',this)">⚔️ 赛前分析</button>
+          <button class="btab" onclick="switchBattleTab('builds',this)">🏆 阵容推荐</button>
           <button class="btab" onclick="switchBattleTab('calc',this)">📊 数值工具</button>
         </div>
       </div>
@@ -306,6 +309,7 @@
         <button class="btn btn-a" onclick="analyzeMatchups()" style="width:100%;margin-top:8px;padding:10px">⚔️ 开始赛前分析</button>
         <div id="battle-analysis-result"></div>
       </div>
+      <div class="btab-panel" id="btab-builds" style="padding-top:.5rem"></div>
       <div class="btab-panel" id="btab-calc" style="padding-top:1rem"></div>
     </div>
 
@@ -316,6 +320,7 @@
         <div class="btab-bar">
           <button class="btab on" onclick="switchDTab('team',this)">🎮 我的阵容</button>
           <button class="btab" onclick="switchDTab('analysis',this)">⚔️  赛前分析</button>
+          <button class="btab" onclick="switchDTab('builds',this)">🏆 阵容推荐</button>
           <button class="btab" onclick="switchDTab('calc',this)">📊 数值工具</button>
         </div>
       </div>
@@ -352,6 +357,7 @@
         <div id="bd-analysis-result"></div>
       </div>
 
+      <div class="btab-panel" id="bdtab-builds" style="padding-top:.5rem"></div>
       <div class="btab-panel" id="bdtab-calc" style="padding-top:1rem"></div>
     </div>
   </div>

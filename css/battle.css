@@ -418,3 +418,39 @@
 .bd-opp-lead-pkm img{width:44px;height:44px;object-fit:contain}
 .bd-opp-lead-name{font-size:.75rem;font-weight:600;color:var(--t);text-align:center}
 .rank-4{border-left:3px solid var(--t3)}
+
+/* ── 阵容推荐 tab ── */
+.builds-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 0 .8rem;gap:.5rem}
+.builds-meta{font-size:.63rem;color:var(--t3);font-family:'DM Mono',monospace;flex:1}
+.builds-section{margin-bottom:1.4rem}
+.builds-section-hdr{font-size:.6rem;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.12em;text-transform:uppercase;margin-bottom:.75rem;padding:.4rem 0;border-bottom:1px solid var(--b)}
+.builds-team-card{background:var(--bg2);border:1px solid var(--b2);border-radius:var(--rl);padding:12px 14px;margin-bottom:10px;transition:border-color .15s}
+.builds-team-card:hover{border-color:rgba(200,144,64,.35)}
+.builds-team-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;gap:8px}
+.builds-team-title{font-size:.82rem;font-weight:600;color:var(--t);flex:1;line-height:1.35}
+.builds-team-badges{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0}
+.builds-record{display:inline-block;font-size:.62rem;padding:1px 6px;border-radius:3px;background:color-mix(in srgb,var(--acc) 15%,transparent);color:var(--acc);font-family:'DM Mono',monospace}
+.builds-type-badge{display:inline-block;font-size:.58rem;padding:1px 5px;border-radius:3px;font-family:'DM Mono',monospace}
+.builds-type-badge.tournament{background:color-mix(in srgb,#6aa84f 15%,transparent);color:#6aa84f}
+.builds-type-badge.community{background:color-mix(in srgb,#5b9bd5 15%,transparent);color:#5b9bd5}
+.builds-team-sprites{display:flex;gap:4px;flex-wrap:wrap;align-items:flex-end}
+.builds-pkm{display:flex;flex-direction:column;align-items:center;gap:2px}
+.builds-pkm img{width:46px;height:46px;object-fit:contain;image-rendering:pixelated}
+.builds-pkm-name{font-size:.56rem;color:var(--t2);text-align:center;max-width:50px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.builds-team-footer{margin-top:6px;font-size:.65rem;color:var(--t3);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.builds-team-footer a{color:var(--acc);text-decoration:none;font-family:'DM Mono',monospace;font-size:.62rem}
+.builds-team-footer a:hover{text-decoration:underline}
+.builds-empty{text-align:center;padding:3rem 1rem;color:var(--t3)}
+.builds-empty-ico{font-size:2.2rem;margin-bottom:.8rem;opacity:.35}
+.builds-empty p{font-size:.8rem;line-height:1.7;margin:.3rem 0}
+.builds-empty code{font-family:'DM Mono',monospace;background:var(--bg3);padding:1px 5px;border-radius:3px;font-size:.75rem}
+.builds-role-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:.5rem}
+.builds-role-card{background:var(--bg2);border:1px solid var(--b2);border-radius:var(--rl);padding:12px 14px}
+.builds-role-hdr{font-size:.7rem;font-weight:600;color:var(--acc);margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.builds-role-pkm-list{display:flex;flex-direction:column;gap:5px}
+.builds-role-pkm-row{display:flex;align-items:center;gap:6px}
+.builds-role-pkm-row img{width:34px;height:34px;object-fit:contain;image-rendering:pixelated;flex-shrink:0}
+.builds-role-pkm-info{flex:1;min-width:0}
+.builds-role-pkm-name{font-size:.72rem;font-weight:600;color:var(--t)}
+.builds-role-pkm-usage{font-size:.6rem;color:var(--t3);font-family:'DM Mono',monospace}
+.builds-singles-note{font-size:.72rem;color:var(--t2);background:var(--bg2);border-radius:var(--r);border-left:2px solid var(--b2);padding:.6rem .9rem;line-height:1.6;margin-bottom:1rem}
