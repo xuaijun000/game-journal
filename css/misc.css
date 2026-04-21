@@ -1,6 +1,6 @@
 /* === 游戏时刻面板 / Toast === */
-.moment-fab{position:fixed;bottom:24px;right:24px;z-index:800;width:52px;height:52px;border-radius:50%;background:var(--acc);border:none;color:#0c0b09;font-size:1.3rem;cursor:pointer;box-shadow:0 4px 20px rgba(200,144,64,.4);display:flex;align-items:center;justify-content:center;transition:transform .2s,box-shadow .2s}
-.moment-fab:hover{transform:scale(1.1);box-shadow:0 6px 24px rgba(200,144,64,.55)}
+.moment-fab{position:fixed;bottom:24px;right:24px;z-index:800;width:52px;height:52px;border-radius:50%;background:var(--acc);border:none;color:#0f1a1c;font-size:1.3rem;cursor:pointer;box-shadow:0 4px 20px rgba(126,205,196,.36);display:flex;align-items:center;justify-content:center;transition:transform .2s,box-shadow .2s}
+.moment-fab:hover{transform:scale(1.1);box-shadow:0 6px 24px rgba(126,205,196,.52)}
 .moment-panel{position:fixed;bottom:88px;right:24px;z-index:800;width:320px;background:var(--bg2);border:1px solid var(--b2);border-radius:var(--rl);box-shadow:0 8px 36px rgba(0,0,0,.6);padding:16px;display:none;flex-direction:column;gap:10px;animation:slideUp .2s ease}
 .moment-panel.open{display:flex}
 @keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
@@ -24,7 +24,7 @@
 .moment-item{background:var(--bg3);border-radius:var(--r);padding:10px 12px;border:1px solid var(--b);display:flex;flex-direction:column;gap:6px}
 .moment-item-hdr{display:flex;align-items:center;justify-content:space-between}
 .moment-item-type{font-size:.65rem;padding:2px 7px;border-radius:2px;font-weight:600;font-family:'DM Mono',monospace;letter-spacing:.04em}
-.moment-item-type.highlight{background:rgba(200,144,64,.15);color:var(--acc)}
+.moment-item-type.highlight{background:rgba(126,205,196,.15);color:var(--acc)}
 .moment-item-type.rant{background:rgba(217,85,85,.15);color:#d95555}
 .moment-item-type.idea{background:rgba(90,184,154,.12);color:var(--acc2)}
 .moment-item-type.stuck{background:rgba(180,100,255,.15);color:#b464ff}

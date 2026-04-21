@@ -130,7 +130,7 @@ function renderMedia(type){
     const pct=m.episode_total?Math.min(100,((m.episode_current||0)/m.episode_total)*100):0;
     const stCls=`ms-${m.status}`;
     const stText={watching:'观看中',reading:'阅读中',completed:type==='anime'?'已看完':'已读完',planned:type==='anime'?'想看':'想读',paused:'暂停',dropped:'放弃'}[m.status];
-    return`<div class="mc" onclick="openMediaEdit('${type}','${m.id||m._id}')">
+    return`<div class="mc" data-status="${m.status||''}" onclick="openMediaEdit('${type}','${m.id||m._id}')">
       ${m.cover
         ?`<div class="mc-cover-wrap"><div class="mc-cover-bg" style="background-image:url('${esc(m.cover)}')"></div><img class="mc-cover" src="${esc(m.cover)}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'"></div>`
         :`<div class="mc-cover-ph">${type==='anime'?'🎬':'📖'}</div>`}

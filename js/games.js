@@ -24,7 +24,7 @@ function render(){
     const pft=(g.platforms||[]).map(p=>`<span class="tag ${PTAG[p]||''}">${PFMAP[p]||p}</span>`).join('');
     const gnt=(g.genres||[]).slice(0,2).map(gn=>`<span class="tag">${gn}</span>`).join('');
     const dc={playing:'var(--acc)',done:'var(--acc2)',wishlist:'var(--warn)',dropped:'var(--t3)'}[g.status]||'var(--t3)';
-    return`<div class="gc" style="animation-delay:${Math.min(i*.03,.2)}s;display:flex;flex-direction:column" onclick="openDetail('${g.id||g._id}')">
+    return`<div class="gc" data-status="${g.status||''}" style="animation-delay:${Math.min(i*.03,.2)}s;display:flex;flex-direction:column" onclick="openDetail('${g.id||g._id}')">
       ${g.cover?`<div class="gc-cover-wrap"><div class="gc-cover-bg" style="background-image:url('${esc(g.cover)}')"></div><img class="gc-cover" src="${esc(g.cover)}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'"></div>`:''}
       <div class="gc-ph" style="${g.cover?'display:none':''}">🎮</div>
       <div style="padding:.9rem;flex:1;display:flex;flex-direction:column">
