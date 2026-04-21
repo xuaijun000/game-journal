@@ -245,78 +245,78 @@
   <!-- ====== 宝可梦对战助手 ====== -->
   <div class="pg" id="pg-battle">
     <div style="padding:.9rem 0 .4rem;display:flex;align-items:baseline;gap:.5rem">
-      <span style="font-size:1.05rem;font-weight:700;font-family:'Noto Serif SC',serif;color:var(--t)">????</span>
+      <span style="font-size:1.05rem;font-weight:700;font-family:'Noto Serif SC',serif;color:var(--t)">对战助手</span>
       <span id="battle-mode-label" style="display:none;font-size:.7rem;color:var(--acc);font-family:'DM Mono',monospace"></span>
     </div>
 
     <div id="battle-hub" class="battle-subview on">
-      <div class="bhub-title">??????</div>
+      <div class="bhub-title">选择游戏版本</div>
       <div class="bhub-cards">
         <div class="bhub-card" onclick="enterBattleVersion('pkmc')">
           <div class="bhub-card-name">Pokemon Champions</div>
-          <div class="bhub-card-desc">???????</div>
+          <div class="bhub-card-desc">锦标赛对战助手</div>
           <div class="bhub-formats">
-            <button class="bhub-fmt-btn" onclick="event.stopPropagation();enterBattleFormat('pkmc','singles')">?? 6?3</button>
-            <button class="bhub-fmt-btn" onclick="event.stopPropagation();enterBattleFormat('pkmc','doubles')">?? 6?4</button>
+            <button class="bhub-fmt-btn" onclick="event.stopPropagation();enterBattleFormat('pkmc','singles')">单打 6选3</button>
+            <button class="bhub-fmt-btn" onclick="event.stopPropagation();enterBattleFormat('pkmc','doubles')">双打 6选4</button>
           </div>
         </div>
         <div class="bhub-card bhub-card--disabled">
-          <div class="bhub-card-name">????</div>
-          <div class="bhub-card-desc">?????</div>
+          <div class="bhub-card-name">更多版本</div>
+          <div class="bhub-card-desc">即将推出…</div>
         </div>
       </div>
     </div>
 
     <div id="battle-pkmc" class="battle-subview">
-      <button class="bhub-back-btn" onclick="showBattleHub()">? ??</button>
+      <button class="bhub-back-btn" onclick="showBattleHub()">← 返回</button>
       <div style="background:var(--bg2);border:1px solid var(--b2);border-radius:var(--rl) var(--rl) 0 0;overflow:hidden;margin-bottom:0">
         <div class="btab-bar">
-          <button class="btab on" onclick="switchBattleTab('team',this)">?? ????</button>
-          <button class="btab" onclick="switchBattleTab('analysis',this)">?? ????</button>
-          <button class="btab" onclick="switchBattleTab('calc',this)">?? ????</button>
+          <button class="btab on" onclick="switchBattleTab('team',this)">🎮 我的阵容</button>
+          <button class="btab" onclick="switchBattleTab('analysis',this)">⚔️ 赛前分析</button>
+          <button class="btab" onclick="switchBattleTab('calc',this)">📊 数值工具</button>
         </div>
       </div>
       <div class="btab-panel on" id="btab-team">
         <div style="display:flex;align-items:center;justify-content:space-between;padding:1rem 0 .2rem">
-          <div style="font-size:.65rem;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase">??????</div>
-          <button class="btn btn-a btn-sm" onclick="openBattleTeamEdit(null,0)">+ ????</button>
+          <div style="font-size:.65rem;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase">我的阵容列表</div>
+          <button class="btn btn-a btn-sm" onclick="openBattleTeamEdit(null,0)">+ 新建阵容</button>
         </div>
         <div id="battle-team-list" class="battle-team-list"></div>
         <div class="battle-datasrc-note" style="margin-top:1rem">
-          ???????
-          <a class="battle-datasrc-link" href="https://wiki.52poke.com" target="_blank" rel="noopener">52Poke Wiki??????</a> ?
-          <a class="battle-datasrc-link" href="https://bulbapedia.bulbagarden.net" target="_blank" rel="noopener">Bulbapedia</a> ?
+          数据参考来源：
+          <a class="battle-datasrc-link" href="https://wiki.52poke.com" target="_blank" rel="noopener">52Poke Wiki（中文标准）</a> ·
+          <a class="battle-datasrc-link" href="https://bulbapedia.bulbagarden.net" target="_blank" rel="noopener">Bulbapedia</a> ·
           <a class="battle-datasrc-link" href="https://gamewith.ai/pokemon-champions/en" target="_blank" rel="noopener">Champions GameWith</a>
         </div>
       </div>
       <div class="btab-panel" id="btab-analysis">
         <div class="battle-analysis-layout" style="margin-top:1rem">
           <div class="battle-side-card">
-            <div class="battle-side-hdr">????</div>
+            <div class="battle-side-hdr">我的阵容</div>
             <select class="bpkm-inp" id="battle-my-team-sel" style="width:100%;margin-bottom:8px" onchange="onMyTeamSelect(this.value)">
-              <option value="">?????</option>
+              <option value="">选择阵容…</option>
             </select>
             <div id="battle-my-preview" class="battle-my-preview"></div>
           </div>
           <div class="battle-side-card">
-            <div class="battle-side-hdr">?????????????</div>
+            <div class="battle-side-hdr">对方阵容（填属性自动分析）</div>
             <div id="battle-opp-slots" class="battle-opp-slots"></div>
           </div>
         </div>
-        <button class="btn btn-a" onclick="analyzeMatchups()" style="width:100%;margin-top:8px;padding:10px">?? ??????</button>
+        <button class="btn btn-a" onclick="analyzeMatchups()" style="width:100%;margin-top:8px;padding:10px">⚔️ 开始赛前分析</button>
         <div id="battle-analysis-result"></div>
       </div>
       <div class="btab-panel" id="btab-calc" style="padding-top:1rem"></div>
     </div>
 
     <div id="battle-doubles" class="battle-subview">
-      <button class="bhub-back-btn" onclick="showBattleHub()">? ??</button>
-      <div style="padding:2rem;text-align:center;color:var(--t3)">????????</div>
+      <button class="bhub-back-btn" onclick="showBattleHub()">← 返回</button>
+      <div style="padding:2rem;text-align:center;color:var(--t3)">双打助手开发中…</div>
     </div>
   </div>
 </main>
   <footer class="site-footer">
-    <p>? 2024-2026 PIXELFISH ?????????????</p>
+    <p>© 2024-2026 PIXELFISH 版权所有，未经授权禁止转载</p>
   </footer>
 <!-- 游戏详情弹窗 -->
 <div class="ov" id="ov-detail" onclick="if(event.target===this)closeOv('ov-detail')">
