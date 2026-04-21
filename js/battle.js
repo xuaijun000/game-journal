@@ -3081,11 +3081,11 @@ function selectDOpp(i, pkmId, cnName, slug='') {
   const lp = PKM_PC_BY_SLUG[slug] || PKM_PC_BY_NUM[pkmId];
   const builds = window.PKM_CHAMPIONS_BUILDS?.[slug] || null;
   if (lp) {
-    document.getElementById(`bdopp-t1-${i}`)?.setAttribute('value', lp.type1||'');
-    document.getElementById(`bdopp-t2-${i}`)?.setAttribute('value', lp.type2||'');
-    const s1 = document.getElementById(`bdopp-t1-${i}`); if(s1) s1.value = lp.type1||'';
-    const s2 = document.getElementById(`bdopp-t2-${i}`); if(s2) s2.value = lp.type2||'';
-    bdOppPkm[i] = { name:cnName, slug, type1:lp.type1||'', type2:lp.type2||'', base:lp.stats||{},
+    const t1 = lp.types?.[0] || lp.type1 || '';
+    const t2 = lp.types?.[1] || lp.type2 || '';
+    const s1 = document.getElementById(`bdopp-t1-${i}`); if(s1) s1.value = t1;
+    const s2 = document.getElementById(`bdopp-t2-${i}`); if(s2) s2.value = t2;
+    bdOppPkm[i] = { name:cnName, slug, type1:t1, type2:t2, base:lp.stats||{},
       predictedMoves:builds?.moves||[], predictedItem:builds?.item||null,
       predictedAbility:builds?.ability||null, predictedTeammates:builds?.teammates||[] };
   } else {
