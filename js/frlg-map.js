@@ -97,13 +97,15 @@ let _frlgActiveMethodFilters = new Set();
 let _frlgCurrentEncounters = [];
 let _frlgCurrentLocationKey = '';
 const _frlgPkmCache = {};
+let _frlgCalibMode = false;
 
 function initFRLGMapTab(seriesId) {
   const btn = document.getElementById('stab-btn-frlgmap');
   if (btn) btn.style.display = seriesId === 'firered-leafgreen' ? '' : 'none';
+  frlgSetupPanel();
   if (seriesId !== 'firered-leafgreen') {
     const panel = document.getElementById('frlg-enc-panel');
-    if (panel) panel.style.display = 'none';
+    if (panel) panel.classList.remove('visible');
   }
 }
 
@@ -116,12 +118,27 @@ function frlgInitView(view) {
   const viewer = document.getElementById('frlg-map-viewer');
   const panel = document.getElementById('frlg-enc-panel');
   if (!breadcrumb || !viewer) return;
-  if (panel) panel.style.display = 'none';
+  if (panel) panel.classList.remove('visible');
 
   breadcrumb.innerHTML = frlgBuildBreadcrumb(frlgView);
+  frlgRenderCalibButton();
 
   const { src, hotspots, alt } = frlgGetViewConfig(frlgView);
   viewer.innerHTML = '<div class="frlg-map-loading" id="frlg-map-loading">加载中…</div>';
+  viewer.classList.toggle('calib-mode', _frlgCalibMode);
+
+  // calib-log 放在 viewer 外部（map-root 末尾），避免被 overflow:hidden 裁剪
+  const root = viewer.closest('.frlg-map-root');
+  let calibLog = document.getElementById('frlg-calib-log');
+  if (!calibLog) {
+    calibLog = document.createElement('div');
+    calibLog.id = 'frlg-calib-log';
+    calibLog.className = 'frlg-calib-log';
+    if (root) root.appendChild(calibLog);
+  } else {
+    calibLog.innerHTML = '';
+    calibLog.classList.remove('visible');
+  }
 
   const img = document.createElement('img');
   img.alt = alt;
@@ -130,6 +147,7 @@ function frlgInitView(view) {
   img.onload = () => {
     const loading = document.getElementById('frlg-map-loading');
     if (loading) loading.style.display = 'none';
+    frlgBindCalibEvents();
   };
   img.onerror = () => {
     const loading = document.getElementById('frlg-map-loading');
@@ -142,20 +160,25 @@ function frlgInitView(view) {
 
   viewer.appendChild(img);
   frlgRenderHotspots(viewer, hotspots);
+  frlgResetCalibrationSurface();
 }
 
 function frlgRenderHotspots(viewer, hotspots) {
   hotspots.forEach(hotspot => {
     const el = document.createElement('div');
     el.className = 'frlg-hotspot' + (hotspot.highlight ? ' highlight' : '');
+    el.dataset.key = hotspot.key || hotspot.action || hotspot.label;
     el.style.left = hotspot.x + '%';
     el.style.top = hotspot.y + '%';
     el.innerHTML = `<div class="frlg-hotspot-dot"></div><div class="frlg-hotspot-label">${frlgEsc(hotspot.label)}</div>`;
     el.onclick = () => {
+      document.querySelectorAll('.frlg-hotspot.active').forEach(node => node.classList.remove('active'));
+      frlgTriggerRipple(el);
       if (hotspot.action) {
         frlgInitView(hotspot.action);
         return;
       }
+      el.classList.add('active');
       if (!hotspot.key) return;
       const resolved = frlgResolveLocationKey(hotspot.key);
       frlgShowEncounters(resolved || hotspot.key, hotspot.label);
@@ -171,7 +194,7 @@ async function frlgShowEncounters(locationKey, locationLabel) {
   const grid = document.getElementById('frlg-enc-grid');
   if (!panel || !title || !methodsWrap || !grid) return;
 
-  panel.style.display = 'block';
+  panel.classList.add('visible');
   _frlgCurrentLocationKey = locationKey;
   _frlgActiveMethodFilters.clear();
 
@@ -238,7 +261,7 @@ function frlgRenderEncounterGrid() {
     const name = frlgGetPkmName(null, item.slug);
     const lv = item.minLv === item.maxLv ? `Lv.${item.minLv}` : `Lv.${item.minLv}-${item.maxLv}`;
     const rateCls = item.rate >= 20 ? 'rate-hi' : item.rate >= 10 ? 'rate-md' : 'rate-lo';
-    return `<div class="frlg-enc-card" id="frlg-enc-card-${idx}">
+    return `<div class="frlg-enc-card" id="frlg-enc-card-${idx}" style="animation-delay:${idx * 40}ms">
       <div class="frlg-enc-sprite"><div class="frlg-enc-placeholder"></div></div>
       <div class="frlg-enc-method-icons">${icons}</div>
       <div class="frlg-enc-name">${frlgEsc(name)}</div>
@@ -367,4 +390,147 @@ function frlgEsc(s) {
 
 function frlgIslandCn(n) {
   return ['一','二','三','四','五','六','七'][n - 1] || String(n);
+}
+
+function frlgTriggerRipple(el) {
+  const dot = el.querySelector('.frlg-hotspot-dot');
+  const target = dot || el;
+  const old = target.querySelector('.frlg-ripple');
+  if (old) old.remove();
+  const ripple = document.createElement('div');
+  ripple.className = 'frlg-ripple';
+  ripple.addEventListener('animationend', () => ripple.remove(), { once: true });
+  target.appendChild(ripple);
+}
+
+function frlgSetupPanel() {
+  const panel = document.getElementById('frlg-enc-panel');
+  if (!panel) return;
+  panel.style.display = '';
+  const closeBtn = panel.querySelector('.frlg-enc-header .btn');
+  if (closeBtn && !closeBtn.dataset.frlgBound) {
+    closeBtn.dataset.frlgBound = '1';
+    closeBtn.onclick = () => panel.classList.remove('visible');
+  }
+}
+
+function frlgRenderCalibButton() {
+  const breadcrumb = document.getElementById('frlg-breadcrumb');
+  if (!breadcrumb) return;
+  const btn = document.createElement('button');
+  btn.className = 'frlg-calib-btn' + (_frlgCalibMode ? ' on' : '');
+  btn.textContent = _frlgCalibMode ? '校准模式开' : '校准模式关';
+  btn.onclick = () => {
+    _frlgCalibMode = !_frlgCalibMode;
+    frlgRenderCalibButton();
+    frlgApplyCalibrationMode();
+  };
+  breadcrumb.appendChild(btn);
+}
+
+function frlgApplyCalibrationMode() {
+  const viewer = document.getElementById('frlg-map-viewer');
+  if (!viewer) return;
+  viewer.classList.toggle('calib-mode', _frlgCalibMode);
+  if (_frlgCalibMode) {
+    frlgBindCalibEvents();
+  } else {
+    frlgResetCalibrationSurface();
+  }
+}
+
+function frlgBindCalibEvents() {
+  const viewer = document.getElementById('frlg-map-viewer');
+  const img = viewer?.querySelector('img');
+  if (!viewer || !img) return;
+
+  viewer.onmousemove = e => {
+    if (!_frlgCalibMode) return;
+    const pos = frlgGetPercentFromEvent(e, img);
+    if (!pos) return;
+    frlgShowCalibCursor(e.clientX, e.clientY, pos, viewer);
+  };
+  viewer.onmouseleave = () => {
+    if (!_frlgCalibMode) return;
+    const cursor = document.getElementById('frlg-calib-cursor');
+    if (cursor) cursor.style.display = 'none';
+  };
+  viewer.onclick = e => {
+    if (!_frlgCalibMode) return;
+    if (e.target.closest('.frlg-hotspot')) return;
+    const pos = frlgGetPercentFromEvent(e, img);
+    if (!pos) return;
+    frlgAddCalibMarker(viewer, pos);
+    frlgAppendCalibLog(pos);
+  };
+}
+
+function frlgGetPercentFromEvent(e, img) {
+  const rect = img.getBoundingClientRect();
+  if (!rect.width || !rect.height) return null;
+  const relX = e.clientX - rect.left;
+  const relY = e.clientY - rect.top;
+  if (relX < 0 || relY < 0 || relX > rect.width || relY > rect.height) return null;
+  const x = Number(((relX / rect.width) * 100).toFixed(1));
+  const y = Number(((relY / rect.height) * 100).toFixed(1));
+  return { x, y };
+}
+
+function frlgShowCalibCursor(clientX, clientY, pos, viewer) {
+  let cursor = document.getElementById('frlg-calib-cursor');
+  if (!cursor) {
+    cursor = document.createElement('div');
+    cursor.id = 'frlg-calib-cursor';
+    cursor.className = 'frlg-calib-cursor';
+    document.body.appendChild(cursor);
+  }
+  cursor.style.display = 'block';
+  cursor.textContent = `x: ${pos.x}  y: ${pos.y}`;
+
+  const viewerRect = viewer.getBoundingClientRect();
+  const cursorRect = { width: cursor.offsetWidth || 92, height: cursor.offsetHeight || 24 };
+  let left = clientX + 8;
+  let top = clientY + 8;
+  if (left + cursorRect.width > viewerRect.right) left = clientX - cursorRect.width - 8;
+  if (top + cursorRect.height > viewerRect.bottom) top = clientY - cursorRect.height - 8;
+  left = Math.max(viewerRect.left, left);
+  top = Math.max(viewerRect.top, top);
+  cursor.style.left = left + 'px';
+  cursor.style.top = top + 'px';
+}
+
+function frlgAddCalibMarker(viewer, pos) {
+  const marker = document.createElement('div');
+  marker.className = 'frlg-calib-marker';
+  marker.style.left = pos.x + '%';
+  marker.style.top = pos.y + '%';
+  viewer.appendChild(marker);
+}
+
+function frlgAppendCalibLog(pos) {
+  const log = document.getElementById('frlg-calib-log');
+  if (!log) return;
+  log.classList.add('visible');
+  const line = `x:${Math.round(pos.x)}, y:${Math.round(pos.y)}  ← 点击后复制这行到对应热点坐标`;
+  const row = document.createElement('div');
+  row.textContent = line;
+  log.appendChild(row);
+  log.scrollTop = log.scrollHeight;
+  if (navigator.clipboard?.writeText) navigator.clipboard.writeText(line).catch(() => {});
+}
+
+function frlgResetCalibrationSurface() {
+  const viewer = document.getElementById('frlg-map-viewer');
+  if (!viewer) return;
+  viewer.classList.toggle('calib-mode', _frlgCalibMode);
+  if (!_frlgCalibMode) {
+    viewer.querySelectorAll('.frlg-calib-marker').forEach(node => node.remove());
+    const log = document.getElementById('frlg-calib-log');
+    if (log) {
+      log.innerHTML = '';
+      log.classList.remove('visible');
+    }
+    const cursor = document.getElementById('frlg-calib-cursor');
+    if (cursor) cursor.style.display = 'none';
+  }
 }

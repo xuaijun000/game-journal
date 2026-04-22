@@ -15,6 +15,10 @@
   font-size:.72rem;
   font-family:'DM Mono',monospace;
   color:var(--t3);
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
 }
 
 .frlg-crumb-link{
@@ -79,16 +83,27 @@
 }
 
 .frlg-hotspot-dot{
+  position:relative;
   width:10px;
   height:10px;
   border-radius:50%;
   background:rgba(96,165,250,.85);
   border:2px solid rgba(255,255,255,.6);
   box-shadow:0 0 6px rgba(96,165,250,.6);
-  transition:transform .15s;
+  transition:transform .15s,background .15s,box-shadow .15s;
 }
 
 .frlg-hotspot:hover .frlg-hotspot-dot{transform:scale(1.4);}
+.frlg-hotspot.active .frlg-hotspot-dot{
+  transform:scale(1.3);
+  background:rgba(255,255,255,.95);
+  box-shadow:0 0 10px rgba(255,255,255,.85);
+}
+.frlg-map-viewer.calib-mode .frlg-hotspot-dot{
+  background:transparent;
+  border-color:rgba(248,113,113,.95);
+  box-shadow:0 0 0 1px rgba(248,113,113,.28);
+}
 
 .frlg-hotspot-label{
   font-size:.55rem;
@@ -104,6 +119,11 @@
 }
 
 .frlg-hotspot:hover .frlg-hotspot-label{opacity:1;}
+.frlg-hotspot.active .frlg-hotspot-label{
+  opacity:1;
+  font-weight:700;
+}
+.frlg-map-viewer.calib-mode .frlg-hotspot-label{opacity:1;}
 
 .frlg-hotspot.highlight .frlg-hotspot-dot{
   background:rgba(251,191,36,.9);
@@ -116,6 +136,16 @@
   background:var(--bg2);
   padding:10px 1.2rem 1rem;
   margin:0 0 8px;
+  opacity:0;
+  transform:translateY(12px);
+  visibility:hidden;
+  transition:opacity .22s ease,transform .22s ease,visibility .22s ease;
+}
+
+.frlg-enc-panel.visible{
+  opacity:1;
+  transform:translateY(0);
+  visibility:visible;
 }
 
 .frlg-enc-header{
@@ -171,6 +201,7 @@
   text-align:center;
   cursor:default;
   transition:border-color .15s,transform .15s;
+  animation:frlgCardIn .22s ease both;
 }
 
 .frlg-enc-card:hover{
@@ -257,6 +288,91 @@
   color:var(--t3);
   text-align:center;
 }
+
+.frlg-ripple{
+  position:absolute;
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  border:2px solid rgba(255,255,255,.8);
+  top:0;
+  left:0;
+  animation:frlgRipple .5s ease-out forwards;
+  pointer-events:none;
+}
+
+@keyframes frlgRipple{
+  from{transform:translate(-50%,-50%) scale(1);opacity:.8;}
+  to{transform:translate(-50%,-50%) scale(3.5);opacity:0;}
+}
+
+@keyframes frlgCardIn{
+  from{opacity:0;transform:scale(.88) translateY(6px);}
+  to{opacity:1;transform:scale(1) translateY(0);}
+}
+
+.frlg-calib-btn{
+  margin-left:auto;
+  font-size:.6rem;
+  font-family:'DM Mono',monospace;
+  padding:2px 8px;
+  border-radius:4px;
+  cursor:pointer;
+  border:1px solid var(--b2);
+  color:var(--t3);
+  background:var(--bg3);
+}
+
+.frlg-calib-btn.on{
+  border-color:var(--warn);
+  color:var(--warn);
+}
+
+.frlg-calib-cursor{
+  position:fixed;
+  pointer-events:none;
+  z-index:9999;
+  background:rgba(0,0,0,.75);
+  color:#fff;
+  font-size:.62rem;
+  font-family:'DM Mono',monospace;
+  padding:2px 7px;
+  border-radius:4px;
+  white-space:nowrap;
+}
+
+.frlg-calib-marker{
+  position:absolute;
+  width:12px;
+  height:12px;
+  transform:translate(-50%,-50%);
+  pointer-events:none;
+  z-index:10;
+}
+
+.frlg-calib-marker::before,
+.frlg-calib-marker::after{
+  content:'';
+  position:absolute;
+  background:red;
+}
+
+.frlg-calib-marker::before{width:1px;height:100%;left:50%;top:0;}
+.frlg-calib-marker::after{width:100%;height:1px;top:50%;left:0;}
+
+.frlg-calib-log{
+  padding:6px 1.2rem;
+  font-size:.62rem;
+  font-family:'DM Mono',monospace;
+  color:var(--warn);
+  background:var(--bg3);
+  border-top:1px solid var(--b);
+  max-height:80px;
+  overflow-y:auto;
+  display:none;
+}
+
+.frlg-calib-log.visible{display:block;}
 
 @media(max-width:768px){
   .frlg-map-breadcrumb{padding:8px .9rem 0;}
