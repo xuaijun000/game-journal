@@ -19,12 +19,14 @@
   <link rel="stylesheet" href="css/play.css">
   <link rel="stylesheet" href="css/misc.css">
   <link rel="stylesheet" href="css/battle.css">
+  <link rel="stylesheet" href="css/frlg-map.css">
   <script src="js/protect.js" defer></script>
   <script src="js/data/battle_registry.js"></script>
   <script src="js/data/pkm_champions_data.js"></script>
   <script src="js/data/moves_champions_data.js"></script>
   <script src="js/data/items_champions_data.js"></script>
   <script src="js/data/pkm_champions_builds.js"></script>
+  <script src="js/data/frlg_encounters.js"></script>
   <!-- 可选：运行 scripts/browser-scrape-teams.js 后放入此目录 -->
   <script>/* pkm_champions_teams.js 可选 — 运行 scripts/browser-scrape-teams.js 后放入 js/data/ */</script>
 </head>
@@ -536,6 +538,8 @@
       <button class="stab" onclick="switchSeriesTab(this,'explore')">探索</button>
       <button class="stab" onclick="switchSeriesTab(this,'hunting')">狩猎</button>
       <button class="stab" onclick="switchSeriesTab(this,'catches')">图鉴录入</button>
+      <button class="stab frlg-map-tab" id="stab-btn-frlgmap"
+        onclick="switchSeriesTab(this,'frlgmap')" style="display:none">🗺 地图</button>
     </div>
 
     <!-- 概览 -->
@@ -743,6 +747,24 @@
         <div id="catch-list" style="margin-top:10px"></div>
       </div>
     </div>
+
+    <!-- 火红/叶绿 交互地图 -->
+    <div class="stab-panel" id="stab-frlgmap">
+      <div class="frlg-map-root">
+        <div class="frlg-map-breadcrumb" id="frlg-breadcrumb"></div>
+        <div class="frlg-map-viewer" id="frlg-map-viewer">
+          <div class="frlg-map-loading" id="frlg-map-loading" style="display:none">加载中…</div>
+        </div>
+        <div class="frlg-enc-panel" id="frlg-enc-panel" style="display:none">
+          <div class="frlg-enc-header">
+            <span class="frlg-enc-title" id="frlg-enc-title"></span>
+            <button class="btn btn-sm" onclick="document.getElementById('frlg-enc-panel').style.display='none'">✕</button>
+          </div>
+          <div class="frlg-enc-methods" id="frlg-enc-methods"></div>
+          <div class="frlg-enc-grid" id="frlg-enc-grid"></div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 <!-- 沉浸式狩猎界面 -->
@@ -915,6 +937,7 @@
 <script src="js/discover.js"></script>
 <script src="js/timeline.js"></script>
 <script src="js/pokemon.js"></script>
+<script src="js/frlg-map.js"></script>
 <script src="js/media.js"></script>
 <script src="js/moments.js"></script>
 <script src="js/play.js"></script>

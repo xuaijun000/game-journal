@@ -626,6 +626,7 @@ function openSeriesDetail(el){
   }
   renderQuickNotes(seriesId);
   initSeriesMap(seriesId);
+  initFRLGMapTab(seriesId);
   // 清理上一个版本的冒险日记，避免串号
   const _diary=document.getElementById('adventure-diary');if(_diary){_diary.style.display='none';_diary.textContent='';}
   const _diaryBtn=document.getElementById('gen-diary-btn');if(_diaryBtn){_diaryBtn.disabled=false;_diaryBtn.textContent='✦ AI 润色成冒险日记';}
@@ -878,6 +879,7 @@ function switchSeriesTab(el,tab){
   if(tab==='training')initTrainTab(_curSid);
   if(tab==='hunting')initHuntTab(_curSid);
   if(tab==='catches'){initNatureSelect('catch-nature');loadCatchList(_curSid);}
+  if(tab==='frlgmap')frlgInitView('kanto');
   if(tab==='explore'){document.getElementById('explore-result').style.display='none';const sr=document.getElementById('explore-save-row');if(sr)sr.style.display='none';loadExploreHistory(_curSid);}
 }
 
