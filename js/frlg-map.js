@@ -104,6 +104,8 @@ let _frlgCurrentEncounters = [];
 let _frlgCurrentLocationKey = '';
 const _frlgPkmCache = {};
 let _frlgCalibMode = false;
+const _frlgCalibOverrides = {};
+let _frlgDragging = false;
 
 function initFRLGMapTab(seriesId) {
   const btn = document.getElementById('stab-btn-frlgmap');
@@ -172,12 +174,17 @@ function frlgInitView(view) {
 function frlgRenderHotspots(viewer, hotspots) {
   hotspots.forEach(hotspot => {
     const el = document.createElement('div');
-    el.className = 'frlg-hotspot' + (hotspot.highlight ? ' highlight' : '');
+    const override = _frlgCalibOverrides[hotspot.label];
+    const x = override?.x ?? hotspot.x;
+    const y = override?.y ?? hotspot.y;
+    el.className = 'frlg-hotspot' + (hotspot.highlight ? ' highlight' : '') + (_frlgCalibMode ? ' draggable' : '');
     el.dataset.key = hotspot.key || hotspot.action || hotspot.label;
-    el.style.left = hotspot.x + '%';
-    el.style.top = hotspot.y + '%';
+    el.dataset.label = hotspot.label;
+    el.style.left = x + '%';
+    el.style.top = y + '%';
     el.innerHTML = `<div class="frlg-hotspot-dot"></div><div class="frlg-hotspot-label">${frlgEsc(hotspot.label)}</div>`;
     el.onclick = () => {
+      if (_frlgDragging) return;
       document.querySelectorAll('.frlg-hotspot.active').forEach(node => node.classList.remove('active'));
       frlgTriggerRipple(el);
       if (hotspot.action) {
@@ -189,6 +196,7 @@ function frlgRenderHotspots(viewer, hotspots) {
       const resolved = frlgResolveLocationKey(hotspot.key);
       frlgShowEncounters(resolved || hotspot.key, hotspot.label);
     };
+    if (_frlgCalibMode) frlgBindHotspotDrag(el, hotspot);
     viewer.appendChild(el);
   });
 }
@@ -423,6 +431,7 @@ function frlgSetupPanel() {
 function frlgRenderCalibButton() {
   const breadcrumb = document.getElementById('frlg-breadcrumb');
   if (!breadcrumb) return;
+  breadcrumb.querySelectorAll('.frlg-calib-btn,.frlg-export-btn').forEach(node => node.remove());
   const btn = document.createElement('button');
   btn.className = 'frlg-calib-btn' + (_frlgCalibMode ? ' on' : '');
   btn.textContent = _frlgCalibMode ? '校准模式开' : '校准模式关';
@@ -432,6 +441,13 @@ function frlgRenderCalibButton() {
     frlgApplyCalibrationMode();
   };
   breadcrumb.appendChild(btn);
+  if (_frlgCalibMode) {
+    const exportBtn = document.createElement('button');
+    exportBtn.className = 'frlg-export-btn';
+    exportBtn.textContent = '导出坐标';
+    exportBtn.onclick = () => frlgExportCurrentHotspots();
+    breadcrumb.appendChild(exportBtn);
+  }
 }
 
 function frlgApplyCalibrationMode() {
@@ -439,8 +455,17 @@ function frlgApplyCalibrationMode() {
   if (!viewer) return;
   viewer.classList.toggle('calib-mode', _frlgCalibMode);
   if (_frlgCalibMode) {
+    viewer.querySelectorAll('.frlg-hotspot').forEach(el => el.classList.add('draggable'));
+    viewer.querySelectorAll('.frlg-hotspot').forEach(el => {
+      const hotspot = frlgGetCurrentViewHotspots().find(item => item.label === el.dataset.label);
+      if (hotspot) frlgBindHotspotDrag(el, hotspot);
+    });
     frlgBindCalibEvents();
   } else {
+    viewer.querySelectorAll('.frlg-hotspot').forEach(el => {
+      el.classList.remove('draggable');
+      el.classList.remove('dragging');
+    });
     frlgResetCalibrationSurface();
   }
 }
@@ -525,6 +550,16 @@ function frlgAppendCalibLog(pos) {
   if (navigator.clipboard?.writeText) navigator.clipboard.writeText(line).catch(() => {});
 }
 
+function frlgAppendCalibText(text) {
+  const log = document.getElementById('frlg-calib-log');
+  if (!log) return;
+  log.classList.add('visible');
+  const row = document.createElement('div');
+  row.textContent = text;
+  log.appendChild(row);
+  log.scrollTop = log.scrollHeight;
+}
+
 function frlgResetCalibrationSurface() {
   const viewer = document.getElementById('frlg-map-viewer');
   if (!viewer) return;
@@ -539,4 +574,130 @@ function frlgResetCalibrationSurface() {
     const cursor = document.getElementById('frlg-calib-cursor');
     if (cursor) cursor.style.display = 'none';
   }
+}
+
+function frlgBindHotspotDrag(el, hotspot) {
+  if (el.dataset.calibBound === '1') return;
+  el.dataset.calibBound = '1';
+
+  const startDrag = startEvent => {
+    if (!_frlgCalibMode) return;
+    if (startEvent.cancelable) startEvent.preventDefault();
+    startEvent.stopPropagation();
+
+    const viewer = document.getElementById('frlg-map-viewer');
+    const img = viewer?.querySelector('img');
+    if (!viewer || !img) return;
+
+    const startPoint = frlgGetPointerPoint(startEvent);
+    const startClientX = startPoint.clientX;
+    const startClientY = startPoint.clientY;
+    let moved = false;
+
+    el.classList.add('dragging');
+
+    const moveHandler = moveEvent => {
+      if (!_frlgCalibMode) return;
+      const point = frlgGetPointerPoint(moveEvent);
+      const dx = point.clientX - startClientX;
+      const dy = point.clientY - startClientY;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) moved = true;
+      if (moveEvent.cancelable) moveEvent.preventDefault();
+
+      const rect = img.getBoundingClientRect();
+      const rawX = ((point.clientX - rect.left) / rect.width) * 100;
+      const rawY = ((point.clientY - rect.top) / rect.height) * 100;
+      const x = frlgClamp(Number(rawX.toFixed(1)), 1, 99);
+      const y = frlgClamp(Number(rawY.toFixed(1)), 1, 99);
+      el.style.left = x + '%';
+      el.style.top = y + '%';
+    };
+
+    const endHandler = endEvent => {
+      document.removeEventListener('mousemove', moveHandler);
+      document.removeEventListener('mouseup', endHandler);
+      document.removeEventListener('touchmove', moveHandler);
+      document.removeEventListener('touchend', endHandler);
+      document.removeEventListener('touchcancel', endHandler);
+      el.classList.remove('dragging');
+
+      if (!moved) return;
+      if (endEvent.cancelable) endEvent.preventDefault();
+      const x = Number(parseFloat(el.style.left).toFixed(1));
+      const y = Number(parseFloat(el.style.top).toFixed(1));
+      _frlgCalibOverrides[hotspot.label] = { x, y };
+      _frlgDragging = true;
+      frlgAppendCalibText(`已移动: ${hotspot.label}  x:${x} y:${y}`);
+      setTimeout(() => { _frlgDragging = false; }, 100);
+    };
+
+    document.addEventListener('mousemove', moveHandler);
+    document.addEventListener('mouseup', endHandler);
+    document.addEventListener('touchmove', moveHandler, { passive: false });
+    document.addEventListener('touchend', endHandler);
+    document.addEventListener('touchcancel', endHandler);
+  };
+
+  el.addEventListener('mousedown', startDrag);
+  el.addEventListener('touchstart', startDrag, { passive: false });
+}
+
+function frlgGetPointerPoint(event) {
+  return event.touches?.[0] || event.changedTouches?.[0] || event;
+}
+
+function frlgClamp(n, min, max) {
+  return Math.min(max, Math.max(min, n));
+}
+
+function frlgGetCurrentViewHotspots() {
+  if (frlgView === 'kanto') return KANTO_HOTSPOTS;
+  if (frlgView === 'sevii') return SEVII_HOTSPOTS;
+  if (frlgView.startsWith('island-')) {
+    const n = Number(frlgView.split('-')[1]);
+    return ISLAND_HOTSPOTS[n] || [];
+  }
+  return [];
+}
+
+function frlgExportCurrentHotspots() {
+  const hotspots = frlgGetCurrentViewHotspots();
+  const meta = frlgGetCurrentViewExportMeta();
+  const text = `// ${meta.title}（校准后）
+const ${meta.varName} = [
+${hotspots.map(hotspot => '  ' + frlgFormatHotspotForExport(hotspot)).join('\n')}
+];`;
+  if (navigator.clipboard?.writeText) navigator.clipboard.writeText(text).catch(() => {});
+  frlgAppendCalibText('✓ 已复制到剪贴板');
+}
+
+function frlgGetCurrentViewExportMeta() {
+  if (frlgView === 'kanto') return { title: '关都热点', varName: 'KANTO_HOTSPOTS' };
+  if (frlgView === 'sevii') return { title: '七岛总览热点', varName: 'SEVII_HOTSPOTS' };
+  if (frlgView.startsWith('island-')) {
+    const n = Number(frlgView.split('-')[1]);
+    return { title: `第${frlgIslandCn(n)}岛热点`, varName: `ISLAND_HOTSPOTS[${n}]` };
+  }
+  return { title: '热点', varName: 'HOTSPOTS' };
+}
+
+function frlgFormatHotspotForExport(hotspot) {
+  const override = _frlgCalibOverrides[hotspot.label];
+  const x = override?.x ?? hotspot.x;
+  const y = override?.y ?? hotspot.y;
+  const parts = [
+    `label:'${frlgJsStr(hotspot.label)}'`,
+    `x:${x}`,
+    `y:${y}`,
+  ];
+  if (Object.prototype.hasOwnProperty.call(hotspot, 'key')) {
+    parts.push(hotspot.key === null ? 'key:null' : `key:'${frlgJsStr(hotspot.key)}'`);
+  }
+  if (hotspot.action) parts.push(`action:'${frlgJsStr(hotspot.action)}'`);
+  if (hotspot.highlight) parts.push('highlight:true');
+  return `{ ${parts.join(', ')} },`;
+}
+
+function frlgJsStr(s) {
+  return String(s ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 }

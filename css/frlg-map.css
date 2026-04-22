@@ -82,6 +82,9 @@
   z-index:3;
 }
 
+.frlg-hotspot.draggable{cursor:grab;}
+.frlg-hotspot.draggable:active{cursor:grabbing;}
+
 .frlg-hotspot-dot{
   position:relative;
   width:10px;
@@ -103,6 +106,11 @@
   background:transparent;
   border-color:rgba(248,113,113,.95);
   box-shadow:0 0 0 1px rgba(248,113,113,.28);
+}
+.frlg-map-viewer.calib-mode .frlg-hotspot.dragging .frlg-hotspot-dot{
+  background:rgba(251,146,60,.9);
+  box-shadow:0 0 10px rgba(251,146,60,.7);
+  transform:scale(1.5);
 }
 
 .frlg-hotspot-label{
@@ -327,6 +335,19 @@
   border-color:var(--warn);
   color:var(--warn);
 }
+
+.frlg-export-btn{
+  font-size:.6rem;
+  font-family:'DM Mono',monospace;
+  padding:2px 8px;
+  border-radius:4px;
+  cursor:pointer;
+  border:1px solid rgba(96,165,250,.4);
+  color:var(--acc);
+  background:rgba(96,165,250,.08);
+}
+
+.frlg-export-btn:hover{background:rgba(96,165,250,.15);}
 
 .frlg-calib-cursor{
   position:fixed;
