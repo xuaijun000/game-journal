@@ -451,23 +451,9 @@ function frlgRenderCalibButton() {
 }
 
 function frlgApplyCalibrationMode() {
-  const viewer = document.getElementById('frlg-map-viewer');
-  if (!viewer) return;
-  viewer.classList.toggle('calib-mode', _frlgCalibMode);
-  if (_frlgCalibMode) {
-    viewer.querySelectorAll('.frlg-hotspot').forEach(el => el.classList.add('draggable'));
-    viewer.querySelectorAll('.frlg-hotspot').forEach(el => {
-      const hotspot = frlgGetCurrentViewHotspots().find(item => item.label === el.dataset.label);
-      if (hotspot) frlgBindHotspotDrag(el, hotspot);
-    });
-    frlgBindCalibEvents();
-  } else {
-    viewer.querySelectorAll('.frlg-hotspot').forEach(el => {
-      el.classList.remove('draggable');
-      el.classList.remove('dragging');
-    });
-    frlgResetCalibrationSurface();
-  }
+  // 直接重渲染当前视图，让 frlgRenderHotspots 按最新的 _frlgCalibMode 状态
+  // 重新创建所有热点元素并绑定拖拽，避免事后补绑的时机问题
+  frlgInitView(frlgView);
 }
 
 function frlgBindCalibEvents() {
