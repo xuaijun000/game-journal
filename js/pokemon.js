@@ -2333,6 +2333,7 @@ function selectTrainPkm(slotIdx){
   const evPanel=document.getElementById('train-ev-panel');if(evPanel)evPanel.style.display='block';
   const aiSec=document.getElementById('train-ai-result');if(aiSec)aiSec.style.display='none';
   renderTrainEVs();
+  updateImmTrainPlaceholder();
 }
 
 function renderTrainEVs(){
@@ -2817,13 +2818,22 @@ ${ace?'训练师的王牌是'+ace+'。':''}${hours?'已经历了'+hours+'小时�
 
 let _immMode='hunt';
 let _immMapInited=false;
+function updateImmTrainPlaceholder(){
+  const placeholder=document.getElementById('imm-train-placeholder');
+  const hero=document.querySelector('#imm-panel-train .tim-hero');
+  const section=document.querySelector('#imm-panel-train .tim-grid-section');
+  const show=!_trainPkmData;
+  if(placeholder)placeholder.style.display=show?'block':'none';
+  if(hero)hero.style.display=show?'none':'';
+  if(section)section.style.display=show?'none':'';
+}
 
 function setImmMode(mode){
-  if(mode==='train'&&!_trainPkmData){
+  if(false){
     showToast('请先在「训练」tab 选择训练对象');
     return;
   }
-  if(mode==='train'&&!_trainLocPkm.length){
+  if(false){
     showToast('请先在「训练」tab 加载刷练地点分布');
     return;
   }
@@ -2844,6 +2854,8 @@ function setImmMode(mode){
     trainBtn.style.color=_immMode==='train'?'#fff':'var(--t2)';
     trainBtn.style.border=_immMode==='train'?'none':'1px solid var(--b)';
   }
+  updateImmTrainPlaceholder();
+  if(_immMode==='train'&&!_trainPkmData)toggleImmPanel('party');
 }
 
 function toggleImmPanel(name){
@@ -3010,6 +3022,7 @@ function selectTrainPkm(slotIdx){
   const evPanel=document.getElementById('train-ev-panel');if(evPanel)evPanel.style.display='block';
   const aiSec=document.getElementById('train-ai-result');if(aiSec)aiSec.style.display='none';
   renderTrainEVs();
+  updateImmTrainPlaceholder();
 }
 
 function huntEncounterFromGrid(idx){
@@ -3110,6 +3123,8 @@ async function openImm(mode,...args){
   const immSidForMap=mode==='hunt'?_immSid:_trainSid;
   const minimap=document.getElementById('imm-minimap');
   if(minimap)minimap.style.display=immSidForMap==='firered-leafgreen'?'block':'none';
+  const fabs=document.getElementById('imm-fabs');
+  if(fabs)fabs.style.display='flex';
   ov.style.display='flex';
   ov.classList.add('on');
   document.body.style.overflow='hidden';
@@ -3137,6 +3152,8 @@ function closeImm(){
 
 function openImmMapPicker(){
   const full=document.getElementById('imm-map-full');if(!full)return;
+  const fabs=document.getElementById('imm-fabs');
+  if(fabs)fabs.style.display='none';
   full.style.display='flex';
   if(!_immMapInited){
     _immMapInited=true;
@@ -3150,9 +3167,13 @@ function openImmMapPicker(){
       if(_immMode==='hunt'){
         selectHuntLoc(zhName);
         if(!_huntDistCache[_huntSelLoc])loadHuntDistribution();
+        const list=lsGet('pkm_hunt_'+_immSid)||[];
+        const t=list[_immIdx];
+        if(t)renderHuntAreaGrid(t);
       }else{
         selectTrainLoc(zhName);
         if(!_trainDistCache[_trainSelLoc])loadTrainDistribution();
+        renderTrainImmGrid();
       }
       updateImmMinimap(zhName);
     });
@@ -3161,6 +3182,8 @@ function openImmMapPicker(){
 
 function closeImmMapFull(){
   const full=document.getElementById('imm-map-full');if(full)full.style.display='none';
+  const fabs=document.getElementById('imm-fabs');
+  if(fabs)fabs.style.display='flex';
   if(typeof frlgClearSelectMode==='function')frlgClearSelectMode();
 }
 
