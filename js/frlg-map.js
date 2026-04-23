@@ -215,10 +215,6 @@ function frlgRenderRegions(viewer, regions) {
     el.style.height = region.h + '%';
     el.style.cursor = 'pointer';
     el.style.background = 'transparent';
-    el.style.border = '2px dashed rgba(255, 99, 71, 0.9)';
-    el.style.boxSizing = 'border-box';
-    el.style.borderRadius = '8px';
-    el.style.zIndex = '2';
     if (region.label) el.setAttribute('aria-label', region.label);
     el.onclick = () => {
       if (region.action) {
