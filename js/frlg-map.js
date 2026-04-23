@@ -1,3 +1,7 @@
+let _frlgSelectCb = null;
+function frlgSetSelectMode(cb){ _frlgSelectCb = cb; }
+function frlgClearSelectMode(){ _frlgSelectCb = null; }
+
 const FRLG_IMG = {
   kanto : 'css/firered-and-leafgreen-versions-map/火红叶绿全局地图.png',
   sevii : 'css/firered-and-leafgreen-versions-map/七岛缩略图.png',
@@ -231,6 +235,10 @@ function frlgRenderRegions(viewer, regions) {
 }
 
 async function frlgShowEncounters(locationKey, locationLabel) {
+  if (_frlgSelectCb) {
+    _frlgSelectCb(locationKey, locationLabel);
+    return;
+  }
   const panel = document.getElementById('frlg-enc-panel');
   const title = document.getElementById('frlg-enc-title');
   const methodsWrap = document.getElementById('frlg-enc-methods');

@@ -1364,7 +1364,7 @@ const SERIES_LOCATIONS={
   'crystal':['29号道路','31号道路','迷雾山','冰川小道','苹果树森林','喷火龙岛','胜利道路'],
   'ruby-sapphire':['101号道路','102号道路','幻影岛','天气研究所','流星瀑布','沙漠遗迹','胜利道路'],
   'emerald':['101号道路','102号道路','幻影岛','天气研究所','流星瀑布','胜利道路'],
-  'firered-leafgreen':['1号道路','2号道路','月亮山','赤铁岛','常盘森林','水流岛','胜利道路'],
+  'firered-leafgreen':['1号道路','2号道路','3号道路','4号道路','5号道路','6号道路','7号道路','8号道路','9号道路','10号道路','11号道路','12号道路','13号道路','14号道路','15号道路','16号道路','17号道路','18号道路','19号道路','20号道路','21号道路','22号道路','23号道路','24号道路','25号道路','常盘森林','月亮山','岩石隧道','宝可梦之塔','狩猎地带','水流岛','发电站','赤铁岛（宝可梦洋馆）','胜利道路','无名小径','埋火山','熄灭道路','断崖之岬','果实森林','冰落洞窟','水的迷宫','石碑之岛','遗迹山谷','花纹草丛','塞沃特峡谷','塔诺比遗迹'],
   'diamond-pearl':['201号道路','202号道路','永远森林','溺水城湖畔','崩落山道','挑战道路','大雪山'],
   'platinum':['201号道路','202号道路','永远森林','旅人道路','挑战道路','日暮地','大雪山'],
   'heartgold-soulsilver':['29号道路','迷雾山','冰川小道','苹果树森林','喷火龙岛','银岩山','胜利道路'],
@@ -1476,6 +1476,31 @@ async function loadHuntDistribution(){
   const btn=document.getElementById('hunt-dist-btn');
   const grid=document.getElementById('hunt-dist-grid');
   if(btn){btn.disabled=true;btn.textContent='获取中…';}
+  // FRLG：直接用本地 PokeAPI 静态数据
+  if(sid==='firered-leafgreen'&&typeof FRLG_ENCOUNTERS!=='undefined'){
+    const entry=Object.values(FRLG_ENCOUNTERS).find(e=>e.zh===loc);
+    if(entry&&entry.encounters?.length){
+      if(grid)grid.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:8px 0;font-family:\'DM Mono\',monospace">加载精灵数据…</div>';
+      const items=[];
+      for(const enc of [...entry.encounters].sort((a,b)=>b.rate-a.rate).slice(0,16)){
+        try{
+          const p=await fetchPkm(enc.slug);
+          const id=p.id;
+          const cnName=PKM_CN_TABLE[id]||p.name;
+          const img=p.sprites?.other?.['official-artwork']?.front_default||p.sprites?.front_default||'';
+          const evYields={};for(const st of(p.stats||[])){if(st.effort>0)evYields[st.stat.name]=st.effort;}
+          if(!Object.keys(evYields).length)evYields['hp']=1;
+          items.push({id,name:cnName,img,chance:enc.rate,rate:enc.rate>=30?'高':enc.rate>=10?'中':'低',evYields,official:true,versions:enc.versions,methods:enc.methods});
+        }catch(e){}
+      }
+      if(items.length){
+        _huntDistCache[cacheKey]=items;
+        renderHuntDist(items,true,'PokeAPI');
+        if(btn)btn.style.display='none';
+        return;
+      }
+    }
+  }
   if(grid)grid.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:8px 0;font-family:\'DM Mono\',monospace">正在从 52poke 读取「'+loc+'」精灵分布…</div>';
   // 优先 52poke
   const wiki52=await fetch52PokeLocDistribution(loc);
@@ -1525,11 +1550,11 @@ async function loadHuntDistribution(){
   }
 }
 
-function renderHuntDist(items,isOfficial){
+function renderHuntDist(items,isOfficial,srcLabel){
   _huntLocPkm=items;
   const grid=document.getElementById('hunt-dist-grid');if(!grid)return;
   const srcBadge=isOfficial
-    ?`<div class="dist-src-badge dist-src-official">52poke 官方</div>`
+    ?`<div class="dist-src-badge dist-src-official">${srcLabel||'52poke'} 官方</div>`
     :`<div class="dist-src-badge dist-src-ai">AI 参考</div>`;
   grid.innerHTML=srcBadge+items.map((it,i)=>{
     let rateHtml;
@@ -2398,6 +2423,31 @@ async function loadTrainDistribution(){
   const btn=document.getElementById('train-dist-btn');
   const grid=document.getElementById('train-dist-grid');
   if(btn){btn.disabled=true;btn.textContent='获取中…';}
+  // FRLG：直接用本地 PokeAPI 静态数据
+  if(sid==='firered-leafgreen'&&typeof FRLG_ENCOUNTERS!=='undefined'){
+    const entry=Object.values(FRLG_ENCOUNTERS).find(e=>e.zh===loc);
+    if(entry&&entry.encounters?.length){
+      if(grid)grid.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:8px 0;font-family:\'DM Mono\',monospace">加载精灵数据…</div>';
+      const items=[];
+      for(const enc of [...entry.encounters].sort((a,b)=>b.rate-a.rate).slice(0,16)){
+        try{
+          const p=await fetchPkm(enc.slug);
+          const id=p.id;
+          const cnName=PKM_CN_TABLE[id]||p.name;
+          const img=p.sprites?.front_default||'';
+          const evYields={};for(const st of(p.stats||[])){if(st.effort>0)evYields[st.stat.name]=st.effort;}
+          if(!Object.keys(evYields).length)evYields['hp']=1;
+          items.push({id,name:cnName,img,evYields,chance:enc.rate,rate:enc.rate>=30?'高':enc.rate>=10?'中':'低',official:true,versions:enc.versions,methods:enc.methods});
+        }catch(e){}
+      }
+      if(items.length){
+        _trainDistCache[cacheKey]=items;
+        renderTrainDist(items,true,'PokeAPI');
+        if(btn)btn.style.display='none';
+        return;
+      }
+    }
+  }
   if(grid)grid.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:8px 0;font-family:\'DM Mono\',monospace">正在从 52poke 读取「'+loc+'」精灵分布…</div>';
   // 优先 52poke
   const wiki52t=await fetch52PokeLocDistribution(loc);
@@ -2567,11 +2617,11 @@ function stopTrainImmParticles(){
   const c=document.getElementById('train-imm-particles');if(c)c.innerHTML='';
 }
 
-function renderTrainDist(items,isOfficial){
+function renderTrainDist(items,isOfficial,srcLabel){
   _trainLocPkm=items;
   const grid=document.getElementById('train-dist-grid');if(!grid)return;
   const srcBadge=isOfficial
-    ?`<div class="dist-src-badge dist-src-official">52poke 官方 · 精灵分布</div>`
+    ?`<div class="dist-src-badge dist-src-official">${srcLabel||'52poke'} 官方 · 精灵分布</div>`
     :`<div class="dist-src-badge dist-src-ai">AI 参考 · 努力值来自 PokéAPI</div>`;
   grid.innerHTML=srcBadge+items.map((it,i)=>{
     const evStr=Object.entries(it.evYields||{}).map(([k,v])=>{
@@ -2797,10 +2847,10 @@ function setImmMode(mode){
 }
 
 function toggleImmPanel(name){
+  if(name==='map'){openImmMapPicker();return;}
   const panelMap={
     party:document.getElementById('imm-sub-party'),
     catches:document.getElementById('imm-sub-catches'),
-    map:document.getElementById('imm-sub-map'),
     explore:document.getElementById('imm-sub-explore'),
   };
   const target=panelMap[name];
@@ -2809,7 +2859,7 @@ function toggleImmPanel(name){
     if(panel){panel.style.display='none';panel.dataset.open='0';}
   });
   if(!target||wasOpen)return;
-  target.style.display=name==='map'?'flex':'block';
+  target.style.display='block';
   target.dataset.open='1';
   if(name==='party'){
     renderPartySlots(_curSid);
@@ -2832,10 +2882,6 @@ function toggleImmPanel(name){
     if(result)result.style.display='none';
     if(saveRow)saveRow.style.display='none';
     loadExploreHistory(_curSid);
-  }
-  if(name==='map'&&!_immMapInited){
-    _immMapInited=true;
-    frlgInitView('kanto');
   }
 }
 
@@ -3056,10 +3102,14 @@ async function openImm(mode,...args){
 
   setImmMode(mode);
   renderImmParty();
-  ['imm-sub-catches','imm-sub-map','imm-sub-explore'].forEach(id=>{
+  ['imm-sub-catches','imm-sub-explore'].forEach(id=>{
     const el=document.getElementById(id);
     if(el){el.style.display='none';el.dataset.open='0';}
   });
+  // minimap：仅 FRLG 系列显示
+  const immSidForMap=mode==='hunt'?_immSid:_trainSid;
+  const minimap=document.getElementById('imm-minimap');
+  if(minimap)minimap.style.display=immSidForMap==='firered-leafgreen'?'block':'none';
   ov.style.display='flex';
   ov.classList.add('on');
   document.body.style.overflow='hidden';
@@ -3071,15 +3121,52 @@ async function openImm(mode,...args){
 function closeImm(){
   stopHuntParticles();
   stopTrainImmParticles();
+  closeImmMapFull();
   const ov=document.getElementById('ov-imm');if(ov){ov.classList.remove('on');ov.style.display='none';}
-  ['imm-sub-catches','imm-sub-map','imm-sub-explore'].forEach(id=>{
+  ['imm-sub-catches','imm-sub-explore'].forEach(id=>{
     const el=document.getElementById(id);
     if(el){el.style.display='none';el.dataset.open='0';}
   });
+  const minimap=document.getElementById('imm-minimap');
+  if(minimap)minimap.style.display='none';
   document.body.style.overflow='';
   const encPanel=document.getElementById('frlg-enc-panel');if(encPanel){encPanel.classList.remove('visible');encPanel.style.display='none';}
   if(_immMode==='train')renderTrainEVs();
   _huntActionsLocked=false;
+}
+
+function openImmMapPicker(){
+  const full=document.getElementById('imm-map-full');if(!full)return;
+  full.style.display='flex';
+  if(!_immMapInited){
+    _immMapInited=true;
+    if(typeof frlgInitView==='function')frlgInitView('kanto');
+  }
+  if(typeof frlgSetSelectMode==='function'){
+    frlgSetSelectMode(function(key,label){
+      const entry=typeof FRLG_ENCOUNTERS!=='undefined'?FRLG_ENCOUNTERS[key]:null;
+      const zhName=entry?.zh||label;
+      closeImmMapFull();
+      if(_immMode==='hunt'){
+        selectHuntLoc(zhName);
+        if(!_huntDistCache[_huntSelLoc])loadHuntDistribution();
+      }else{
+        selectTrainLoc(zhName);
+        if(!_trainDistCache[_trainSelLoc])loadTrainDistribution();
+      }
+      updateImmMinimap(zhName);
+    });
+  }
+}
+
+function closeImmMapFull(){
+  const full=document.getElementById('imm-map-full');if(full)full.style.display='none';
+  if(typeof frlgClearSelectMode==='function')frlgClearSelectMode();
+}
+
+function updateImmMinimap(loc){
+  const lbl=document.getElementById('imm-minimap-loc');
+  if(lbl)lbl.textContent=loc?'📍 '+loc:'🗺 点击选地点';
 }
 
 async function openImmHunt(sid,idx){

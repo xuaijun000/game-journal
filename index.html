@@ -775,10 +775,18 @@
     </div>
     <div id="catch-list" style="margin-top:10px"></div>
   </div>
-  <div id="imm-sub-map" style="display:none;height:60vh;background:var(--bg2);border-top:1px solid var(--b);position:relative;z-index:3;flex-direction:column">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-bottom:1px solid var(--b);flex-shrink:0">
-      <span style="font-size:.78rem;color:var(--t2);font-family:'DM Mono',monospace">🗺 野外分布地图</span>
-      <button class="btn btn-sm" onclick="toggleImmPanel('map')">✕</button>
+  <!-- 小地图 widget（仅 FRLG 系列显示） -->
+  <div id="imm-minimap" onclick="openImmMapPicker()" style="display:none;position:absolute;right:10px;bottom:56px;z-index:10;cursor:pointer;border-radius:8px;overflow:hidden;box-shadow:0 2px 14px rgba(0,0,0,.5);border:1.5px solid var(--b);width:110px">
+    <img src="css/firered-and-leafgreen-versions-map/火红叶绿全局地图.png" style="width:110px;display:block;opacity:.9">
+    <div id="imm-minimap-loc" style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.7);color:#e2e8f0;font-size:.52rem;padding:3px 5px;font-family:'DM Mono',monospace;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+      🗺 点击选地点
+    </div>
+  </div>
+  <!-- 全屏地图选点层 -->
+  <div id="imm-map-full" style="display:none;position:absolute;inset:0;z-index:50;background:var(--bg);flex-direction:column">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--b);flex-shrink:0">
+      <span style="font-size:.82rem;color:var(--t1);font-family:'DM Mono',monospace">📍 选择地点</span>
+      <button class="btn btn-sm" onclick="closeImmMapFull()">✕ 取消</button>
     </div>
     <div style="flex:1;overflow:auto;position:relative">
       <div class="frlg-map-root">
