@@ -916,9 +916,8 @@ function delQuickNote(sid,idx){
    👥 队伍追踪
    ============================ */
 function renderPartySlots(sid){
-  const wrap=document.getElementById('party-slots');if(!wrap)return;
   let party=lsGet('pkm_party_'+sid)||[];if(!Array.isArray(party))party=[];while(party.length<6)party.push(null);
-  wrap.innerHTML=party.map((p,i)=>{
+  const html=(searchId)=>party.map((p,i)=>{
     if(p){
       return`<div class="party-slot filled">
         <button class="party-slot-del" onclick="removeFromParty('${sid}',${i});event.stopPropagation()">✕</button>
@@ -929,11 +928,15 @@ function renderPartySlots(sid){
         <button class="party-speak-btn" onclick="speakPartyMember('${sid}',${i});event.stopPropagation()">💬 说话</button>
       </div>`;
     }
-    return`<div class="party-slot" onclick="focusPartySearch()">
+    return`<div class="party-slot" onclick="document.getElementById('${searchId}')?.focus()">
       <div class="party-slot-empty-icon">+</div>
       <div class="party-slot-empty-lbl">空位</div>
     </div>`;
   }).join('');
+  const wrap=document.getElementById('party-slots');
+  if(wrap)wrap.innerHTML=html('party-search-inp');
+  const immWrap=document.getElementById('imm-party-slots');
+  if(immWrap)immWrap.innerHTML=html('imm-party-search-inp');
 }
 function focusPartySearch(){document.getElementById('party-search-inp')?.focus();}
 function removeFromParty(sid,idx){
@@ -944,7 +947,13 @@ let _partySearchT=null;
 function searchPartyPkm(v){
   clearTimeout(_partySearchT);
   const res=document.getElementById('party-search-results');
-  if(!v.trim()){res.classList.remove('open');return;}
+  if(!v.trim()){if(res)res.classList.remove('open');return;}
+  _partySearchT=setTimeout(()=>doInlineSearch(v,res,'party'),400);
+}
+function searchImmPartyPkm(v){
+  clearTimeout(_partySearchT);
+  const res=document.getElementById('imm-party-search-results');
+  if(!v.trim()){if(res)res.classList.remove('open');return;}
   _partySearchT=setTimeout(()=>doInlineSearch(v,res,'party'),400);
 }
 function addToParty(sid,pkm){
@@ -955,9 +964,10 @@ function addToParty(sid,pkm){
   const lv=prompt('当前等级？（回车跳过）','')||'';
   party[emptyIdx]={pkmId:pkm.id,name:pkm.name,img:pkm.img,nick,lv};
   lsSet('pkm_party_'+sid,party);
-  document.getElementById('party-search-inp').value='';
-  document.getElementById('party-search-results').classList.remove('open');
+  ['party-search-inp','imm-party-search-inp'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['party-search-results','imm-party-search-results'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('open');});
   renderPartySlots(sid);
+  renderImmParty();
   syncSeriesField(sid,'party',party);
 }
 
@@ -2799,6 +2809,14 @@ function toggleImmPanel(name){
   target.dataset.open='1';
   if(name==='party'){
     renderPartySlots(_curSid);
+    let party=lsGet('pkm_party_'+_curSid)||[];
+    if(!Array.isArray(party))party=[];
+    while(party.length<6)party.push(null);
+    const slots=document.getElementById('imm-party-slots');
+    if(slots)slots.innerHTML=party.map(p=>{
+      if(!p)return`<div style="display:inline-flex;flex-direction:column;align-items:center;gap:2px;margin:4px"><div style="width:48px;height:48px;border-radius:6px;background:var(--bg3);border:1px solid var(--b)"></div></div>`;
+      return`<div style="display:inline-flex;flex-direction:column;align-items:center;gap:2px;margin:4px"><img src="${p.img||''}" style="width:48px;height:48px;border-radius:6px;background:var(--bg3);border:1px solid var(--b);object-fit:contain;padding:2px;box-sizing:border-box" onerror="this.style.opacity='.35'"><div style="font-size:.58rem;color:var(--t2);max-width:52px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.nick||p.name||'')}</div></div>`;
+    }).join('');
   }
   if(name==='catches'){
     initNatureSelect('catch-nature');

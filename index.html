@@ -598,8 +598,17 @@
     <!-- 训练 -->
     <div class="stab-panel" id="stab-training">
       <div class="series-body">
+        <!-- 队伍管理 -->
+        <div class="hunt-section-lbl">👥 队伍</div>
+        <div class="party-slots" id="party-slots"></div>
+        <div id="party-speak-result" class="party-speak-result" style="display:none"></div>
+        <div style="margin-top:8px;position:relative">
+          <input id="party-search-inp" class="series-inp" placeholder="搜索宝可梦加入队伍…"
+            oninput="searchPartyPkm(this.value)" autocomplete="off">
+          <div id="party-search-results" class="pkm-inline-results"></div>
+        </div>
         <!-- 训练对象 -->
-        <div class="hunt-section-lbl">🎯 训练对象（从队伍中选择）</div>
+        <div class="hunt-section-lbl" style="margin-top:14px">🎯 训练对象（从队伍中选择）</div>
         <div id="train-pkm-slots" class="train-pkm-slots"></div>
         <!-- EV 面板 -->
         <div id="train-ev-panel" style="display:none">
@@ -828,12 +837,11 @@
       <span style="font-size:.78rem;color:var(--t2);font-family:'DM Mono',monospace">👥 队伍</span>
       <button class="btn btn-sm" onclick="toggleImmPanel('party')">✕</button>
     </div>
-    <div class="party-slots" id="party-slots"></div>
-    <div id="party-speak-result" class="party-speak-result" style="display:none"></div>
+    <div class="party-slots" id="imm-party-slots"></div>
     <div style="margin-top:10px;position:relative">
-      <input id="party-search-inp" class="series-inp" placeholder="搜索宝可梦加入队伍…"
-        oninput="searchPartyPkm(this.value)" autocomplete="off">
-      <div id="party-search-results" class="pkm-inline-results"></div>
+      <input id="imm-party-search-inp" class="series-inp" placeholder="搜索宝可梦加入队伍…"
+        oninput="searchImmPartyPkm(this.value)" autocomplete="off">
+      <div id="imm-party-search-results" class="pkm-inline-results"></div>
     </div>
   </div>
 
