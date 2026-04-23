@@ -1877,8 +1877,8 @@ function huntEncounterFromGrid(idx){
   if(isTarget){
     // 遭遇目标精灵！计数 + 直接进入捕获性格选择
     _huntActionsLocked=true;
-    const ov=document.getElementById('ov-hunt-imm');
-    const fl=document.createElement('div');fl.className='hunt-screen-flash-red';ov.appendChild(fl);setTimeout(()=>fl.remove(),280);
+    const ov=document.getElementById('ov-imm');
+    const fl=document.createElement('div');fl.className='hunt-screen-flash-red';if(ov)ov.appendChild(fl);setTimeout(()=>fl.remove(),280);
     const sp=document.getElementById('hunt-imm-sprite');
     sp.classList.remove('fight-hit','run-away','shiny');void sp.offsetWidth;sp.classList.add('fight-hit');
     _huntCountUp();_checkShiny();
@@ -1930,8 +1930,8 @@ function huntActionFight(){
   if(_huntActionsLocked)return;
   _huntActionsLocked=true;
   // 红闪 + 精灵抖动
-  const ov=document.getElementById('ov-hunt-imm');
-  const fl=document.createElement('div');fl.className='hunt-screen-flash-red';ov.appendChild(fl);setTimeout(()=>fl.remove(),280);
+  const ov=document.getElementById('ov-imm');
+  const fl=document.createElement('div');fl.className='hunt-screen-flash-red';if(ov)ov.appendChild(fl);setTimeout(()=>fl.remove(),280);
   const sp=document.getElementById('hunt-imm-sprite');
   sp.classList.remove('fight-hit','enter-new');void sp.offsetWidth;sp.classList.add('fight-hit');
   _huntCountUp();
@@ -2615,7 +2615,7 @@ function typewriter(el,text,speed){
 
 /* ── 捕获光束 ── */
 function spawnCaptureBeam(){
-  const ov=document.getElementById('ov-hunt-imm');if(!ov)return;
+  const ov=document.getElementById('ov-imm');if(!ov)return;
   const beam=document.createElement('div');beam.className='capture-beam';
   ov.appendChild(beam);setTimeout(()=>beam.remove(),800);
 }
@@ -2755,6 +2755,14 @@ let _immMode='hunt';
 let _immMapInited=false;
 
 function setImmMode(mode){
+  if(mode==='train'&&!_trainPkmData){
+    showToast('请先在「训练」tab 选择训练对象');
+    return;
+  }
+  if(mode==='train'&&!_trainLocPkm.length){
+    showToast('请先在「训练」tab 加载刷练地点分布');
+    return;
+  }
   _immMode=mode==='train'?'train':'hunt';
   const huntPanel=document.getElementById('imm-panel-hunt');
   const trainPanel=document.getElementById('imm-panel-train');
@@ -2776,6 +2784,7 @@ function setImmMode(mode){
 
 function toggleImmPanel(name){
   const panelMap={
+    party:document.getElementById('imm-sub-party'),
     catches:document.getElementById('imm-sub-catches'),
     map:document.getElementById('imm-sub-map'),
     explore:document.getElementById('imm-sub-explore'),
@@ -2783,14 +2792,14 @@ function toggleImmPanel(name){
   const target=panelMap[name];
   const wasOpen=!!(target&&target.dataset.open==='1');
   Object.values(panelMap).forEach(panel=>{
-    if(panel){
-      panel.style.display='none';
-      panel.dataset.open='0';
-    }
+    if(panel){panel.style.display='none';panel.dataset.open='0';}
   });
   if(!target||wasOpen)return;
   target.style.display=name==='map'?'flex':'block';
   target.dataset.open='1';
+  if(name==='party'){
+    renderPartySlots(_curSid);
+  }
   if(name==='catches'){
     initNatureSelect('catch-nature');
     loadCatchList(_curSid);
@@ -3007,14 +3016,19 @@ async function openImm(mode,...args){
     if(!_trainPkmData){showToast('请先选择训练对象');return;}
     if(!_trainLocPkm.length){showToast('请先加载地点精灵分布');return;}
     const art=document.getElementById('train-imm-sprite');
-    if(art){art.removeAttribute('src');art.classList.remove('train-imm-beat');void art.offsetWidth;}
+    if(art){art.style.visibility='hidden';art.removeAttribute('src');art.classList.remove('train-imm-beat');void art.offsetWidth;}
     if(loc)loc.textContent='📍 '+(_trainSelLoc.split('|')[1]||'训练点');
     document.getElementById('train-imm-name').textContent=_trainPkmData.name+(_trainPkmData.nick?`「${_trainPkmData.nick}」`:'' );
     bg.style.backgroundImage='none';
     renderTrainImmGrid();
     renderTrainImmEVs();
     const hd=await _immResolvePkmArt(_trainPkmData);
-    if(art&&hd)art.src=hd;
+    if(art&&hd){
+      art.onerror=()=>{art.style.visibility='hidden';};
+      art.onload=()=>{art.style.visibility='visible';};
+      art.src=hd;
+    }
+    if(art&&!hd)art.style.visibility='hidden';
     if(hd)bg.style.backgroundImage=`url(${hd})`;
   }
 

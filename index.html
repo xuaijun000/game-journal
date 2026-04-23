@@ -820,7 +820,27 @@
     </div>
     <div id="explore-history" style="margin-top:14px"></div>
   </div>
+  <!-- 底部子面板：队伍 -->
+  <div id="imm-sub-party" style="display:none;max-height:55vh;overflow-y:auto;
+       background:var(--bg2);border-top:1px solid var(--b);padding:12px 14px;
+       position:relative;z-index:3">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <span style="font-size:.78rem;color:var(--t2);font-family:'DM Mono',monospace">👥 队伍</span>
+      <button class="btn btn-sm" onclick="toggleImmPanel('party')">✕</button>
+    </div>
+    <div class="party-slots" id="party-slots"></div>
+    <div id="party-speak-result" class="party-speak-result" style="display:none"></div>
+    <div style="margin-top:10px;position:relative">
+      <input id="party-search-inp" class="series-inp" placeholder="搜索宝可梦加入队伍…"
+        oninput="searchPartyPkm(this.value)" autocomplete="off">
+      <div id="party-search-results" class="pkm-inline-results"></div>
+    </div>
+  </div>
+
   <div id="imm-toolbar" style="display:flex;gap:0;border-top:1px solid var(--b);flex-shrink:0;position:relative;z-index:4">
+    <button onclick="toggleImmPanel('party')" style="flex:1;padding:10px 4px;font-size:.72rem;background:none;border:none;border-right:1px solid var(--b);color:var(--t2);cursor:pointer">
+      👥 队伍
+    </button>
     <button onclick="toggleImmPanel('catches')" style="flex:1;padding:10px 4px;font-size:.72rem;background:none;border:none;border-right:1px solid var(--b);color:var(--t2);cursor:pointer">
       📋 图鉴录入
     </button>
