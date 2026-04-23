@@ -2750,3 +2750,274 @@ ${ace?'训练师的王牌是'+ace+'。':''}${hours?'已经历了'+hours+'小时�
     typewriter(document.getElementById('gym-brief-text'),reply);
   }catch(e){panel.innerHTML=`<div class="gym-brief-hdr" style="color:var(--danger)">连接失败：${e.message}</div>`;}
 }
+
+let _immMode='hunt';
+let _immMapInited=false;
+
+function setImmMode(mode){
+  _immMode=mode==='train'?'train':'hunt';
+  const huntPanel=document.getElementById('imm-panel-hunt');
+  const trainPanel=document.getElementById('imm-panel-train');
+  const huntBtn=document.getElementById('imm-mode-hunt');
+  const trainBtn=document.getElementById('imm-mode-train');
+  if(huntPanel)huntPanel.style.display=_immMode==='hunt'?'block':'none';
+  if(trainPanel)trainPanel.style.display=_immMode==='train'?'block':'none';
+  if(huntBtn){
+    huntBtn.style.background=_immMode==='hunt'?'var(--acc)':'var(--bg3)';
+    huntBtn.style.color=_immMode==='hunt'?'#fff':'var(--t2)';
+    huntBtn.style.border=_immMode==='hunt'?'none':'1px solid var(--b)';
+  }
+  if(trainBtn){
+    trainBtn.style.background=_immMode==='train'?'var(--acc)':'var(--bg3)';
+    trainBtn.style.color=_immMode==='train'?'#fff':'var(--t2)';
+    trainBtn.style.border=_immMode==='train'?'none':'1px solid var(--b)';
+  }
+}
+
+function toggleImmPanel(name){
+  const panelMap={
+    catches:document.getElementById('imm-sub-catches'),
+    map:document.getElementById('imm-sub-map'),
+    explore:document.getElementById('imm-sub-explore'),
+  };
+  const target=panelMap[name];
+  const wasOpen=!!(target&&target.dataset.open==='1');
+  Object.values(panelMap).forEach(panel=>{
+    if(panel){
+      panel.style.display='none';
+      panel.dataset.open='0';
+    }
+  });
+  if(!target||wasOpen)return;
+  target.style.display=name==='map'?'flex':'block';
+  target.dataset.open='1';
+  if(name==='catches'){
+    initNatureSelect('catch-nature');
+    loadCatchList(_curSid);
+  }
+  if(name==='explore'){
+    const result=document.getElementById('explore-result');
+    const saveRow=document.getElementById('explore-save-row');
+    if(result)result.style.display='none';
+    if(saveRow)saveRow.style.display='none';
+    loadExploreHistory(_curSid);
+  }
+  if(name==='map'&&!_immMapInited){
+    _immMapInited=true;
+    frlgInitView('kanto');
+  }
+}
+
+function renderImmParty(){
+  const row=document.getElementById('imm-party-row');
+  if(!row)return;
+  let party=lsGet('pkm_party_'+_curSid)||[];
+  if(!Array.isArray(party))party=[];
+  while(party.length<6)party.push(null);
+  row.innerHTML=party.slice(0,6).map(p=>{
+    if(!p)return '<div style="width:24px;height:24px;border-radius:4px;background:var(--bg3);border:1px solid var(--b)"></div>';
+    return `<img src="${p.img||''}" alt="${esc(p.name||'party')}" title="${esc(p.name||'party')}" style="width:24px;height:24px;border-radius:4px;background:var(--bg3);border:1px solid var(--b);object-fit:contain;padding:2px;box-sizing:border-box" onerror="this.style.opacity='.35'">`;
+  }).join('');
+}
+
+function startHuntParticles(){
+  stopHuntParticles();
+  const container=document.getElementById('imm-particles');if(!container)return;
+  container.innerHTML='';
+  const colors=['rgba(200,144,64,.6)','rgba(90,184,154,.5)','rgba(255,255,255,.35)','rgba(160,100,220,.4)','rgba(90,140,220,.4)'];
+  let active=0;
+  _huntParticleTimer=setInterval(()=>{
+    if(active>40)return;
+    const el=document.createElement('div');el.className='hunt-particle';
+    const size=2+Math.random()*4;
+    const dur=3+Math.random()*4;
+    const dx=(Math.random()-0.5)*70;
+    el.style.cssText=`left:${Math.random()*100}%;bottom:${5+Math.random()*40}%;width:${size}px;height:${size}px;background:${colors[Math.floor(Math.random()*colors.length)]};--pdx:${dx}px;animation-duration:${dur}s;`;
+    container.appendChild(el);active++;
+    setTimeout(()=>{el.remove();active--;},dur*1000);
+  },180);
+}
+function stopHuntParticles(){
+  if(_huntParticleTimer){clearInterval(_huntParticleTimer);_huntParticleTimer=null;}
+  const c=document.getElementById('imm-particles');if(c)c.innerHTML='';
+}
+
+function startTrainImmParticles(){
+  stopTrainImmParticles();
+  const container=document.getElementById('imm-particles');if(!container)return;
+  container.innerHTML='';
+  const colors=['rgba(200,144,64,.5)','rgba(90,184,154,.4)','rgba(160,100,220,.35)','rgba(255,255,255,.25)'];
+  let active=0;
+  _trainImmParticleTimer=setInterval(()=>{
+    if(active>30)return;
+    const el=document.createElement('div');el.className='hunt-particle';
+    const size=2+Math.random()*3;const dur=3+Math.random()*4;const dx=(Math.random()-.5)*60;
+    el.style.cssText=`left:${Math.random()*100}%;bottom:${5+Math.random()*30}%;width:${size}px;height:${size}px;background:${colors[Math.floor(Math.random()*colors.length)]};--pdx:${dx}px;animation-duration:${dur}s;`;
+    container.appendChild(el);active++;setTimeout(()=>{el.remove();active--;},dur*1000);
+  },220);
+}
+function stopTrainImmParticles(){
+  if(_trainImmParticleTimer){clearInterval(_trainImmParticleTimer);_trainImmParticleTimer=null;}
+  const c=document.getElementById('imm-particles');if(c)c.innerHTML='';
+}
+
+function spawnCaptureBeam(){
+  const ov=document.getElementById('ov-imm');if(!ov)return;
+  const beam=document.createElement('div');beam.className='capture-beam';
+  ov.appendChild(beam);setTimeout(()=>beam.remove(),800);
+}
+
+async function saveCatch(){
+  if(!_catchSelectedPkm){showToast('Select a Pokemon first');return;}
+  const{data:{session}}=await db.auth.getSession();
+  if(!session?.user){showToast('Please log in first');return;}
+  const sid=_curSid;
+  const nature=document.getElementById('catch-nature')?.value||'serious';
+  const nick=document.getElementById('catch-nickname')?.value?.trim()||'';
+  const aiBox=document.getElementById('catch-ai-result');
+  const aiRec=(aiBox&&aiBox.style.display!=='none')?aiBox.textContent:'';
+  const saveBtn=document.getElementById('catch-save-btn') || document.querySelector('#ov-imm .btn-a');
+  if(saveBtn){saveBtn.disabled=true;saveBtn.textContent='Saving...';}
+  const{error}=await db.from('pkm_catch_log').insert({
+    user_id:session.user.id,series_id:sid,
+    pkm_id:_catchSelectedPkm.id,pkm_name:_catchSelectedPkm.name,
+    img:_catchSelectedPkm.img||null,nickname:nick||null,nature,
+    base_stats:_catchBaseStats||null,ev_yields:_catchEvYields||null,
+    ai_rec:aiRec||null
+  });
+  if(saveBtn){saveBtn.disabled=false;saveBtn.textContent='Save';}
+  if(error){showToast('Save failed: '+error.message);return;}
+  _catchSelectedPkm=null;_catchBaseStats=null;_catchEvYields=null;
+  document.getElementById('catch-search-inp').value='';
+  document.getElementById('catch-form-body').style.display='none';
+  if(aiBox)aiBox.style.display='none';
+  loadCatchList(sid);
+  renderActiveCatches();
+  showToast('Saved');
+}
+
+function huntEncounterFromGrid(idx){
+  if(_huntActionsLocked)return;
+  const list=lsGet('pkm_hunt_'+_immSid)||[];
+  const t=list[_immIdx];if(!t||t.done)return;
+  const pkm=_huntLocPkm[idx];if(!pkm)return;
+  const isTarget=pkm.id===t.pkmId||pkm.name===t.name;
+
+  if(isTarget){
+    _huntActionsLocked=true;
+    const ov=document.getElementById('ov-imm');
+    const fl=document.createElement('div');fl.className='hunt-screen-flash-red';ov.appendChild(fl);setTimeout(()=>fl.remove(),280);
+    const sp=document.getElementById('hunt-imm-sprite');
+    sp.classList.remove('fight-hit','run-away','shiny');void sp.offsetWidth;sp.classList.add('fight-hit');
+    _huntCountUp();_checkShiny();
+    setTimeout(()=>{sp.classList.remove('fight-hit');_huntActionsLocked=false;showHuntNaturePick();},420);
+  }else{
+    _huntActionsLocked=true;
+    const card=document.querySelectorAll('.hunt-area-card')[idx];
+    if(card){card.classList.add('hunt-area-flash');setTimeout(()=>card.classList.remove('hunt-area-flash'),350);}
+    showHuntNarration('Not target, it ran away...');
+    setTimeout(()=>{_huntActionsLocked=false;},380);
+  }
+}
+
+function huntActionFight(){
+  if(_huntActionsLocked)return;
+  _huntActionsLocked=true;
+  const ov=document.getElementById('ov-imm');
+  const fl=document.createElement('div');fl.className='hunt-screen-flash-red';ov.appendChild(fl);setTimeout(()=>fl.remove(),280);
+  const sp=document.getElementById('hunt-imm-sprite');
+  sp.classList.remove('fight-hit','enter-new');void sp.offsetWidth;sp.classList.add('fight-hit');
+  _huntCountUp();
+  _checkShiny();
+  setTimeout(()=>{sp.classList.remove('fight-hit');_huntActionsLocked=false;},420);
+}
+
+async function openImm(mode,...args){
+  const ov=document.getElementById('ov-imm');
+  const bg=document.getElementById('imm-bg');
+  const loc=document.getElementById('imm-loc');
+  if(!ov||!bg)return;
+
+  if(mode==='hunt'){
+    const[sid,idx]=args;
+    const list=lsGet('pkm_hunt_'+sid)||[];
+    const t=list[idx];if(!t||t.done)return;
+    _immSid=sid;_immIdx=idx;_huntActionsLocked=false;
+    const natZh=getNatureZh(t.nature);
+    if(loc)loc.textContent='Loc: '+(t.loc||'Wild');
+    document.getElementById('hunt-imm-name').textContent=t.name;
+    document.getElementById('hunt-imm-target').textContent=NATURES.some(n=>n.id===t.nature)?natZh+' target':'Target '+t.name;
+    document.getElementById('hunt-imm-num').textContent=t.count;
+    document.getElementById('hunt-imm-sprite').src=t.img||'';
+    document.getElementById('hunt-success-sprite').src=t.img||'';
+    document.getElementById('hunt-imm-success').style.display='none';
+    document.getElementById('hunt-nature-pick').style.display='none';
+    bg.style.backgroundImage=`url(${t.img||''})`;
+    renderHuntAreaGrid(t);
+    const sp=document.getElementById('hunt-imm-sprite');
+    sp.classList.remove('fight-hit','run-away','shiny');void sp.offsetWidth;
+    sp.classList.add('enter-new');setTimeout(()=>sp.classList.remove('enter-new'),500);
+    try{
+      const p=await fetchPkm(t.pkmId);
+      const art=p.sprites?.other?.['official-artwork']?.front_default||p.sprites?.front_default||t.img;
+      document.getElementById('hunt-imm-sprite').src=art;
+      document.getElementById('hunt-success-sprite').src=art;
+      bg.style.backgroundImage=`url(${art})`;
+    }catch(e){}
+  }else{
+    if(!_trainPkmData){showToast('Pick a training target first');return;}
+    if(!_trainLocPkm.length){showToast('Load a training location first');return;}
+    const art=document.getElementById('train-imm-sprite');
+    if(art){art.src=_trainPkmData.img||'';art.classList.remove('train-imm-beat');void art.offsetWidth;}
+    if(loc)loc.textContent='Loc: '+(_trainSelLoc.split('|')[1]||'Training');
+    document.getElementById('train-imm-name').textContent=_trainPkmData.name+(_trainPkmData.nick?` [${_trainPkmData.nick}]`:'' );
+    bg.style.backgroundImage=`url(${_trainPkmData.img||''})`;
+    renderTrainImmGrid();
+    renderTrainImmEVs();
+    fetchPkm(_trainPkmData.id).then(p=>{
+      const hd=p.sprites?.other?.['official-artwork']?.front_default||p.sprites?.front_default||_trainPkmData.img;
+      if(art)art.src=hd;
+      bg.style.backgroundImage=`url(${hd})`;
+    }).catch(()=>{});
+  }
+
+  setImmMode(mode);
+  renderImmParty();
+  ['imm-sub-catches','imm-sub-map','imm-sub-explore'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.style.display='none';el.dataset.open='0';}
+  });
+  ov.style.display='flex';
+  ov.classList.add('on');
+  document.body.style.overflow='hidden';
+  stopHuntParticles();
+  stopTrainImmParticles();
+  if(mode==='hunt')startHuntParticles(); else startTrainImmParticles();
+}
+
+function closeImm(){
+  stopHuntParticles();
+  stopTrainImmParticles();
+  const ov=document.getElementById('ov-imm');if(ov){ov.classList.remove('on');ov.style.display='none';}
+  ['imm-sub-catches','imm-sub-map','imm-sub-explore'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.style.display='none';el.dataset.open='0';}
+  });
+  document.body.style.overflow='';
+  const encPanel=document.getElementById('frlg-enc-panel');if(encPanel){encPanel.classList.remove('visible');encPanel.style.display='none';}
+  if(_immMode==='train')renderTrainEVs();
+  _huntActionsLocked=false;
+}
+
+async function openImmHunt(sid,idx){
+  return openImm('hunt',sid,idx);
+}
+function closeImmHunt(){
+  return closeImm();
+}
+function openImmTrain(){
+  return openImm('train');
+}
+function closeImmTrain(){
+  return closeImm();
+}

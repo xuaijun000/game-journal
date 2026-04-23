@@ -110,8 +110,9 @@ const _frlgCalibOverrides = {};
 let _frlgDragging = false;
 
 function initFRLGMapTab(seriesId) {
-  const btn = document.getElementById('stab-btn-frlgmap');
+  const btn = document.getElementById('imm-map-btn');
   if (btn) btn.style.display = seriesId === 'firered-leafgreen' ? '' : 'none';
+  if (typeof _immMapInited !== 'undefined') _immMapInited = false;
   frlgSetupPanel();
   if (seriesId !== 'firered-leafgreen') {
     const panel = document.getElementById('frlg-enc-panel');
@@ -303,12 +304,19 @@ function frlgRenderEncounterGrid() {
     const name = frlgGetPkmName(null, item.slug);
     const lv = item.minLv === item.maxLv ? `Lv.${item.minLv}` : `Lv.${item.minLv}-${item.maxLv}`;
     const rateCls = item.rate >= 20 ? 'rate-hi' : item.rate >= 10 ? 'rate-md' : 'rate-lo';
+    const vers = item.versions || [];
+    const verTag = vers.length === 1 && vers[0] === 'firered'
+      ? '<div class="frlg-enc-ver ver-fr">火红</div>'
+      : vers.length === 1 && vers[0] === 'leafgreen'
+      ? '<div class="frlg-enc-ver ver-lg">叶绿</div>'
+      : '';
     return `<div class="frlg-enc-card" id="frlg-enc-card-${idx}" style="animation-delay:${idx * 40}ms">
       <div class="frlg-enc-sprite"><div class="frlg-enc-placeholder"></div></div>
       <div class="frlg-enc-method-icons">${icons}</div>
       <div class="frlg-enc-name">${frlgEsc(name)}</div>
       <div class="frlg-enc-lv">${frlgEsc(lv)}</div>
       <div class="frlg-enc-rate ${rateCls}">${item.rate || 0}%</div>
+      ${verTag}
     </div>`;
   }).join('');
 

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -532,14 +532,9 @@
     <!-- Tab 导航 -->
     <div class="series-tab-bar">
       <button class="stab on" onclick="switchSeriesTab(this,'overview')">概览</button>
-      <button class="stab" onclick="switchSeriesTab(this,'party')">队伍</button>
       <button class="stab" onclick="switchSeriesTab(this,'progress')">进度</button>
       <button class="stab" onclick="switchSeriesTab(this,'training')">训练</button>
-      <button class="stab" onclick="switchSeriesTab(this,'explore')">探索</button>
       <button class="stab" onclick="switchSeriesTab(this,'hunting')">狩猎</button>
-      <button class="stab" onclick="switchSeriesTab(this,'catches')">图鉴录入</button>
-      <button class="stab frlg-map-tab" id="stab-btn-frlgmap"
-        onclick="switchSeriesTab(this,'frlgmap')" style="display:none">🗺 地图</button>
     </div>
 
     <!-- 概览 -->
@@ -591,17 +586,6 @@
       </div>
     </div>
 
-    <!-- 队伍 -->
-    <div class="stab-panel" id="stab-party">
-      <div class="series-body">
-        <div class="party-slots" id="party-slots"></div>
-        <div id="party-speak-result" class="party-speak-result" style="display:none"></div>
-        <div style="margin-top:12px;position:relative">
-          <input id="party-search-inp" class="series-inp" placeholder="搜索宝可梦加入队伍…" oninput="searchPartyPkm(this.value)" autocomplete="off">
-          <div id="party-search-results" class="pkm-inline-results"></div>
-        </div>
-      </div>
-    </div>
 
     <!-- 进度 -->
     <div class="stab-panel" id="stab-progress">
@@ -659,43 +643,6 @@
       </div>
     </div>
 
-    <!-- 探索 -->
-    <div class="stab-panel" id="stab-explore">
-      <div class="series-body">
-        <div style="display:flex;gap:6px;margin-bottom:8px">
-          <input id="explore-loc-inp" class="series-inp" placeholder="地图位置（如：常磐道路，留空则从截图识别）" style="flex:1" onkeydown="if(event.key==='Enter')exploreLocation()">
-          <button class="btn btn-a btn-sm" onclick="exploreLocation()" id="explore-btn">探索</button>
-        </div>
-        <div class="explore-ctx-row">
-          <select id="explore-weather" class="series-inp explore-ctx-sel">
-            <option value="">☁️ 天气（可选）</option>
-            <option value="晴天">☀️ 晴天</option>
-            <option value="雨天">🌧 雨天</option>
-            <option value="沙暴">🌪 沙暴</option>
-            <option value="冰雪">❄️ 冰雪</option>
-            <option value="大雾">🌫 大雾</option>
-            <option value="打雷">⚡ 打雷</option>
-          </select>
-          <select id="explore-time" class="series-inp explore-ctx-sel">
-            <option value="">🕐 时间（可选）</option>
-            <option value="早晨">🌅 早晨</option>
-            <option value="白天">🌞 白天</option>
-            <option value="傍晚">🌇 傍晚</option>
-            <option value="夜晚">🌙 夜晚</option>
-          </select>
-          <label class="explore-img-label" for="explore-img-inp" id="explore-img-lbl">📷 截图</label>
-          <input type="file" id="explore-img-inp" accept="image/*" style="display:none" onchange="onExploreImgChange(this)">
-        </div>
-        <div id="explore-img-preview" style="display:none" class="explore-img-preview"></div>
-        <div id="explore-result" style="display:none" class="explore-result-box"></div>
-        <div id="explore-save-row" style="display:none" class="explore-save-row">
-          <button class="btn btn-sm" onclick="saveExploreRecord()">📌 保存到探索日志</button>
-          <span id="explore-save-ok" style="display:none;font-size:.72rem;color:var(--acc2);font-family:'DM Mono',monospace">✓ 已保存</span>
-        </div>
-        <div id="explore-history" style="margin-top:14px"></div>
-      </div>
-    </div>
-
     <!-- 狩猎 -->
     <div class="stab-panel" id="stab-hunting">
       <div class="series-body">
@@ -722,34 +669,109 @@
       </div>
     </div>
 
-    <!-- 图鉴录入 -->
-    <div class="stab-panel" id="stab-catches">
-      <div class="series-body">
-        <div style="position:relative;margin-bottom:8px">
-          <input id="catch-search-inp" class="series-inp" placeholder="搜索抓到的宝可梦…" oninput="searchCatchPkm(this.value)" autocomplete="off">
-          <div id="catch-search-results" class="pkm-inline-results"></div>
-        </div>
-        <div id="catch-form-body" style="display:none">
-          <div id="catch-pkm-preview" class="catch-pkm-header"></div>
-          <div class="series-grid2" style="margin-top:8px">
-            <div class="series-inp-group"><span class="series-inp-label">昵称</span><input id="catch-nickname" class="series-inp" placeholder="可选"></div>
-            <div class="series-inp-group"><span class="series-inp-label">性格</span><select id="catch-nature" class="series-inp" onchange="updateCatchNatureHint()"></select></div>
-          </div>
-          <div id="catch-nature-hint" class="nature-hint"></div>
-          <div id="catch-basestats" class="catch-stats-block"></div>
-          <div id="catch-ev-yields" class="catch-ev-yields"></div>
-          <div style="display:flex;gap:6px;margin-bottom:8px">
-            <button class="series-ai-btn" onclick="getCatchAIRec()" id="catch-ai-btn">✦ AI推荐性格 + 努力值</button>
-            <button class="btn btn-a btn-sm" onclick="saveCatch()" style="white-space:nowrap">保存记录</button>
-          </div>
-          <div id="catch-ai-result" style="display:none" class="catch-ai-box"></div>
-        </div>
-        <div id="catch-list" style="margin-top:10px"></div>
-      </div>
-    </div>
 
-    <!-- 火红/叶绿 交互地图 -->
-    <div class="stab-panel" id="stab-frlgmap">
+  </div>
+</div>
+
+<!-- 发现页详情弹窗 -->
+<div id="ov-imm" class="hunt-imm-ov" style="display:none;flex-direction:column">
+  <div class="hunt-imm-bg-blur" id="imm-bg"></div>
+  <div class="hunt-imm-particles" id="imm-particles"></div>
+  <div id="imm-topbar" style="display:flex;align-items:center;gap:8px;padding:10px 14px 6px;flex-shrink:0;position:relative;z-index:2">
+    <div id="imm-party-row" style="display:flex;gap:4px;flex:1"></div>
+    <div id="imm-loc" class="hunt-imm-loc-badge" style="position:static;transform:none">
+      📍 野外
+    </div>
+    <button class="hunt-imm-close" style="position:static" onclick="closeImm()">✕</button>
+  </div>
+  <div id="imm-mode-bar" style="display:flex;gap:6px;padding:0 14px 8px;flex-shrink:0;position:relative;z-index:2">
+    <button id="imm-mode-hunt" onclick="setImmMode('hunt')" style="flex:1;padding:6px;border-radius:8px;font-size:.8rem;background:var(--acc);color:#fff;border:none;cursor:pointer">
+      🎯 捕猎
+    </button>
+    <button id="imm-mode-train" onclick="setImmMode('train')" style="flex:1;padding:6px;border-radius:8px;font-size:.8rem;background:var(--bg3);color:var(--t2);border:1px solid var(--b);cursor:pointer">
+      💪 训练
+    </button>
+  </div>
+  <div id="imm-panel-hunt" style="flex:1;overflow-y:auto;position:relative;z-index:2">
+    <div class="hunt-imm-hero">
+      <div class="hunt-imm-target-badge" id="hunt-imm-target"></div>
+      <img class="hunt-imm-sprite" id="hunt-imm-sprite" src="" alt="">
+      <div class="hunt-imm-name" id="hunt-imm-name"></div>
+      <div class="hunt-imm-counter">
+        <span class="hunt-imm-num" id="hunt-imm-num">0</span>
+        <span class="hunt-imm-unit">次遭遇</span>
+      </div>
+      <div class="hunt-imm-narration" id="hunt-imm-narration" style="display:none"></div>
+    </div>
+    <div class="hunt-area-section" id="hunt-area-section" style="display:none">
+      <div class="hunt-area-label">遇到了哪只？点击它</div>
+      <div class="hunt-area-grid" id="hunt-area-grid"></div>
+    </div>
+    <div class="hunt-battle-actions" id="hunt-battle-actions">
+      <button class="hunt-action-btn hunt-action-fight" onclick="huntActionFight()">⚔️<br><span>战斗</span></button>
+      <button class="hunt-action-btn hunt-action-run" onclick="huntActionRun()">💨<br><span>逃跑</span></button>
+      <button class="hunt-action-btn hunt-action-catch" onclick="huntActionCatch()">⚫<br><span>捕捉</span></button>
+    </div>
+    <div class="hunt-nature-pick" id="hunt-nature-pick" style="display:none">
+      <div class="hunt-np-title">捕获到了！选择性格</div>
+      <div class="hunt-np-target" id="hunt-np-target"></div>
+      <div class="hunt-np-grid" id="hunt-np-grid"></div>
+      <button class="hunt-np-cancel" onclick="cancelHuntNaturePick()">✕ 没捕到，继续</button>
+    </div>
+    <div class="hunt-imm-success" id="hunt-imm-success" style="display:none">
+      <div class="hunt-success-sparks" id="hunt-success-sparks"></div>
+      <img class="hunt-success-sprite" id="hunt-success-sprite" src="" alt="">
+      <div class="hunt-success-title">捕获成功！</div>
+      <div class="hunt-success-name" id="hunt-success-name"></div>
+      <div class="hunt-success-count" id="hunt-success-count"></div>
+    </div>
+  </div>
+  <div id="imm-panel-train" style="flex:1;overflow-y:auto;display:none;position:relative;z-index:2">
+    <div class="tim-hero">
+      <img class="tim-sprite" id="train-imm-sprite" src="" alt="">
+      <div class="tim-name" id="train-imm-name"></div>
+      <div class="tim-ev-compact" id="train-imm-ev-bars"></div>
+      <div class="tim-ev-total" id="train-imm-ev-total"></div>
+    </div>
+    <div class="tim-grid-section">
+      <div class="tim-section-lbl">击败以下精灵 获取 EV → 点击它</div>
+      <div class="tim-dist-grid" id="train-imm-dist-grid"></div>
+    </div>
+  </div>
+  <div id="imm-sub-catches" style="display:none;max-height:55vh;overflow-y:auto;background:var(--bg2);border-top:1px solid var(--b);padding:12px 14px;position:relative;z-index:3">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <span style="font-size:.78rem;color:var(--t2);font-family:'DM Mono',monospace">📋 图鉴录入</span>
+      <button class="btn btn-sm" onclick="toggleImmPanel('catches')">✕</button>
+    </div>
+    <div style="position:relative;margin-bottom:8px">
+      <input id="catch-search-inp" class="series-inp" placeholder="搜索抓到的宝可梦…" oninput="searchCatchPkm(this.value)" autocomplete="off">
+      <div id="catch-search-results" class="pkm-inline-results"></div>
+    </div>
+    <div id="catch-form-body" style="display:none">
+      <div id="catch-pkm-preview" class="catch-pkm-header"></div>
+      <div class="series-grid2" style="margin-top:8px">
+        <div class="series-inp-group"><span class="series-inp-label">昵称</span>
+          <input id="catch-nickname" class="series-inp" placeholder="可选"></div>
+        <div class="series-inp-group"><span class="series-inp-label">性格</span>
+          <select id="catch-nature" class="series-inp" onchange="updateCatchNatureHint()"></select></div>
+      </div>
+      <div id="catch-nature-hint" class="nature-hint"></div>
+      <div id="catch-basestats" class="catch-stats-block"></div>
+      <div id="catch-ev-yields" class="catch-ev-yields"></div>
+      <div style="display:flex;gap:6px;margin-bottom:8px">
+        <button class="series-ai-btn" onclick="getCatchAIRec()" id="catch-ai-btn">✦ AI推荐性格 + 努力值</button>
+        <button class="btn btn-a btn-sm" id="catch-save-btn" onclick="saveCatch()" style="white-space:nowrap">保存记录</button>
+      </div>
+      <div id="catch-ai-result" style="display:none" class="catch-ai-box"></div>
+    </div>
+    <div id="catch-list" style="margin-top:10px"></div>
+  </div>
+  <div id="imm-sub-map" style="display:none;height:60vh;background:var(--bg2);border-top:1px solid var(--b);position:relative;z-index:3;flex-direction:column">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-bottom:1px solid var(--b);flex-shrink:0">
+      <span style="font-size:.78rem;color:var(--t2);font-family:'DM Mono',monospace">🗺 野外分布地图</span>
+      <button class="btn btn-sm" onclick="toggleImmPanel('map')">✕</button>
+    </div>
+    <div style="flex:1;overflow:auto;position:relative">
       <div class="frlg-map-root">
         <div class="frlg-map-breadcrumb" id="frlg-breadcrumb"></div>
         <div class="frlg-map-viewer" id="frlg-map-viewer">
@@ -766,78 +788,50 @@
       </div>
     </div>
   </div>
-</div>
-<!-- 沉浸式狩猎界面 -->
-<div id="ov-hunt-imm" class="hunt-imm-ov">
-  <div class="hunt-imm-bg-blur" id="hunt-imm-bg"></div>
-  <div class="hunt-imm-particles" id="hunt-imm-particles"></div>
-  <button class="hunt-imm-close" onclick="closeImmHunt()">✕</button>
-  <div class="hunt-imm-loc-badge" id="hunt-imm-loc">📍 野外</div>
-
-  <!-- 目标精灵（居中大图） -->
-  <div class="hunt-imm-hero">
-    <div class="hunt-imm-target-badge" id="hunt-imm-target"></div>
-    <img class="hunt-imm-sprite" id="hunt-imm-sprite" src="" alt="">
-    <div class="hunt-imm-name" id="hunt-imm-name"></div>
-    <div class="hunt-imm-counter">
-      <span class="hunt-imm-num" id="hunt-imm-num">0</span>
-      <span class="hunt-imm-unit">次遭遇</span>
+  <div id="imm-sub-explore" style="display:none;max-height:55vh;overflow-y:auto;background:var(--bg2);border-top:1px solid var(--b);padding:12px 14px;position:relative;z-index:3">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <span style="font-size:.78rem;color:var(--t2);font-family:'DM Mono',monospace">🔍 探索</span>
+      <button class="btn btn-sm" onclick="toggleImmPanel('explore')">✕</button>
     </div>
-    <div class="hunt-imm-narration" id="hunt-imm-narration" style="display:none"></div>
+    <div style="display:flex;gap:6px;margin-bottom:8px">
+      <input id="explore-loc-inp" class="series-inp" style="flex:1" placeholder="地图位置（留空从截图识别）" onkeydown="if(event.key==='Enter')exploreLocation()">
+      <button class="btn btn-a btn-sm" onclick="exploreLocation()" id="explore-btn">探索</button>
+    </div>
+    <div class="explore-ctx-row">
+      <select id="explore-weather" class="series-inp explore-ctx-sel">
+        <option value="">☁️ 天气（可选）</option>
+        <option value="晴天">☀️ 晴天</option><option value="雨天">🌧 雨天</option>
+        <option value="沙暴">🌪 沙暴</option><option value="冰雪">❄️ 冰雪</option>
+        <option value="大雾">🌫 大雾</option><option value="打雷">⚡ 打雷</option>
+      </select>
+      <select id="explore-time" class="series-inp explore-ctx-sel">
+        <option value="">🕐 时间（可选）</option>
+        <option value="早晨">🌅 早晨</option><option value="白天">🌞 白天</option>
+        <option value="傍晚">🌇 傍晚</option><option value="夜晚">🌙 夜晚</option>
+      </select>
+      <label class="explore-img-label" for="explore-img-inp" id="explore-img-lbl">📷 截图</label>
+      <input type="file" id="explore-img-inp" accept="image/*" style="display:none" onchange="onExploreImgChange(this)">
+    </div>
+    <div id="explore-img-preview" style="display:none" class="explore-img-preview"></div>
+    <div id="explore-result" style="display:none" class="explore-result-box"></div>
+    <div id="explore-save-row" style="display:none" class="explore-save-row">
+      <button class="btn btn-sm" onclick="saveExploreRecord()">📌 保存到探索日志</button>
+      <span id="explore-save-ok" style="display:none;font-size:.72rem;color:var(--acc2);font-family:'DM Mono',monospace">✓ 已保存</span>
+    </div>
+    <div id="explore-history" style="margin-top:14px"></div>
   </div>
-
-  <!-- 区域精灵分布（点击=遭遇到了那只） -->
-  <div class="hunt-area-section" id="hunt-area-section" style="display:none">
-    <div class="hunt-area-label">遇到了哪只？点击它</div>
-    <div class="hunt-area-grid" id="hunt-area-grid"></div>
-  </div>
-
-  <!-- 无分布时：传统战斗按钮 -->
-  <div class="hunt-battle-actions" id="hunt-battle-actions">
-    <button class="hunt-action-btn hunt-action-fight" onclick="huntActionFight()">⚔️<br><span>战斗</span></button>
-    <button class="hunt-action-btn hunt-action-run"  onclick="huntActionRun()">💨<br><span>逃跑</span></button>
-    <button class="hunt-action-btn hunt-action-catch" onclick="huntActionCatch()">⚫<br><span>捕捉</span></button>
-  </div>
-
-  <!-- 性格确认层 -->
-  <div class="hunt-nature-pick" id="hunt-nature-pick" style="display:none">
-    <div class="hunt-np-title">捕获到了！选择性格</div>
-    <div class="hunt-np-target" id="hunt-np-target"></div>
-    <div class="hunt-np-grid" id="hunt-np-grid"></div>
-    <button class="hunt-np-cancel" onclick="cancelHuntNaturePick()">✕ 没捕到，继续</button>
-  </div>
-
-  <!-- 捕获成功层 -->
-  <div class="hunt-imm-success" id="hunt-imm-success" style="display:none">
-    <div class="hunt-success-sparks" id="hunt-success-sparks"></div>
-    <img class="hunt-success-sprite" id="hunt-success-sprite" src="" alt="">
-    <div class="hunt-success-title">捕获成功！</div>
-    <div class="hunt-success-name" id="hunt-success-name"></div>
-    <div class="hunt-success-count" id="hunt-success-count"></div>
-  </div>
-</div>
-
-<!-- 沉浸式训练界面 -->
-<div id="ov-train-imm" class="hunt-imm-ov">
-  <div class="hunt-imm-bg-blur" id="train-imm-bg"></div>
-  <div class="hunt-imm-particles" id="train-imm-particles"></div>
-  <button class="hunt-imm-close" onclick="closeImmTrain()">✕</button>
-
-  <!-- 顶部：训练精灵（居中大图）+ EV 条 -->
-  <div class="tim-hero">
-    <img class="tim-sprite" id="train-imm-sprite" src="" alt="">
-    <div class="tim-name" id="train-imm-name"></div>
-    <div class="tim-ev-compact" id="train-imm-ev-bars"></div>
-    <div class="tim-ev-total" id="train-imm-ev-total"></div>
-  </div>
-
-  <!-- 底部：刷练目标精灵（图片网格） -->
-  <div class="tim-grid-section">
-    <div class="tim-section-lbl">击败以下精灵 获取 EV → 点击它</div>
-    <div class="tim-dist-grid" id="train-imm-dist-grid"></div>
+  <div id="imm-toolbar" style="display:flex;gap:0;border-top:1px solid var(--b);flex-shrink:0;position:relative;z-index:4">
+    <button onclick="toggleImmPanel('catches')" style="flex:1;padding:10px 4px;font-size:.72rem;background:none;border:none;border-right:1px solid var(--b);color:var(--t2);cursor:pointer">
+      📋 图鉴录入
+    </button>
+    <button id="imm-map-btn" onclick="toggleImmPanel('map')" style="display:none;flex:1;padding:10px 4px;font-size:.72rem;background:none;border:none;border-right:1px solid var(--b);color:var(--t2);cursor:pointer">
+      🗺 地图
+    </button>
+    <button onclick="toggleImmPanel('explore')" style="flex:1;padding:10px 4px;font-size:.72rem;background:none;border:none;color:var(--t2);cursor:pointer">
+      🔍 探索
+    </button>
   </div>
 </div>
-<!-- 发现页详情弹窗 -->
 <div class="ov" id="ov-disc" onclick="if(event.target===this)closeOv('ov-disc')">
   <div class="modal disc-modal">
     <div class="disc-hero" id="disc-hero"><div class="disc-hero-bg" id="disc-hero-bg"></div><img id="disc-cover" src="" alt="" class="disc-cover" onerror="this.style.display='none'"></div>
