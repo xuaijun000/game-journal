@@ -2838,6 +2838,10 @@ function selectTrainPkmFromImm(idx){
   _trainSid=sid;
   toggleImmPanel('__none__');
   updateImmTrainPlaceholder();
+  const _tSprite=document.getElementById('train-imm-sprite');
+  if(_tSprite)_tSprite.src=p.img||'';
+  const _tName=document.getElementById('train-imm-name');
+  if(_tName)_tName.textContent=p.name+(p.nick?`「${p.nick}」`:'');
   renderTrainImmEVs();
   if(_trainLocPkm.length)renderTrainImmGrid();
 }
