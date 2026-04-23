@@ -2828,6 +2828,20 @@ function updateImmTrainPlaceholder(){
   if(section)section.style.display=show?'none':'';
 }
 
+function selectTrainPkmFromImm(idx){
+  const sid=_curSid;
+  let party=lsGet('pkm_party_'+sid)||[];
+  const p=party[idx];if(!p)return;
+  _trainPkmData={name:p.name,id:p.pkmId,img:p.img,nick:p.nick,lv:p.lv};
+  const saved=lsGet('pkm_train_ev_'+sid+'_'+p.pkmId);
+  _trainEVs=saved?{...saved}:{hp:0,attack:0,defense:0,'special-attack':0,'special-defense':0,speed:0};
+  _trainSid=sid;
+  toggleImmPanel('__none__');
+  updateImmTrainPlaceholder();
+  renderTrainImmEVs();
+  if(_trainLocPkm.length)renderTrainImmGrid();
+}
+
 function setImmMode(mode){
   if(false){
     showToast('请先在「训练」tab 选择训练对象');
@@ -2879,9 +2893,9 @@ function toggleImmPanel(name){
     if(!Array.isArray(party))party=[];
     while(party.length<6)party.push(null);
     const slots=document.getElementById('imm-party-slots');
-    if(slots)slots.innerHTML=party.map(p=>{
+    if(slots)slots.innerHTML=party.map((p,i)=>{
       if(!p)return`<div style="display:inline-flex;flex-direction:column;align-items:center;gap:2px;margin:4px"><div style="width:48px;height:48px;border-radius:6px;background:var(--bg3);border:1px solid var(--b)"></div></div>`;
-      return`<div style="display:inline-flex;flex-direction:column;align-items:center;gap:2px;margin:4px"><img src="${p.img||''}" style="width:48px;height:48px;border-radius:6px;background:var(--bg3);border:1px solid var(--b);object-fit:contain;padding:2px;box-sizing:border-box" onerror="this.style.opacity='.35'"><div style="font-size:.58rem;color:var(--t2);max-width:52px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.nick||p.name||'')}</div></div>`;
+      return`<div onclick="selectTrainPkmFromImm(${i})" style="display:inline-flex;flex-direction:column;align-items:center;gap:2px;margin:4px${_immMode==='train'&&!_trainPkmData?';cursor:pointer;border:2px solid var(--acc,#88f)':''}"><img src="${p.img||''}" style="width:48px;height:48px;border-radius:6px;background:var(--bg3);border:1px solid var(--b);object-fit:contain;padding:2px;box-sizing:border-box" onerror="this.style.opacity='.35'"><div style="font-size:.58rem;color:var(--t2);max-width:52px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.nick||p.name||'')}</div></div>`;
     }).join('');
   }
   if(name==='catches'){
