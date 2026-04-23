@@ -3166,14 +3166,13 @@ function openImmMapPicker(){
       closeImmMapFull();
       if(_immMode==='hunt'){
         selectHuntLoc(zhName);
-        if(!_huntDistCache[_huntSelLoc])loadHuntDistribution();
-        const list=lsGet('pkm_hunt_'+_immSid)||[];
-        const t=list[_immIdx];
-        if(t)renderHuntAreaGrid(t);
+        const _refreshHuntGrid=()=>{const list=lsGet('pkm_hunt_'+_immSid)||[];const t=list[_immIdx];if(t)renderHuntAreaGrid(t);};
+        if(_huntDistCache[_huntSelLoc]){_huntLocPkm=_huntDistCache[_huntSelLoc];_refreshHuntGrid();}
+        else{loadHuntDistribution().then(_refreshHuntGrid);}
       }else{
         selectTrainLoc(zhName);
-        if(!_trainDistCache[_trainSelLoc])loadTrainDistribution();
-        renderTrainImmGrid();
+        if(_trainDistCache[_trainSelLoc]){_trainLocPkm=_trainDistCache[_trainSelLoc];renderTrainImmGrid();}
+        else{loadTrainDistribution().then(renderTrainImmGrid);}
       }
       updateImmMinimap(zhName);
     });
