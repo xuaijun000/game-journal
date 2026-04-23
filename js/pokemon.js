@@ -941,7 +941,10 @@ function renderPartySlots(sid){
 function focusPartySearch(){document.getElementById('party-search-inp')?.focus();}
 function removeFromParty(sid,idx){
   let party=lsGet('pkm_party_'+sid)||[];if(!Array.isArray(party))party=[];while(party.length<6)party.push(null);
-  party[idx]=null;lsSet('pkm_party_'+sid,party);renderPartySlots(sid);syncSeriesField(sid,'party',party);
+  party[idx]=null;lsSet('pkm_party_'+sid,party);
+  renderPartySlots(sid);
+  if(typeof initTrainTab==='function')initTrainTab(sid);
+  syncSeriesField(sid,'party',party);
 }
 let _partySearchT=null;
 function searchPartyPkm(v){
@@ -968,6 +971,7 @@ function addToParty(sid,pkm){
   ['party-search-results','imm-party-search-results'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('open');});
   renderPartySlots(sid);
   renderImmParty();
+  if(typeof initTrainTab==='function')initTrainTab(sid);
   syncSeriesField(sid,'party',party);
 }
 
