@@ -2820,6 +2820,29 @@ function renderImmParty(){
   }).join('');
 }
 
+function _immNormalizePartyPkm(p){
+  if(!p)return null;
+  return {
+    id:p.pkmId||p.id||null,
+    name:p.name||'',
+    img:p.img||'',
+    nick:p.nick||'',
+    lv:p.lv||'',
+  };
+}
+
+async function _immResolvePkmArt(pkm){
+  const fallback=pkm?.img||'';
+  const id=pkm?.id||null;
+  if(!id)return fallback;
+  try{
+    const data=await fetchPkm(id);
+    return data.sprites?.other?.['official-artwork']?.front_default||data.sprites?.front_default||fallback;
+  }catch(e){
+    return fallback;
+  }
+}
+
 function startHuntParticles(){
   stopHuntParticles();
   const container=document.getElementById('imm-particles');if(!container)return;
@@ -2896,6 +2919,22 @@ async function saveCatch(){
   showToast('Saved');
 }
 
+function selectTrainPkm(slotIdx){
+  const sid=_trainSid;
+  let party=lsGet('pkm_party_'+sid)||[];
+  if(!Array.isArray(party))party=[];
+  while(party.length<6)party.push(null);
+  const filledParty=party.filter(p=>p).map(_immNormalizePartyPkm);
+  const p=filledParty[slotIdx];if(!p||!p.id)return;
+  _trainPkmData={name:p.name,id:p.id,img:p.img,nick:p.nick,lv:p.lv};
+  const saved=lsGet('pkm_train_ev_'+sid+'_'+p.id);
+  _trainEVs=saved||{hp:0,attack:0,defense:0,'special-attack':0,'special-defense':0,speed:0};
+  document.querySelectorAll('.train-pkm-slot').forEach((el,i)=>el.classList.toggle('selected',i===slotIdx));
+  const evPanel=document.getElementById('train-ev-panel');if(evPanel)evPanel.style.display='block';
+  const aiSec=document.getElementById('train-ai-result');if(aiSec)aiSec.style.display='none';
+  renderTrainEVs();
+}
+
 function huntEncounterFromGrid(idx){
   if(_huntActionsLocked)return;
   const list=lsGet('pkm_hunt_'+_immSid)||[];
@@ -2944,9 +2983,9 @@ async function openImm(mode,...args){
     const t=list[idx];if(!t||t.done)return;
     _immSid=sid;_immIdx=idx;_huntActionsLocked=false;
     const natZh=getNatureZh(t.nature);
-    if(loc)loc.textContent='Loc: '+(t.loc||'Wild');
+    if(loc)loc.textContent='📍 '+(t.loc||'野外');
     document.getElementById('hunt-imm-name').textContent=t.name;
-    document.getElementById('hunt-imm-target').textContent=NATURES.some(n=>n.id===t.nature)?natZh+' target':'Target '+t.name;
+    document.getElementById('hunt-imm-target').textContent=NATURES.some(n=>n.id===t.nature)?natZh+'性格 目标':'🎯 '+t.name;
     document.getElementById('hunt-imm-num').textContent=t.count;
     document.getElementById('hunt-imm-sprite').src=t.img||'';
     document.getElementById('hunt-success-sprite').src=t.img||'';
@@ -2965,20 +3004,18 @@ async function openImm(mode,...args){
       bg.style.backgroundImage=`url(${art})`;
     }catch(e){}
   }else{
-    if(!_trainPkmData){showToast('Pick a training target first');return;}
-    if(!_trainLocPkm.length){showToast('Load a training location first');return;}
+    if(!_trainPkmData){showToast('请先选择训练对象');return;}
+    if(!_trainLocPkm.length){showToast('请先加载地点精灵分布');return;}
     const art=document.getElementById('train-imm-sprite');
-    if(art){art.src=_trainPkmData.img||'';art.classList.remove('train-imm-beat');void art.offsetWidth;}
-    if(loc)loc.textContent='Loc: '+(_trainSelLoc.split('|')[1]||'Training');
-    document.getElementById('train-imm-name').textContent=_trainPkmData.name+(_trainPkmData.nick?` [${_trainPkmData.nick}]`:'' );
-    bg.style.backgroundImage=`url(${_trainPkmData.img||''})`;
+    if(art){art.removeAttribute('src');art.classList.remove('train-imm-beat');void art.offsetWidth;}
+    if(loc)loc.textContent='📍 '+(_trainSelLoc.split('|')[1]||'训练点');
+    document.getElementById('train-imm-name').textContent=_trainPkmData.name+(_trainPkmData.nick?`「${_trainPkmData.nick}」`:'' );
+    bg.style.backgroundImage='none';
     renderTrainImmGrid();
     renderTrainImmEVs();
-    fetchPkm(_trainPkmData.id).then(p=>{
-      const hd=p.sprites?.other?.['official-artwork']?.front_default||p.sprites?.front_default||_trainPkmData.img;
-      if(art)art.src=hd;
-      bg.style.backgroundImage=`url(${hd})`;
-    }).catch(()=>{});
+    const hd=await _immResolvePkmArt(_trainPkmData);
+    if(art&&hd)art.src=hd;
+    if(hd)bg.style.backgroundImage=`url(${hd})`;
   }
 
   setImmMode(mode);
