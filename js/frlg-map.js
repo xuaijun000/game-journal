@@ -4,6 +4,10 @@ const FRLG_IMG = {
   island: n => `css/firered-and-leafgreen-versions-map/第${['一','二','三','四','五','六','七'][n-1]}岛.webp`,
 };
 
+const KANTO_REGIONS = [
+  { label:'🏝 七岛', action:'sevii', x:80.14, y:79.11, w:19.22, h:20.02 },
+];
+
 const KANTO_HOTSPOTS = [
   // ── 左侧纵列 ──
   { label:'23号道路', x:5,  y:8,  key:'route-23' },
@@ -45,8 +49,6 @@ const KANTO_HOTSPOTS = [
   { label:'13号道路', x:73, y:64, key:'route-13' },
   { label:'14号道路', x:70, y:76, key:'route-14' },
   { label:'15号道路', x:58, y:77, key:'route-15' },
-  // ── 七岛入口（地图右下角缩略图） ──
-  { label:'🏝 七岛', x:83, y:87, key:null, action:'sevii', highlight:true },
 ];
 
 const SEVII_HOTSPOTS = [
@@ -168,6 +170,7 @@ function frlgInitView(view) {
 
   viewer.appendChild(img);
   frlgRenderHotspots(viewer, hotspots);
+  if (frlgView === 'kanto') frlgRenderRegions(viewer, KANTO_REGIONS);
   frlgResetCalibrationSurface();
 }
 
@@ -197,6 +200,35 @@ function frlgRenderHotspots(viewer, hotspots) {
       frlgShowEncounters(resolved || hotspot.key, hotspot.label);
     };
     if (_frlgCalibMode) frlgBindHotspotDrag(el, hotspot);
+    viewer.appendChild(el);
+  });
+}
+
+function frlgRenderRegions(viewer, regions) {
+  regions.forEach(region => {
+    const el = document.createElement('div');
+    el.className = 'frlg-region';
+    el.style.position = 'absolute';
+    el.style.left = region.x + '%';
+    el.style.top = region.y + '%';
+    el.style.width = region.w + '%';
+    el.style.height = region.h + '%';
+    el.style.cursor = 'pointer';
+    el.style.background = 'transparent';
+    el.style.border = '2px dashed rgba(255, 99, 71, 0.9)';
+    el.style.boxSizing = 'border-box';
+    el.style.borderRadius = '8px';
+    el.style.zIndex = '2';
+    if (region.label) el.setAttribute('aria-label', region.label);
+    el.onclick = () => {
+      if (region.action) {
+        frlgInitView(region.action);
+        return;
+      }
+      if (!region.key) return;
+      const resolved = frlgResolveLocationKey(region.key);
+      frlgShowEncounters(resolved || region.key, region.label);
+    };
     viewer.appendChild(el);
   });
 }
