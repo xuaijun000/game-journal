@@ -625,7 +625,6 @@ function openSeriesDetail(el){
     });
   }
   renderQuickNotes(seriesId);
-  initSeriesMap(seriesId);
   initFRLGMapTab(seriesId);
   // 清理上一个版本的冒险日记，避免串号
   const _diary=document.getElementById('adventure-diary');if(_diary){_diary.style.display='none';_diary.textContent='';}
@@ -2135,120 +2134,6 @@ function spawnSparks(){
   }
 }
 
-/* ================================================================
-   🗺 地区地图
-   ================================================================ */
-const SERIES_MAPS={
-  'red-blue':    {region:'关都地区',file:'Kanto_concept_artwork.png',link:'https://bulbapedia.bulbagarden.net/wiki/Kanto'},
-  'yellow':      {region:'关都地区',file:'Kanto_concept_artwork.png',link:'https://bulbapedia.bulbagarden.net/wiki/Kanto'},
-  'gold-silver': {region:'城都地区',file:'Johto_concept_artwork.png',link:'https://bulbapedia.bulbagarden.net/wiki/Johto'},
-  'crystal':     {region:'城都地区',file:'Johto_concept_artwork.png',link:'https://bulbapedia.bulbagarden.net/wiki/Johto'},
-  'ruby-sapphire':{region:'丰缘地区',file:'Hoenn_concept_artwork.png',link:'https://bulbapedia.bulbagarden.net/wiki/Hoenn'},
-  'emerald':     {region:'丰缘地区',file:'Hoenn_concept_artwork.png',link:'https://bulbapedia.bulbagarden.net/wiki/Hoenn'},
-  'firered-leafgreen':{region:'关都地区',file:'Kanto_concept_artwork.png',link:'https://bulbapedia.bulbagarden.net/wiki/Kanto'},
-  'diamond-pearl':{region:'神奥地区',file:'Sinnoh_concept_artwork.png',link:'https://bulbapedia.bulbagarden.net/wiki/Sinnoh'},
-  'platinum':    {region:'神奥地区',file:'Sinnoh_concept_artwork.png',link:'https://bulbapedia.bulbagarden.net/wiki/Sinnoh'},
-  'heartgold-soulsilver':{region:'城都地区',file:'Johto_concept_artwork.png',link:'https://bulbapedia.bulbagarden.net/wiki/Johto'},
-  'black-white': {region:'合众地区',file:'Unova_concept_artwork.png',link:'https://bulbapedia.bulbagarden.net/wiki/Unova'},
-  'black2-white2':{region:'合众地区',file:'Unova_B2W2_concept_artwork.png',link:'https://bulbapedia.bulbagarden.net/wiki/Unova'},
-  'x-y':         {region:'卡洛斯地区',file:'Kalos_concept_artwork.png',link:'https://bulbapedia.bulbagarden.net/wiki/Kalos'},
-  'oras':        {region:'丰缘地区',file:'Hoenn_ORAS_concept_artwork.png',link:'https://bulbapedia.bulbagarden.net/wiki/Hoenn'},
-  'sun-moon':    {region:'阿罗拉地区',file:'Alola_concept_artwork.png',link:'https://bulbapedia.bulbagarden.net/wiki/Alola'},
-  'usum':        {region:'阿罗拉地区',file:'Alola_USUM_concept_artwork.png',link:'https://bulbapedia.bulbagarden.net/wiki/Alola'},
-  'sword-shield':{region:'伽勒尔地区',file:'Galar_concept_artwork.png',link:'https://bulbapedia.bulbagarden.net/wiki/Galar'},
-  'bdsp':        {region:'神奥地区',file:'Sinnoh_concept_artwork.png',link:'https://bulbapedia.bulbagarden.net/wiki/Sinnoh'},
-  'legends-arceus':{region:'洗翠地区',file:'Hisui_concept_artwork.png',link:'https://bulbapedia.bulbagarden.net/wiki/Hisui'},
-  'scarlet-violet':{region:'帕底亚地区',file:'Paldea_concept_artwork.png',link:'https://bulbapedia.bulbagarden.net/wiki/Paldea'},
-  'legends-za':  {region:'卡洛斯地区',file:'Kalos_LZA_concept_artwork.png',link:'https://bulbapedia.bulbagarden.net/wiki/Kalos'},
-};
-/* ================================================================
-   🗺 地图图片多源策略
-   优先级：52poke pageimages缩略图 → Bulbapedia imageinfo直链 → 显示外链按钮
-   ================================================================ */
-
-// 用 AbortController 替代 AbortSignal.timeout（兼容性更好）
-function fetchWithTimeout(url,ms=6000){
-  const ctrl=new AbortController();
-  const t=setTimeout(()=>ctrl.abort(),ms);
-  return fetch(url,{signal:ctrl.signal}).finally(()=>clearTimeout(t));
-}
-
-// 策略1：52poke prop=pageimages → 直接返回缩略图 CDN URL，无需重定向
-async function fetch52PokeThumb(regionName){
-  try{
-    const url=`https://wiki.52poke.com/api.php?action=query&titles=${encodeURIComponent(regionName)}&prop=pageimages&pithumbsize=700&format=json&origin=*&variant=zh-hans`;
-    const r=await fetchWithTimeout(url,6000);
-    if(!r.ok)return null;
-    const d=await r.json();
-    const page=Object.values(d?.query?.pages||{})[0];
-    // thumbnail.source 是已生成的缩略图直链，无需重定向
-    return page?.thumbnail?.source||null;
-  }catch{return null;}
-}
-
-// 策略2：Bulbapedia imageinfo API → 拿到真实直链（跳过 Special:FilePath 重定向）
-async function fetchBulbaImageUrl(filename){
-  try{
-    const url=`https://bulbapedia.bulbagarden.net/w/api.php?action=query&titles=File:${encodeURIComponent(filename)}&prop=imageinfo&iiprop=url&format=json&origin=*`;
-    const r=await fetchWithTimeout(url,6000);
-    if(!r.ok)return null;
-    const d=await r.json();
-    const page=Object.values(d?.query?.pages||{})[0];
-    return page?.imageinfo?.[0]?.url||null;
-  }catch{return null;}
-}
-
-// 尝试多个 URL 直到有一个加载成功（img.onerror 链式回退）
-function tryLoadImg(imgEl,urls,onAllFail){
-  const queue=[...urls].filter(Boolean);
-  function tryNext(){
-    if(!queue.length){onAllFail();return;}
-    const src=queue.shift();
-    imgEl.onerror=null;
-    imgEl.src=src;
-    imgEl.onerror=()=>tryNext();
-  }
-  tryNext();
-}
-
-async function initSeriesMap(sid){
-  const mapSec=document.getElementById('series-map-section');if(!mapSec)return;
-  const m=SERIES_MAPS[sid];
-  if(!m){mapSec.style.display='none';return;}
-  mapSec.style.display='block';
-  const regionEl=document.getElementById('series-map-region');
-  const imgEl=document.getElementById('series-map-img');
-  const linkEl=document.getElementById('series-map-link');
-  const link2El=document.getElementById('series-map-link2');
-  const fallback=document.getElementById('series-map-fallback');
-  if(regionEl)regionEl.textContent='🗺 '+m.region;
-  const wiki52Link=`https://wiki.52poke.com/wiki/${encodeURIComponent(m.region)}`;
-  if(linkEl)linkEl.href=wiki52Link;
-  if(link2El)link2El.href=wiki52Link;
-  if(fallback)fallback.style.display='none';
-  if(imgEl){imgEl.src='';imgEl.style.display='';}
-
-  // 并行获取两个源的直链
-  const [thumb52, bulbaUrl]=await Promise.all([
-    fetch52PokeThumb(m.region),
-    fetchBulbaImageUrl(m.file)
-  ]);
-
-  // 按优先级排列候选 URL
-  const candidates=[
-    thumb52,                          // 52poke 缩略图直链（最佳）
-    bulbaUrl,                         // Bulbapedia 直链
-    `https://bulbapedia.bulbagarden.net/wiki/Special:FilePath/${m.file}`, // 重定向备用
-  ].filter(Boolean);
-
-  if(!imgEl)return;
-  if(!candidates.length){
-    imgEl.style.display='none';if(fallback)fallback.style.display='flex';return;
-  }
-  tryLoadImg(imgEl,candidates,()=>{
-    imgEl.style.display='none';if(fallback)fallback.style.display='flex';
-  });
-}
 
 /* ================================================================
    💪 训练模式（努力值 EV 追踪）

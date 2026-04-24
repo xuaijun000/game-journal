@@ -489,13 +489,6 @@
   white-space:pre-wrap;margin-top:8px;font-family:'Noto Serif SC',serif;
 }
 
-/* ─── 地区地图 ─── */
-.series-map-link{font-size:.65rem;color:var(--acc);font-family:'DM Mono',monospace;text-decoration:none;letter-spacing:.04em}
-.series-map-link:hover{color:var(--t)}
-.series-map-wrap{border:1px solid var(--b2);border-radius:var(--r);overflow:hidden;background:var(--bg3);min-height:80px;display:flex;align-items:center;justify-content:center}
-.series-map-img{width:100%;max-height:320px;object-fit:contain;display:block;transition:opacity .3s}
-.series-map-fallback{flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:0}
-
 /* 精灵分布格 */
 .hunt-dist-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:8px;margin-bottom:14px}
 .hunt-dist-card{
