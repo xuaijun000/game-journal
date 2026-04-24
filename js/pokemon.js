@@ -1,4 +1,4 @@
-/* ===== 宝可梦背景 ===== */
+﻿/* ===== 宝可梦背景 ===== */
 (function(){
   const canvas=document.getElementById('pkm-canvas');const ctx=canvas.getContext('2d');let W,H;
   function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;}
@@ -596,9 +596,7 @@ function renderSeries(){
 function openSeriesDetail(el){
   const seriesId=el.dataset.sid;const s=PKM_SERIES.find(x=>x.id===seriesId);if(!s)return;
   _curSid=seriesId;
-  // 重置 Tab 到概览
-  document.querySelectorAll('.stab').forEach((b,i)=>b.classList.toggle('on',i===0));
-  document.querySelectorAll('.stab-panel').forEach((p,i)=>p.classList.toggle('on',i===0));
+  // 仅概览模式，无需重置 Tab
   const log=pkmSeriesLogs[seriesId]||{};
   document.getElementById('series-modal-title').textContent=s.name;document.getElementById('series-modal-year').textContent=s.year+' 年发行';
   document.getElementById('series-start-inp').value=log.start_date||'';document.getElementById('series-end-inp').value=log.end_date||'';
@@ -1821,7 +1819,7 @@ async function doInlineSearch(v,resEl,mode){
     const items=await Promise.all(ids.map(async id=>{
       const p=await fetchPkm(id);
       const cn=PKM_CN_TABLE[id]||(await getPkmCNName(id,p.name))||p.name;
-      const img=p.sprites?.front_default||'';
+      const img=p.sprites?.other?.['official-artwork']?.front_default||p.sprites?.front_default||'';
       return{id,name:cn,img};
     }));
     // 存入全局数组，onclick 只传 index，避免 JSON 中的引号破坏 HTML 属性
@@ -2746,7 +2744,8 @@ function selectTrainPkmFromImm(idx){
   toggleImmPanel('__none__');
   updateImmTrainPlaceholder();
   const _tSprite=document.getElementById('train-imm-sprite');
-  if(_tSprite)_tSprite.src=p.img||'';
+  if(_tSprite){_tSprite.src=p.img||'';_tSprite.style.visibility='visible';}
+  if(p.pkmId){fetchPkm(p.pkmId).then(data=>{const art=data.sprites?.other?.['official-artwork']?.front_default||data.sprites?.front_default||p.img;if(_tSprite&&art)_tSprite.src=art;}).catch(()=>{});}
   const _tName=document.getElementById('train-imm-name');
   if(_tName)_tName.textContent=p.name+(p.nick?`「${p.nick}」`:'');
   renderTrainImmEVs();
@@ -2785,12 +2784,35 @@ function setImmMode(mode){
   if(_immMode==='train'&&!_trainPkmData)toggleImmPanel('party');
 }
 
+function enterImmersiveFromSeries(mode){
+  closeOv('ov-series');
+  if(mode==='progress'){
+    const sid=_curSid;
+    const ov=document.getElementById('ov-imm');
+    const bg=document.getElementById('imm-bg');
+    if(!ov||!bg)return;
+    _immSid=sid;
+    bg.style.backgroundImage="url('css/沉浸模式 - 训练背景.png')";
+    renderImmParty();
+    const fabs=document.getElementById('imm-fabs');if(fabs)fabs.style.display='flex';
+    ['imm-sub-catches','imm-sub-explore','imm-sub-progress','imm-sub-party'].forEach(id=>{
+      const el=document.getElementById(id);if(el){el.style.display='none';el.dataset.open='0';}
+    });
+    ov.style.display='flex';ov.classList.add('on');document.body.style.overflow='hidden';
+    stopHuntParticles();stopTrainImmParticles();
+    setTimeout(()=>toggleImmPanel('progress'),80);
+    return;
+  }
+  openImm(mode,_curSid,-1);
+}
+
 function toggleImmPanel(name){
   if(name==='map'){openImmMapPicker();return;}
   const panelMap={
     party:document.getElementById('imm-sub-party'),
     catches:document.getElementById('imm-sub-catches'),
     explore:document.getElementById('imm-sub-explore'),
+    progress:document.getElementById('imm-sub-progress'),
   };
   const target=panelMap[name];
   const wasOpen=!!(target&&target.dataset.open==='1');
@@ -2821,6 +2843,12 @@ function toggleImmPanel(name){
     if(result)result.style.display='none';
     if(saveRow)saveRow.style.display='none';
     loadExploreHistory(_curSid);
+  }
+  if(name==='progress'){
+    const sid=_curSid||_immSid;
+    renderProgress(sid);
+    const bp=document.getElementById('gym-briefing-panel');
+    if(bp)bp.style.display='none';
   }
 }
 

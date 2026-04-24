@@ -1,4 +1,4 @@
-// ===== 沉浸式游玩模式 =====
+﻿// ===== 沉浸式游玩模式 =====
 let playState = {
   open: false,
   type: 'game',      // 'game' | 'anime' | 'manga'
@@ -99,7 +99,7 @@ async function openPlayMode(type, id){
   // 最近快照
   document.getElementById('play-snap-inp').value = '';
   // 重置快照图片状态
-  _snapImgFile = null; _snapImgUrl = null;
+  _snapImgFile = null; _snapImgUrl = null; _logImgFile = null; _playLogClearImg();
   const _prevEl = document.getElementById('play-snap-img-preview');
   if(_prevEl){ _prevEl.src=''; _prevEl.classList.remove('show'); }
   const _snapBg = document.getElementById('play-snap-bg');
@@ -230,6 +230,7 @@ async function _endPlaySessionDB(hrs){
 // 快照图片临时状态
 let _snapImgFile = null;
 let _snapImgUrl = null;   // 已上传的 publicUrl
+let _logImgFile = null;   // 日志待上传图片
 
 async function _loadPlaySnapshot(){
   try{
@@ -326,7 +327,7 @@ function _playSnapUpload(){
 }
 
 function _playSnapClearImg(){
-  _snapImgFile = null; _snapImgUrl = null;
+  _snapImgFile = null; _snapImgUrl = null; _logImgFile = null; _playLogClearImg();
   const prev = document.getElementById('play-snap-img-preview');
   prev.src=''; prev.classList.remove('show');
   document.getElementById('play-snap-img-name').textContent='';
@@ -561,10 +562,17 @@ async function _loadPlayLogs(){
       .eq('ref_type',playState.type)
       .eq('ref_id',String(playState.id))
       .order('created_at',{ascending:false})
-      .limit(20);
+      .limit(50);
     playState.logs = data||[];
     _renderPlayLogs();
   }catch(e){list.innerHTML='<div style="font-size:.75rem;color:var(--t3)">加载失败</div>';}
+}
+
+function _parseLogText(raw){
+  if(!raw) return {text:'',imgUrl:''};
+  const sep=raw.indexOf('\n__IMG__:');
+  if(sep<0) return {text:raw,imgUrl:''};
+  return {text:raw.slice(0,sep),imgUrl:raw.slice(sep+9)};
 }
 
 function _renderPlayLogs(){
@@ -574,34 +582,78 @@ function _renderPlayLogs(){
     document.getElementById('play-sum-logs').textContent='0';
     return;
   }
-  // 今日日志数
   const todayStr = new Date().toDateString();
   const todayCount = playState.logs.filter(l=>new Date(l.created_at).toDateString()===todayStr).length;
   document.getElementById('play-sum-logs').textContent = String(todayCount);
   document.getElementById('play-log-count').textContent = `共 ${playState.logs.length} 条`;
 
-  list.innerHTML = playState.logs.map(l=>`
-    <div class="play-log-item">
-      <span class="play-log-del" onclick="_deletePlayLog('${l.id}')">✕</span>
-      <div class="play-log-text">${esc(l.log_text)}</div>
-      <div class="play-log-time">${_playTsLabel(l.created_at)}</div>
-    </div>`).join('');
+  list.innerHTML='';
+  playState.logs.forEach(l=>{
+    const {text,imgUrl}=_parseLogText(l.log_text);
+    const item=document.createElement('div');
+    item.className='play-log-item';
+    let html=`<span class="play-log-del" onclick="_deletePlayLog('${l.id}')">✕</span>`;
+    if(text) html+=`<div class="play-log-text">${esc(text)}</div>`;
+    if(imgUrl) html+=`<img src="${esc(imgUrl)}" style="max-width:100%;border-radius:6px;margin:4px 0;display:block" onerror="this.style.display='none'">`;
+    html+=`<div class="play-log-time">${_playTsLabel(l.created_at)}</div>`;
+    item.innerHTML=html;
+    list.appendChild(item);
+  });
+}
+function _playLogImgChange(inp){
+  const file=inp.files?.[0]; if(!file) return;
+  _logImgFile=file;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const prev=document.getElementById('play-log-img-preview');
+    if(prev){prev.src=e.target.result;}
+    const row=document.getElementById('play-log-img-preview-row');
+    if(row)row.style.display='flex';
+    const nm=document.getElementById('play-log-img-name');
+    if(nm)nm.textContent=file.name.length>18?file.name.slice(0,16)+'…':file.name;
+    const lbl=document.getElementById('play-log-img-lbl');
+    if(lbl)lbl.style.color='var(--acc)';
+  };
+  reader.readAsDataURL(file);
+}
+
+function _playLogClearImg(){
+  _logImgFile=null;
+  const prev=document.getElementById('play-log-img-preview');if(prev){prev.src='';}
+  const row=document.getElementById('play-log-img-preview-row');if(row)row.style.display='none';
+  const nm=document.getElementById('play-log-img-name');if(nm)nm.textContent='';
+  const inp=document.getElementById('play-log-img-inp');if(inp)inp.value='';
+  const lbl=document.getElementById('play-log-img-lbl');if(lbl)lbl.style.color='';
 }
 
 async function addPlayLog(){
   const inp = document.getElementById('play-log-inp');
   const text = inp.value.trim();
-  if(!text) return;
+  if(!text && !_logImgFile) return;
   inp.value='';
   try{
     const {data:{session}} = await db.auth.getSession();
     if(!session?.user){alert('请先登录');return;}
+    const uid=session.user.id;
+    let logText=text;
+
+    if(_logImgFile){
+      const ext=_logImgFile.name.split('.').pop();
+      const path=`${uid}/log-${playState.type}-${playState.id}-${Date.now()}.${ext}`;
+      const {data:upData,error:upErr}=await db.storage.from('game-screenshots').upload(path,_logImgFile,{upsert:true});
+      if(!upErr){
+        const {data:{publicUrl}}=db.storage.from('game-screenshots').getPublicUrl(path);
+        logText=(text?text+'\n':'')+'__IMG__:'+publicUrl;
+      }
+      _playLogClearImg();
+    }
+
     const {data,error} = await db.from('play_logs').insert({
-      user_id: session.user.id,
+      user_id: uid,
       ref_type: playState.type,
       ref_id: String(playState.id),
       ref_name: playState.type==='game'?playState.item.name:playState.item.title,
-      log_text: text,
+      log_text: logText||text,
       created_at: _playNow()
     }).select('*').single();
     if(!error && data){

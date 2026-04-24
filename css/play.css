@@ -1,4 +1,4 @@
-/* === 沉浸式游玩 / 快照历史 === */
+﻿/* === 沉浸式游玩 / 快照历史 === */
 #ov-play{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
 #ov-play.on{opacity:1;pointer-events:all}
 .play-overlay{width:96vw;max-width:940px;height:92vh;max-height:720px;background:#100f0d;border:1px solid rgba(200,144,64,.15);border-radius:12px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.75)}
@@ -138,3 +138,6 @@
 .snap-hist-ai-send{padding:6px 14px;border-radius:var(--r);font-size:.8rem;font-weight:500;background:rgba(200,144,64,.18);color:var(--acc);border:1px solid rgba(200,144,64,.28);cursor:pointer;font-family:inherit;flex-shrink:0}
 
 @media(max-width:640px){.play-body{grid-template-columns:1fr}.play-col:first-child{border-right:none;border-bottom:1px solid rgba(200,144,64,.06)}.play-col{max-height:50%}}
+
+.play-log-img-btn{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:var(--r);background:rgba(255,255,255,.06);border:1px solid var(--b);cursor:pointer;font-size:.9rem;flex-shrink:0;transition:border-color .2s}
+.play-log-img-btn:hover{border-color:var(--acc)}
