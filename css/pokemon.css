@@ -261,9 +261,10 @@
 .hunt-imm-bg-blur{
   position:absolute;inset:0;
   background-size:cover;background-position:center;
-  filter:blur(40px) brightness(.3) saturate(1.4);
-  opacity:.7;
+  filter:blur(8px) brightness(.28) saturate(1.6);
+  opacity:.85;
   pointer-events:none;
+  transition:background-image .3s ease;
 }
 
 .hunt-imm-close{

@@ -2741,6 +2741,8 @@ function setImmMode(mode){
     return;
   }
   _immMode=mode==='train'?'train':'hunt';
+  const immBg=document.getElementById('imm-bg');
+  if(immBg)immBg.style.backgroundImage=_immMode==='train'?"url('css/沉浸模式 - 训练背景.png')":`url('css/沉浸模式 - 狩猎背景.png')`;
   const huntPanel=document.getElementById('imm-panel-hunt');
   const trainPanel=document.getElementById('imm-panel-train');
   const huntBtn=document.getElementById('imm-mode-hunt');
@@ -2984,7 +2986,7 @@ async function openImm(mode,...args){
     document.getElementById('hunt-success-sprite').src=t.img||'';
     document.getElementById('hunt-imm-success').style.display='none';
     document.getElementById('hunt-nature-pick').style.display='none';
-    bg.style.backgroundImage=`url(${t.img||''})`;
+    bg.style.backgroundImage="url('css/沉浸模式 - 狩猎背景.png')";
     renderHuntAreaGrid(t);
     const sp=document.getElementById('hunt-imm-sprite');
     sp.classList.remove('fight-hit','run-away','shiny');void sp.offsetWidth;
@@ -2994,7 +2996,6 @@ async function openImm(mode,...args){
       const art=p.sprites?.other?.['official-artwork']?.front_default||p.sprites?.front_default||t.img;
       document.getElementById('hunt-imm-sprite').src=art;
       document.getElementById('hunt-success-sprite').src=art;
-      bg.style.backgroundImage=`url(${art})`;
     }catch(e){}
   }else{
     if(!_trainPkmData){showToast('请先选择训练对象');return;}
@@ -3003,7 +3004,7 @@ async function openImm(mode,...args){
     if(art){art.style.visibility='hidden';art.removeAttribute('src');art.classList.remove('train-imm-beat');void art.offsetWidth;}
     if(loc)loc.textContent='📍 '+(_trainSelLoc.split('|')[1]||'训练点');
     document.getElementById('train-imm-name').textContent=_trainPkmData.name+(_trainPkmData.nick?`「${_trainPkmData.nick}」`:'' );
-    bg.style.backgroundImage='none';
+    bg.style.backgroundImage="url('css/沉浸模式 - 训练背景.png')";
     renderTrainImmGrid();
     renderTrainImmEVs();
     const hd=await _immResolvePkmArt(_trainPkmData);
@@ -3013,7 +3014,6 @@ async function openImm(mode,...args){
       art.src=hd;
     }
     if(art&&!hd)art.style.visibility='hidden';
-    if(hd)bg.style.backgroundImage=`url(${hd})`;
   }
 
   setImmMode(mode);
