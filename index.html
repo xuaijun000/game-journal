@@ -619,50 +619,14 @@
           <button class="series-ai-btn" id="train-ai-btn" onclick="getTrainRec()" style="width:100%;margin-top:8px">✦ AI 培养方向建议</button>
           <div id="train-ai-result" class="train-ai-rec-box" style="display:none"></div>
         </div>
-        <!-- 刷练地点 -->
-        <div style="margin-top:12px">
-          <div class="hunt-section-lbl">📍 选择刷练地点</div>
-          <div class="loc-custom-row">
-            <input id="train-custom-loc" class="series-inp" placeholder="输入地点名称（如：茂岩山、101号道路…）" onkeydown="if(event.key==='Enter')loadCustomLocDist('train')">
-            <button class="btn btn-sm btn-a" onclick="loadCustomLocDist('train')">获取分布</button>
-          </div>
-          <div id="train-loc-chips" class="hunt-loc-row"></div>
-          <div id="train-no-loc" style="display:none;font-size:.75rem;color:var(--t3);padding:4px 0 8px">该版本暂无预设地点。</div>
-        </div>
-        <!-- 精灵分布 + 努力值 -->
-        <div id="train-dist-section" style="display:none">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-            <span class="hunt-section-lbl" style="margin-bottom:0">💪 <span id="train-dist-title">精灵分布 &amp; 努力值</span></span>
-            <button class="btn btn-sm" id="train-dist-btn" onclick="loadTrainDistribution()" style="font-size:.72rem">✦ 获取</button>
-            <button class="btn btn-sm btn-a" onclick="openImmTrain()" style="font-size:.72rem;margin-left:auto">⚡ 沉浸训练</button>
-          </div>
-          <div class="train-dist-note">努力值数据来源：PokéAPI 官方数据，点击精灵即可累计 EV</div>
-          <div id="train-dist-grid" class="train-dist-grid"></div>
-        </div>
+        <button class="btn btn-a" style="width:100%;margin-top:12px" onclick="openImmTrain()">⚡ 进入沉浸训练</button>
       </div>
     </div>
 
     <!-- 狩猎 -->
     <div class="stab-panel" id="stab-hunting">
       <div class="series-body">
-        <!-- 地点选择 -->
-        <div id="hunt-phase-loc">
-          <div class="hunt-section-lbl">📍 选择捕猎地点</div>
-          <div class="loc-custom-row">
-            <input id="hunt-custom-loc" class="series-inp" placeholder="输入地点名称（如：茂岩山、101号道路…）" onkeydown="if(event.key==='Enter')loadCustomLocDist('hunt')">
-            <button class="btn btn-sm btn-a" onclick="loadCustomLocDist('hunt')">获取分布</button>
-          </div>
-          <div id="hunt-loc-chips" class="hunt-loc-row"></div>
-          <div id="hunt-no-loc" style="display:none;font-size:.75rem;color:var(--t3);padding:4px 0 10px">该版本暂无预设地点，请直接从下方添加目标精灵。</div>
-        </div>
-        <!-- 精灵分布 -->
-        <div id="hunt-phase-dist" style="display:none">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-            <div class="hunt-section-lbl" style="margin-bottom:0">🎯 <span id="hunt-dist-title">精灵分布</span></div>
-            <button class="btn btn-sm" id="hunt-dist-btn" onclick="loadHuntDistribution()" style="font-size:.72rem">✦ 获取分布</button>
-          </div>
-          <div id="hunt-dist-grid" class="hunt-dist-grid"></div>
-        </div>
+        <button class="btn btn-a" style="width:100%;margin-bottom:10px" onclick="openImm('hunt',_curSid,-1)">⚡ 进入沉浸捕猎</button>
         <!-- 狩猎目标列表 -->
         <div id="hunt-list" style="margin-top:4px"></div>
       </div>
@@ -692,6 +656,14 @@
     </button>
   </div>
   <div id="imm-panel-hunt" style="flex:1;overflow-y:auto;position:relative;z-index:2;padding-right:68px;padding-bottom:80px">
+    <div class="imm-loc-section">
+      <div class="imm-loc-row">
+        <input id="hunt-custom-loc" class="series-inp" style="flex:1;font-size:.76rem" placeholder="输入地点名称（如：101号道路…）" onkeydown="if(event.key==='Enter')loadCustomLocDist('hunt')">
+        <button class="btn btn-sm btn-a" onclick="loadCustomLocDist('hunt')" style="font-size:.72rem;white-space:nowrap">获取</button>
+      </div>
+      <div id="hunt-loc-chips" class="hunt-loc-row" style="margin-bottom:0"></div>
+      <div id="hunt-no-loc" style="display:none;font-size:.74rem;color:var(--t3);padding:2px 0 4px">该版本暂无预设地点，请手动输入。</div>
+    </div>
     <div class="hunt-imm-hero">
       <div class="hunt-imm-target-badge" id="hunt-imm-target"></div>
       <img class="hunt-imm-sprite" id="hunt-imm-sprite" src="" alt="">
@@ -726,6 +698,14 @@
     </div>
   </div>
   <div id="imm-panel-train" style="flex:1;overflow-y:auto;display:none;position:relative;z-index:2;padding-right:68px;padding-bottom:80px">
+    <div class="imm-loc-section">
+      <div class="imm-loc-row">
+        <input id="train-custom-loc" class="series-inp" style="flex:1;font-size:.76rem" placeholder="输入地点名称（如：茂岩山…）" onkeydown="if(event.key==='Enter')loadCustomLocDist('train')">
+        <button class="btn btn-sm btn-a" onclick="loadCustomLocDist('train')" style="font-size:.72rem;white-space:nowrap">获取</button>
+      </div>
+      <div id="train-loc-chips" class="hunt-loc-row" style="margin-bottom:0"></div>
+      <div id="train-no-loc" style="display:none;font-size:.74rem;color:var(--t3);padding:2px 0 4px">该版本暂无预设地点，请手动输入。</div>
+    </div>
     <div id="imm-train-placeholder" style="display:none;padding:20px 18px 8px;text-align:center;color:var(--t2);font-size:.82rem;line-height:1.7">
       请先选择训练对象
     </div>

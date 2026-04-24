@@ -257,6 +257,13 @@
 #ov-imm > #imm-panel-train{
   padding-inline:16px;
 }
+#imm-panel-hunt,#imm-panel-train{scrollbar-width:thin;scrollbar-color:rgba(126,205,196,.18) transparent}
+#imm-panel-hunt::-webkit-scrollbar,#imm-panel-train::-webkit-scrollbar{width:3px}
+#imm-panel-hunt::-webkit-scrollbar-track,#imm-panel-train::-webkit-scrollbar-track{background:transparent}
+#imm-panel-hunt::-webkit-scrollbar-thumb,#imm-panel-train::-webkit-scrollbar-thumb{background:rgba(126,205,196,.22);border-radius:3px}
+
+.imm-loc-section{padding:10px 0 4px;border-bottom:1px solid rgba(126,205,196,.08);margin-bottom:8px}
+.imm-loc-row{display:flex;gap:6px;margin-bottom:6px;align-items:center}
 
 .hunt-imm-bg-blur{
   position:absolute;inset:0;

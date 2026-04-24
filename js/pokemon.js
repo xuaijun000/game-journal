@@ -1571,6 +1571,12 @@ function renderHuntDist(items,isOfficial,srcLabel){
       ${rateHtml}
     </div>`;
   }).join('');
+  // 同步更新沉浸模式区域网格
+  const ov=document.getElementById('ov-imm');
+  if(ov&&ov.style.display!=='none'&&_immMode==='hunt'){
+    const curList=lsGet('pkm_hunt_'+_immSid)||[];
+    renderHuntAreaGrid(curList[_immIdx]||null);
+  }
 }
 
 function selectDistPkm(idx){
@@ -1895,7 +1901,7 @@ function renderHuntAreaGrid(t){
   if(areaEl)areaEl.style.display='flex';
   if(actions)actions.style.display='none';  // 有分布则隐藏传统按钮
   grid.innerHTML=_huntLocPkm.map((pkm,i)=>{
-    const isTarget=pkm.id===t.pkmId||pkm.name===t.name;
+    const isTarget=t&&(pkm.id===t.pkmId||pkm.name===t.name);
     return`<div class="hunt-area-card${isTarget?' hunt-area-target':''}" onclick="huntEncounterFromGrid(${i})" title="${esc(pkm.name)}">
       <img src="${pkm.img||''}" alt="${esc(pkm.name)}" onerror="this.style.opacity='.3'">
       <div class="hunt-area-card-name">${esc(pkm.name)}</div>
@@ -1904,12 +1910,27 @@ function renderHuntAreaGrid(t){
   }).join('');
 }
 
-// 点击区域精灵：目标 → 准备捕获；非目标 → 逃跑
+// 点击区域精灵：无目标 → 创建新目标；目标 → 捕获；非目标 → 逃跑
 function huntEncounterFromGrid(idx){
   if(_huntActionsLocked)return;
-  const list=lsGet('pkm_hunt_'+_immSid)||[];
-  const t=list[_immIdx];if(!t||t.done)return;
   const pkm=_huntLocPkm[idx];if(!pkm)return;
+  const list=lsGet('pkm_hunt_'+_immSid)||[];
+  const t=list[_immIdx];
+  // 无激活目标 → 点击即开始捕猎该精灵
+  if(!t||t.done){
+    const loc=_huntSelLoc.includes('|')?_huntSelLoc.split('|')[1]:'';
+    const newT={pkmId:pkm.id,name:pkm.name,img:pkm.img,nature:'—',iv:'—',count:0,done:false,ts:Date.now(),loc};
+    list.push(newT);_immIdx=list.length-1;
+    lsSet('pkm_hunt_'+_immSid,list);
+    syncSeriesField(_immSid,'hunts',list);renderHuntList(_immSid);
+    const locBadge=document.getElementById('imm-loc');if(locBadge&&loc)locBadge.textContent='📍 '+loc;
+    document.getElementById('hunt-imm-name').textContent=pkm.name;
+    document.getElementById('hunt-imm-target').textContent='🎯 '+pkm.name;
+    document.getElementById('hunt-imm-sprite').src=pkm.img||'';
+    document.getElementById('hunt-success-sprite').src=pkm.img||'';
+    document.getElementById('hunt-imm-num').textContent='0';
+    renderHuntAreaGrid(newT);return;
+  }
   const isTarget=pkm.id===t.pkmId||pkm.name===t.name;
 
   if(isTarget){
@@ -2505,6 +2526,9 @@ function stopTrainImmParticles(){
 
 function renderTrainDist(items,isOfficial,srcLabel){
   _trainLocPkm=items;
+  // 同步更新沉浸模式训练网格
+  const ov=document.getElementById('ov-imm');
+  if(ov&&ov.style.display!=='none'&&_immMode==='train')renderTrainImmGrid();
   const grid=document.getElementById('train-dist-grid');if(!grid)return;
   const srcBadge=isOfficial
     ?`<div class="dist-src-badge dist-src-official">${srcLabel||'52poke'} 官方 · 精灵分布</div>`
@@ -2706,11 +2730,9 @@ let _immMapInited=false;
 function updateImmTrainPlaceholder(){
   const placeholder=document.getElementById('imm-train-placeholder');
   const hero=document.querySelector('#imm-panel-train .tim-hero');
-  const section=document.querySelector('#imm-panel-train .tim-grid-section');
   const show=!_trainPkmData;
   if(placeholder)placeholder.style.display=show?'block':'none';
-  if(hero)hero.style.display=show?'none':'';
-  if(section)section.style.display=show?'none':'';
+  if(hero)hero.style.display=show?'none':'flex';
 }
 
 function selectTrainPkmFromImm(idx){
@@ -2974,46 +2996,61 @@ async function openImm(mode,...args){
 
   if(mode==='hunt'){
     const[sid,idx]=args;
+    const i=idx??-1;
+    _immSid=sid;_immIdx=i;_huntActionsLocked=false;
     const list=lsGet('pkm_hunt_'+sid)||[];
-    const t=list[idx];if(!t||t.done)return;
-    _immSid=sid;_immIdx=idx;_huntActionsLocked=false;
-    const natZh=getNatureZh(t.nature);
-    if(loc)loc.textContent='📍 '+(t.loc||'野外');
-    document.getElementById('hunt-imm-name').textContent=t.name;
-    document.getElementById('hunt-imm-target').textContent=NATURES.some(n=>n.id===t.nature)?natZh+'性格 目标':'🎯 '+t.name;
-    document.getElementById('hunt-imm-num').textContent=t.count;
-    document.getElementById('hunt-imm-sprite').src=t.img||'';
-    document.getElementById('hunt-success-sprite').src=t.img||'';
+    const t=i>=0?list[i]:null;
+    if(loc)loc.textContent='📍 '+(t?.loc||'野外');
     document.getElementById('hunt-imm-success').style.display='none';
     document.getElementById('hunt-nature-pick').style.display='none';
+    if(t&&!t.done){
+      const natZh=getNatureZh(t.nature);
+      document.getElementById('hunt-imm-name').textContent=t.name;
+      document.getElementById('hunt-imm-target').textContent=NATURES.some(n=>n.id===t.nature)?natZh+'性格 目标':'🎯 '+t.name;
+      document.getElementById('hunt-imm-num').textContent=t.count;
+      document.getElementById('hunt-imm-sprite').src=t.img||'';
+      document.getElementById('hunt-success-sprite').src=t.img||'';
+      const sp=document.getElementById('hunt-imm-sprite');
+      sp.classList.remove('fight-hit','run-away','shiny');void sp.offsetWidth;
+      sp.classList.add('enter-new');setTimeout(()=>sp.classList.remove('enter-new'),500);
+    }else{
+      document.getElementById('hunt-imm-name').textContent='';
+      document.getElementById('hunt-imm-target').textContent='选择地点后点击精灵开始捕猎';
+      document.getElementById('hunt-imm-num').textContent='0';
+      document.getElementById('hunt-imm-sprite').src='';
+    }
     bg.style.backgroundImage="url('css/沉浸模式 - 狩猎背景.png')";
+    initHuntTab(sid);
     renderHuntAreaGrid(t);
-    const sp=document.getElementById('hunt-imm-sprite');
-    sp.classList.remove('fight-hit','run-away','shiny');void sp.offsetWidth;
-    sp.classList.add('enter-new');setTimeout(()=>sp.classList.remove('enter-new'),500);
-    try{
-      const p=await fetchPkm(t.pkmId);
-      const art=p.sprites?.other?.['official-artwork']?.front_default||p.sprites?.front_default||t.img;
-      document.getElementById('hunt-imm-sprite').src=art;
-      document.getElementById('hunt-success-sprite').src=art;
-    }catch(e){}
+    if(t&&!t.done){
+      try{
+        const p=await fetchPkm(t.pkmId);
+        const art=p.sprites?.other?.['official-artwork']?.front_default||p.sprites?.front_default||t.img;
+        document.getElementById('hunt-imm-sprite').src=art;
+        document.getElementById('hunt-success-sprite').src=art;
+      }catch(e){}
+    }
   }else{
-    if(!_trainPkmData){showToast('请先选择训练对象');return;}
-    if(!_trainLocPkm.length){showToast('请先加载地点精灵分布');return;}
+    const tSid=_trainSid||_curSid;
     const art=document.getElementById('train-imm-sprite');
     if(art){art.style.visibility='hidden';art.removeAttribute('src');art.classList.remove('train-imm-beat');void art.offsetWidth;}
-    if(loc)loc.textContent='📍 '+(_trainSelLoc.split('|')[1]||'训练点');
-    document.getElementById('train-imm-name').textContent=_trainPkmData.name+(_trainPkmData.nick?`「${_trainPkmData.nick}」`:'' );
-    bg.style.backgroundImage="url('css/沉浸模式 - 训练背景.png')";
-    renderTrainImmGrid();
-    renderTrainImmEVs();
-    const hd=await _immResolvePkmArt(_trainPkmData);
-    if(art&&hd){
-      art.onerror=()=>{art.style.visibility='hidden';};
-      art.onload=()=>{art.style.visibility='visible';};
-      art.src=hd;
+    if(loc)loc.textContent='📍 '+(_trainSelLoc.includes('|')?_trainSelLoc.split('|')[1]:'训练点');
+    if(_trainPkmData){
+      document.getElementById('train-imm-name').textContent=_trainPkmData.name+(_trainPkmData.nick?`「${_trainPkmData.nick}」`:'');
     }
-    if(art&&!hd)art.style.visibility='hidden';
+    bg.style.backgroundImage="url('css/沉浸模式 - 训练背景.png')";
+    if(tSid)initTrainTab(tSid);
+    if(_trainLocPkm.length)renderTrainImmGrid();
+    renderTrainImmEVs();
+    if(_trainPkmData){
+      const hd=await _immResolvePkmArt(_trainPkmData);
+      if(art&&hd){
+        art.onerror=()=>{art.style.visibility='hidden';};
+        art.onload=()=>{art.style.visibility='visible';};
+        art.src=hd;
+      }
+      if(art&&!hd)art.style.visibility='hidden';
+    }
   }
 
   setImmMode(mode);

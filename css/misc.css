@@ -1,7 +1,8 @@
 /* === Tab Banner === */
-.tab-banner{width:100%;height:120px;border-radius:var(--r);margin-bottom:1.2rem;overflow:hidden;position:relative;flex-shrink:0}
+.tab-banner{width:100vw;height:120px;border-radius:0;margin-bottom:1.4rem;margin-top:-2.1rem;margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);overflow:hidden;position:relative;flex-shrink:0}
 .tab-banner img{width:100%;height:100%;object-fit:cover;filter:blur(1.5px) brightness(.5) saturate(1.4);display:block}
-.tab-banner::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,var(--bg) 0%,transparent 28%,transparent 72%,var(--bg) 100%),linear-gradient(180deg,transparent 55%,var(--bg) 100%);pointer-events:none}
+.tab-banner::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,var(--bg) 100%);pointer-events:none}
+@media(max-width:700px){.tab-banner{margin-top:-1.4rem}}
 
 /* === 空状态插图 === */
 .empty-psyduck{width:80px;height:80px;object-fit:contain;opacity:.55;margin-bottom:.6rem;display:block;margin-left:auto;margin-right:auto}
