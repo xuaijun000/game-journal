@@ -3106,3 +3106,138 @@ function openImmTrain(){
 function closeImmTrain(){
   return closeImm();
 }
+
+let _partyEditingSlot=null;
+let _partyReplaceTarget=null;
+
+function isPartySlotEditing(sid,idx){
+  return _partyEditingSlot?.sid===sid&&_partyEditingSlot?.idx===idx;
+}
+
+function togglePartyEdit(sid,idx){
+  _partyEditingSlot=isPartySlotEditing(sid,idx)?null:{sid,idx};
+  renderPartySlots(sid);
+}
+
+function savePartyEdit(sid,idx){
+  const nickEl=document.getElementById(`party-nick-${sid}-${idx}`);
+  const lvEl=document.getElementById(`party-lv-${sid}-${idx}`);
+  let lv=(lvEl?.value||'').trim();
+  if(lv!==''){
+    const num=Math.max(0,Math.min(100,parseInt(lv,10)||0));
+    lv=String(num);
+  }
+  updatePartyMember(sid,idx,{nick:(nickEl?.value||'').trim(),lv});
+}
+
+function updatePartyMember(sid,idx,fields){
+  let party=lsGet('pkm_party_'+sid)||[];
+  if(!Array.isArray(party))party=[];
+  while(party.length<6)party.push(null);
+  if(!party[idx])return;
+  party[idx]={...party[idx],...fields};
+  lsSet('pkm_party_'+sid,party);
+  _partyEditingSlot=null;
+  _partyReplaceTarget=null;
+  renderPartySlots(sid);
+  renderImmParty();
+  if(typeof initTrainTab==='function')initTrainTab(sid);
+  syncSeriesField(sid,'party',party);
+}
+
+function queuePartyReplace(sid,idx,searchId){
+  _partyReplaceTarget={sid,idx};
+  _partyEditingSlot=null;
+  renderPartySlots(sid);
+  const inp=document.getElementById(searchId);
+  if(inp){
+    inp.focus();
+    inp.select?.();
+  }
+  if(typeof showToast==='function')showToast('选择一只宝可梦来替换当前队伍位');
+}
+
+function replacePartyMember(sid,idx,pkm){
+  let party=lsGet('pkm_party_'+sid)||[];
+  if(!Array.isArray(party))party=[];
+  while(party.length<6)party.push(null);
+  const prev=party[idx]||{};
+  party[idx]={
+    pkmId:pkm.id,
+    name:pkm.name,
+    img:pkm.img,
+    nick:prev.nick||'',
+    lv:prev.lv||''
+  };
+  lsSet('pkm_party_'+sid,party);
+  _partyReplaceTarget=null;
+  _partyEditingSlot={sid,idx};
+  renderPartySlots(sid);
+  renderImmParty();
+  if(typeof initTrainTab==='function')initTrainTab(sid);
+  syncSeriesField(sid,'party',party);
+}
+
+function renderPartySlots(sid){
+  let party=lsGet('pkm_party_'+sid)||[];
+  if(!Array.isArray(party))party=[];
+  while(party.length<6)party.push(null);
+  const html=(searchId)=>party.map((p,i)=>{
+    if(p){
+      const editing=isPartySlotEditing(sid,i);
+      const nickVal=(p.nick||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+      const lvVal=String(p.lv||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+      return`<div class="party-slot filled${editing?' party-slot-editing':''}" onclick="togglePartyEdit('${sid}',${i})">
+        <button class="party-slot-del" onclick="removeFromParty('${sid}',${i});event.stopPropagation()">✕</button>
+        <img src="${p.img||''}" alt="" onerror="this.style.display='none'">
+        <div class="party-slot-name">${esc(p.name)}</div>
+        ${editing
+          ?`<div class="party-slot-edit-form" onclick="event.stopPropagation()">
+              <input id="party-nick-${sid}-${i}" class="series-inp party-slot-inp" placeholder="昵称" value="${nickVal}">
+              <input id="party-lv-${sid}-${i}" class="series-inp party-slot-inp" type="number" min="0" max="100" placeholder="等级" value="${lvVal}">
+              <div class="party-slot-edit-actions">
+                <button class="btn btn-sm" onclick="savePartyEdit('${sid}',${i});event.stopPropagation()">确认</button>
+                <button class="btn btn-sm" onclick="queuePartyReplace('${sid}',${i},'${searchId}');event.stopPropagation()">更换</button>
+              </div>
+            </div>`
+          :`${p.nick?`<div class="party-slot-nick">${esc(p.nick)}</div>`:''}
+             <div class="party-slot-lv">${p.lv?'Lv.'+p.lv:''}</div>
+             <button class="party-speak-btn" onclick="speakPartyMember('${sid}',${i});event.stopPropagation()">💬 说话</button>`
+        }
+      </div>`;
+    }
+    return`<div class="party-slot" onclick="document.getElementById('${searchId}')?.focus()">
+      <div class="party-slot-empty-icon">+</div>
+      <div class="party-slot-empty-lbl">空位</div>
+    </div>`;
+  }).join('');
+  const wrap=document.getElementById('party-slots');
+  if(wrap)wrap.innerHTML=html('party-search-inp');
+  const immWrap=document.getElementById('imm-party-slots');
+  if(immWrap)immWrap.innerHTML=html('imm-party-search-inp');
+}
+
+function removeFromParty(sid,idx){
+  let party=lsGet('pkm_party_'+sid)||[];
+  if(!Array.isArray(party))party=[];
+  while(party.length<6)party.push(null);
+  party[idx]=null;
+  lsSet('pkm_party_'+sid,party);
+  if(isPartySlotEditing(sid,idx))_partyEditingSlot=null;
+  if(_partyReplaceTarget?.sid===sid&&_partyReplaceTarget?.idx===idx)_partyReplaceTarget=null;
+  renderPartySlots(sid);
+  renderImmParty();
+  if(typeof initTrainTab==='function')initTrainTab(sid);
+  syncSeriesField(sid,'party',party);
+}
+
+function selectInlinePkm(idx,mode){
+  const pkm=_inlineSearchResults[idx];
+  if(!pkm)return;
+  if(mode==='party'){
+    if(_partyReplaceTarget?.sid===_curSid)replacePartyMember(_curSid,_partyReplaceTarget.idx,pkm);
+    else addToParty(_curSid,pkm);
+  }else if(mode==='catch'){
+    selectCatchPkm(pkm);
+  }
+}

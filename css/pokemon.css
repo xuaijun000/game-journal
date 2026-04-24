@@ -1034,3 +1034,33 @@
 @keyframes trainBeatFlash{
   0%{background:rgba(255,255,255,.07);}35%{background:rgba(90,184,154,.32);border-color:rgba(90,184,154,.65);}100%{background:rgba(255,255,255,.07);}
 }
+
+.party-slot-editing{
+  cursor:default;
+  justify-content:flex-start;
+}
+
+.party-slot-edit-form{
+  width:100%;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  margin-top:6px;
+}
+
+.party-slot-inp{
+  padding:6px 8px;
+  font-size:.72rem;
+}
+
+.party-slot-edit-actions{
+  display:flex;
+  gap:6px;
+  width:100%;
+}
+
+.party-slot-edit-actions .btn{
+  flex:1;
+  padding:5px 0;
+  font-size:.68rem;
+}
