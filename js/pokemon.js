@@ -28,6 +28,8 @@ let pkmOfficialDexCache=null;
 let pkmOfficialDexPromise=null;
 let pkmOfficialVariantDataCache=null;
 let pkmOfficialVariantDataPromise=null;
+const pkmDetailFormsCache={};
+let currentDetailPkmId=null;
 const _52pokeInfoCache={}; // 52poke 精灵信息缓存 {cnName: {abilities,hiddenAbility,evYields}}
 
 function typeTag(t){const c=TYPE_COLOR[t]||'#888';return`<span class="pkm-type" style="background:${c}22;color:${c};border:1px solid ${c}44">${TYPE_ZH[t]||t}</span>`;}
@@ -235,6 +237,59 @@ function getDisplayNameWithVariant(baseName,variant){
   if(variant?.name&&variant.name!==baseName&&!variant.subname)return variant.name;
   if(!variant?.subname||variant.subname==='一般')return baseName;
   return `${baseName}（${variant.subname}）`;
+}
+function getDetailBaseName(p,species){
+  const dexId=getSpeciesDexId(p,species)||Number(p?.id)||0;
+  return PKM_CN_TABLE[dexId]||getCNName(species,p?.name)||(species?.name||p?.name||'');
+}
+function buildSearchCandidates(){
+  const seen=new Map();
+  Object.entries(PKM_CN_TABLE).forEach(([id,name])=>{
+    const dexId=Number(id);
+    seen.set(`base-${dexId}`,{key:`base-${dexId}`,label:name,searchText:name,target:dexId});
+  });
+  const variantsMap=pkmOfficialVariantDataCache||{};
+  Object.entries(variantsMap).forEach(([dexId,items])=>{
+    const baseName=PKM_CN_TABLE[Number(dexId)]||'';
+    (items||[]).forEach(v=>{
+      const label=getDisplayNameWithVariant(baseName,v);
+      const searchText=[baseName,v.name,v.subname,label].filter(Boolean).join(' ');
+      const key=`variant-${dexId}-${v.href||label}`;
+      if(!seen.has(key))seen.set(key,{key,label,searchText,target:Number(dexId)});
+    });
+  });
+  return [...seen.values()];
+}
+async function renderDetailForms(p,species,baseName){
+  const wrap=document.getElementById('pkm-detail-forms');
+  if(!wrap)return;
+  const dexId=getSpeciesDexId(p,species)||Number(p.id)||0;
+  const cacheKey=String(dexId);
+  let forms=pkmDetailFormsCache[cacheKey];
+  if(!forms){
+    const varieties=species?.varieties||[];
+    forms=await Promise.all(varieties.map(async v=>{
+      try{
+        const vp=await fetchPkm(v.pokemon.name);
+        const variant=await resolveOfficialDexVariant(vp,species).catch(()=>null);
+        return{
+          id:vp.id,
+          name:vp.name,
+          sprite:vp.sprites?.front_default||'',
+          displayName:getDisplayNameWithVariant(baseName,variant),
+          sortKey:variant?.href?.split('/').pop()||`${padDexId(dexId)}-${v.pokemon.name}`,
+        };
+      }catch{return null;}
+    }));
+    forms=forms.filter(Boolean);
+    const uniq=new Map();
+    forms.forEach(f=>{if(!uniq.has(f.name))uniq.set(f.name,f);});
+    forms=[...uniq.values()].sort((a,b)=>a.sortKey.localeCompare(b.sortKey,'en'));
+    pkmDetailFormsCache[cacheKey]=forms;
+  }
+  if(forms.length<=1){wrap.style.display='none';wrap.innerHTML='';return;}
+  wrap.style.display='flex';
+  wrap.innerHTML=forms.map(f=>`<button class="pkm-detail-form-chip${f.id===p.id?' on':''}" onclick="openPkmDetail('${f.name}')">${f.sprite?`<img src="${f.sprite}" alt="">`:''}<span>${esc(f.displayName)}</span></button>`).join('');
 }
 
 // ===== 宝可梦官方简体中文名对照表（全1003只）=====
@@ -697,7 +752,7 @@ async function togglePkmStatus(status){
 }
 async function togglePkmStatusModal(status){
   const{data:{session}}=await db.auth.getSession();if(!session?.user){alert('请先登录');return;}
-  const id=parseInt(document.getElementById('pkm-detail-num').textContent.replace('#',''));
+  const id=currentDetailPkmId||parseInt(document.getElementById('pkm-detail-num').textContent.replace('#',''));
   const name=document.getElementById('pkm-detail-name').textContent;
   await togglePkmStatusFor(id,name,status);updateDetailBtns(id);
   if(todayPkm&&todayPkm.id===id)updateTodayBtns();
@@ -717,6 +772,7 @@ async function openPkmDetail(idOrName){
   document.getElementById('pkm-detail-name').textContent='加载中…';
   try{
     const p=await fetchPkm(idOrName);const sp=await fetchPkmSpecies(p.species.url.split('/').slice(-2)[0]);
+    currentDetailPkmId=p.id;
     const dexId=getSpeciesDexId(p,sp)||Number(p.id);
     const baseCnName=PKM_CN_TABLE[dexId]||getCNName(sp,p.name)||(await getPkmCNName(dexId,p.name))||p.name;
     const officialVariant=await resolveOfficialDexVariant(p,sp).catch(()=>null);
@@ -739,6 +795,7 @@ async function openPkmDetail(idOrName){
     document.getElementById('pkm-detail-num').textContent=`#${String(dexId||p.id).padStart(3,'0')}`;document.getElementById('pkm-detail-name').textContent=cnName;
     document.getElementById('pkm-detail-types').innerHTML=p.types.map(t=>typeTag(t.type.name)).join('');
     document.getElementById('pkm-detail-meta').textContent=`身高 ${p.height/10}m · 体重 ${p.weight/10}kg`;
+    await renderDetailForms(p,sp,baseCnName);
     document.getElementById('pkm-detail-stats').innerHTML=p.stats.map(s=>statBar(s.stat.name,s.base_stat)).join('');
     // 特性（52poke 异步获取）
     const detailAbEl=document.getElementById('pkm-detail-abilities');
@@ -758,7 +815,21 @@ function onPkmSearch(v){
   pkmSearchT=setTimeout(async()=>{
     res.innerHTML='<div style="color:var(--t3);font-size:.8rem;padding:8px">搜索中…</div>';
     try{
-      const q=v.trim().toLowerCase();const r=await fetch(`${POKEAPI}/pokemon?limit=2000`);const d=await r.json();
+      const q=v.trim().toLowerCase();
+      await loadOfficialPkmVariants().catch(()=>null);
+      const localMatches=buildSearchCandidates()
+        .filter(item=>item.searchText.toLowerCase().includes(q))
+        .slice(0,16);
+      if(localMatches.length){
+        const items=await Promise.all(localMatches.map(async item=>{
+          const p=await fetchPkm(item.target);
+          const img=p.sprites?.front_default||'';
+          return`<div class="pkm-mini" onclick="openPkmDetail(${item.target})"><img src="${img}" alt=""><div class="pkm-mini-name">${esc(item.label)}</div></div>`;
+        }));
+        res.innerHTML=items.join('');
+        return;
+      }
+      const r=await fetch(`${POKEAPI}/pokemon?limit=2000`);const d=await r.json();
       const matches=d.results.filter(x=>x.name.includes(q)||x.url.split('/').slice(-2)[0]===q).slice(0,16);
       if(!matches.length){res.innerHTML='<div style="color:var(--t3);font-size:.8rem;padding:8px">未找到</div>';return;}
       const items=await Promise.all(matches.map(async m=>{
@@ -769,7 +840,7 @@ function onPkmSearch(v){
         const variant=await resolveOfficialDexVariant(p,sp).catch(()=>null);
         const cn=getDisplayNameWithVariant(baseName,variant);
         const img=p.sprites?.front_default||'';
-        return`<div class="pkm-mini" onclick="openPkmDetail(${p.id})"><img src="${img}" alt=""><div class="pkm-mini-name">${cn}</div></div>`;
+        return`<div class="pkm-mini" onclick="openPkmDetail('${m.name}')"><img src="${img}" alt=""><div class="pkm-mini-name">${esc(cn)}</div></div>`;
       }));
       res.innerHTML=items.join('');
     }catch(e){res.innerHTML='<div style="color:var(--danger);font-size:.8rem;padding:8px">搜索失败</div>';}

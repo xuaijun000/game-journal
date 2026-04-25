@@ -52,6 +52,11 @@
 .pkm-detail-body{padding:1.2rem 1.5rem}
 .pkm-detail-name{font-family:'Noto Serif SC',serif;font-size:1.4rem;font-weight:600;margin-bottom:4px}
 .pkm-detail-meta{font-size:.78rem;color:var(--t2);font-family:'DM Mono',monospace;margin-bottom:10px}
+.pkm-detail-forms{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.pkm-detail-form-chip{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;border:1px solid var(--b2);background:var(--bg3);color:var(--t2);font-size:.7rem;cursor:pointer;transition:all .15s;font-family:'DM Mono',monospace}
+.pkm-detail-form-chip:hover{border-color:rgba(200,144,64,.35);background:var(--bg2)}
+.pkm-detail-form-chip.on{border-color:var(--acc);background:rgba(200,144,64,.12);color:var(--acc)}
+.pkm-detail-form-chip img{width:22px;height:22px;object-fit:contain;image-rendering:pixelated}
 .pkm-detail-desc{font-size:.85rem;color:var(--t2);line-height:1.7;margin-bottom:12px;border-left:2px solid var(--b2);padding-left:10px}
 .pkm-translate-btn{display:inline-flex;align-items:center;gap:4px;margin-top:6px;padding:3px 10px;font-size:.72rem;background:var(--bg3);border:1px solid var(--b2);border-radius:2px;color:var(--t2);cursor:pointer;transition:all .2s}
 .pkm-translate-btn:hover{background:var(--acc);color:#0c0b09;border-color:var(--acc)}
