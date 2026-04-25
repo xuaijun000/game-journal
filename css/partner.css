@@ -4,13 +4,31 @@
 /* Partner Card */
 .partner-card{background:var(--bg2);border:1px solid var(--b2);border-radius:var(--rl);overflow:hidden;position:sticky;top:72px}
 .partner-sprite-area{height:220px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;border-bottom:1px solid var(--b)}
-.partner-sprite-bg{position:absolute;inset:0;opacity:.18;background-size:cover;background-position:center;filter:blur(28px)}
+.partner-sprite-bg{position:absolute;inset:0;background-image:linear-gradient(to bottom,rgba(6,8,9,.1),rgba(6,8,9,.48)),var(--partner-type-bg);background-size:cover;background-position:center;transform:scale(1.04);animation:partner-bg-drift 12s ease-in-out infinite}
+.partner-sprite-area::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 56%,rgba(255,255,255,.18),transparent 34%),linear-gradient(to top,rgba(0,0,0,.45),transparent 48%);pointer-events:none;z-index:1}
 .partner-sprite{width:160px;height:160px;object-fit:contain;image-rendering:pixelated;position:relative;z-index:2;filter:drop-shadow(0 8px 20px rgba(0,0,0,.65));animation:partner-float 3.5s ease-in-out infinite}
 .partner-sprite.excited{animation:partner-excited 1.8s ease-in-out infinite}
 .partner-sprite.tired{animation:partner-tired 5s ease-in-out infinite;filter:drop-shadow(0 4px 10px rgba(0,0,0,.4)) brightness(.82)}
+.partner-sprite.action-feed{animation:partner-feed .9s ease-out 1,partner-float 3.5s ease-in-out .9s infinite}
+.partner-sprite.action-pat{animation:partner-pat 1s ease-out 1,partner-float 3.5s ease-in-out 1s infinite}
+.partner-sprite.action-play{animation:partner-play 1.1s ease-out 1,partner-float 3.5s ease-in-out 1.1s infinite}
+.partner-sprite.action-train{animation:partner-train .9s ease-out 1,partner-float 3.5s ease-in-out .9s infinite}
+.partner-sprite.action-rest{animation:partner-rest 3s ease-in-out infinite;filter:drop-shadow(0 4px 10px rgba(0,0,0,.45)) brightness(.86)}
+.partner-sprite.action-adventure{animation:partner-adventure 1.2s ease-out 1,partner-float 3.5s ease-in-out 1.2s infinite}
+.partner-effect-burst{position:absolute;z-index:3;width:112px;height:112px;background-size:contain;background-repeat:no-repeat;background-position:center;opacity:0;pointer-events:none;filter:drop-shadow(0 8px 16px rgba(0,0,0,.35))}
+.partner-effect-burst.action-feed,.partner-effect-burst.action-pat,.partner-effect-burst.action-play,.partner-effect-burst.action-train,.partner-effect-burst.action-rest,.partner-effect-burst.action-adventure{animation:partner-effect-pop 1.15s ease-out 1}
+.partner-type-chip{position:absolute;left:12px;top:10px;z-index:3;font-size:.62rem;font-family:'DM Mono',monospace;padding:2px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.22);background:rgba(0,0,0,.38);color:rgba(255,255,255,.82);backdrop-filter:blur(8px)}
 @keyframes partner-float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-10px) scale(1.02)}}
 @keyframes partner-excited{0%,100%{transform:translateY(0) scale(1)}30%{transform:translateY(-15px) scale(1.07) rotate(-4deg)}60%{transform:translateY(-7px) scale(1.04) rotate(3deg)}}
 @keyframes partner-tired{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-3px) scale(.97)}}
+@keyframes partner-bg-drift{0%,100%{transform:scale(1.04) translate(0,0)}50%{transform:scale(1.1) translate(-2%,1%)}}
+@keyframes partner-feed{0%{transform:scale(1)}35%{transform:translateY(6px) scale(.96)}65%{transform:translateY(-8px) scale(1.05)}100%{transform:scale(1)}}
+@keyframes partner-pat{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px) rotate(-2deg)}55%{transform:translateX(5px) rotate(2deg)}}
+@keyframes partner-play{0%{transform:translateY(0) rotate(0)}30%{transform:translateY(-18px) rotate(-7deg)}60%{transform:translateY(-6px) rotate(7deg)}100%{transform:translateY(0) rotate(0)}}
+@keyframes partner-train{0%,100%{transform:scale(1)}30%{transform:scale(.9) rotate(-5deg)}60%{transform:scale(1.12) rotate(3deg)}}
+@keyframes partner-rest{0%,100%{transform:translateY(0) scale(.98)}50%{transform:translateY(2px) scale(.95)}}
+@keyframes partner-adventure{0%{transform:translateX(-12px) scale(.98)}45%{transform:translateX(10px) translateY(-10px) scale(1.05)}100%{transform:translateX(0) scale(1)}}
+@keyframes partner-effect-pop{0%{opacity:0;transform:translateY(18px) scale(.7) rotate(-8deg)}18%{opacity:1}75%{opacity:.9;transform:translateY(-28px) scale(1.08) rotate(4deg)}100%{opacity:0;transform:translateY(-42px) scale(.92)}}
 
 .partner-mood-badge{position:absolute;top:10px;right:12px;z-index:3;font-size:.65rem;font-family:'DM Mono',monospace;padding:2px 8px;border-radius:999px;border:1px solid var(--b2);background:rgba(22,32,34,.85);color:var(--t2)}
 .partner-mood-badge.happy{border-color:rgba(255,179,163,.4);color:var(--warn);background:rgba(255,179,163,.08)}
@@ -76,6 +94,20 @@
 .partner-item-name{font-size:.63rem;font-family:'DM Mono',monospace;color:var(--t2);margin-bottom:1px}
 .partner-item-count{font-size:.6rem;font-family:'DM Mono',monospace;color:var(--t3)}
 .partner-item-desc{font-size:.58rem;color:var(--t3);margin-top:2px}
+
+/* Partner Roster */
+.partner-roster-box{position:relative;overflow:hidden;background-image:linear-gradient(120deg,rgba(6,8,9,.82),rgba(6,8,9,.5)),url('assets/partner/partner-roster-bg.png');background-size:cover;background-position:center}
+.partner-roster-list{display:flex;flex-direction:column;gap:7px}
+.partner-roster-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border:1px solid rgba(255,255,255,.08);background:rgba(7,10,11,.58);border-radius:8px;cursor:pointer;transition:transform .15s,border-color .15s,background .15s}
+.partner-roster-item:hover{transform:translateY(-1px);border-color:rgba(126,205,196,.34);background:rgba(7,10,11,.76)}
+.partner-roster-item.active{border-color:rgba(90,184,154,.46);background:rgba(90,184,154,.1);cursor:default}
+.partner-roster-item img{width:42px;height:42px;object-fit:contain;image-rendering:pixelated;flex-shrink:0}
+.partner-roster-main{min-width:0;flex:1}
+.partner-roster-name{font-size:.78rem;color:var(--t);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.partner-roster-meta{font-size:.58rem;color:var(--t3);font-family:'DM Mono',monospace;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.partner-roster-bond{width:28px;height:28px;border-radius:50%;border:1px solid rgba(255,128,171,.25);background:rgba(255,128,171,.08);display:flex;align-items:center;justify-content:center;font-size:.62rem;font-family:'DM Mono',monospace;color:#ff9fc1;flex-shrink:0}
+.partner-roster-empty{display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 8px;color:var(--t3);font-size:.75rem}
+.partner-roster-empty img{width:72px;height:72px;object-fit:contain;opacity:.74}
 
 /* Diary */
 .partner-diary-list{display:flex;flex-direction:column;gap:6px}

@@ -40,6 +40,21 @@ const PARTNER_ACTIONS = {
 };
 
 const PARTNER_DAILY_LIMIT = 5;
+const PARTNER_ASSET_BASE = 'css/assets/partner';
+const PARTNER_TYPE_ZH = {
+  normal:'一般',fire:'火',water:'水',electric:'电',grass:'草',ice:'冰',fighting:'格斗',poison:'毒',
+  ground:'地面',flying:'飞行',psychic:'超能力',bug:'虫',rock:'岩石',ghost:'幽灵',dragon:'龙',
+  dark:'恶',steel:'钢',fairy:'妖精'
+};
+const PARTNER_ACTION_EFFECT = {
+  feed:'food',
+  pat:'heart',
+  play:'spark',
+  train:'levelup',
+  rest:'sleep',
+  adventure:'bond',
+  chat:'note'
+};
 
 const BOND_STAGES = [
   {min:0,  max:20,  name:'初次相遇', desc:'它还在观察你。'},
@@ -115,6 +130,7 @@ function pLevelFromExp(e){let lv=1;while(lv<30&&pExpForLevel(lv+1)<=e)lv++;retur
 let partnerData=null;
 let partnerChatHistory=[];
 let partnerChatLoading=false;
+let partnerTypeCache={};
 
 /* ===== INIT ===== */
 async function initPartner(){
@@ -135,17 +151,18 @@ async function initPartner(){
 async function loadPartnerData(userId){
   const{data,error}=await db.from('pkm_partner').select('*').eq('user_id',userId).single();
   if(error){renderPartnerSelectPrompt();return;}
-  if(data){partnerData=data;checkPartnerDailyReset();renderPartnerPage();}
+  if(data){partnerData=data;checkPartnerDailyReset();await pEnsurePartnerMeta();renderPartnerPage();}
   else renderPartnerSelectPrompt();
 }
 
 
 async function savePartnerData(){
   if(!partnerData)return;
+  pSyncCurrentPartnerToRoster();
   partnerData.updated_at=new Date().toISOString();
   const{data:{session}}=await db.auth.getSession();
   if(!session?.user)return;
-  await db.from('pkm_partner').upsert({...partnerData,user_id:session.user.id});
+  await db.from('pkm_partner').upsert(pPartnerDbPayload(partnerData,session.user.id));
 }
 
 /* ===== DAILY RESET ===== */
@@ -180,6 +197,97 @@ function applyPartnerStatDecay(){
 
 function pClamp(v){return Math.max(0,Math.min(100,v));}
 
+async function pEnsurePartnerMeta(){
+  if(!partnerData?.pkm_id)return;
+  if(Array.isArray(partnerData.types)&&partnerData.types.length)return;
+  const meta=await pFetchPokemonMeta(partnerData.pkm_id).catch(()=>null);
+  if(!meta)return;
+  partnerData.types=meta.types;
+  partnerData.primary_type=meta.types?.[0]||partnerData.primary_type||'normal';
+}
+
+async function pFetchPokemonMeta(pkmId){
+  if(partnerTypeCache[pkmId])return partnerTypeCache[pkmId];
+  const p=await fetch(`https://pokeapi.co/api/v2/pokemon/${pkmId}`).then(r=>r.ok?r.json():null);
+  const out={types:(p?.types||[]).map(t=>t.type.name).filter(Boolean)};
+  partnerTypeCache[pkmId]=out;
+  return out;
+}
+
+function pPartnerTypeBg(type){
+  const t=type||'normal';
+  return `${PARTNER_ASSET_BASE}/types/type-${t}.png`;
+}
+
+function pPartnerEffectImg(action){
+  const key=PARTNER_ACTION_EFFECT[action]||'spark';
+  return `${PARTNER_ASSET_BASE}/effects/effect-${key}.png`;
+}
+
+function pCleanInventory(inv){
+  const out={...(inv||{})};
+  delete out._partner_roster;
+  return out;
+}
+
+function pGetStoredRoster(){
+  const inv=partnerData?.inventory||{};
+  return Array.isArray(inv._partner_roster)?inv._partner_roster:[];
+}
+
+function pSetStoredRoster(roster){
+  partnerData.inventory={...(partnerData.inventory||{}),_partner_roster:roster.slice(0,12)};
+}
+
+function pPartnerSnapshot(d=partnerData){
+  if(!d)return null;
+  return {
+    pkm_id:d.pkm_id,pkm_name:d.pkm_name,nickname:d.nickname||null,
+    level:d.level||1,exp:d.exp||0,hunger:d.hunger??80,mood:d.mood??75,energy:d.energy??80,bond:d.bond||0,
+    last_interaction_at:d.last_interaction_at||new Date().toISOString(),
+    streak_days:d.streak_days||1,last_checkin_date:d.last_checkin_date||pToday(),
+    inventory:pCleanInventory(d.inventory),diary:d.diary||[],
+    daily_interactions:d.daily_interactions||{date:pToday(),total:0},
+    interaction_counts:d.interaction_counts||{feed:0,pat:0,play:0,train:0,rest:0,adventure:0,total:0},
+    achievements:d.achievements||[],types:d.types||[],primary_type:d.primary_type||d.types?.[0]||'normal',
+    last_action:d.last_action||'',
+    saved_at:new Date().toISOString()
+  };
+}
+
+function pPartnerDbPayload(d,userId){
+  return {
+    user_id:userId,
+    pkm_id:d.pkm_id,pkm_name:d.pkm_name,nickname:d.nickname||null,
+    level:d.level||1,exp:d.exp||0,hunger:d.hunger??80,mood:d.mood??75,energy:d.energy??80,bond:d.bond||0,
+    last_interaction_at:d.last_interaction_at||new Date().toISOString(),
+    streak_days:d.streak_days||1,last_checkin_date:d.last_checkin_date||pToday(),
+    inventory:d.inventory||{},diary:d.diary||[],
+    daily_interactions:d.daily_interactions||{date:pToday(),total:0},
+    interaction_counts:d.interaction_counts||{feed:0,pat:0,play:0,train:0,rest:0,adventure:0,total:0},
+    achievements:d.achievements||[],
+    created_at:d.created_at,updated_at:d.updated_at||new Date().toISOString()
+  };
+}
+
+function pUpsertRosterSnapshot(roster,snapshot,activeId){
+  if(!snapshot?.pkm_id)return roster||[];
+  const next=(roster||[]).filter(x=>Number(x.pkm_id)!==Number(snapshot.pkm_id));
+  next.unshift({...snapshot,active:Number(snapshot.pkm_id)===Number(activeId)});
+  return next.map(x=>({...x,active:Number(x.pkm_id)===Number(activeId)}));
+}
+
+function pSyncCurrentPartnerToRoster(){
+  if(!partnerData?.pkm_id)return;
+  const roster=pUpsertRosterSnapshot(pGetStoredRoster(),pPartnerSnapshot(partnerData),partnerData.pkm_id);
+  pSetStoredRoster(roster);
+}
+
+function pPartnerRoster(){
+  if(!partnerData)return[];
+  return pUpsertRosterSnapshot(pGetStoredRoster(),pPartnerSnapshot(partnerData),partnerData.pkm_id);
+}
+
 /* ===== RENDER ===== */
 function renderPartnerSelectPrompt(){
   document.getElementById('partner-container').innerHTML=`
@@ -207,14 +315,21 @@ function renderPartnerPage(){
   const expPct=lvNext>lvStart?Math.round((totalExp-lvStart)/(lvNext-lvStart)*100):100;
   const ic=d.interaction_counts||{};
   const spriteUrl=partnerSpriteUrl(d.pkm_id);
+  const primaryType=d.primary_type||d.types?.[0]||'normal';
+  const typeBg=pPartnerTypeBg(primaryType);
+  const action=d.last_action||'';
+  const actionCls=action?` action-${action}`:'';
+  const effectImg=pPartnerEffectImg(action);
 
   document.getElementById('partner-container').innerHTML=`
-    <div class="partner-layout">
+    <div class="partner-layout partner-type-${primaryType}">
       <div class="partner-card">
-        <div class="partner-sprite-area">
-          <div class="partner-sprite-bg" style="background-image:url('${spriteUrl}')"></div>
-          <img id="partner-sprite" class="partner-sprite ${moodAnim}" src="${spriteUrl}" alt="${pEsc(name)}" onerror="this.style.opacity='.3'">
+        <div class="partner-sprite-area" style="--partner-type-bg:url('${typeBg}')">
+          <div class="partner-sprite-bg"></div>
+          <div class="partner-effect-burst ${actionCls}" style="background-image:url('${effectImg}')"></div>
+          <img id="partner-sprite" class="partner-sprite ${moodAnim}${actionCls}" src="${spriteUrl}" alt="${pEsc(name)}" onerror="this.style.opacity='.3'">
           <div class="partner-mood-badge ${moodBadge.cls}">${moodBadge.text}</div>
+          <div class="partner-type-chip">${PARTNER_TYPE_ZH[primaryType]||primaryType}</div>
         </div>
         <div class="partner-body">
           <div class="partner-identity">
@@ -258,6 +373,7 @@ function renderPartnerPage(){
       <div class="partner-right">
         ${pRenderTasks()}
         ${pRenderInventory()}
+        ${pRenderRoster()}
         ${pRenderDiary()}
         ${pRenderProfile()}
         ${pRenderChatHTML()}
@@ -318,6 +434,30 @@ function pRenderDiary(){
   return`<div class="partner-box">
     <div class="partner-box-hdr">📔 伙伴日记</div>
     <div class="partner-diary-list">${rows}</div>
+  </div>`;
+}
+
+function pRenderRoster(){
+  const roster=pPartnerRoster();
+  const rows=roster.length?roster.map(r=>{
+    const active=Number(r.pkm_id)===Number(partnerData.pkm_id);
+    const lv=pLevelFromExp(r.exp||0);
+    const type=r.primary_type||r.types?.[0]||'normal';
+    return`<div class="partner-roster-item ${active?'active':''}" onclick="${active?'':'switchPartnerFromRoster('+r.pkm_id+')'}">
+      <img src="${partnerSpriteUrl(r.pkm_id)}" alt="${pEsc(r.pkm_name)}" onerror="this.style.display='none'">
+      <div class="partner-roster-main">
+        <div class="partner-roster-name">${pEsc(r.nickname||r.pkm_name)}</div>
+        <div class="partner-roster-meta">#${String(r.pkm_id).padStart(4,'0')} · Lv.${lv} · ${PARTNER_TYPE_ZH[type]||type}</div>
+      </div>
+      <div class="partner-roster-bond">${r.bond||0}</div>
+    </div>`;
+  }).join(''):`<div class="partner-roster-empty">
+    <img src="${PARTNER_ASSET_BASE}/partner-empty-roster.png" alt="">
+    <span>还没有历史伙伴</span>
+  </div>`;
+  return`<div class="partner-box partner-roster-box">
+    <div class="partner-box-hdr">伙伴清单 <span>${roster.length}/12</span></div>
+    <div class="partner-roster-list">${rows}</div>
   </div>`;
 }
 
@@ -383,6 +523,7 @@ async function doPartnerInteraction(type){
   const ic=partnerData.interaction_counts||{};
   partnerData.interaction_counts={...ic,[type]:(ic[type]||0)+1,total:(ic.total||0)+1};
   partnerData.last_interaction_at=new Date().toISOString();
+  partnerData.last_action=type;
 
   const newLv=pLevelFromExp(partnerData.exp);
   const oldLv=pLevelFromExp(prevExp);
@@ -413,6 +554,7 @@ async function usePartnerItem(itemType){
   if(item.effect.bond)   partnerData.bond=pClamp(partnerData.bond+item.effect.bond);
   if(item.effect.exp)    partnerData.exp=(partnerData.exp||0)+item.effect.exp;
   partnerData.last_interaction_at=new Date().toISOString();
+  partnerData.last_action=itemType==='toy'?'play':'feed';
   pAddDiary(`使用了${item.name}，${partnerData.nickname||partnerData.pkm_name}感觉不错。`);
   pCheckAchievements();
   await savePartnerData();
@@ -459,26 +601,44 @@ async function selectPartner(pkmId,pkmName){
   if(!session?.user)return;
   // 确保用中文名
   const cnName=await pFetchChineseName(pkmId,pkmName);
+  const prevRoster=partnerData?pUpsertRosterSnapshot(pGetStoredRoster(),pPartnerSnapshot(partnerData),partnerData.pkm_id):[];
+  const saved=prevRoster.find(x=>Number(x.pkm_id)===Number(pkmId));
+  const meta=await pFetchPokemonMeta(pkmId).catch(()=>null);
   closeOv('ov-partner-select');
   const today=pToday();
+  const base=saved||{};
   const rec={
     user_id:session.user.id,
     pkm_id:pkmId,pkm_name:cnName,nickname:null,
-    level:1,exp:0,hunger:80,mood:75,energy:80,bond:0,
-    last_interaction_at:new Date().toISOString(),
-    streak_days:1,last_checkin_date:today,
-    inventory:{berry:3,poffin:1,cube:0,drink:0,toy:0},
-    diary:[{date:today,text:`你和${cnName}第一次相遇了！一段新的旅程开始了。`}],
-    daily_interactions:{date:today,total:0},
-    interaction_counts:{feed:0,pat:0,play:0,train:0,rest:0,adventure:0,total:0},
-    achievements:['first_meet'],
+    ...base,
+    pkm_id:pkmId,pkm_name:cnName,
+    nickname:base.nickname||null,
+    level:base.level||1,exp:base.exp||0,hunger:base.hunger??80,mood:base.mood??75,energy:base.energy??80,bond:base.bond||0,
+    last_interaction_at:base.last_interaction_at||new Date().toISOString(),
+    streak_days:base.streak_days||1,last_checkin_date:base.last_checkin_date||today,
+    inventory:{...pCleanInventory(base.inventory||{berry:3,poffin:1,cube:0,drink:0,toy:0}),_partner_roster:prevRoster},
+    diary:base.diary||[{date:today,text:`你和${cnName}第一次相遇了！一段新的旅程开始了。`}],
+    daily_interactions:base.daily_interactions||{date:today,total:0},
+    interaction_counts:base.interaction_counts||{feed:0,pat:0,play:0,train:0,rest:0,adventure:0,total:0},
+    achievements:base.achievements||['first_meet'],
+    types:meta?.types||base.types||[],
+    primary_type:meta?.types?.[0]||base.primary_type||base.types?.[0]||'normal',
+    last_action:saved?'bond':'',
     created_at:new Date().toISOString(),updated_at:new Date().toISOString()
   };
-  const{data,error}=await db.from('pkm_partner').upsert(rec,{onConflict:'user_id'}).select().single();
+  rec.inventory._partner_roster=pUpsertRosterSnapshot(prevRoster,pPartnerSnapshot(rec),pkmId);
+  const{data,error}=await db.from('pkm_partner').upsert(pPartnerDbPayload(rec,session.user.id),{onConflict:'user_id'}).select().single();
   if(error){showPartnerToast('保存失败：'+error.message);return;}
-  partnerData=data||rec;
+  partnerData={...(data||rec),types:rec.types,primary_type:rec.primary_type,last_action:rec.last_action};
   renderPartnerPage();
-  showPartnerToast(`🎉 ${cnName} 成为了你的伙伴！`);
+  showPartnerToast(saved?`${cnName} 回到了伙伴位！`:`🎉 ${cnName} 成为了你的伙伴！`);
+}
+
+async function switchPartnerFromRoster(pkmId){
+  const roster=pPartnerRoster();
+  const item=roster.find(x=>Number(x.pkm_id)===Number(pkmId));
+  if(!item)return;
+  await selectPartner(item.pkm_id,item.pkm_name);
 }
 
 async function pFetchChineseName(pkmId,fallback){
