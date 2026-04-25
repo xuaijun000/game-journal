@@ -79,7 +79,52 @@
   flex-direction:column;
   align-items:center;
   gap:2px;
-  z-index:3;
+  z-index:4;
+}
+
+.frlg-svg-overlay{
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  z-index:2;
+  overflow:visible;
+}
+
+.frlg-svg-overlay path{
+  fill:transparent;
+  stroke:none;
+  cursor:pointer;
+  pointer-events:all;
+  transition:fill .12s,stroke-opacity .12s;
+  vector-effect:non-scaling-stroke;
+}
+
+.frlg-svg-overlay path:hover{
+  fill:rgba(126,205,196,.18);
+  stroke:rgba(126,205,196,.7);
+  stroke-width:1.5;
+}
+
+.frlg-svg-overlay path.active{
+  fill:rgba(126,205,196,.35);
+  stroke:rgba(126,205,196,.95);
+  stroke-width:2;
+}
+
+.frlg-svg-label{
+  position:fixed;
+  z-index:9999;
+  background:rgba(0,0,0,.82);
+  color:#fff;
+  font-size:.68rem;
+  font-family:'DM Mono',monospace;
+  padding:3px 9px;
+  border-radius:4px;
+  pointer-events:none;
+  display:none;
+  white-space:nowrap;
 }
 
 .frlg-hotspot.draggable{cursor:grab;}

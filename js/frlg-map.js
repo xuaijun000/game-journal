@@ -112,6 +112,8 @@ const _frlgPkmCache = {};
 let _frlgCalibMode = false;
 const _frlgCalibOverrides = {};
 let _frlgDragging = false;
+let _frlgSvgLoadToken = 0;
+let _frlgSvgLabel = null;
 
 function initFRLGMapTab(seriesId) {
   const btn = document.getElementById('imm-map-btn');
@@ -175,7 +177,10 @@ function frlgInitView(view) {
 
   viewer.appendChild(img);
   frlgRenderHotspots(viewer, hotspots);
-  if (frlgView === 'kanto') frlgRenderRegions(viewer, KANTO_REGIONS);
+  if (frlgView === 'kanto') {
+    frlgRenderRegions(viewer, KANTO_REGIONS);
+    frlgRenderSvgOverlay(viewer);
+  }
   frlgResetCalibrationSurface();
 }
 
@@ -730,4 +735,67 @@ function frlgFormatHotspotForExport(hotspot) {
 
 function frlgJsStr(s) {
   return String(s ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
+async function frlgRenderSvgOverlay(viewer) {
+  const token = ++_frlgSvgLoadToken;
+  let svgText;
+  try {
+    const resp = await fetch('css/firered-and-leafgreen-versions-map/火红叶绿全局地图.svg');
+    if (!resp.ok) return;
+    svgText = await resp.text();
+  } catch { return; }
+
+  if (token !== _frlgSvgLoadToken || !viewer.isConnected) return;
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(svgText, 'image/svg+xml');
+  const svgEl = doc.querySelector('svg');
+  if (!svgEl) return;
+
+  svgEl.removeAttribute('width');
+  svgEl.removeAttribute('height');
+  svgEl.classList.add('frlg-svg-overlay');
+
+  svgEl.querySelectorAll('path[id]').forEach(path => {
+    const slug = path.id;
+    const zhName = path.getAttribute('data-zh') || slug;
+
+    path.addEventListener('mouseenter', e => frlgShowSvgLabel(zhName, e));
+    path.addEventListener('mousemove', frlgMoveSvgLabel);
+    path.addEventListener('mouseleave', frlgHideSvgLabel);
+    path.addEventListener('click', e => {
+      e.stopPropagation();
+      svgEl.querySelectorAll('path.active').forEach(p => p.classList.remove('active'));
+      path.classList.add('active');
+      document.querySelectorAll('.frlg-hotspot.active').forEach(h => h.classList.remove('active'));
+      const resolved = frlgResolveLocationKey(slug);
+      frlgShowEncounters(resolved || slug, zhName);
+    });
+  });
+
+  const old = viewer.querySelector('.frlg-svg-overlay');
+  if (old) old.remove();
+  viewer.appendChild(svgEl);
+}
+
+function frlgShowSvgLabel(text, e) {
+  if (!_frlgSvgLabel) {
+    _frlgSvgLabel = document.createElement('div');
+    _frlgSvgLabel.className = 'frlg-svg-label';
+    document.body.appendChild(_frlgSvgLabel);
+  }
+  _frlgSvgLabel.textContent = text;
+  _frlgSvgLabel.style.display = 'block';
+  frlgMoveSvgLabel(e);
+}
+
+function frlgMoveSvgLabel(e) {
+  if (!_frlgSvgLabel) return;
+  _frlgSvgLabel.style.left = (e.clientX + 12) + 'px';
+  _frlgSvgLabel.style.top = (e.clientY + 12) + 'px';
+}
+
+function frlgHideSvgLabel() {
+  if (_frlgSvgLabel) _frlgSvgLabel.style.display = 'none';
 }
