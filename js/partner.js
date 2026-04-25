@@ -134,48 +134,11 @@ async function initPartner(){
 
 async function loadPartnerData(userId){
   const{data,error}=await db.from('pkm_partner').select('*').eq('user_id',userId).single();
-  if(error){
-    if(error.code==='PGRST116'){renderPartnerSelectPrompt();}
-    else pShowSetupMsg();
-    return;
-  }
+  if(error){renderPartnerSelectPrompt();return;}
   if(data){partnerData=data;checkPartnerDailyReset();renderPartnerPage();}
   else renderPartnerSelectPrompt();
 }
 
-function pShowSetupMsg(){
-  const sql=`create table pkm_partner (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid references auth.users(id) on delete cascade not null,
-  pkm_id integer not null,  pkm_name text not null,
-  nickname text,
-  level integer default 1, exp integer default 0,
-  hunger integer default 80, mood integer default 75,
-  energy integer default 80, bond integer default 0,
-  last_interaction_at timestamptz default now(),
-  streak_days integer default 1,
-  last_checkin_date date default current_date,
-  inventory jsonb default \'{"berry":3,"poffin":1,"cube":0,"drink":0,"toy":0}\'::jsonb,
-  diary jsonb default \'[]\'::jsonb,
-  daily_interactions jsonb default \'{}\'::jsonb,
-  interaction_counts jsonb default \'{"feed":0,"pat":0,"play":0,"train":0,"rest":0,"adventure":0,"total":0}\'::jsonb,
-  achievements jsonb default \'[]\'::jsonb,
-  created_at timestamptz default now(),
-  updated_at timestamptz default now(),
-  unique(user_id)
-);
-alter table pkm_partner enable row level security;
-create policy "Users manage own partner" on pkm_partner
-  for all using (auth.uid() = user_id);`;
-  document.getElementById('partner-container').innerHTML=`
-    <div class="partner-login-prompt">
-      <div class="partner-login-prompt-icon">⚙️</div>
-      <h3>需要建立数据表</h3>
-      <p>请前往 <a href="https://supabase.com/dashboard/project/qbzxfwnosacwbdumkvoz/sql/new" target="_blank" style="color:var(--acc)">Supabase SQL Editor</a> 执行以下 SQL，然后刷新页面：</p>
-      <pre style="background:var(--bg3);border:1px solid var(--b);border-radius:var(--r);padding:1rem;font-size:.65rem;font-family:'DM Mono',monospace;overflow-x:auto;text-align:left;color:var(--t2);margin-top:10px;line-height:1.7;max-height:260px;overflow-y:auto">${pEsc(sql)}</pre>
-      <button class="btn btn-a" onclick="window.location.reload()" style="margin:1.2rem auto 0;display:block;padding:10px 32px">执行后刷新页面</button>
-    </div>`;
-}
 
 async function savePartnerData(){
   if(!partnerData)return;
@@ -512,11 +475,7 @@ async function selectPartner(pkmId,pkmName){
     created_at:new Date().toISOString(),updated_at:new Date().toISOString()
   };
   const{data,error}=await db.from('pkm_partner').upsert(rec,{onConflict:'user_id'}).select().single();
-  if(error){
-    showPartnerToast('保存失败，请确认已在 Supabase 执行建表 SQL');
-    pShowSetupMsg();
-    return;
-  }
+  if(error){showPartnerToast('保存失败：'+error.message);return;}
   partnerData=data||rec;
   renderPartnerPage();
   showPartnerToast(`🎉 ${cnName} 成为了你的伙伴！`);
