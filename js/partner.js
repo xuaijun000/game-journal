@@ -152,7 +152,7 @@ async function loadPartnerData(userId){
   const{data,error}=await db.from('pkm_partner').select('*').eq('user_id',userId).single();
   if(error){renderPartnerSelectPrompt();return;}
   if(data){partnerData=data;checkPartnerDailyReset();await pEnsurePartnerMeta();renderPartnerPage();}
-  else renderPartnerSelectPrompt();
+  else{renderPartnerSelectPrompt();updatePartnerFloat('partner');}
 }
 
 
@@ -199,17 +199,18 @@ function pClamp(v){return Math.max(0,Math.min(100,v));}
 
 async function pEnsurePartnerMeta(){
   if(!partnerData?.pkm_id)return;
-  if(Array.isArray(partnerData.types)&&partnerData.types.length)return;
-  const meta=await pFetchPokemonMeta(partnerData.pkm_id).catch(()=>null);
+  const pkid=partnerData.pkm_id;
+  if(Array.isArray(partnerData.types)&&partnerData.types.length&&partnerTypeCache[pkid]?.apiName)return;
+  const meta=await pFetchPokemonMeta(pkid).catch(()=>null);
   if(!meta)return;
   partnerData.types=meta.types;
   partnerData.primary_type=meta.types?.[0]||partnerData.primary_type||'normal';
 }
 
 async function pFetchPokemonMeta(pkmId){
-  if(partnerTypeCache[pkmId])return partnerTypeCache[pkmId];
+  if(partnerTypeCache[pkmId]?.apiName)return partnerTypeCache[pkmId];
   const p=await fetch(`https://pokeapi.co/api/v2/pokemon/${pkmId}`).then(r=>r.ok?r.json():null);
-  const out={types:(p?.types||[]).map(t=>t.type.name).filter(Boolean)};
+  const out={types:(p?.types||[]).map(t=>t.type.name).filter(Boolean),apiName:p?.name||null};
   partnerTypeCache[pkmId]=out;
   return out;
 }
@@ -348,7 +349,7 @@ function renderPartnerPage(){
         <div class="partner-sprite-area" style="--partner-type-bg:url('${typeBg}')">
           <div class="partner-sprite-bg"></div>
           <div class="partner-effect-burst ${actionCls}" style="background-image:url('${effectImg}')"></div>
-          <img id="partner-sprite" class="partner-sprite ${moodAnim}${actionCls}" src="${spriteUrl}" alt="${pEsc(name)}" onerror="this.style.opacity='.3'">
+          <img id="partner-sprite" class="partner-sprite ${moodAnim}${actionCls}" src="${spriteUrl}" alt="${pEsc(name)}" onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${d.pkm_id}.png'">
           <div class="partner-mood-badge ${moodBadge.cls}">${moodBadge.text}</div>
           <div class="partner-type-chip">${PARTNER_TYPE_ZH[primaryType]||primaryType}</div>
         </div>
@@ -400,6 +401,7 @@ function renderPartnerPage(){
         ${pRenderChatHTML()}
       </div>
     </div>`;
+  updatePartnerFloat('partner');
 }
 
 function pStatBar(label,key,val,color){
@@ -863,6 +865,13 @@ function addPartnerBubble(text,role,cls=''){
 
 /* ===== UTILS ===== */
 function partnerSpriteUrl(pkmId){
+  if(pkmId<=649)
+    return`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${pkmId}.gif`;
+  const en=partnerTypeCache[pkmId]?.apiName;
+  if(en)return`https://play.pokemonshowdown.com/sprites/ani/${en}.gif`;
+  return`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pkmId}.png`;
+}
+function partnerSpriteStatic(pkmId){
   return`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pkmId}.png`;
 }
 
@@ -875,3 +884,42 @@ function showPartnerToast(html){
 }
 
 function pEsc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+/* ===== FLOATING WIDGET ===== */
+function updatePartnerFloat(activePg){
+  let w=document.getElementById('pflt');
+  if(!partnerData){
+    if(w)w.classList.add('hidden');
+    return;
+  }
+  if(!w){
+    w=document.createElement('div');
+    w.id='pflt';
+    w.className='pflt';
+    w.title='前往伙伴页';
+    w.onclick=()=>{
+      const btn=Array.from(document.querySelectorAll('nav button')).find(b=>b.textContent.trim()==='伙伴');
+      if(btn)btn.click();
+    };
+    w.innerHTML=`<img class="pflt-spr" id="pflt-spr" src="" alt=""><div class="pflt-info"><div class="pflt-nm" id="pflt-nm"></div><div class="pflt-st" id="pflt-st"></div></div><div class="pflt-dot" id="pflt-dot"></div>`;
+    document.body.appendChild(w);
+  }
+  const onPartnerPage=activePg==='partner'||(activePg==null&&document.getElementById('pg-partner')?.classList.contains('on'));
+  w.classList.toggle('hidden',!!onPartnerPage);
+  const d=partnerData;
+  const spr=document.getElementById('pflt-spr');
+  const newSrc=partnerSpriteUrl(d.pkm_id);
+  if(spr.getAttribute('data-src')!==newSrc){
+    spr.setAttribute('data-src',newSrc);
+    spr.src=newSrc;
+    spr.onerror=()=>{spr.onerror=null;spr.src=partnerSpriteStatic(d.pkm_id);};
+  }
+  const moodCls=d.mood>75?'excited':d.energy<25?'tired':'';
+  spr.className='pflt-spr'+(moodCls?' '+moodCls:'');
+  document.getElementById('pflt-nm').textContent=d.nickname||d.pkm_name;
+  const needsAttn=d.hunger<30||d.mood<30||d.energy<25;
+  const neglected=Date.now()-new Date(d.last_interaction_at||Date.now()).getTime()>3600000*4;
+  document.getElementById('pflt-st').textContent=needsAttn?'需要关注…':neglected?'有点想你了':'状态良好';
+  document.getElementById('pflt-dot').classList.toggle('on',needsAttn||neglected);
+}
+window.updatePartnerFloat=updatePartnerFloat;
