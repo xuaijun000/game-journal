@@ -41,6 +41,7 @@ const PARTNER_ACTIONS = {
 
 const PARTNER_DAILY_LIMIT = 5;
 const PARTNER_ASSET_BASE = 'css/assets/partner';
+const PARTNER_CSS_ASSET_BASE = '../css/assets/partner';
 const PARTNER_TYPE_ZH = {
   normal:'一般',fire:'火',water:'水',electric:'电',grass:'草',ice:'冰',fighting:'格斗',poison:'毒',
   ground:'地面',flying:'飞行',psychic:'超能力',bug:'虫',rock:'岩石',ghost:'幽灵',dragon:'龙',
@@ -216,12 +217,27 @@ async function pFetchPokemonMeta(pkmId){
 
 function pPartnerTypeBg(type){
   const t=type||'normal';
-  return `${PARTNER_ASSET_BASE}/types/type-${t}.png`;
+  return `${PARTNER_CSS_ASSET_BASE}/types/type-${t}.jpg`;
+}
+
+function pPartnerTypeBgDoc(type){
+  const t=type||'normal';
+  return `${PARTNER_ASSET_BASE}/types/type-${t}.jpg`;
 }
 
 function pPartnerEffectImg(action){
   const key=PARTNER_ACTION_EFFECT[action]||'spark';
   return `${PARTNER_ASSET_BASE}/effects/effect-${key}.png`;
+}
+
+function pPreloadPartnerImage(src){
+  if(!src||document.querySelector(`link[data-partner-preload="${src}"]`))return;
+  const link=document.createElement('link');
+  link.rel='preload';
+  link.as='image';
+  link.href=src;
+  link.dataset.partnerPreload=src;
+  document.head.appendChild(link);
 }
 
 function pCleanInventory(inv){
@@ -320,6 +336,8 @@ function renderPartnerPage(){
   const action=d.last_action||'';
   const actionCls=action?` action-${action}`:'';
   const effectImg=pPartnerEffectImg(action);
+  pPreloadPartnerImage(pPartnerTypeBgDoc(primaryType));
+  if(action)pPreloadPartnerImage(effectImg);
 
   document.getElementById('partner-container').innerHTML=`
     <div class="partner-layout partner-type-${primaryType}">

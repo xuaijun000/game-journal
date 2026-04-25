@@ -96,7 +96,7 @@
 .partner-item-desc{font-size:.58rem;color:var(--t3);margin-top:2px}
 
 /* Partner Roster */
-.partner-roster-box{position:relative;overflow:hidden;background-image:linear-gradient(120deg,rgba(6,8,9,.82),rgba(6,8,9,.5)),url('assets/partner/partner-roster-bg.png');background-size:cover;background-position:center}
+.partner-roster-box{position:relative;overflow:hidden;background-image:linear-gradient(120deg,rgba(6,8,9,.82),rgba(6,8,9,.5)),url('assets/partner/partner-roster-bg.jpg');background-size:cover;background-position:center}
 .partner-roster-list{display:flex;flex-direction:column;gap:7px}
 .partner-roster-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border:1px solid rgba(255,255,255,.08);background:rgba(7,10,11,.58);border-radius:8px;cursor:pointer;transition:transform .15s,border-color .15s,background .15s}
 .partner-roster-item:hover{transform:translateY(-1px);border-color:rgba(126,205,196,.34);background:rgba(7,10,11,.76)}
