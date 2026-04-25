@@ -1700,6 +1700,7 @@ const SERIES_LOCATIONS={
 let _huntDistCache={};   // "sid|loc" → [{id,name,img,rate}]
 let _huntLocPkm=[];      // 当前地点分布
 let _huntSelLoc='';      // "sid|loc"
+let _huntSelEncounterKey=''; // FRLG 直接选中的 encounter key
 let _huntDistPkm=null;   // 从分布列表选中的精灵
 let _huntActionsLocked=false;
 let _huntParticleTimer=null;
@@ -1766,6 +1767,7 @@ async function loadCustomLocDist(type){
 
 function selectHuntLoc(loc){
   const sid=_curSid;
+  _huntSelEncounterKey='';
   _huntSelLoc=sid+'|'+loc;
   document.querySelectorAll('.hunt-loc-chip').forEach(c=>c.classList.toggle('on',c.dataset.loc===loc));
   const distSection=document.getElementById('hunt-phase-dist');
@@ -1784,6 +1786,10 @@ function selectHuntLoc(loc){
     if(btn){btn.style.display='';btn.disabled=false;btn.textContent='✦ 获取分布';}
   }
 }
+function selectHuntLocFromMap(loc,encounterKey){
+  _huntSelEncounterKey=encounterKey||'';
+  selectHuntLoc(loc);
+}
 
 async function loadHuntDistribution(){
   const cacheKey=_huntSelLoc;
@@ -1794,7 +1800,7 @@ async function loadHuntDistribution(){
   if(btn){btn.disabled=true;btn.textContent='获取中…';}
   // FRLG：直接用本地 PokeAPI 静态数据
   if(sid==='firered-leafgreen'&&typeof FRLG_ENCOUNTERS!=='undefined'){
-    const entry=Object.values(FRLG_ENCOUNTERS).find(e=>e.zh===loc);
+    const entry=(_huntSelEncounterKey&&FRLG_ENCOUNTERS[_huntSelEncounterKey])||Object.values(FRLG_ENCOUNTERS).find(e=>e.zh===loc);
     if(entry&&entry.encounters?.length){
       if(grid)grid.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:8px 0;font-family:\'DM Mono\',monospace">加载精灵数据…</div>';
       const items=[];
@@ -2490,6 +2496,7 @@ let _trainSid='';
 let _trainPkmData=null;   // {name,id,img,nature}
 let _trainEVs={hp:0,attack:0,defense:0,'special-attack':0,'special-defense':0,speed:0};
 let _trainSelLoc='';      // "sid|loc"
+let _trainSelEncounterKey=''; // FRLG 直接选中的 encounter key
 let _trainDistCache={};   // "sid|loc" → [{id,name,img,evYields:{hp,attack,...}}]
 let _trainLocPkm=[];
 
@@ -2622,8 +2629,13 @@ function beatPokemon(idx){
   showToast(`${pkm.name}  ${evText}`);
 }
 
+function selectTrainLocFromMap(loc,encounterKey){
+  _trainSelEncounterKey=encounterKey||'';
+  selectTrainLoc(loc);
+}
 function selectTrainLoc(loc){
   const sid=_trainSid;
+  _trainSelEncounterKey='';
   _trainSelLoc=sid+'|'+loc;
   document.querySelectorAll('#train-loc-chips .hunt-loc-chip').forEach(c=>c.classList.toggle('on',c.dataset.loc===loc));
   const distSec=document.getElementById('train-dist-section');
@@ -2649,7 +2661,7 @@ async function loadTrainDistribution(){
   if(btn){btn.disabled=true;btn.textContent='获取中…';}
   // FRLG：直接用本地 PokeAPI 静态数据
   if(sid==='firered-leafgreen'&&typeof FRLG_ENCOUNTERS!=='undefined'){
-    const entry=Object.values(FRLG_ENCOUNTERS).find(e=>e.zh===loc);
+    const entry=(_trainSelEncounterKey&&FRLG_ENCOUNTERS[_trainSelEncounterKey])||Object.values(FRLG_ENCOUNTERS).find(e=>e.zh===loc);
     if(entry&&entry.encounters?.length){
       if(grid)grid.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:8px 0;font-family:\'DM Mono\',monospace">加载精灵数据…</div>';
       const items=[];
@@ -3395,10 +3407,13 @@ async function openImm(mode,...args){
     const el=document.getElementById(id);
     if(el){el.style.display='none';el.dataset.open='0';}
   });
-  // minimap：仅 FRLG 系列显示
+  // minimap：仅 FRLG 系列显示；FRLG 时隐藏顶部地点输入区
   const immSidForMap=mode==='hunt'?_immSid:_trainSid;
   const minimap=document.getElementById('imm-minimap');
-  if(minimap)minimap.style.display=immSidForMap==='firered-leafgreen'?'block':'none';
+  const isFRLG=immSidForMap==='firered-leafgreen';
+  if(minimap)minimap.style.display=isFRLG?'block':'none';
+  const ov2=document.getElementById('ov-imm');
+  if(ov2)ov2.dataset.series=isFRLG?'frlg':'';
   const fabs=document.getElementById('imm-fabs');
   if(fabs)fabs.style.display='flex';
   ov.style.display='flex';
@@ -3441,12 +3456,12 @@ function openImmMapPicker(){
       const zhName=entry?.zh||label;
       closeImmMapFull();
       if(_immMode==='hunt'){
-        selectHuntLoc(zhName);
+        selectHuntLocFromMap(zhName, key);
         const _refreshHuntGrid=()=>{const list=lsGet('pkm_hunt_'+_immSid)||[];const t=list[_immIdx];if(t)renderHuntAreaGrid(t);};
         if(_huntDistCache[_huntSelLoc]){_huntLocPkm=_huntDistCache[_huntSelLoc];_refreshHuntGrid();}
         else{loadHuntDistribution().then(_refreshHuntGrid);}
       }else{
-        selectTrainLoc(zhName);
+        selectTrainLocFromMap(zhName, key);
         if(_trainDistCache[_trainSelLoc]){_trainLocPkm=_trainDistCache[_trainSelLoc];renderTrainImmGrid();}
         else{loadTrainDistribution().then(renderTrainImmGrid);}
       }
@@ -3464,7 +3479,7 @@ function closeImmMapFull(){
 
 function updateImmMinimap(loc){
   const lbl=document.getElementById('imm-minimap-loc');
-  if(lbl)lbl.textContent=loc?'📍 '+loc:'🗺 点击选地点';
+  if(lbl)lbl.textContent=loc||'点击地图选择';
 }
 
 async function openImmHunt(sid,idx){

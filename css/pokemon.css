@@ -284,6 +284,7 @@
 
 .imm-loc-section{padding:10px 0 4px;border-bottom:1px solid rgba(126,205,196,.08);margin-bottom:8px}
 .imm-loc-row{display:flex;gap:6px;margin-bottom:6px;align-items:center}
+#ov-imm[data-series="frlg"] .imm-loc-section{display:none}
 
 .hunt-imm-bg-blur{
   position:absolute;inset:0;
