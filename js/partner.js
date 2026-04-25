@@ -41,7 +41,6 @@ const PARTNER_ACTIONS = {
 
 const PARTNER_DAILY_LIMIT = 5;
 const PARTNER_ASSET_BASE = 'css/assets/partner';
-const PARTNER_CSS_ASSET_BASE = '../css/assets/partner';
 const PARTNER_TYPE_ZH = {
   normal:'一般',fire:'火',water:'水',electric:'电',grass:'草',ice:'冰',fighting:'格斗',poison:'毒',
   ground:'地面',flying:'飞行',psychic:'超能力',bug:'虫',rock:'岩石',ghost:'幽灵',dragon:'龙',
@@ -163,7 +162,7 @@ async function savePartnerData(){
   partnerData.updated_at=new Date().toISOString();
   const{data:{session}}=await db.auth.getSession();
   if(!session?.user)return;
-  await db.from('pkm_partner').upsert(pPartnerDbPayload(partnerData,session.user.id));
+  await db.from('pkm_partner').upsert(pPartnerDbPayload(partnerData,session.user.id),{onConflict:'user_id'});
 }
 
 /* ===== DAILY RESET ===== */
@@ -217,17 +216,21 @@ async function pFetchPokemonMeta(pkmId){
 
 function pPartnerTypeBg(type){
   const t=type||'normal';
-  return `${PARTNER_CSS_ASSET_BASE}/types/type-${t}.jpg`;
+  return pAssetUrl(`${PARTNER_ASSET_BASE}/types/type-${t}.jpg`);
 }
 
 function pPartnerTypeBgDoc(type){
-  const t=type||'normal';
-  return `${PARTNER_ASSET_BASE}/types/type-${t}.jpg`;
+  return pPartnerTypeBg(type);
 }
 
 function pPartnerEffectImg(action){
   const key=PARTNER_ACTION_EFFECT[action]||'spark';
-  return `${PARTNER_ASSET_BASE}/effects/effect-${key}.png`;
+  return pAssetUrl(`${PARTNER_ASSET_BASE}/effects/effect-${key}.png`);
+}
+
+function pAssetUrl(path){
+  try{return new URL(path,document.baseURI).href;}
+  catch{return path;}
 }
 
 function pPreloadPartnerImage(src){
