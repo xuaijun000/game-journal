@@ -227,6 +227,25 @@ async function getOfficialDexDesc(pkmId){
   }
   return item.descZh||null;
 }
+function getCachedOfficialDexName(pkmId){
+  return pkmOfficialDexCache?.[pkmId]?.zhName||null;
+}
+async function getOfficialDexName(pkmId){
+  const map=await loadOfficialPkmDex();
+  return map?.[pkmId]?.zhName||null;
+}
+async function getPreferredBaseName(p,species,cnFallback){
+  const dexId=getSpeciesDexId(p,species)||Number(p?.id)||0;
+  const officialName=await getOfficialDexName(dexId).catch(()=>null);
+  return officialName
+    || cnFallback
+    || getCNName(species,p?.name)
+    || (dexId?await getPkmCNName(dexId,p?.name):null)
+    || PKM_CN_TABLE[dexId]
+    || species?.name
+    || p?.name
+    || '';
+}
 async function getOfficialFormDexDesc(p,species){
   const variant=await resolveOfficialDexVariant(p,species).catch(()=>null);
   const texts=(variant?.descZhAll||[]).filter(Boolean);
@@ -240,17 +259,18 @@ function getDisplayNameWithVariant(baseName,variant){
 }
 function getDetailBaseName(p,species){
   const dexId=getSpeciesDexId(p,species)||Number(p?.id)||0;
-  return PKM_CN_TABLE[dexId]||getCNName(species,p?.name)||(species?.name||p?.name||'');
+  return getCachedOfficialDexName(dexId)||getCNName(species,p?.name)||PKM_CN_TABLE[dexId]||(species?.name||p?.name||'');
 }
 function buildSearchCandidates(){
   const seen=new Map();
   Object.entries(PKM_CN_TABLE).forEach(([id,name])=>{
     const dexId=Number(id);
-    seen.set(`base-${dexId}`,{key:`base-${dexId}`,label:name,searchText:name,target:dexId});
+    const officialName=getCachedOfficialDexName(dexId)||name;
+    seen.set(`base-${dexId}`,{key:`base-${dexId}`,label:officialName,searchText:[officialName,name].filter(Boolean).join(' '),target:dexId});
   });
   const variantsMap=pkmOfficialVariantDataCache||{};
   Object.entries(variantsMap).forEach(([dexId,items])=>{
-    const baseName=PKM_CN_TABLE[Number(dexId)]||'';
+    const baseName=getCachedOfficialDexName(Number(dexId))||PKM_CN_TABLE[Number(dexId)]||'';
     (items||[]).forEach(v=>{
       const label=getDisplayNameWithVariant(baseName,v);
       const searchText=[baseName,v.name,v.subname,label].filter(Boolean).join(' ');
@@ -533,14 +553,14 @@ async function getPkmCNName(id,engName){
   // 请求 PokéAPI 获取官方中文名（zh-Hans 简体 > zh-Hant 繁体）
   try{
     const r=await fetch(`${POKEAPI}/pokemon-species/${id}`);
-    if(!r.ok)return pkmCNCache[id]=PKM_CN_TABLE[id]||engName||'';
+    if(!r.ok)return pkmCNCache[id]=getCachedOfficialDexName(id)||PKM_CN_TABLE[id]||engName||'';
     const d=await r.json();
     const zhHans=d.names?.find(x=>x.language.name==='zh-Hans');
     const zhHant=d.names?.find(x=>x.language.name==='zh-Hant');
-    // API 官方中文名优先，找不到才降级用内置对照表，最后用英文名兜底
-    const cn=zhHans?.name||zhHant?.name||PKM_CN_TABLE[id]||engName||'';
+    // API 官方中文名优先，找不到才降级到本地官方图鉴，再用内置对照表兜底
+    const cn=zhHans?.name||zhHant?.name||getCachedOfficialDexName(id)||PKM_CN_TABLE[id]||engName||'';
     return pkmCNCache[id]=cn;
-  }catch{return pkmCNCache[id]=PKM_CN_TABLE[id]||engName||'';}
+  }catch{return pkmCNCache[id]=getCachedOfficialDexName(id)||PKM_CN_TABLE[id]||engName||'';}
 }
 function getCNName(species,engName){if(species){const n=species.names?.find(x=>x.language.name==='zh-Hans'||x.language.name==='zh-Hant');if(n?.name){if(species.id)pkmCNCache[species.id]=n.name;return n.name;}}return null;}
 function getCNFlavorText(species){
@@ -696,7 +716,7 @@ async function renderTodayPkm(p,sp,cnName){
   document.getElementById('pkm-today-img').src=img2;
   document.getElementById('pkm-today-bg').style.backgroundImage=img?`url(${img})`:'none';
   const baseDexId=getSpeciesDexId(p,sp)||Number(p.id);
-  const baseName=PKM_CN_TABLE[baseDexId]||cnName||getCNName(sp,sp?.name||p.name)||(sp?.name||p.name);
+  const baseName=await getPreferredBaseName(p,sp,cnName);
   const officialVariant=await resolveOfficialDexVariant(p,sp).catch(()=>null);
   const name=getDisplayNameWithVariant(baseName,officialVariant);
   document.getElementById('pkm-today-num').textContent=`#${String(baseDexId||p.id).padStart(3,'0')}`;
@@ -774,7 +794,7 @@ async function openPkmDetail(idOrName){
     const p=await fetchPkm(idOrName);const sp=await fetchPkmSpecies(p.species.url.split('/').slice(-2)[0]);
     currentDetailPkmId=p.id;
     const dexId=getSpeciesDexId(p,sp)||Number(p.id);
-    const baseCnName=PKM_CN_TABLE[dexId]||getCNName(sp,p.name)||(await getPkmCNName(dexId,p.name))||p.name;
+    const baseCnName=await getPreferredBaseName(p,sp);
     const officialVariant=await resolveOfficialDexVariant(p,sp).catch(()=>null);
     const cnName=getDisplayNameWithVariant(baseCnName,officialVariant);
     // 图鉴文字：本地官方中文优先，其次 PokéAPI 中文，再回退 52poke / AI
@@ -816,6 +836,7 @@ function onPkmSearch(v){
     res.innerHTML='<div style="color:var(--t3);font-size:.8rem;padding:8px">搜索中…</div>';
     try{
       const q=v.trim().toLowerCase();
+      await loadOfficialPkmDex().catch(()=>null);
       await loadOfficialPkmVariants().catch(()=>null);
       const localMatches=buildSearchCandidates()
         .filter(item=>item.searchText.toLowerCase().includes(q))
@@ -835,8 +856,7 @@ function onPkmSearch(v){
       const items=await Promise.all(matches.map(async m=>{
         const p=await fetchPkm(m.name);
         const sp=await fetchPkmSpecies(p.species?.name||p.id).catch(()=>null);
-        const dexId=getSpeciesDexId(p,sp)||p.id;
-        const baseName=PKM_CN_TABLE[dexId]||getCNName(sp,p.name)||(await getPkmCNName(dexId,p.name))||p.name;
+        const baseName=await getPreferredBaseName(p,sp);
         const variant=await resolveOfficialDexVariant(p,sp).catch(()=>null);
         const cn=getDisplayNameWithVariant(baseName,variant);
         const img=p.sprites?.front_default||'';
