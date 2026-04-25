@@ -479,9 +479,8 @@ async function openPartnerSelect(){
       <div class="partner-select-num">#${String(c.pkm_id).padStart(4,'0')}</div>
       <div class="partner-select-status">${statusLabel[c.status]||c.status}</div>
     </div>`).join('');
-  // 后台补全中文名（针对存了英文名的旧记录）
+  // 后台校正中文名（统一走官方 JSON，不依赖 PKM_CN_TABLE）
   unique.forEach(async c=>{
-    if(/[一-鿿]/.test(c.pkm_name))return;
     const cn=await pFetchChineseName(c.pkm_id,c.pkm_name);
     if(cn===c.pkm_name)return;
     const el=grid.querySelector(`.partner-select-item[data-id="${c.pkm_id}"]`);
@@ -524,8 +523,13 @@ async function selectPartner(pkmId,pkmName){
 }
 
 async function pFetchChineseName(pkmId,fallback){
-  if(/[一-鿿]/.test(fallback))return fallback;
   try{
+    // 1. 官方图鉴 JSON（pokedex_zh_official.json），与 PKM_CN_TABLE 完全无关
+    if(typeof getOfficialDexName==='function'){
+      const official=await getOfficialDexName(pkmId);
+      if(official)return official;
+    }
+    // 2. PokeAPI zh-Hans（官方简体）
     const r=await fetch(`https://pokeapi.co/api/v2/pokemon-species/${pkmId}`);
     if(!r.ok)return fallback;
     const sp=await r.json();
