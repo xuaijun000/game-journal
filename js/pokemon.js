@@ -788,6 +788,7 @@ function updateDetailBtns(pkmId){
   ['caught','liked','wanted'].forEach(s=>{const btn=document.getElementById(`pkm-detail-${s}`);if(btn){btn.className='pkm-btn'+(col[s]?` ${s}`:'');}});
 }
 async function openPkmDetail(idOrName){
+  if(window.partnerTrackEvent)window.partnerTrackEvent('pokedex_view');
   document.getElementById('ov-pkm').classList.add('on');
   document.getElementById('pkm-detail-name').textContent='加载中…';
   try{

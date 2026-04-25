@@ -2153,6 +2153,7 @@ function calcDamageEst(myPkm, oppPkm, move, activeWeather=''){
 
 /* ──────── 主分析入口 ──────── */
 function analyzeMatchups(){
+  if(window.partnerTrackEvent)window.partnerTrackEvent('battle_analysis');
   // 收集对方数据（含种族值，用于速度对比）
   [0,1,2,3,4,5].forEach(i=>{
     const name=document.getElementById(`bopp-name-${i}`)?.value.trim()||'';

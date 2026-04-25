@@ -20,6 +20,7 @@
   <link rel="stylesheet" href="css/misc.css">
   <link rel="stylesheet" href="css/battle.css">
   <link rel="stylesheet" href="css/frlg-map.css">
+  <link rel="stylesheet" href="css/partner.css">
   <script src="js/protect.js" defer></script>
   <script src="js/data/battle_registry.js"></script>
   <script src="js/data/pkm_champions_data.js"></script>
@@ -40,6 +41,7 @@
     <button onclick="go('stats',this)">统计</button>
     <span class="nav-sep"></span>
     <button onclick="go('pkm',this)">宝可梦</button>
+    <button onclick="go('partner',this)">伙伴</button>
     <button onclick="go('anime',this)">动漫</button>
     <button onclick="go('manga',this)">漫画</button>
     <button onclick="go('battle',this)">对战</button>
@@ -187,6 +189,10 @@
         </div>
       </div>
     </div>
+  </div>
+  <div class="pg" id="pg-partner">
+    <div class="tab-banner"><img src="css/伙伴 Tab Banner.png" alt="" onerror="this.style.display='none'"></div>
+    <div id="partner-container"><div style="text-align:center;padding:3rem;color:var(--t3)">加载中…</div></div>
   </div>
   <div class="pg" id="pg-anime">
     <div class="tab-banner"><img src="css/动漫漫画 Tab Banner.png" alt=""></div>
@@ -883,6 +889,22 @@
   </div>
 </div>
 
+<!-- 伙伴选择弹窗 -->
+<div class="ov" id="ov-partner-select" onclick="if(event.target===this)closeOv('ov-partner-select')">
+  <div class="modal partner-select-modal">
+    <div class="mh" style="padding:1.2rem 1.5rem .8rem;border-bottom:1px solid var(--b)">
+      <div>
+        <h2 style="font-family:'Noto Serif SC',serif;font-size:1.1rem">选择你的伙伴</h2>
+        <p style="font-size:.75rem;color:var(--t3);margin-top:3px">从已捕获 / 喜欢 / 想要的宝可梦中选择一只</p>
+      </div>
+      <button class="btn btn-sm" onclick="closeOv('ov-partner-select')">✕</button>
+    </div>
+    <div class="partner-select-grid" id="partner-select-grid">
+      <div style="text-align:center;padding:2rem;color:var(--t3)">加载中…</div>
+    </div>
+  </div>
+</div>
+
 <!-- JS Modules (按依赖顺序加载) -->
 <script src="js/config.js"></script>
 <script src="js/utils.js"></script>
@@ -898,6 +920,7 @@
 <script src="js/moments.js"></script>
 <script src="js/play.js"></script>
 <script src="js/battle.js"></script>
+<script src="js/partner.js"></script>
 <script>init();</script>
 
 

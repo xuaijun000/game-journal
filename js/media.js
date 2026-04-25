@@ -213,6 +213,7 @@ async function saveMedia(){
     else{mediaData[type].unshift({_id:Date.now().toString(36),created_at:new Date().toISOString(),...p});}
     localStorage.setItem(type+'_list',JSON.stringify(mediaData[type]));
   }
+  if(window.partnerTrackEvent)window.partnerTrackEvent('media_add');
   closeOv('ov-media');renderMedia(type);
 }
 async function delMedia(){

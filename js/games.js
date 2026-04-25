@@ -118,6 +118,7 @@ async function saveGame(){
     else games.unshift({_id:Date.now().toString(36)+Math.random().toString(36).slice(2),created_at:new Date().toISOString(),...p});
     localStorage.setItem('gj',JSON.stringify(games));
   }
+  if(window.partnerTrackEvent)window.partnerTrackEvent('game_log');
   closeOv('ov-edit');render();
 }
 async function delGame(){
@@ -142,6 +143,7 @@ function go(pg,btn){
   if(pg==='anime'&&!window._animeInited){window._animeInited=true;initMediaList('anime');}
   if(pg==='manga'&&!window._mangaInited){window._mangaInited=true;initMediaList('manga');}
   if(pg==='battle'&&!window._battleInited){window._battleInited=true;initBattle();}
+  if(pg==='partner'&&!window._partnerInited){window._partnerInited=true;initPartner();}
 }
 async function syncSteam(){
   const sid=document.getElementById('steam-id-inp').value.trim();
