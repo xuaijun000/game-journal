@@ -161,16 +161,31 @@
 .party-slot-empty-lbl{font-size:.6rem;color:var(--t3);margin-top:3px}
 
 /* ── Progress Checklist ── */
-.progress-item{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--b);cursor:pointer;transition:opacity .15s}
-.progress-item:last-child{border-bottom:none}
-.progress-item.done{opacity:.5}
-.progress-check{width:16px;height:16px;border:1px solid var(--b2);border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.7rem;transition:all .2s}
+.imm-floating-panel{position:absolute;right:76px;bottom:18px;width:min(420px,calc(100vw - 112px));max-height:40vh;overflow-y:auto;background:rgba(17,16,13,.94);backdrop-filter:blur(14px);border:1px solid rgba(200,144,64,.16);border-radius:18px;box-shadow:0 14px 40px rgba(0,0,0,.42);padding:12px 14px 14px;z-index:4}
+.imm-floating-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.imm-floating-title{font-size:.78rem;color:var(--t2);font-family:'DM Mono',monospace}
+.progress-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:8px}
+.progress-head-title{font-size:.9rem;color:var(--t);font-family:'Noto Serif SC',serif}
+.progress-head-meta{font-size:.62rem;color:var(--t3);font-family:'DM Mono',monospace;margin-top:2px}
+.progress-head-pct{font-size:.92rem;color:var(--acc);font-family:'DM Mono',monospace}
+.progress-items-wrap{display:flex;flex-direction:column;gap:8px}
+.progress-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border:1px solid var(--b);border-radius:12px;background:rgba(255,255,255,.03);cursor:pointer;transition:all .15s}
+.progress-item:hover{border-color:rgba(200,144,64,.35);background:rgba(255,255,255,.05)}
+.progress-item.done{opacity:.74;border-color:rgba(90,184,154,.22)}
+.progress-check{width:18px;height:18px;border:1px solid var(--b2);border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.72rem;transition:all .2s;margin-top:2px}
 .progress-item.done .progress-check{background:var(--acc2);border-color:var(--acc2);color:#0c0b09}
-.progress-label{font-size:.82rem;color:var(--t2)}
+.progress-main{min-width:0;flex:1}
+.progress-label{display:block;font-size:.8rem;color:var(--t);line-height:1.45}
 .progress-item.done .progress-label{text-decoration:line-through;color:var(--t3)}
-.progress-ts{font-size:.62rem;color:var(--t3);font-family:'DM Mono',monospace;margin-left:auto;flex-shrink:0}
+.progress-subrow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px}
+.progress-ts{font-size:.58rem;color:var(--t3);font-family:'DM Mono',monospace;flex-shrink:0}
+.progress-done-tag{font-size:.58rem;color:var(--acc2);font-family:'DM Mono',monospace;padding:3px 8px;border:1px solid rgba(90,184,154,.25);border-radius:999px;background:rgba(90,184,154,.08)}
 .progress-bar-wrap{height:4px;background:var(--b2);border-radius:2px;margin-bottom:12px;overflow:hidden}
 .progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--acc2),var(--acc));border-radius:2px;transition:width .4s ease}
+
+@media (max-width:900px){
+  .imm-floating-panel{right:14px;left:14px;bottom:14px;width:auto;max-height:34vh}
+}
 
 /* ── Inline Pokemon Search Results ── */
 .pkm-inline-results{position:absolute;top:100%;left:0;right:0;z-index:50;background:var(--bg2);border:1px solid var(--b2);border-radius:var(--r);margin-top:2px;max-height:180px;overflow-y:auto;display:none}
@@ -687,11 +702,14 @@
 }
 .gym-brief-hdr{font-size:.65rem;color:var(--acc);font-family:'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;}
 .gym-brief-btn{
-  background:none;border:none;cursor:pointer;
-  font-size:.72rem;padding:0 0 0 4px;color:var(--t3);
-  margin-left:auto;flex-shrink:0;transition:color .15s;
+  display:inline-flex;align-items:center;justify-content:center;gap:4px;
+  min-height:28px;padding:0 10px;border-radius:999px;
+  border:1px solid rgba(200,144,64,.28);background:rgba(200,144,64,.08);
+  color:var(--acc);cursor:pointer;font-size:.62rem;font-family:'DM Mono',monospace;
+  white-space:nowrap;flex-shrink:0;transition:all .18s ease;
+  box-shadow:0 4px 14px rgba(0,0,0,.14);
 }
-.gym-brief-btn:hover{color:var(--acc);}
+.gym-brief-btn:hover{background:rgba(200,144,64,.18);border-color:rgba(200,144,64,.48);transform:translateY(-1px);}
 
 /* ── ⑤ 探索旁白 ── */
 .explore-narrative{

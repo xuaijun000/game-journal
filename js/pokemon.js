@@ -1273,21 +1273,29 @@ function renderProgress(sid){
   const done=lsGet('pkm_progress_'+sid)||{};
   const total=checkpoints.length;const doneCount=Object.keys(done).length;
   const pct=Math.round(doneCount/total*100);
-  list.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-    <span style="font-size:.72rem;color:var(--t3);font-family:'DM Mono',monospace">${doneCount}/${total} 节点完成</span>
-    <span style="font-size:.72rem;color:var(--acc);font-family:'DM Mono',monospace">${pct}%</span>
+  list.innerHTML=`<div class="progress-head">
+    <div>
+      <div class="progress-head-title">路线推进</div>
+      <div class="progress-head-meta">${doneCount}/${total} 节点完成</div>
+    </div>
+    <div class="progress-head-pct">${pct}%</div>
   </div>
-  <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%"></div></div>`
+  <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+  <div class="progress-items-wrap">`
   +checkpoints.map((cp,i)=>{
     const isDone=!!done[i];const ts=done[i]?.ts;
-    const tsStr=ts?new Date(ts).toLocaleDateString('zh-CN',{month:'numeric',day:'numeric'}):'';
+    const tsStr=ts?new Date(ts).toLocaleDateString('zh-CN',{month:'numeric',day:'numeric'}):'未记录';
     return`<div class="progress-item${isDone?' done':''}" onclick="toggleCheckpoint('${sid}',${i})">
       <div class="progress-check">${isDone?'✓':''}</div>
-      <span class="progress-label">${cp}</span>
-      ${tsStr?`<span class="progress-ts">${tsStr}</span>`:''}
-      ${!isDone?`<button class="gym-brief-btn" onclick="getBriefing('${sid}',${i});event.stopPropagation()" title="战前动员">⚔️</button>`:''}
+      <div class="progress-main">
+        <span class="progress-label">${cp}</span>
+        <div class="progress-subrow">
+          <span class="progress-ts">${tsStr}</span>
+          ${!isDone?`<button class="gym-brief-btn" onclick="getBriefing('${sid}',${i});event.stopPropagation()" title="战前动员">⚔️ 战前动员</button>`:'<span class="progress-done-tag">已完成</span>'}
+        </div>
+      </div>
     </div>`;
-  }).join('');
+  }).join('')+'</div>';
 }
 function toggleCheckpoint(sid,idx){
   const done=lsGet('pkm_progress_'+sid)||{};
@@ -3079,18 +3087,7 @@ function enterImmersiveFromSeries(mode){
   closeOv('ov-series');
   if(mode==='progress'){
     const sid=_curSid;
-    const ov=document.getElementById('ov-imm');
-    const bg=document.getElementById('imm-bg');
-    if(!ov||!bg)return;
-    _immSid=sid;
-    bg.style.backgroundImage="url('css/沉浸模式 - 训练背景.png')";
-    renderImmParty();
-    const fabs=document.getElementById('imm-fabs');if(fabs)fabs.style.display='flex';
-    ['imm-sub-catches','imm-sub-explore','imm-sub-progress','imm-sub-party'].forEach(id=>{
-      const el=document.getElementById(id);if(el){el.style.display='none';el.dataset.open='0';}
-    });
-    ov.style.display='flex';ov.classList.add('on');document.body.style.overflow='hidden';
-    stopHuntParticles();stopTrainImmParticles();
+    openImm('hunt',sid,-1);
     setTimeout(()=>toggleImmPanel('progress'),80);
     return;
   }
@@ -3374,7 +3371,7 @@ async function openImm(mode,...args){
 
   setImmMode(mode);
   renderImmParty();
-  ['imm-sub-catches','imm-sub-explore'].forEach(id=>{
+  ['imm-sub-catches','imm-sub-explore','imm-sub-progress','imm-sub-party'].forEach(id=>{
     const el=document.getElementById(id);
     if(el){el.style.display='none';el.dataset.open='0';}
   });
@@ -3397,7 +3394,7 @@ function closeImm(){
   stopTrainImmParticles();
   closeImmMapFull();
   const ov=document.getElementById('ov-imm');if(ov){ov.classList.remove('on');ov.style.display='none';}
-  ['imm-sub-catches','imm-sub-explore'].forEach(id=>{
+  ['imm-sub-catches','imm-sub-explore','imm-sub-progress','imm-sub-party'].forEach(id=>{
     const el=document.getElementById(id);
     if(el){el.style.display='none';el.dataset.open='0';}
   });
