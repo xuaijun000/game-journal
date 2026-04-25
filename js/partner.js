@@ -133,9 +133,48 @@ async function initPartner(){
 }
 
 async function loadPartnerData(userId){
-  const{data}=await db.from('pkm_partner').select('*').eq('user_id',userId).single();
+  const{data,error}=await db.from('pkm_partner').select('*').eq('user_id',userId).single();
+  if(error){
+    if(error.code==='PGRST116'){renderPartnerSelectPrompt();}
+    else pShowSetupMsg();
+    return;
+  }
   if(data){partnerData=data;checkPartnerDailyReset();renderPartnerPage();}
   else renderPartnerSelectPrompt();
+}
+
+function pShowSetupMsg(){
+  const sql=`create table pkm_partner (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade not null,
+  pkm_id integer not null,  pkm_name text not null,
+  nickname text,
+  level integer default 1, exp integer default 0,
+  hunger integer default 80, mood integer default 75,
+  energy integer default 80, bond integer default 0,
+  last_interaction_at timestamptz default now(),
+  streak_days integer default 1,
+  last_checkin_date date default current_date,
+  inventory jsonb default \'{"berry":3,"poffin":1,"cube":0,"drink":0,"toy":0}\'::jsonb,
+  diary jsonb default \'[]\'::jsonb,
+  daily_interactions jsonb default \'{}\'::jsonb,
+  interaction_counts jsonb default \'{"feed":0,"pat":0,"play":0,"train":0,"rest":0,"adventure":0,"total":0}\'::jsonb,
+  achievements jsonb default \'[]\'::jsonb,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now(),
+  unique(user_id)
+);
+alter table pkm_partner enable row level security;
+create policy "Users manage own partner" on pkm_partner
+  for all using (auth.uid() = user_id);`;
+  document.getElementById('partner-container').innerHTML=`
+    <div class="partner-login-prompt">
+      <div class="partner-login-prompt-icon">⚙️</div>
+      <h3>需要建立数据表</h3>
+      <p>请前往 <a href="https://supabase.com/dashboard/project/qbzxfwnosacwbdumkvoz/sql/new" target="_blank" style="color:var(--acc)">Supabase SQL Editor</a> 执行以下 SQL，然后刷新页面：</p>
+      <pre style="background:var(--bg3);border:1px solid var(--b);border-radius:var(--r);padding:1rem;font-size:.65rem;font-family:'DM Mono',monospace;overflow-x:auto;text-align:left;color:var(--t2);margin-top:10px;line-height:1.7;max-height:260px;overflow-y:auto">${pEsc(sql)}</pre>
+      <button class="btn btn-a" onclick="window.location.reload()" style="margin:1.2rem auto 0;display:block;padding:10px 32px">执行后刷新页面</button>
+    </div>`;
 }
 
 async function savePartnerData(){
@@ -434,36 +473,65 @@ async function openPartnerSelect(){
   const unique=col.filter(c=>{if(seen.has(c.pkm_id))return false;seen.add(c.pkm_id);return true;});
   const statusLabel={caught:'已捕获',liked:'喜欢',wanted:'想要'};
   grid.innerHTML=unique.map(c=>`
-    <div class="partner-select-item" onclick="selectPartner(${c.pkm_id},${JSON.stringify(c.pkm_name)})">
+    <div class="partner-select-item" data-id="${c.pkm_id}" data-name="${pEsc(c.pkm_name)}" onclick="selectPartner(${c.pkm_id},this.dataset.name)">
       <img src="${partnerSpriteUrl(c.pkm_id)}" alt="${pEsc(c.pkm_name)}" onerror="this.style.display='none'">
       <div class="partner-select-name">${pEsc(c.pkm_name)}</div>
       <div class="partner-select-num">#${String(c.pkm_id).padStart(4,'0')}</div>
       <div class="partner-select-status">${statusLabel[c.status]||c.status}</div>
     </div>`).join('');
+  // 后台补全中文名（针对存了英文名的旧记录）
+  unique.forEach(async c=>{
+    if(/[一-鿿]/.test(c.pkm_name))return;
+    const cn=await pFetchChineseName(c.pkm_id,c.pkm_name);
+    if(cn===c.pkm_name)return;
+    const el=grid.querySelector(`.partner-select-item[data-id="${c.pkm_id}"]`);
+    if(!el)return;
+    el.dataset.name=cn;
+    const nameEl=el.querySelector('.partner-select-name');
+    if(nameEl)nameEl.textContent=cn;
+  });
 }
 
 async function selectPartner(pkmId,pkmName){
   const{data:{session}}=await db.auth.getSession();
   if(!session?.user)return;
+  // 确保用中文名
+  const cnName=await pFetchChineseName(pkmId,pkmName);
   closeOv('ov-partner-select');
   const today=pToday();
   const rec={
     user_id:session.user.id,
-    pkm_id:pkmId,pkm_name:pkmName,nickname:null,
+    pkm_id:pkmId,pkm_name:cnName,nickname:null,
     level:1,exp:0,hunger:80,mood:75,energy:80,bond:0,
     last_interaction_at:new Date().toISOString(),
     streak_days:1,last_checkin_date:today,
     inventory:{berry:3,poffin:1,cube:0,drink:0,toy:0},
-    diary:[{date:today,text:`你和${pkmName}第一次相遇了！一段新的旅程开始了。`}],
+    diary:[{date:today,text:`你和${cnName}第一次相遇了！一段新的旅程开始了。`}],
     daily_interactions:{date:today,total:0},
     interaction_counts:{feed:0,pat:0,play:0,train:0,rest:0,adventure:0,total:0},
     achievements:['first_meet'],
     created_at:new Date().toISOString(),updated_at:new Date().toISOString()
   };
-  const{data}=await db.from('pkm_partner').upsert(rec,{onConflict:'user_id'}).select().single();
+  const{data,error}=await db.from('pkm_partner').upsert(rec,{onConflict:'user_id'}).select().single();
+  if(error){
+    showPartnerToast('保存失败，请确认已在 Supabase 执行建表 SQL');
+    pShowSetupMsg();
+    return;
+  }
   partnerData=data||rec;
   renderPartnerPage();
-  showPartnerToast(`🎉 ${pkmName} 成为了你的伙伴！`);
+  showPartnerToast(`🎉 ${cnName} 成为了你的伙伴！`);
+}
+
+async function pFetchChineseName(pkmId,fallback){
+  if(/[一-鿿]/.test(fallback))return fallback;
+  try{
+    const r=await fetch(`https://pokeapi.co/api/v2/pokemon-species/${pkmId}`);
+    if(!r.ok)return fallback;
+    const sp=await r.json();
+    const zh=sp.names?.find(n=>n.language.name==='zh-Hans');
+    return zh?.name||fallback;
+  }catch{return fallback;}
 }
 
 /* ===== NICKNAME ===== */
