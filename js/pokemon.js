@@ -3332,30 +3332,6 @@ function selectTrainPkm(slotIdx){
   updateImmTrainPlaceholder();
 }
 
-function huntEncounterFromGrid(idx){
-  if(_huntActionsLocked)return;
-  const list=lsGet('pkm_hunt_'+_immSid)||[];
-  const t=list[_immIdx];if(!t||t.done)return;
-  const pkm=_huntLocPkm[idx];if(!pkm)return;
-  const isTarget=pkm.id===t.pkmId||pkm.name===t.name;
-
-  if(isTarget){
-    _huntActionsLocked=true;
-    const ov=document.getElementById('ov-imm');
-    const fl=document.createElement('div');fl.className='hunt-screen-flash-red';ov.appendChild(fl);setTimeout(()=>fl.remove(),280);
-    const sp=document.getElementById('hunt-imm-sprite');
-    sp.classList.remove('fight-hit','run-away','shiny');void sp.offsetWidth;sp.classList.add('fight-hit');
-    _huntCountUp();_checkShiny();
-    setTimeout(()=>{sp.classList.remove('fight-hit');_huntActionsLocked=false;showHuntNaturePick();},420);
-  }else{
-    _huntActionsLocked=true;
-    const card=document.querySelectorAll('.hunt-area-card')[idx];
-    if(card){card.classList.add('hunt-area-flash');setTimeout(()=>card.classList.remove('hunt-area-flash'),350);}
-    showHuntNarration('Not target, it ran away...');
-    setTimeout(()=>{_huntActionsLocked=false;},380);
-  }
-}
-
 function huntActionFight(){
   if(_huntActionsLocked)return;
   _huntActionsLocked=true;
