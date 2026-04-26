@@ -112,8 +112,11 @@ const _frlgPkmCache = {};
 let _frlgCalibMode = false;
 const _frlgCalibOverrides = {};
 let _frlgDragging = false;
-let _frlgSvgLoadToken = 0;
 let _frlgSvgLabel = null;
+let _frlgPolyRegions = {};
+let _frlgPolyCalib = false;
+let _frlgPolyDraft = [];
+let _frlgPolyJustDbl = false;
 
 function initFRLGMapTab(seriesId) {
   const btn = document.getElementById('imm-map-btn');
@@ -127,7 +130,14 @@ function initFRLGMapTab(seriesId) {
 }
 
 function frlgInitView(view) {
-  frlgView = view || 'kanto';
+  const nextView = view || 'kanto';
+  if (_frlgPolyCalib && nextView !== 'kanto') {
+    _frlgPolyCalib = false;
+    _frlgPolyDraft = [];
+    document.getElementById('frlg-poly-info-bar')?.remove();
+    document.getElementById('frlg-poly-inp')?.remove();
+  }
+  frlgView = nextView;
   _frlgActiveMethodFilters.clear();
   _frlgCurrentEncounters = [];
 
@@ -176,10 +186,11 @@ function frlgInitView(view) {
   };
 
   viewer.appendChild(img);
-  frlgRenderHotspots(viewer, hotspots);
   if (frlgView === 'kanto') {
     frlgRenderRegions(viewer, KANTO_REGIONS);
-    frlgRenderSvgOverlay(viewer);
+    frlgRenderPolyOverlay(viewer);
+  } else {
+    frlgRenderHotspots(viewer, hotspots);
   }
   frlgResetCalibrationSurface();
 }
@@ -480,22 +491,35 @@ function frlgSetupPanel() {
 function frlgRenderCalibButton() {
   const breadcrumb = document.getElementById('frlg-breadcrumb');
   if (!breadcrumb) return;
-  breadcrumb.querySelectorAll('.frlg-calib-btn,.frlg-export-btn').forEach(node => node.remove());
-  const btn = document.createElement('button');
-  btn.className = 'frlg-calib-btn' + (_frlgCalibMode ? ' on' : '');
-  btn.textContent = _frlgCalibMode ? '校准模式开' : '校准模式关';
-  btn.onclick = () => {
-    _frlgCalibMode = !_frlgCalibMode;
-    frlgRenderCalibButton();
-    frlgApplyCalibrationMode();
-  };
-  breadcrumb.appendChild(btn);
-  if (_frlgCalibMode) {
-    const exportBtn = document.createElement('button');
-    exportBtn.className = 'frlg-export-btn';
-    exportBtn.textContent = '导出坐标';
-    exportBtn.onclick = () => frlgExportCurrentHotspots();
-    breadcrumb.appendChild(exportBtn);
+  breadcrumb.querySelectorAll('.frlg-calib-btn,.frlg-export-btn,.frlg-poly-calib-btn,.frlg-poly-export-btn').forEach(n => n.remove());
+
+  if (frlgView === 'kanto') {
+    const polyBtn = document.createElement('button');
+    polyBtn.className = 'frlg-poly-calib-btn' + (_frlgPolyCalib ? ' on' : '');
+    polyBtn.style.marginLeft = 'auto';
+    polyBtn.textContent = _frlgPolyCalib ? '标定中 ✕' : '标定区域';
+    polyBtn.onclick = frlgPolyToggle;
+    breadcrumb.appendChild(polyBtn);
+    if (_frlgPolyCalib) {
+      const expBtn = document.createElement('button');
+      expBtn.className = 'frlg-poly-export-btn';
+      expBtn.textContent = '导出 JSON';
+      expBtn.onclick = frlgPolyExport;
+      breadcrumb.appendChild(expBtn);
+    }
+  } else {
+    const btn = document.createElement('button');
+    btn.className = 'frlg-calib-btn' + (_frlgCalibMode ? ' on' : '');
+    btn.textContent = _frlgCalibMode ? '校准模式开' : '校准模式关';
+    btn.onclick = () => { _frlgCalibMode = !_frlgCalibMode; frlgRenderCalibButton(); frlgApplyCalibrationMode(); };
+    breadcrumb.appendChild(btn);
+    if (_frlgCalibMode) {
+      const exportBtn = document.createElement('button');
+      exportBtn.className = 'frlg-export-btn';
+      exportBtn.textContent = '导出坐标';
+      exportBtn.onclick = () => frlgExportCurrentHotspots();
+      breadcrumb.appendChild(exportBtn);
+    }
   }
 }
 
@@ -737,46 +761,237 @@ function frlgJsStr(s) {
   return String(s ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 }
 
-async function frlgRenderSvgOverlay(viewer) {
-  const token = ++_frlgSvgLoadToken;
-  let svgText;
-  try {
-    const resp = await fetch('css/firered-and-leafgreen-versions-map/火红叶绿全局地图.svg');
-    if (!resp.ok) return;
-    svgText = await resp.text();
-  } catch { return; }
+// ── Polygon region system ─────────────────────────────────────────────────────
 
-  if (token !== _frlgSvgLoadToken || !viewer.isConnected) return;
+const _frlgNS = 'http://www.w3.org/2000/svg';
+const _frlgPolySlugMap = {
+  '1号道路':'kanto-route-1','2号道路':'kanto-route-2','3号道路':'kanto-route-3',
+  '4号道路':'kanto-route-4','5号道路':'kanto-route-5','6号道路':'kanto-route-6',
+  '7号道路':'kanto-route-7','8号道路':'kanto-route-8','9号道路':'kanto-route-9',
+  '10号道路':'kanto-route-10','11号道路':'kanto-route-11','12号道路':'kanto-route-12',
+  '13号道路':'kanto-route-13','14号道路':'kanto-route-14','15号道路':'kanto-route-15',
+  '16号道路':'kanto-route-16','17号道路':'kanto-route-17','18号道路':'kanto-route-18',
+  '19号水路':'kanto-sea-route-19','20号水路':'kanto-sea-route-20','21号水路':'kanto-sea-route-21',
+  '22号道路':'kanto-route-22','23号道路':'kanto-route-23','24号道路':'kanto-route-24','25号道路':'kanto-route-25',
+  '常青森林':'viridian-forest','月亮山':'mt-moon','岩石隧道':'rock-tunnel',
+  '发电厂':'kanto-power-plant','冰柱岛':'seafoam-islands','狩猎地带':'kanto-safari-zone',
+  '胜利道路':'kanto-victory-road-2','华蓝洞窟':'cerulean-cave','地鼠洞窟':'digletts-cave',
+  '大豪宅':'pokemon-mansion','变化洞窟':'kanto-altering-cave',
+};
 
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(svgText, 'image/svg+xml');
-  const svgEl = doc.querySelector('svg');
-  if (!svgEl) return;
+function frlgPolyGetRegions(v) {
+  const view = v || frlgView;
+  if (!_frlgPolyRegions[view]) {
+    try {
+      const raw = localStorage.getItem('frlg_poly_' + view);
+      _frlgPolyRegions[view] = raw ? JSON.parse(raw) : [];
+    } catch { _frlgPolyRegions[view] = []; }
+  }
+  return _frlgPolyRegions[view];
+}
 
-  svgEl.removeAttribute('width');
-  svgEl.removeAttribute('height');
-  svgEl.classList.add('frlg-svg-overlay');
+function frlgPolySave(v) {
+  const view = v || frlgView;
+  try { localStorage.setItem('frlg_poly_' + view, JSON.stringify(_frlgPolyRegions[view] || [])); } catch {}
+}
 
-  svgEl.querySelectorAll('path[id]').forEach(path => {
-    const slug = path.id;
-    const zhName = path.getAttribute('data-zh') || slug;
+function frlgRenderPolyOverlay(viewer) {
+  viewer.querySelector('.frlg-poly-overlay')?.remove();
+  const regions = frlgPolyGetRegions();
 
-    path.addEventListener('mouseenter', e => frlgShowSvgLabel(zhName, e));
-    path.addEventListener('mousemove', frlgMoveSvgLabel);
-    path.addEventListener('mouseleave', frlgHideSvgLabel);
-    path.addEventListener('click', e => {
-      e.stopPropagation();
-      svgEl.querySelectorAll('path.active').forEach(p => p.classList.remove('active'));
-      path.classList.add('active');
-      document.querySelectorAll('.frlg-hotspot.active').forEach(h => h.classList.remove('active'));
-      const resolved = frlgResolveLocationKey(slug);
-      frlgShowEncounters(resolved || slug, zhName);
-    });
+  const svg = document.createElementNS(_frlgNS, 'svg');
+  svg.setAttribute('viewBox', '0 0 100 100');
+  svg.setAttribute('preserveAspectRatio', 'none');
+  svg.classList.add('frlg-poly-overlay');
+
+  regions.forEach((region, idx) => {
+    const poly = document.createElementNS(_frlgNS, 'polygon');
+    poly.setAttribute('points', region.pts.map(p => p.x + ',' + p.y).join(' '));
+    if (_frlgPolyCalib) {
+      poly.classList.add('frlg-poly-calib-existing');
+      poly.addEventListener('click', e => {
+        e.stopPropagation();
+        if (!confirm('删除"' + region.zh + '"?')) return;
+        regions.splice(idx, 1);
+        frlgPolySave();
+        frlgRenderPolyOverlay(viewer);
+        frlgPolyUpdateInfo();
+      });
+    } else {
+      poly.classList.add('frlg-poly-region');
+      poly.addEventListener('mouseenter', e => frlgShowSvgLabel(region.zh, e));
+      poly.addEventListener('mousemove', frlgMoveSvgLabel);
+      poly.addEventListener('mouseleave', frlgHideSvgLabel);
+      poly.addEventListener('click', e => {
+        e.stopPropagation();
+        svg.querySelectorAll('.frlg-poly-region.active').forEach(p => p.classList.remove('active'));
+        poly.classList.add('active');
+        const resolved = frlgResolveLocationKey(region.slug);
+        frlgShowEncounters(resolved || region.slug, region.zh);
+      });
+    }
+    svg.appendChild(poly);
   });
 
-  const old = viewer.querySelector('.frlg-svg-overlay');
-  if (old) old.remove();
-  viewer.appendChild(svgEl);
+  if (_frlgPolyCalib) {
+    // In-progress draft
+    if (_frlgPolyDraft.length) {
+      const line = document.createElementNS(_frlgNS, 'polyline');
+      line.setAttribute('points', _frlgPolyDraft.map(p => p.x + ',' + p.y).join(' '));
+      line.classList.add('frlg-poly-draft-line');
+      svg.appendChild(line);
+
+      const cl = document.createElementNS(_frlgNS, 'line');
+      cl.id = 'frlg-poly-cline';
+      cl.classList.add('frlg-poly-cursor-line');
+      const last = _frlgPolyDraft[_frlgPolyDraft.length - 1];
+      cl.setAttribute('x1', last.x); cl.setAttribute('y1', last.y);
+      cl.setAttribute('x2', last.x); cl.setAttribute('y2', last.y);
+      svg.appendChild(cl);
+
+      _frlgPolyDraft.forEach((pt, i) => {
+        const c = document.createElementNS(_frlgNS, 'circle');
+        c.setAttribute('cx', pt.x); c.setAttribute('cy', pt.y);
+        const isFirst = i === 0 && _frlgPolyDraft.length >= 3;
+        c.setAttribute('r', isFirst ? '1.0' : '0.6');
+        c.classList.add('frlg-poly-vertex');
+        if (isFirst) {
+          c.style.fill = 'rgba(74,222,128,.9)';
+          c.style.cursor = 'pointer';
+          c.addEventListener('click', e => { e.stopPropagation(); frlgPolyFinish(viewer); });
+        }
+        svg.appendChild(c);
+      });
+    }
+
+    svg.style.cursor = 'crosshair';
+
+    svg.addEventListener('mousemove', e => {
+      const cl = svg.querySelector('#frlg-poly-cline');
+      if (!cl) return;
+      const pt = frlgPolySvgPt(e, svg);
+      cl.setAttribute('x2', pt.x); cl.setAttribute('y2', pt.y);
+    });
+
+    svg.addEventListener('dblclick', e => {
+      if (e.target.classList.contains('frlg-poly-calib-existing')) return;
+      _frlgPolyJustDbl = true;
+      setTimeout(() => { _frlgPolyJustDbl = false; }, 50);
+      if (_frlgPolyDraft.length >= 4) {
+        _frlgPolyDraft.pop(); // remove duplicate vertex from second click
+        frlgPolyFinish(viewer);
+      } else if (_frlgPolyDraft.length === 3) {
+        frlgPolyFinish(viewer);
+      }
+    });
+
+    svg.addEventListener('click', e => {
+      if (_frlgPolyJustDbl) return;
+      if (e.target.classList.contains('frlg-poly-calib-existing')) return;
+      if (e.target.classList.contains('frlg-poly-vertex')) return;
+      const pt = frlgPolySvgPt(e, svg);
+      _frlgPolyDraft.push(pt);
+      frlgRenderPolyOverlay(viewer);
+      frlgPolyUpdateInfo();
+    });
+
+    svg.addEventListener('contextmenu', e => {
+      e.preventDefault();
+      if (_frlgPolyDraft.length) { _frlgPolyDraft = []; frlgRenderPolyOverlay(viewer); frlgPolyUpdateInfo(); }
+    });
+  }
+
+  viewer.appendChild(svg);
+}
+
+function frlgPolySvgPt(e, svg) {
+  const r = svg.getBoundingClientRect();
+  return {
+    x: Math.round(((e.clientX - r.left) / r.width) * 1000) / 10,
+    y: Math.round(((e.clientY - r.top) / r.height) * 1000) / 10,
+  };
+}
+
+function frlgPolyFinish(viewer) {
+  if (_frlgPolyDraft.length < 3) return;
+  const pts = [..._frlgPolyDraft];
+  _frlgPolyDraft = [];
+  frlgRenderPolyOverlay(viewer);
+  frlgPolyShowInput(pts, viewer);
+}
+
+function frlgPolyShowInput(pts, viewer) {
+  document.getElementById('frlg-poly-inp')?.remove();
+  const root = viewer.closest('.frlg-map-root');
+  if (!root) return;
+
+  const panel = document.createElement('div');
+  panel.id = 'frlg-poly-inp';
+  panel.className = 'frlg-poly-input-panel';
+  panel.innerHTML =
+    '<span class="frlg-poly-inp-label">新区域</span>' +
+    '<input id="frlg-poly-inp-zh" class="frlg-poly-inp-field" placeholder="中文名（如 1号道路）" />' +
+    '<input id="frlg-poly-inp-slug" class="frlg-poly-inp-field" placeholder="slug（如 kanto-route-1）" />' +
+    '<button class="frlg-poly-inp-save" id="frlg-poly-inp-ok">保存</button>' +
+    '<button class="frlg-poly-inp-cancel" id="frlg-poly-inp-no">取消</button>';
+  root.appendChild(panel);
+
+  const zh = document.getElementById('frlg-poly-inp-zh');
+  const slug = document.getElementById('frlg-poly-inp-slug');
+  zh.addEventListener('input', () => { const s = _frlgPolySlugMap[zh.value.trim()]; if (s) slug.value = s; });
+  zh.focus();
+
+  const save = () => {
+    const z = zh.value.trim(), s = slug.value.trim();
+    if (!z || !s) { zh.focus(); return; }
+    frlgPolyGetRegions().push({ slug: s, zh: z, pts });
+    frlgPolySave();
+    panel.remove();
+    frlgRenderPolyOverlay(viewer);
+    frlgPolyUpdateInfo();
+  };
+  zh.addEventListener('keydown', e => { if (e.key === 'Enter') { slug.value ? save() : slug.focus(); } });
+  slug.addEventListener('keydown', e => { if (e.key === 'Enter') save(); });
+  document.getElementById('frlg-poly-inp-ok').onclick = save;
+  document.getElementById('frlg-poly-inp-no').onclick = () => { panel.remove(); frlgPolyUpdateInfo(); };
+}
+
+function frlgPolyUpdateInfo() {
+  const el = document.getElementById('frlg-poly-info-bar');
+  if (!el) return;
+  const n = frlgPolyGetRegions().length;
+  el.textContent = _frlgPolyDraft.length
+    ? '绘制中（' + _frlgPolyDraft.length + ' 顶点）— 双击或点首顶点完成 · 右键取消'
+    : '已有 ' + n + ' 个区域 · 点击地图添加顶点，双击完成多边形 · 点已有区域（黄色）可删除';
+}
+
+function frlgPolyToggle() {
+  const viewer = document.getElementById('frlg-map-viewer');
+  if (!viewer) return;
+  _frlgPolyCalib = !_frlgPolyCalib;
+  _frlgPolyDraft = [];
+  document.getElementById('frlg-poly-inp')?.remove();
+  frlgHideSvgLabel();
+
+  const root = viewer.closest('.frlg-map-root');
+  document.getElementById('frlg-poly-info-bar')?.remove();
+  if (_frlgPolyCalib && root) {
+    const bar = document.createElement('div');
+    bar.id = 'frlg-poly-info-bar';
+    bar.className = 'frlg-poly-info-bar';
+    root.insertBefore(bar, viewer.nextSibling);
+    frlgPolyUpdateInfo();
+  }
+
+  frlgRenderPolyOverlay(viewer);
+  frlgRenderCalibButton();
+}
+
+function frlgPolyExport() {
+  const regions = frlgPolyGetRegions();
+  navigator.clipboard?.writeText(JSON.stringify(regions, null, 2)).then(() => {
+    frlgAppendCalibText('✓ 已复制 ' + regions.length + ' 个多边形区域 JSON');
+  });
 }
 
 function frlgShowSvgLabel(text, e) {

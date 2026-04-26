@@ -82,36 +82,134 @@
   z-index:4;
 }
 
-.frlg-svg-overlay{
+.frlg-poly-overlay{
   position:absolute;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
+  top:0;left:0;
+  width:100%;height:100%;
   z-index:2;
   overflow:visible;
 }
 
-.frlg-svg-overlay path{
+.frlg-poly-region{
   fill:transparent;
   stroke:none;
   cursor:pointer;
   pointer-events:all;
-  transition:fill .12s,stroke-opacity .12s;
-  vector-effect:non-scaling-stroke;
+  transition:fill .12s;
 }
-
-.frlg-svg-overlay path:hover{
+.frlg-poly-region:hover{
   fill:rgba(126,205,196,.18);
-  stroke:rgba(126,205,196,.7);
-  stroke-width:1.5;
+  stroke:rgba(126,205,196,.65);
+  stroke-width:.4;
+}
+.frlg-poly-region.active{
+  fill:rgba(126,205,196,.35);
+  stroke:rgba(126,205,196,.9);
+  stroke-width:.5;
 }
 
-.frlg-svg-overlay path.active{
-  fill:rgba(126,205,196,.35);
-  stroke:rgba(126,205,196,.95);
-  stroke-width:2;
+.frlg-poly-calib-existing{
+  fill:rgba(251,191,36,.1);
+  stroke:rgba(251,191,36,.55);
+  stroke-width:.3;
+  cursor:pointer;
+  pointer-events:all;
 }
+.frlg-poly-calib-existing:hover{
+  fill:rgba(248,113,113,.22);
+  stroke:rgba(248,113,113,.85);
+}
+
+.frlg-poly-draft-line{
+  fill:none;
+  stroke:rgba(96,165,250,.8);
+  stroke-width:.35;
+  stroke-dasharray:.8 .4;
+  pointer-events:none;
+}
+
+.frlg-poly-cursor-line{
+  stroke:rgba(96,165,250,.45);
+  stroke-width:.25;
+  stroke-dasharray:.6 .4;
+  pointer-events:none;
+}
+
+.frlg-poly-vertex{
+  fill:rgba(96,165,250,.9);
+  stroke:rgba(255,255,255,.65);
+  stroke-width:.12;
+  pointer-events:all;
+}
+
+.frlg-poly-info-bar{
+  padding:5px 1.2rem;
+  font-size:.64rem;
+  font-family:'DM Mono',monospace;
+  color:rgba(96,165,250,.9);
+  background:rgba(96,165,250,.06);
+  border-top:1px solid rgba(96,165,250,.14);
+}
+
+.frlg-poly-input-panel{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  flex-wrap:wrap;
+  padding:8px 1.2rem;
+  background:var(--bg2);
+  border:1px solid rgba(96,165,250,.28);
+  border-radius:var(--r);
+  margin:0 0 6px;
+}
+.frlg-poly-inp-label{
+  font-size:.68rem;
+  font-family:'DM Mono',monospace;
+  color:var(--acc);
+  white-space:nowrap;
+}
+.frlg-poly-inp-field{
+  flex:1;
+  min-width:90px;
+  padding:3px 7px;
+  font-size:.7rem;
+  font-family:'DM Mono',monospace;
+  background:var(--bg3);
+  border:1px solid var(--b2);
+  border-radius:4px;
+  color:var(--t);
+  outline:none;
+}
+.frlg-poly-inp-field:focus{border-color:var(--acc);}
+.frlg-poly-inp-save{
+  font-size:.65rem;font-family:'DM Mono',monospace;
+  padding:3px 10px;border-radius:4px;border:none;
+  background:var(--acc);color:#000;cursor:pointer;font-weight:600;
+}
+.frlg-poly-inp-cancel{
+  font-size:.65rem;font-family:'DM Mono',monospace;
+  padding:3px 10px;border-radius:4px;
+  border:1px solid var(--b2);background:var(--bg3);color:var(--t3);cursor:pointer;
+}
+
+.frlg-poly-calib-btn{
+  font-size:.6rem;font-family:'DM Mono',monospace;
+  padding:2px 8px;border-radius:4px;cursor:pointer;
+  border:1px solid rgba(96,165,250,.4);color:var(--acc);
+  background:rgba(96,165,250,.06);
+}
+.frlg-poly-calib-btn.on{
+  border-color:rgba(74,222,128,.55);
+  color:rgba(74,222,128,.9);
+  background:rgba(74,222,128,.08);
+}
+.frlg-poly-export-btn{
+  font-size:.6rem;font-family:'DM Mono',monospace;
+  padding:2px 8px;border-radius:4px;cursor:pointer;
+  border:1px solid rgba(96,165,250,.4);color:var(--acc);
+  background:rgba(96,165,250,.08);
+}
+.frlg-poly-export-btn:hover{background:rgba(96,165,250,.15);}
 
 .frlg-svg-label{
   position:fixed;
