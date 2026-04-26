@@ -824,6 +824,7 @@
 .pkm-catch-card-nature.up-atk{background:rgba(217,85,85,.1);border-color:rgba(217,85,85,.3);color:var(--danger);}
 .pkm-catch-card-nature.up-spa{background:rgba(160,100,220,.1);border-color:rgba(160,100,220,.3);color:#b890ee;}
 .pkm-catch-card-nature.up-def,.pkm-catch-card-nature.up-spd2{background:rgba(90,150,230,.1);border-color:rgba(90,150,230,.3);color:#90aaee;}
+.pkm-catch-card-loc{font-size:.55rem;color:var(--t3);font-family:'DM Mono',monospace;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pkm-catch-empty{color:var(--t3);font-size:.8rem;padding:1.2rem;text-align:center}
 
 /* ── 首页卡片：性格光晕 ── */
@@ -856,6 +857,19 @@
 @keyframes shinyGlow{
   from{filter:drop-shadow(0 0 18px #ffd700) sepia(1) saturate(5) hue-rotate(8deg) brightness(1.7);}
   to{filter:drop-shadow(0 0 40px #fff200) sepia(1) saturate(9) hue-rotate(18deg) brightness(2.2);}
+}
+
+.catch-note-inp{
+  min-height:74px;
+  resize:vertical;
+  line-height:1.6;
+}
+.catch-card-note{
+  margin-top:5px;
+  font-size:.74rem;
+  color:var(--t3);
+  line-height:1.6;
+  white-space:pre-wrap;
 }
 
 /* ── 捕获光束 ── */

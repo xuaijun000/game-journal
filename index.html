@@ -573,6 +573,7 @@
         <button class="btn btn-a" style="flex:1;white-space:nowrap;font-size:.78rem" onclick="enterImmersiveFromSeries('train')">💪 沉浸训练</button>
         <button class="btn btn-a" style="flex:1;white-space:nowrap;font-size:.78rem" onclick="enterImmersiveFromSeries('hunt')">🎯 沉浸捕猎</button>
         <button class="btn btn-a" style="flex:1;white-space:nowrap;font-size:.78rem" onclick="enterImmersiveFromSeries('progress')">📋 进度打卡</button>
+        <button class="btn btn-a" style="flex:1;white-space:nowrap;font-size:.78rem" onclick="openSeriesCatchRecorder()">📘 记录已捕捉</button>
       </div>
       <div style="display:flex;gap:8px;margin-top:8px">
         <button class="series-ai-btn" id="series-ai-btn" onclick="toggleSeriesChat()">⬡ 和 AI 聊聊这部作品</button>
@@ -687,8 +688,14 @@
       <div class="series-grid2" style="margin-top:8px">
         <div class="series-inp-group"><span class="series-inp-label">昵称</span>
           <input id="catch-nickname" class="series-inp" placeholder="可选"></div>
+        <div class="series-inp-group"><span class="series-inp-label">捕获地点</span>
+          <input id="catch-location" class="series-inp" placeholder="可选，例如：1号道路"></div>
         <div class="series-inp-group"><span class="series-inp-label">性格</span>
           <select id="catch-nature" class="series-inp" onchange="updateCatchNatureHint()"></select></div>
+      </div>
+      <div class="series-inp-group" style="margin-top:8px">
+        <span class="series-inp-label">手动描述</span>
+        <textarea id="catch-note" class="series-inp catch-note-inp" placeholder="可选，记录这只宝可梦的来历、球种、个体印象或当时发生的事…"></textarea>
       </div>
       <div id="catch-nature-hint" class="nature-hint"></div>
       <div id="catch-basestats" class="catch-stats-block"></div>

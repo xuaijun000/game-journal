@@ -901,11 +901,10 @@ function updatePartnerFloat(activePg){
       const btn=Array.from(document.querySelectorAll('nav button')).find(b=>b.textContent.trim()==='伙伴');
       if(btn)btn.click();
     };
-    w.innerHTML=`<img class="pflt-spr" id="pflt-spr" src="" alt=""><div class="pflt-info"><div class="pflt-nm" id="pflt-nm"></div><div class="pflt-st" id="pflt-st"></div></div><div class="pflt-dot" id="pflt-dot"></div>`;
-    document.body.appendChild(w);
+    w.innerHTML=`<img class="pflt-spr" id="pflt-spr" src="" alt=""><div class="pflt-info"><div class="pflt-nm" id="pflt-nm"></div><div class="pflt-st" id="pflt-st"></div></div><div class="pflt-tip" id="pflt-tip">点击查看伙伴详情</div><div class="pflt-dot" id="pflt-dot"></div>`;
+    document.querySelector('main')?.prepend(w);
   }
-  const onPartnerPage=activePg==='partner'||(activePg==null&&document.getElementById('pg-partner')?.classList.contains('on'));
-  w.classList.toggle('hidden',!!onPartnerPage);
+  w.classList.remove('hidden');
   const d=partnerData;
   const spr=document.getElementById('pflt-spr');
   const newSrc=partnerSpriteUrl(d.pkm_id);
@@ -919,7 +918,9 @@ function updatePartnerFloat(activePg){
   document.getElementById('pflt-nm').textContent=d.nickname||d.pkm_name;
   const needsAttn=d.hunger<30||d.mood<30||d.energy<25;
   const neglected=Date.now()-new Date(d.last_interaction_at||Date.now()).getTime()>3600000*4;
-  document.getElementById('pflt-st').textContent=needsAttn?'需要关注…':neglected?'有点想你了':'状态良好';
+  const lv=pLevelFromExp(d.exp||0);
+  const stage=pGetBondStage();
+  document.getElementById('pflt-st').textContent=`Lv.${lv} · ${stage.name} · ${needsAttn?'需要关注':neglected?'有点想你了':'状态良好'}`;
   document.getElementById('pflt-dot').classList.toggle('on',needsAttn||neglected);
 }
 window.updatePartnerFloat=updatePartnerFloat;

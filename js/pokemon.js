@@ -1503,7 +1503,7 @@ async function renderActiveCatches(){
   const s=PKM_SERIES.find(x=>x.id===sid);
   const{data:{session}}=await db.auth.getSession();
   if(!session?.user){box.style.display='none';return;}
-  const{data:catches}=await db.from('pkm_catch_log').select('id,pkm_name,img,nickname,nature').eq('user_id',session.user.id).eq('series_id',sid).order('created_at',{ascending:false});
+  const{data:catches}=await db.from('pkm_catch_log').select('*').eq('user_id',session.user.id).eq('series_id',sid).order('created_at',{ascending:false});
   if(!catches?.length){box.style.display='none';return;}
   box.style.display='block';
   if(gameEl)gameEl.textContent=s?.name||sid;
@@ -1511,11 +1511,13 @@ async function renderActiveCatches(){
   row.innerHTML=catches.map((c,i)=>{
     const nat=NATURES.find(n=>n.id===c.nature);
     const natCls=nat?.up?NATURE_UP_CLASS[nat.up]||'':'';
+    const extra=getCatchExtra(c);
     return`<div class="pkm-catch-card${natCls?' '+natCls:''}" style="animation-delay:${i*60}ms" onclick="openSeriesDetailById('${sid}')">
       <img src="${c.img||''}" alt="${esc(c.pkm_name)}" style="animation-delay:${(i*200)%1600}ms" onerror="this.style.display='none'">
       <div class="pkm-catch-card-name">${esc(c.pkm_name)}</div>
       ${c.nickname?`<div class="pkm-catch-card-nick">「${esc(c.nickname)}」</div>`:''}
       <div class="pkm-catch-card-nature ${natCls}">${nat?.zh||c.nature}</div>
+      ${extra.location?`<div class="pkm-catch-card-loc" title="${esc(extra.location)}">📍 ${esc(extra.location)}</div>`:''}
     </div>`;
   }).join('');
 }
@@ -1523,6 +1525,18 @@ async function renderActiveCatches(){
 function openSeriesDetailById(sid){
   const el=document.querySelector(`.pkm-series-card[data-sid="${sid}"]`);
   if(el)openSeriesDetail(el);
+}
+
+function openSeriesCatchRecorder(){
+  if(!_curSid)return;
+  closeOv('ov-series');
+  openImm('hunt',_curSid,-1);
+  setTimeout(()=>{
+    toggleImmPanel('catches');
+    const locInp=document.getElementById('catch-location');
+    if(locInp&&!locInp.value)locInp.value=getCatchLocationPrefill();
+    document.getElementById('catch-search-inp')?.focus();
+  },100);
 }
 
 /* ================================================================
@@ -1972,12 +1986,71 @@ function searchCatchPkm(v){
   _catchSearchT=setTimeout(()=>doInlineSearch(v,res,'catch'),400);
 }
 
+function getCatchLocationPrefill(){
+  const locBadge=document.getElementById('imm-loc');
+  const ov=document.getElementById('ov-imm');
+  const raw=locBadge?.textContent?.trim()||'';
+  if(ov?.classList.contains('on')&&raw){
+    return raw.replace(/^📍\s*/,'').trim();
+  }
+  return '';
+}
+
+function resetCatchForm(prefillLocation=''){
+  const searchInp=document.getElementById('catch-search-inp');
+  const nickInp=document.getElementById('catch-nickname');
+  const locInp=document.getElementById('catch-location');
+  const noteInp=document.getElementById('catch-note');
+  const form=document.getElementById('catch-form-body');
+  const preview=document.getElementById('catch-pkm-preview');
+  const baseStats=document.getElementById('catch-basestats');
+  const evYields=document.getElementById('catch-ev-yields');
+  const aiBox=document.getElementById('catch-ai-result');
+  if(searchInp)searchInp.value='';
+  if(nickInp)nickInp.value='';
+  if(locInp)locInp.value=prefillLocation||'';
+  if(noteInp)noteInp.value='';
+  if(form)form.style.display='none';
+  if(preview)preview.innerHTML='';
+  if(baseStats)baseStats.innerHTML='';
+  if(evYields)evYields.innerHTML='';
+  if(aiBox){
+    aiBox.style.display='none';
+    aiBox.textContent='';
+  }
+  _catchSelectedPkm=null;
+  _catchBaseStats=null;
+  _catchEvYields=null;
+}
+
+function getCatchLocalMeta(sid){
+  const meta=lsGet('pkm_catch_meta_'+sid);
+  return meta&&typeof meta==='object'?meta:{};
+}
+
+function setCatchLocalMeta(sid,meta){
+  lsSet('pkm_catch_meta_'+sid,meta&&typeof meta==='object'?meta:{});
+}
+
+function getCatchExtra(catchRecord){
+  const sid=catchRecord?.series_id||_curSid;
+  const localMeta=getCatchLocalMeta(sid);
+  const local=localMeta[catchRecord?.id]||{};
+  return {
+    location:catchRecord?.catch_location||catchRecord?.location_caught||local.location||'',
+    note:catchRecord?.manual_note||catchRecord?.description_manual||local.note||''
+  };
+}
+
 async function selectCatchPkm(pkm){
   _catchSelectedPkm=pkm;
   document.getElementById('catch-search-inp').value=pkm.name;
   document.getElementById('catch-search-results').classList.remove('open');
   document.getElementById('catch-form-body').style.display='block';
   document.getElementById('catch-ai-result').style.display='none';
+  document.getElementById('catch-nickname').value='';
+  document.getElementById('catch-location').value=getCatchLocationPrefill();
+  document.getElementById('catch-note').value='';
   document.getElementById('catch-pkm-preview').innerHTML=
     `<img src="${pkm.img}" alt="" onerror="this.style.display='none'">
      <div><div class="catch-pkm-header-name">${esc(pkm.name)}</div>
@@ -2023,6 +2096,64 @@ function updateCatchNatureHint(){
   renderCatchBaseStats(_catchBaseStats,nature);
 }
 
+async function persistCatchRecord(){
+  if(!_catchSelectedPkm){showToast('请先选择宝可梦');return false;}
+  const{data:{session}}=await db.auth.getSession();
+  if(!session?.user){showToast('请先登录');return false;}
+  const sid=_curSid;
+  const nature=document.getElementById('catch-nature')?.value||'serious';
+  const nick=document.getElementById('catch-nickname')?.value?.trim()||'';
+  const location=document.getElementById('catch-location')?.value?.trim()||'';
+  const note=document.getElementById('catch-note')?.value?.trim()||'';
+  const aiBox=document.getElementById('catch-ai-result');
+  const aiRec=(aiBox&&aiBox.style.display!=='none')?aiBox.textContent:'';
+  const saveBtn=document.getElementById('catch-save-btn')||document.querySelector('#ov-imm .btn-a');
+  if(saveBtn){saveBtn.disabled=true;saveBtn.textContent='保存中…';}
+  const payload={
+    user_id:session.user.id,series_id:sid,
+    pkm_id:_catchSelectedPkm.id,pkm_name:_catchSelectedPkm.name,
+    img:_catchSelectedPkm.img||null,nickname:nick||null,nature,
+    base_stats:_catchBaseStats||null,ev_yields:_catchEvYields||null,
+    ai_rec:aiRec||null,
+    catch_location:location||null,
+    manual_note:note||null
+  };
+  let row=null;
+  let insertError=null;
+  const insertRes=await db.from('pkm_catch_log').insert(payload).select().single();
+  insertError=insertRes.error||null;
+  row=insertRes.data||null;
+  if(insertError&&/column .* does not exist/i.test(insertError.message||'')){
+    const fallbackPayload={
+      user_id:payload.user_id,series_id:payload.series_id,
+      pkm_id:payload.pkm_id,pkm_name:payload.pkm_name,
+      img:payload.img,nickname:payload.nickname,nature:payload.nature,
+      base_stats:payload.base_stats,ev_yields:payload.ev_yields,ai_rec:payload.ai_rec
+    };
+    const fallbackRes=await db.from('pkm_catch_log').insert(fallbackPayload).select().single();
+    insertError=fallbackRes.error||null;
+    row=fallbackRes.data||null;
+    if(row&&(location||note)){
+      const localMeta=getCatchLocalMeta(sid);
+      localMeta[row.id]={location,note};
+      setCatchLocalMeta(sid,localMeta);
+    }
+  }else if(row){
+    const localMeta=getCatchLocalMeta(sid);
+    if(localMeta[row.id]){
+      delete localMeta[row.id];
+      setCatchLocalMeta(sid,localMeta);
+    }
+  }
+  if(saveBtn){saveBtn.disabled=false;saveBtn.textContent='保存记录';}
+  if(insertError){showToast('保存失败：'+insertError.message);return false;}
+  resetCatchForm(getCatchLocationPrefill());
+  await loadCatchList(sid);
+  await renderActiveCatches();
+  showToast('已保存到图鉴录入');
+  return true;
+}
+
 async function getCatchAIRec(){
   if(!_catchSelectedPkm||!_catchBaseStats){showToast('请先选择宝可梦');return;}
   const btn=document.getElementById('catch-ai-btn');btn.disabled=true;btn.textContent='AI分析中…';
@@ -2058,32 +2189,7 @@ async function getCatchAIRec(){
 }
 
 async function saveCatch(){
-  if(!_catchSelectedPkm){showToast('请先选择宝可梦');return;}
-  const{data:{session}}=await db.auth.getSession();
-  if(!session?.user){showToast('请先登录');return;}
-  const sid=_curSid;
-  const nature=document.getElementById('catch-nature')?.value||'serious';
-  const nick=document.getElementById('catch-nickname')?.value?.trim()||'';
-  const aiBox=document.getElementById('catch-ai-result');
-  const aiRec=(aiBox&&aiBox.style.display!=='none')?aiBox.textContent:'';
-  const saveBtn=document.querySelector('#stab-catches .btn-a');
-  if(saveBtn){saveBtn.disabled=true;saveBtn.textContent='保存中…';}
-  const{error}=await db.from('pkm_catch_log').insert({
-    user_id:session.user.id,series_id:sid,
-    pkm_id:_catchSelectedPkm.id,pkm_name:_catchSelectedPkm.name,
-    img:_catchSelectedPkm.img||null,nickname:nick||null,nature,
-    base_stats:_catchBaseStats||null,ev_yields:_catchEvYields||null,
-    ai_rec:aiRec||null
-  });
-  if(saveBtn){saveBtn.disabled=false;saveBtn.textContent='保存记录';}
-  if(error){showToast('保存失败：'+error.message);return;}
-  _catchSelectedPkm=null;_catchBaseStats=null;_catchEvYields=null;
-  document.getElementById('catch-search-inp').value='';
-  document.getElementById('catch-form-body').style.display='none';
-  if(aiBox)aiBox.style.display='none';
-  loadCatchList(sid);
-  renderActiveCatches();
-  showToast('已保存到图鉴录入');
+  await persistCatchRecord();
 }
 
 async function loadCatchList(sid){
@@ -2101,6 +2207,7 @@ function renderCatchList(records){
   if(!records.length){el.innerHTML='<div style="font-size:.8rem;color:var(--t3);text-align:center;padding:16px 0">还没有录入记录，抓到好精灵快来记录吧</div>';return;}
   el.innerHTML=records.map(c=>{
     const natZh=getNatureZh(c.nature);
+    const extra=getCatchExtra(c);
     const d=new Date(c.created_at);const ts=`${d.getMonth()+1}/${d.getDate()}`;
     const evStr=c.ev_yields?.length?c.ev_yields.map(x=>`${STAT_ZH[x.stat.name]||x.stat.name}+${x.effort}`).join(' '):'—';
     return`<div class="catch-card">
@@ -2108,7 +2215,8 @@ function renderCatchList(records){
       <div class="catch-card-body">
         <div class="catch-card-name">${esc(c.pkm_name)}${c.nickname?` <span style="color:var(--acc);font-size:.78rem">「${esc(c.nickname)}」</span>`:''}</div>
         <div class="catch-card-nature">${natZh}性格</div>
-        <div class="catch-card-meta">EV产出 ${evStr} · ${ts}</div>
+        <div class="catch-card-meta">EV产出 ${evStr} · ${ts}${extra.location?` · ${esc(extra.location)}`:''}</div>
+        ${extra.note?`<div class="catch-card-note">${esc(extra.note)}</div>`:''}
         ${c.ai_rec?`<details style="margin-top:4px"><summary style="font-size:.7rem;color:var(--t3);cursor:pointer;font-family:'DM Mono',monospace">查看AI推荐方案</summary><div style="font-size:.75rem;color:var(--t2);white-space:pre-wrap;margin-top:4px;padding:6px;background:var(--bg);border-radius:3px;line-height:1.7">${esc(c.ai_rec)}</div></details>`:''}
       </div>
       <button class="catch-card-del" onclick="delCatch('${c.id}')">✕</button>
@@ -2120,6 +2228,11 @@ async function delCatch(id){
   if(!confirm('删除这条录入？'))return;
   const{data:{session}}=await db.auth.getSession();if(!session?.user)return;
   await db.from('pkm_catch_log').delete().eq('id',id).eq('user_id',session.user.id);
+  const localMeta=getCatchLocalMeta(_curSid);
+  if(localMeta[id]){
+    delete localMeta[id];
+    setCatchLocalMeta(_curSid,localMeta);
+  }
   loadCatchList(_curSid);
   renderActiveCatches();
 }
@@ -3187,6 +3300,7 @@ function toggleImmPanel(name){
   }
   if(name==='catches'){
     initNatureSelect('catch-nature');
+    resetCatchForm(getCatchLocationPrefill());
     loadCatchList(_curSid);
   }
   if(name==='explore'){
@@ -3287,32 +3401,7 @@ function spawnCaptureBeam(){
 }
 
 async function saveCatch(){
-  if(!_catchSelectedPkm){showToast('Select a Pokemon first');return;}
-  const{data:{session}}=await db.auth.getSession();
-  if(!session?.user){showToast('Please log in first');return;}
-  const sid=_curSid;
-  const nature=document.getElementById('catch-nature')?.value||'serious';
-  const nick=document.getElementById('catch-nickname')?.value?.trim()||'';
-  const aiBox=document.getElementById('catch-ai-result');
-  const aiRec=(aiBox&&aiBox.style.display!=='none')?aiBox.textContent:'';
-  const saveBtn=document.getElementById('catch-save-btn') || document.querySelector('#ov-imm .btn-a');
-  if(saveBtn){saveBtn.disabled=true;saveBtn.textContent='Saving...';}
-  const{error}=await db.from('pkm_catch_log').insert({
-    user_id:session.user.id,series_id:sid,
-    pkm_id:_catchSelectedPkm.id,pkm_name:_catchSelectedPkm.name,
-    img:_catchSelectedPkm.img||null,nickname:nick||null,nature,
-    base_stats:_catchBaseStats||null,ev_yields:_catchEvYields||null,
-    ai_rec:aiRec||null
-  });
-  if(saveBtn){saveBtn.disabled=false;saveBtn.textContent='Save';}
-  if(error){showToast('Save failed: '+error.message);return;}
-  _catchSelectedPkm=null;_catchBaseStats=null;_catchEvYields=null;
-  document.getElementById('catch-search-inp').value='';
-  document.getElementById('catch-form-body').style.display='none';
-  if(aiBox)aiBox.style.display='none';
-  loadCatchList(sid);
-  renderActiveCatches();
-  showToast('Saved');
+  await persistCatchRecord();
 }
 
 function selectTrainPkm(slotIdx){
