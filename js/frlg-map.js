@@ -484,7 +484,10 @@ function frlgSetupPanel() {
   const closeBtn = panel.querySelector('.frlg-enc-header .btn');
   if (closeBtn && !closeBtn.dataset.frlgBound) {
     closeBtn.dataset.frlgBound = '1';
-    closeBtn.onclick = () => panel.classList.remove('visible');
+    closeBtn.onclick = () => {
+      panel.classList.remove('visible');
+      document.querySelectorAll('.frlg-poly-region.active').forEach(p=>p.classList.remove('active'));
+    };
   }
 }
 

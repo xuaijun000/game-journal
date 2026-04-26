@@ -95,17 +95,23 @@
   stroke:none;
   cursor:pointer;
   pointer-events:all;
-  transition:fill .12s;
+  transition:fill .15s,stroke .15s,filter .15s;
 }
 .frlg-poly-region:hover{
-  fill:rgba(126,205,196,.18);
-  stroke:rgba(126,205,196,.65);
-  stroke-width:.4;
+  fill:rgba(255,255,255,.07);
+  stroke:rgba(255,255,255,.5);
+  stroke-width:.45;
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.55));
+}
+@keyframes frlgRegionLift{
+  0%,100%{filter:drop-shadow(0 0 3px rgba(126,205,196,.45)) drop-shadow(0 2px 5px rgba(0,0,0,.5));}
+  50%{filter:drop-shadow(0 0 7px rgba(126,205,196,.75)) drop-shadow(0 3px 8px rgba(0,0,0,.55));}
 }
 .frlg-poly-region.active{
-  fill:rgba(126,205,196,.35);
-  stroke:rgba(126,205,196,.9);
-  stroke-width:.5;
+  fill:rgba(126,205,196,.07);
+  stroke:rgba(126,205,196,.72);
+  stroke-width:.55;
+  animation:frlgRegionLift 2.4s ease-in-out infinite;
 }
 
 .frlg-poly-calib-existing{
