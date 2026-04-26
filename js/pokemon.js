@@ -3373,7 +3373,7 @@ async function openImm(mode,...args){
       document.getElementById('hunt-imm-name').textContent='';
       document.getElementById('hunt-imm-target').textContent='选择地点后点击精灵开始捕猎';
       document.getElementById('hunt-imm-num').textContent='0';
-      document.getElementById('hunt-imm-sprite').src='';
+      document.getElementById('hunt-imm-sprite').src='css/可达鸭空状态.png';
       const actEl=document.getElementById('hunt-battle-actions');
       if(actEl)actEl.style.display='none';
     }
