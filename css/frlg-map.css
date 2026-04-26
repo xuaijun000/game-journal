@@ -113,6 +113,17 @@
   stroke-width:.55;
   animation:frlgRegionLift 2.4s ease-in-out infinite;
 }
+/* 链接到子地图的区域：橙色调 */
+.frlg-poly-region.has-subview{
+  fill:transparent;
+  stroke:none;
+}
+.frlg-poly-region.has-subview:hover{
+  fill:rgba(251,146,60,.1);
+  stroke:rgba(251,146,60,.6);
+  stroke-width:.45;
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));
+}
 
 .frlg-poly-calib-existing{
   fill:rgba(251,191,36,.1);

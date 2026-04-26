@@ -118,6 +118,30 @@ let _frlgPolyCalib = false;
 let _frlgPolyDraft = [];
 let _frlgPolyJustDbl = false;
 
+// ── 自定义地图 ──────────────────────────────────────────────────────────────
+let _frlgCustomViews = null;
+function _frlgLoadCustomViews(){
+  if(_frlgCustomViews)return _frlgCustomViews;
+  try{_frlgCustomViews=JSON.parse(localStorage.getItem('frlg_custom_views')||'{}');}
+  catch{_frlgCustomViews={};}
+  return _frlgCustomViews;
+}
+function _frlgSaveCustomViews(){
+  try{localStorage.setItem('frlg_custom_views',JSON.stringify(_frlgCustomViews||{}));}catch{}
+}
+function frlgGetCustomHotspots(view){
+  try{return JSON.parse(localStorage.getItem('frlg_hotspots_'+view)||'[]');}catch{return[];}
+}
+function frlgSaveCustomHotspots(view,hotspots){
+  try{localStorage.setItem('frlg_hotspots_'+view,JSON.stringify(hotspots));}catch{}
+}
+function frlgDeleteCustomView(key){
+  const views=_frlgLoadCustomViews();
+  delete views[key];
+  _frlgSaveCustomViews();
+  try{localStorage.removeItem('frlg_poly_'+key);localStorage.removeItem('frlg_hotspots_'+key);}catch{}
+}
+
 function initFRLGMapTab(seriesId) {
   const btn = document.getElementById('imm-map-btn');
   if (btn) btn.style.display = seriesId === 'firered-leafgreen' ? '' : 'none';
@@ -131,7 +155,7 @@ function initFRLGMapTab(seriesId) {
 
 function frlgInitView(view) {
   const nextView = view || 'kanto';
-  if (_frlgPolyCalib && nextView !== 'kanto') {
+  if (_frlgPolyCalib) {
     _frlgPolyCalib = false;
     _frlgPolyDraft = [];
     document.getElementById('frlg-poly-info-bar')?.remove();
@@ -188,6 +212,9 @@ function frlgInitView(view) {
   viewer.appendChild(img);
   if (frlgView === 'kanto') {
     frlgRenderRegions(viewer, KANTO_REGIONS);
+    frlgRenderPolyOverlay(viewer);
+  } else if (frlgView.startsWith('custom:') || frlgView.startsWith('island-')) {
+    frlgRenderHotspots(viewer, hotspots);
     frlgRenderPolyOverlay(viewer);
   } else {
     frlgRenderHotspots(viewer, hotspots);
@@ -407,6 +434,19 @@ function frlgBuildBreadcrumb(view) {
     crumbs.push({ label:'七岛总览', view:'sevii' });
     crumbs.push({ label:`第${frlgIslandCn(Number(view.split('-')[1]))}岛`, view });
   }
+  if (view.startsWith('custom:')) {
+    const chain = [];
+    let cur = view;
+    const visited = new Set(['kanto']);
+    while (cur && !visited.has(cur)) {
+      visited.add(cur);
+      const v = _frlgLoadCustomViews()[cur];
+      if (!v) break;
+      chain.unshift({ label: v.label, view: cur });
+      cur = v.parent || 'kanto';
+    }
+    chain.forEach(c => crumbs.push(c));
+  }
 
   return crumbs.map((crumb, idx) => {
     const isLast = idx === crumbs.length - 1;
@@ -424,6 +464,12 @@ function frlgGetViewConfig(view) {
   if (view.startsWith('island-')) {
     const n = Number(view.split('-')[1]);
     return { src: FRLG_IMG.island(n), hotspots: ISLAND_HOTSPOTS[n] || [], alt: `第${frlgIslandCn(n)}岛地图` };
+  }
+  if (view.startsWith('custom:')) {
+    const v = _frlgLoadCustomViews()[view];
+    const hotspots = frlgGetCustomHotspots(view);
+    if (v) return { src: v.imgSrc || '', hotspots, alt: v.label };
+    return { src: '', hotspots, alt: '自定义地图' };
   }
   return { src: FRLG_IMG.kanto, hotspots: KANTO_HOTSPOTS, alt: '关都地图' };
 }
@@ -494,9 +540,10 @@ function frlgSetupPanel() {
 function frlgRenderCalibButton() {
   const breadcrumb = document.getElementById('frlg-breadcrumb');
   if (!breadcrumb) return;
-  breadcrumb.querySelectorAll('.frlg-calib-btn,.frlg-export-btn,.frlg-poly-calib-btn,.frlg-poly-export-btn').forEach(n => n.remove());
+  breadcrumb.querySelectorAll('.frlg-calib-btn,.frlg-export-btn,.frlg-poly-calib-btn,.frlg-poly-export-btn,.frlg-newview-btn').forEach(n => n.remove());
 
-  if (frlgView === 'kanto') {
+  const usePolyCalib = frlgView === 'kanto' || frlgView.startsWith('island-') || frlgView.startsWith('custom:');
+  if (usePolyCalib) {
     const polyBtn = document.createElement('button');
     polyBtn.className = 'frlg-poly-calib-btn' + (_frlgPolyCalib ? ' on' : '');
     polyBtn.style.marginLeft = 'auto';
@@ -509,10 +556,35 @@ function frlgRenderCalibButton() {
       expBtn.textContent = '导出 JSON';
       expBtn.onclick = frlgPolyExport;
       breadcrumb.appendChild(expBtn);
+
+      const newMapBtn = document.createElement('button');
+      newMapBtn.className = 'frlg-poly-calib-btn frlg-newview-btn';
+      newMapBtn.textContent = '➕ 新子地图';
+      newMapBtn.onclick = () => {
+        const viewer = document.getElementById('frlg-map-viewer');
+        if (viewer) frlgShowNewSubViewDialog(viewer, key => frlgInitView(key));
+      };
+      breadcrumb.appendChild(newMapBtn);
+
+      if (frlgView.startsWith('custom:')) {
+        const delBtn = document.createElement('button');
+        delBtn.className = 'frlg-poly-calib-btn frlg-newview-btn';
+        delBtn.style.color = 'rgba(248,113,113,.9)';
+        delBtn.textContent = '🗑 删除此图';
+        delBtn.onclick = () => {
+          const v = _frlgLoadCustomViews()[frlgView];
+          if (!confirm('删除地图「' + (v?.label || frlgView) + '」及其所有区域？')) return;
+          const parent = v?.parent || 'kanto';
+          frlgDeleteCustomView(frlgView);
+          frlgInitView(parent);
+        };
+        breadcrumb.appendChild(delBtn);
+      }
     }
   } else {
     const btn = document.createElement('button');
     btn.className = 'frlg-calib-btn' + (_frlgCalibMode ? ' on' : '');
+    btn.style.marginLeft = 'auto';
     btn.textContent = _frlgCalibMode ? '校准模式开' : '校准模式关';
     btn.onclick = () => { _frlgCalibMode = !_frlgCalibMode; frlgRenderCalibButton(); frlgApplyCalibrationMode(); };
     breadcrumb.appendChild(btn);
@@ -822,11 +894,14 @@ function frlgRenderPolyOverlay(viewer) {
       });
     } else {
       poly.classList.add('frlg-poly-region');
-      poly.addEventListener('mouseenter', e => frlgShowSvgLabel(region.zh, e));
+      if (region.subView) poly.classList.add('has-subview');
+      const hoverLabel = region.subView ? ('📂 ' + region.zh) : region.zh;
+      poly.addEventListener('mouseenter', e => frlgShowSvgLabel(hoverLabel, e));
       poly.addEventListener('mousemove', frlgMoveSvgLabel);
       poly.addEventListener('mouseleave', frlgHideSvgLabel);
       poly.addEventListener('click', e => {
         e.stopPropagation();
+        if (region.subView) { frlgInitView(region.subView); return; }
         svg.querySelectorAll('.frlg-poly-region.active').forEach(p => p.classList.remove('active'));
         poly.classList.add('active');
         const resolved = frlgResolveLocationKey(region.slug);
@@ -928,32 +1003,58 @@ function frlgPolyShowInput(pts, viewer) {
   const root = viewer.closest('.frlg-map-root');
   if (!root) return;
 
+  const views = _frlgLoadCustomViews();
+  const viewOpts = Object.entries(views).map(([k, v]) =>
+    `<option value="${k}">${v.label}</option>`).join('');
+
   const panel = document.createElement('div');
   panel.id = 'frlg-poly-inp';
   panel.className = 'frlg-poly-input-panel';
   panel.innerHTML =
     '<span class="frlg-poly-inp-label">新区域</span>' +
     '<input id="frlg-poly-inp-zh" class="frlg-poly-inp-field" placeholder="中文名（如 1号道路）" />' +
-    '<input id="frlg-poly-inp-slug" class="frlg-poly-inp-field" placeholder="slug（如 kanto-route-1）" />' +
+    '<input id="frlg-poly-inp-slug" class="frlg-poly-inp-field" placeholder="遭遇key（如 kanto-route-1）" />' +
+    '<select id="frlg-poly-inp-sv" class="frlg-poly-inp-field" title="链接子地图（可选）">' +
+    '<option value="">无子地图</option>' + viewOpts +
+    '<option value="__new__">➕ 新建子地图…</option>' +
+    '</select>' +
     '<button class="frlg-poly-inp-save" id="frlg-poly-inp-ok">保存</button>' +
     '<button class="frlg-poly-inp-cancel" id="frlg-poly-inp-no">取消</button>';
   root.appendChild(panel);
 
   const zh = document.getElementById('frlg-poly-inp-zh');
   const slug = document.getElementById('frlg-poly-inp-slug');
+  const svSel = document.getElementById('frlg-poly-inp-sv');
+
+  svSel.onchange = () => {
+    if (svSel.value !== '__new__') return;
+    svSel.value = '';
+    frlgShowNewSubViewDialog(viewer, key => {
+      const opt = document.createElement('option');
+      opt.value = key;
+      opt.textContent = _frlgLoadCustomViews()[key]?.label || key;
+      svSel.insertBefore(opt, svSel.lastElementChild);
+      svSel.value = key;
+    });
+  };
+
   zh.addEventListener('input', () => { const s = _frlgPolySlugMap[zh.value.trim()]; if (s) slug.value = s; });
   zh.focus();
 
   const save = () => {
-    const z = zh.value.trim(), s = slug.value.trim();
-    if (!z || !s) { zh.focus(); return; }
-    frlgPolyGetRegions().push({ slug: s, zh: z, pts });
+    const z = zh.value.trim(), s = slug.value.trim(), sv = svSel.value;
+    if (!z) { zh.focus(); return; }
+    if (!s && !sv) { slug.focus(); return; }
+    const region = { zh: z, pts };
+    if (s) region.slug = s;
+    if (sv) region.subView = sv;
+    frlgPolyGetRegions().push(region);
     frlgPolySave();
     panel.remove();
     frlgRenderPolyOverlay(viewer);
     frlgPolyUpdateInfo();
   };
-  zh.addEventListener('keydown', e => { if (e.key === 'Enter') { slug.value ? save() : slug.focus(); } });
+  zh.addEventListener('keydown', e => { if (e.key === 'Enter') { (slug.value||svSel.value) ? save() : slug.focus(); } });
   slug.addEventListener('keydown', e => { if (e.key === 'Enter') save(); });
   document.getElementById('frlg-poly-inp-ok').onclick = save;
   document.getElementById('frlg-poly-inp-no').onclick = () => { panel.remove(); frlgPolyUpdateInfo(); };
@@ -995,6 +1096,49 @@ function frlgPolyExport() {
   navigator.clipboard?.writeText(JSON.stringify(regions, null, 2)).then(() => {
     frlgAppendCalibText('✓ 已复制 ' + regions.length + ' 个多边形区域 JSON');
   });
+}
+
+function frlgShowNewSubViewDialog(viewer, onCreated) {
+  const existing = viewer.querySelector('.frlg-new-subview-modal');
+  if (existing) { existing.remove(); return; }
+  const modal = document.createElement('div');
+  modal.className = 'frlg-new-subview-modal';
+  modal.style.cssText = 'position:absolute;inset:0;z-index:100;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;';
+  modal.innerHTML = `
+    <div style="background:var(--bg2);border-radius:10px;padding:16px 18px;width:min(300px,90%);display:flex;flex-direction:column;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,.5)">
+      <div style="font-size:.78rem;font-family:'DM Mono',monospace;color:var(--t1);font-weight:600">➕ 新建子地图</div>
+      <input id="frlg-nsv-name" style="padding:5px 8px;border-radius:5px;border:1px solid var(--b2);background:var(--bg3);color:var(--t);font-size:.74rem;outline:none" placeholder="地图名称（如：岩石隧道内部）">
+      <label style="font-size:.68rem;color:var(--t3);cursor:pointer">
+        地图图片（上传后可在此视图标定）
+        <input type="file" id="frlg-nsv-img" accept="image/*" style="display:block;margin-top:4px;font-size:.67rem;color:var(--t2)">
+      </label>
+      <div style="display:flex;gap:8px">
+        <button id="frlg-nsv-ok" style="flex:1;padding:6px;border-radius:5px;border:none;background:var(--acc);color:#000;font-size:.74rem;font-weight:600;cursor:pointer">创建</button>
+        <button id="frlg-nsv-no" style="padding:6px 12px;border-radius:5px;border:1px solid var(--b2);background:var(--bg3);color:var(--t2);font-size:.74rem;cursor:pointer">取消</button>
+      </div>
+    </div>`;
+  viewer.appendChild(modal);
+  const nameInp = modal.querySelector('#frlg-nsv-name');
+  nameInp.focus();
+  modal.querySelector('#frlg-nsv-no').onclick = () => modal.remove();
+  modal.querySelector('#frlg-nsv-ok').onclick = async () => {
+    const name = nameInp.value.trim();
+    if (!name) { nameInp.focus(); return; }
+    const fileInput = modal.querySelector('#frlg-nsv-img');
+    let imgSrc = '';
+    if (fileInput.files?.[0]) {
+      imgSrc = await new Promise(res => {
+        const r = new FileReader();
+        r.onload = e => res(e.target.result);
+        r.readAsDataURL(fileInput.files[0]);
+      });
+    }
+    const key = 'custom:' + Date.now();
+    _frlgLoadCustomViews()[key] = { label: name, imgSrc, parent: frlgView };
+    _frlgSaveCustomViews();
+    modal.remove();
+    if (onCreated) onCreated(key);
+  };
 }
 
 function frlgShowSvgLabel(text, e) {
