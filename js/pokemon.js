@@ -1875,6 +1875,12 @@ async function loadHuntDistribution(){
 
 function renderHuntDist(items,isOfficial,srcLabel){
   _huntLocPkm=items;
+  // 沉浸模式下立即同步区域精灵网格（必须在 hunt-dist-grid 检查之前）
+  const ov=document.getElementById('ov-imm');
+  if(ov&&ov.style.display!=='none'&&_immMode==='hunt'){
+    const curList=lsGet('pkm_hunt_'+_immSid)||[];
+    renderHuntAreaGrid(curList[_immIdx]||null);
+  }
   const grid=document.getElementById('hunt-dist-grid');if(!grid)return;
   const srcBadge=isOfficial
     ?`<div class="dist-src-badge dist-src-official">${srcLabel||'52poke'} 官方</div>`
@@ -1895,12 +1901,6 @@ function renderHuntDist(items,isOfficial,srcLabel){
       ${rateHtml}
     </div>`;
   }).join('');
-  // 同步更新沉浸模式区域网格
-  const ov=document.getElementById('ov-imm');
-  if(ov&&ov.style.display!=='none'&&_immMode==='hunt'){
-    const curList=lsGet('pkm_hunt_'+_immSid)||[];
-    renderHuntAreaGrid(curList[_immIdx]||null);
-  }
 }
 
 function selectDistPkm(idx){
@@ -2234,26 +2234,54 @@ function renderHuntAreaGrid(t){
   }).join('');
 }
 
-// 点击区域精灵：无目标 → 创建新目标；目标 → 捕获；非目标 → 逃跑
+/* ── 狩猎目标设定弹窗 ── */
+let _huntGoalPkmIdx=-1;
+function openHuntGoalSetup(pkmIdx){
+  _huntGoalPkmIdx=pkmIdx;
+  const pkm=_huntLocPkm[pkmIdx];if(!pkm)return;
+  const el=document.getElementById('hunt-goal-setup');if(!el)return;
+  document.getElementById('hgs-sprite').src=pkm.img||'';
+  document.getElementById('hgs-name').textContent=pkm.name;
+  document.getElementById('hgs-loc').textContent=_huntSelLoc.includes('|')?_huntSelLoc.split('|')[1]:'';
+  initNatureSelect('hgs-nature');
+  document.getElementById('hgs-iv').value='';
+  el.style.display='flex';
+}
+function closeHuntGoalSetup(){
+  const el=document.getElementById('hunt-goal-setup');if(el)el.style.display='none';
+  _huntGoalPkmIdx=-1;
+}
+function confirmHuntGoalSetup(){
+  const pkm=_huntLocPkm[_huntGoalPkmIdx];if(!pkm)return;
+  const nature=document.getElementById('hgs-nature')?.value||'—';
+  const iv=document.getElementById('hgs-iv')?.value?.trim()||'—';
+  const loc=_huntSelLoc.includes('|')?_huntSelLoc.split('|')[1]:'';
+  const list=lsGet('pkm_hunt_'+_immSid)||[];
+  const newT={pkmId:pkm.id,name:pkm.name,img:pkm.img,nature,iv,count:0,done:false,ts:Date.now(),loc};
+  list.push(newT);_immIdx=list.length-1;
+  lsSet('pkm_hunt_'+_immSid,list);
+  syncSeriesField(_immSid,'hunts',list);renderHuntList(_immSid);
+  const locBadge=document.getElementById('imm-loc');if(locBadge&&loc)locBadge.textContent='📍 '+loc;
+  const natZh=getNatureZh(nature);
+  document.getElementById('hunt-imm-name').textContent=pkm.name;
+  document.getElementById('hunt-imm-target').textContent='🎯 '+pkm.name+(nature&&nature!=='—'?' · '+natZh+'性格':'');
+  document.getElementById('hunt-imm-sprite').src=pkm.img||'';
+  document.getElementById('hunt-success-sprite').src=pkm.img||'';
+  document.getElementById('hunt-imm-num').textContent='0';
+  closeHuntGoalSetup();
+  renderHuntAreaGrid(newT);
+}
+
+// 点击区域精灵：无目标 → 弹设定框；目标 → 遭遇；非目标 → 逃跑
 function huntEncounterFromGrid(idx){
   if(_huntActionsLocked)return;
   const pkm=_huntLocPkm[idx];if(!pkm)return;
   const list=lsGet('pkm_hunt_'+_immSid)||[];
   const t=list[_immIdx];
-  // 无激活目标 → 点击即开始捕猎该精灵
+  // 无激活目标 → 先设定目标性格/个体值再开始
   if(!t||t.done){
-    const loc=_huntSelLoc.includes('|')?_huntSelLoc.split('|')[1]:'';
-    const newT={pkmId:pkm.id,name:pkm.name,img:pkm.img,nature:'—',iv:'—',count:0,done:false,ts:Date.now(),loc};
-    list.push(newT);_immIdx=list.length-1;
-    lsSet('pkm_hunt_'+_immSid,list);
-    syncSeriesField(_immSid,'hunts',list);renderHuntList(_immSid);
-    const locBadge=document.getElementById('imm-loc');if(locBadge&&loc)locBadge.textContent='📍 '+loc;
-    document.getElementById('hunt-imm-name').textContent=pkm.name;
-    document.getElementById('hunt-imm-target').textContent='🎯 '+pkm.name;
-    document.getElementById('hunt-imm-sprite').src=pkm.img||'';
-    document.getElementById('hunt-success-sprite').src=pkm.img||'';
-    document.getElementById('hunt-imm-num').textContent='0';
-    renderHuntAreaGrid(newT);return;
+    openHuntGoalSetup(idx);
+    return;
   }
   const isTarget=pkm.id===t.pkmId||pkm.name===t.name;
 
@@ -3463,7 +3491,7 @@ function openImmMapPicker(){
       closeImmMapFull();
       if(_immMode==='hunt'){
         selectHuntLocFromMap(zhName, key);
-        const _refreshHuntGrid=()=>{const list=lsGet('pkm_hunt_'+_immSid)||[];const t=list[_immIdx];if(t)renderHuntAreaGrid(t);};
+        const _refreshHuntGrid=()=>{const list=lsGet('pkm_hunt_'+_immSid)||[];renderHuntAreaGrid(list[_immIdx]||null);};
         if(_huntDistCache[_huntSelLoc]){_huntLocPkm=_huntDistCache[_huntSelLoc];_refreshHuntGrid();}
         else{loadHuntDistribution().then(_refreshHuntGrid);}
       }else{
