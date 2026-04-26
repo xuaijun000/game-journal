@@ -2042,6 +2042,16 @@ function getCatchExtra(catchRecord){
   };
 }
 
+function isCatchSchemaCompatError(error){
+  const msg=String(error?.message||'');
+  return /column/i.test(msg)
+    || /schema cache/i.test(msg)
+    || /could not find .*catch_location/i.test(msg)
+    || /could not find .*manual_note/i.test(msg)
+    || /catch_location/i.test(msg)
+    || /manual_note/i.test(msg);
+}
+
 async function selectCatchPkm(pkm){
   _catchSelectedPkm=pkm;
   document.getElementById('catch-search-inp').value=pkm.name;
@@ -2123,7 +2133,7 @@ async function persistCatchRecord(){
   const insertRes=await db.from('pkm_catch_log').insert(payload).select().single();
   insertError=insertRes.error||null;
   row=insertRes.data||null;
-  if(insertError&&/column .* does not exist/i.test(insertError.message||'')){
+  if(insertError&&isCatchSchemaCompatError(insertError)){
     const fallbackPayload={
       user_id:payload.user_id,series_id:payload.series_id,
       pkm_id:payload.pkm_id,pkm_name:payload.pkm_name,
