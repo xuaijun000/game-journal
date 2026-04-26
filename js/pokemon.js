@@ -2217,9 +2217,9 @@ function renderHuntAreaGrid(t){
   const actions=document.getElementById('hunt-battle-actions');
   if(!grid)return;
   if(!_huntLocPkm.length){
-    // 无分布数据 → 显示传统按钮
+    // 无分布数据：有激活目标才显示传统按钮，否则隐藏
     if(areaEl)areaEl.style.display='none';
-    if(actions)actions.style.display='flex';
+    if(actions)actions.style.display=(t&&!t.done)?'flex':'none';
     return;
   }
   if(areaEl)areaEl.style.display='flex';
@@ -3125,6 +3125,9 @@ function enterImmersiveFromSeries(mode){
     return;
   }
   openImm(mode,_curSid,-1);
+  if(mode==='hunt'&&_curSid==='firered-leafgreen'){
+    setTimeout(()=>openImmMapPicker(),80);
+  }
 }
 
 function toggleImmPanel(name){
@@ -3367,6 +3370,8 @@ async function openImm(mode,...args){
       document.getElementById('hunt-imm-target').textContent='选择地点后点击精灵开始捕猎';
       document.getElementById('hunt-imm-num').textContent='0';
       document.getElementById('hunt-imm-sprite').src='';
+      const actEl=document.getElementById('hunt-battle-actions');
+      if(actEl)actEl.style.display='none';
     }
     bg.style.backgroundImage="url('css/沉浸模式 - 狩猎背景.png')";
     initHuntTab(sid);
