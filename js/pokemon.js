@@ -48,13 +48,32 @@ function getPokemonSprite(p,mode='static'){
   }
   return staticSprite;
 }
-function togglePkmDetailSprite(){
+function updatePkmDetailSpriteToggle(){
+  const img=document.getElementById('pkm-detail-img');
+  const btns=[
+    document.getElementById('pkm-detail-sprite-toggle'),
+    document.getElementById('pkm-detail-sprite-action')
+  ].filter(Boolean);
+  if(!img||!btns.length)return;
+  const staticSrc=img.dataset.staticSrc||'';
+  const animatedSrc=img.dataset.animatedSrc||'';
+  const hasAnimated=!!animatedSrc&&animatedSrc!==staticSrc;
+  btns.forEach(btn=>{
+    btn.disabled=!hasAnimated;
+    btn.classList.toggle('on',img.dataset.mode==='animated');
+    btn.textContent=img.dataset.mode==='animated'?'静态图':'动态图';
+    btn.title=hasAnimated?'切换动态图/静态图':'这只宝可梦暂无可用动态图';
+  });
+}
+function togglePkmDetailSprite(ev){
+  ev?.stopPropagation?.();
   const img=document.getElementById('pkm-detail-img');if(!img)return;
   const staticSrc=img.dataset.staticSrc||img.src;
   const animatedSrc=img.dataset.animatedSrc||staticSrc;
   const toAnimated=img.dataset.mode!=='animated'&&animatedSrc&&animatedSrc!==staticSrc;
   img.dataset.mode=toAnimated?'animated':'static';
   img.src=toAnimated?animatedSrc:staticSrc;
+  updatePkmDetailSpriteToggle();
 }
 function getSpeciesDexId(p,species){
   return Number(species?.id)
@@ -856,8 +875,9 @@ async function openPkmDetail(idOrName){
     detailImg.dataset.staticSrc=img2;
     detailImg.dataset.animatedSrc=imgAnimated;
     detailImg.dataset.mode='static';
-    detailImg.onerror=()=>{detailImg.onerror=null;detailImg.src=img2||img;detailImg.dataset.mode='static';};
+    detailImg.onerror=()=>{detailImg.onerror=null;detailImg.src=img2||img;detailImg.dataset.mode='static';detailImg.dataset.animatedSrc='';updatePkmDetailSpriteToggle();};
     detailImg.src=img2;document.getElementById('pkm-detail-bg').style.backgroundImage=img?`url(${img})`:'none';
+    updatePkmDetailSpriteToggle();
     document.getElementById('pkm-detail-num').textContent=`#${String(dexId||p.id).padStart(3,'0')}`;document.getElementById('pkm-detail-name').textContent=cnName;
     document.getElementById('pkm-detail-types').innerHTML=p.types.map(t=>typeTag(t.type.name)).join('');
     document.getElementById('pkm-detail-meta').textContent=`身高 ${p.height/10}m · 体重 ${p.weight/10}kg`;
@@ -1321,7 +1341,7 @@ function addToParty(sid,pkm){
   const nick=prompt(`给 ${pkm.name} 起个昵称？（回车跳过）`,'')||'';
   const lv=prompt('当前等级？（回车跳过）','')||'';
   const cleanLv=lv?String(Math.max(1,Math.min(100,parseInt(lv,10)||1))):'';
-  party[emptyIdx]={pkmId:pkm.id,name:pkm.name,img:pkm.img,nick,lv:cleanLv,exp:partyLevelExpStart(cleanLv||1)};
+  party[emptyIdx]={pkmId:pkm.id,name:pkm.name,img:pkm.img,nick,lv:cleanLv};
   lsSet('pkm_party_'+sid,party);
   ['party-search-inp','imm-party-search-inp'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['party-search-results','imm-party-search-results'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('open');});
@@ -1968,7 +1988,7 @@ function selectDistPkm(idx){
   const pkm=_huntLocPkm[idx];if(!pkm)return;
   document.querySelectorAll('.hunt-dist-card').forEach((c,i)=>c.classList.toggle('selected',i===idx));
   _huntDistPkm=pkm;
-  // 直接开始狩猎
+  // 直接开始目标捕捉
   const sid=_curSid;
   const loc=_huntSelLoc.includes('|')?_huntSelLoc.split('|')[1]:'';
   const list=lsGet('pkm_hunt_'+sid)||[];
@@ -1983,12 +2003,12 @@ function selectDistPkm(idx){
   openImmHunt(sid,idx2);
 }
 
-/* ── 狩猎记录列表 ── */
+/* ── 捕捉记录列表 ── */
 function renderHuntList(sid){
   const el=document.getElementById('hunt-list');if(!el)return;
   const list=lsGet('pkm_hunt_'+sid)||[];
   const active=list.filter(t=>!t.done);const done=list.filter(t=>t.done);
-  if(!list.length){el.innerHTML='<div style="font-size:.78rem;color:var(--t3);text-align:center;padding:20px 0;font-family:\'DM Mono\',monospace">← 从地点选择精灵开始狩猎</div>';return;}
+  if(!list.length){el.innerHTML='<div style="font-size:.78rem;color:var(--t3);text-align:center;padding:20px 0;font-family:\'DM Mono\',monospace">选择地点后点击宝可梦开始自由捕捉</div>';return;}
   const renderCard=(t,i)=>{
     const realIdx=list.indexOf(t);
     return`<div class="hunt-card${t.done?' done-card':''}">
@@ -1996,19 +2016,19 @@ function renderHuntList(sid){
       <div class="hunt-card-info">
         <div class="hunt-card-name">${esc(t.name)}${t.done?' ✓':''}</div>
         ${t.loc?`<div class="hunt-card-loc">📍 ${esc(t.loc)}</div>`:''}
-        <div class="hunt-card-count">${t.done?`共遭遇 ${t.count} 次后捕获`:`已遭遇 <b>${t.count}</b> 次`}</div>
+        <div class="hunt-card-count">${t.done?`共遭遇 ${t.count} 次后捕捉`:`已遭遇 <b>${t.count}</b> 次`}</div>
       </div>
       <div class="hunt-card-actions">
-        ${!t.done?`<button class="hunt-enter-btn" onclick="openImmHunt('${sid}',${realIdx})">进入狩猎</button>`:`<span class="hunt-done-badge">已捕获</span>`}
+        ${!t.done?`<button class="hunt-enter-btn" onclick="openImmHunt('${sid}',${realIdx})">进入捕捉</button>`:`<span class="hunt-done-badge">已捕捉</span>`}
         <button class="hunt-del-btn" onclick="huntDel('${sid}',${realIdx})">✕</button>
       </div>
     </div>`;
   };
   el.innerHTML=(active.length?`<div class="hunt-group-lbl">🎯 进行中 (${active.length})</div>`+active.map(renderCard).join(''):'')
-    +(done.length?`<div class="hunt-group-lbl" style="margin-top:10px">✓ 已捕获 (${done.length})</div>`+done.map(renderCard).join(''):'');
+    +(done.length?`<div class="hunt-group-lbl" style="margin-top:10px">✓ 已捕捉 (${done.length})</div>`+done.map(renderCard).join(''):'');
 }
 function huntDel(sid,idx){
-  if(!confirm('删除这个狩猎目标？'))return;
+  if(!confirm('删除这个捕捉记录？'))return;
   const list=lsGet('pkm_hunt_'+sid)||[];list.splice(idx,1);lsSet('pkm_hunt_'+sid,list);renderHuntList(sid);syncSeriesField(sid,'hunts',list);
 }
 
@@ -2380,7 +2400,41 @@ async function openImmHunt(sid,idx){
   }catch(e){}
 }
 
-// 填充狩猎沉浸区域精灵网格
+function getHuntLocLabel(){
+  return _huntSelLoc?.includes('|')?_huntSelLoc.split('|')[1]:'野外';
+}
+function setHuntHeroForCapture(pkm,label,count){
+  const locBadge=document.getElementById('imm-loc');
+  if(locBadge)locBadge.textContent='📍 '+getHuntLocLabel();
+  const nameEl=document.getElementById('hunt-imm-name');
+  const targetEl=document.getElementById('hunt-imm-target');
+  const numEl=document.getElementById('hunt-imm-num');
+  const spriteEl=document.getElementById('hunt-imm-sprite');
+  const successEl=document.getElementById('hunt-success-sprite');
+  if(nameEl)nameEl.textContent=pkm?.name||'';
+  if(targetEl)targetEl.textContent=label||'自由捕捉';
+  if(numEl)numEl.textContent=String(count||0);
+  if(spriteEl)spriteEl.src=pkm?.img||'';
+  if(successEl)successEl.src=pkm?.img||'';
+}
+function startFreeCapture(pkm){
+  if(!pkm)return;
+  const sid=_immSid||_curSid;
+  const loc=getHuntLocLabel();
+  const list=lsGet('pkm_hunt_'+sid)||[];
+  list.push({pkmId:pkm.id,name:pkm.name,img:pkm.img,nature:'any',iv:'—',count:1,done:false,ts:Date.now(),loc,free:true});
+  _immSid=sid;
+  _immIdx=list.length-1;
+  lsSet('pkm_hunt_'+sid,list);
+  debounceSyncHunts(sid,list);
+  renderHuntList(sid);
+  setHuntHeroForCapture(pkm,'自由捕捉',1);
+  renderHuntAreaGrid(list[_immIdx]);
+  _huntActionsLocked=true;
+  showHuntNaturePick();
+}
+
+// 填充捕捉沉浸区域精灵网格
 function renderHuntAreaGrid(t){
   const areaEl=document.getElementById('hunt-area-section');
   const grid=document.getElementById('hunt-area-grid');
@@ -2394,9 +2448,12 @@ function renderHuntAreaGrid(t){
   }
   if(areaEl)areaEl.style.display='flex';
   if(actions)actions.style.display='none';  // 有分布则隐藏传统按钮
+  const label=areaEl?.querySelector('.hunt-area-label');
+  if(label)label.textContent=t&&!t.done?'目标捕捉：点击目标进入捕捉，其他会逃跑':'自由捕捉：点击遇到的宝可梦记录捕捉';
   grid.innerHTML=_huntLocPkm.map((pkm,i)=>{
     const isTarget=t&&(pkm.id===t.pkmId||pkm.name===t.name);
     return`<div class="hunt-area-card${isTarget?' hunt-area-target':''}" onclick="huntEncounterFromGrid(${i})" title="${esc(pkm.name)}">
+      <button class="hunt-area-goal-btn" onclick="setHuntGoalFromGrid(${i},event)" title="${isTarget?'当前目标':'设为捕捉目标'}">${isTarget?'目标':'设为目标'}</button>
       <img src="${pkm.img||''}" alt="${esc(pkm.name)}" onerror="this.style.opacity='.3'">
       <div class="hunt-area-card-name">${esc(pkm.name)}</div>
       ${isTarget?'<div class="hunt-area-target-ring"></div>':''}
@@ -2404,7 +2461,7 @@ function renderHuntAreaGrid(t){
   }).join('');
 }
 
-/* ── 狩猎目标设定弹窗 ── */
+/* ── 捕捉目标设定弹窗 ── */
 let _huntGoalPkmIdx=-1;
 function openHuntGoalSetup(pkmIdx){
   _huntGoalPkmIdx=pkmIdx;
@@ -2420,6 +2477,11 @@ function openHuntGoalSetup(pkmIdx){
 function closeHuntGoalSetup(){
   const el=document.getElementById('hunt-goal-setup');if(el)el.style.display='none';
   _huntGoalPkmIdx=-1;
+}
+function setHuntGoalFromGrid(pkmIdx,ev){
+  ev?.stopPropagation?.();
+  if(_huntActionsLocked)return;
+  openHuntGoalSetup(pkmIdx);
 }
 function confirmHuntGoalSetup(){
   const pkm=_huntLocPkm[_huntGoalPkmIdx];if(!pkm)return;
@@ -2442,21 +2504,21 @@ function confirmHuntGoalSetup(){
   renderHuntAreaGrid(newT);
 }
 
-// 点击区域精灵：无目标 → 弹设定框；目标 → 遭遇；非目标 → 逃跑
+// 点击区域精灵：无目标 → 自由捕捉；目标 → 遭遇；非目标 → 逃跑
 function huntEncounterFromGrid(idx){
   if(_huntActionsLocked)return;
   const pkm=_huntLocPkm[idx];if(!pkm)return;
   const list=lsGet('pkm_hunt_'+_immSid)||[];
   const t=list[_immIdx];
-  // 无激活目标 → 先设定目标性格/个体值再开始
+  // 无激活目标 → 自由捕捉，不要求先设目标
   if(!t||t.done){
-    openHuntGoalSetup(idx);
+    startFreeCapture(pkm);
     return;
   }
   const isTarget=pkm.id===t.pkmId||pkm.name===t.name;
 
   if(isTarget){
-    // 遭遇目标精灵！计数 + 直接进入捕获性格选择
+    // 遭遇目标精灵！计数 + 直接进入捕捉性格选择
     _huntActionsLocked=true;
     const ov=document.getElementById('ov-imm');
     const fl=document.createElement('div');fl.className='hunt-screen-flash-red';if(ov)ov.appendChild(fl);setTimeout(()=>fl.remove(),280);
@@ -2548,7 +2610,7 @@ function showHuntNaturePick(){
   const pick=document.getElementById('hunt-nature-pick');if(!pick)return;
   const targetEl=document.getElementById('hunt-np-target');
   const hasNature=t.nature&&t.nature!=='any'&&t.nature!=='—'&&NATURES.some(n=>n.id===t.nature);
-  if(targetEl)targetEl.textContent=hasNature?'目标性格：'+getNatureZh(t.nature):'无特定性格目标';
+  if(targetEl)targetEl.textContent=t.free?'自由捕捉：记录这次遇到的宝可梦':(hasNature?'目标性格：'+getNatureZh(t.nature):'无特定性格目标');
   // 渲染性格网格
   const grid=document.getElementById('hunt-np-grid');
   if(grid){
@@ -2564,7 +2626,8 @@ function showHuntNaturePick(){
 
 function cancelHuntNaturePick(){
   document.getElementById('hunt-nature-pick').style.display='none';
-  document.getElementById('hunt-battle-actions').style.display='flex';
+  const actions=document.getElementById('hunt-battle-actions');
+  if(actions)actions.style.display=_huntLocPkm.length?'none':'flex';
   _huntActionsLocked=false;
 }
 
@@ -2574,12 +2637,13 @@ function huntSelectNature(natId){
   const hasNature=t.nature&&t.nature!=='any'&&t.nature!=='—'&&NATURES.some(n=>n.id===t.nature);
   document.getElementById('hunt-nature-pick').style.display='none';
   if(!hasNature||natId===t.nature){
-    // 性格匹配（或无目标性格）→ 捕获成功
+    // 性格匹配（或无目标性格）→ 捕捉成功
     confirmImmCatch();
   } else {
-    // 性格不对 → 继续狩猎
+    // 性格不对 → 继续捕捉
     _huntCountUp();
-    document.getElementById('hunt-battle-actions').style.display='flex';
+    const actions=document.getElementById('hunt-battle-actions');
+    if(actions)actions.style.display=_huntLocPkm.length?'none':'flex';
     _huntActionsLocked=false;
     const natZh=getNatureZh(natId);
     const targetZh=getNatureZh(t.nature);
@@ -2650,7 +2714,7 @@ function confirmImmCatch(){
     closeImmHunt();
     renderHuntList(_immSid);
     renderActiveCatches();
-    showToast('恭喜捕获 '+t.name+'！共遭遇 '+t.count+' 次');
+    showToast('恭喜捕捉到 '+t.name+'！共遭遇 '+t.count+' 次');
   },3000);
 }
 
@@ -2699,71 +2763,6 @@ let _trainSelEncounterKey=''; // FRLG 直接选中的 encounter key
 let _trainDistCache={};   // "sid|loc" → [{id,name,img,evYields:{hp,attack,...}}]
 let _trainLocPkm=[];
 
-function partyLevelExpStart(lv){
-  lv=Math.max(1,Math.min(100,parseInt(lv,10)||1));
-  return Math.floor(Math.pow(lv,3)*0.8);
-}
-function partyLevelFromExp(exp){
-  exp=Math.max(0,Number(exp)||0);
-  let lv=1;
-  while(lv<100&&partyLevelExpStart(lv+1)<=exp)lv++;
-  return lv;
-}
-function partyNormalizeExp(p){
-  if(!p)return 0;
-  const lv=Math.max(1,Math.min(100,parseInt(p.lv,10)||1));
-  const exp=Number(p.exp);
-  return Number.isFinite(exp)?Math.max(exp,partyLevelExpStart(lv)):partyLevelExpStart(lv);
-}
-function partyExpPct(p){
-  if(!p)return 0;
-  const lv=Math.max(1,Math.min(100,parseInt(p.lv,10)||1));
-  const exp=partyNormalizeExp(p);
-  const cur=partyLevelExpStart(lv),next=partyLevelExpStart(Math.min(100,lv+1));
-  return next>cur?Math.max(0,Math.min(100,Math.round((exp-cur)/(next-cur)*100))):100;
-}
-function trainExpGainForPokemon(pkm){
-  const base=Number(pkm?.baseExp||pkm?.base_experience)||Math.max(35,Object.values(pkm?.evYields||{}).reduce((a,b)=>a+b,0)*28);
-  const mult=getBoostMultiplier();
-  return Math.max(1,Math.round(base*mult/2));
-}
-function findTrainPartyIndex(){
-  const sid=_trainSid||_curSid;
-  let party=lsGet('pkm_party_'+sid)||[];
-  if(!Array.isArray(party))return-1;
-  return party.findIndex(p=>p&&Number(p.pkmId)===Number(_trainPkmData?.id)&&(p.nick||'')===(_trainPkmData?.nick||''));
-}
-function renderTrainExp(){
-  const p=_trainPkmData;
-  const el=document.getElementById('train-imm-exp');
-  if(!p){if(el)el.innerHTML='';return;}
-  const lv=Math.max(1,Math.min(100,parseInt(p.lv,10)||partyLevelFromExp(p.exp||0)||1));
-  const exp=partyNormalizeExp(p);
-  const cur=partyLevelExpStart(lv),next=partyLevelExpStart(Math.min(100,lv+1));
-  const pct=next>cur?Math.max(0,Math.min(100,Math.round((exp-cur)/(next-cur)*100))):100;
-  if(el)el.innerHTML=`Lv.${lv} · EXP ${Math.max(0,exp-cur)}/${Math.max(0,next-cur)}<div class="tim-exp-bar"><div class="tim-exp-fill" style="width:${pct}%"></div></div>`;
-}
-function applyTrainingExp(pkm){
-  if(!_trainPkmData)return{gain:0,leveled:false,lv:_trainPkmData.lv||''};
-  const sid=_trainSid||_curSid;
-  const idx=Number.isInteger(_trainPkmData.partyIdx)?_trainPkmData.partyIdx:findTrainPartyIndex();
-  let party=lsGet('pkm_party_'+sid)||[];
-  if(!Array.isArray(party)||idx<0||!party[idx])return{gain:0,leveled:false,lv:_trainPkmData.lv||''};
-  const gain=trainExpGainForPokemon(pkm);
-  const prevLv=Math.max(1,Math.min(100,parseInt(party[idx].lv,10)||partyLevelFromExp(partyNormalizeExp(party[idx]))));
-  let exp=partyNormalizeExp(party[idx])+gain;
-  const nextLv=partyLevelFromExp(exp);
-  party[idx]={...party[idx],exp,lv:String(nextLv)};
-  _trainPkmData={..._trainPkmData,exp,lv:String(nextLv),partyIdx:idx};
-  lsSet('pkm_party_'+sid,party);
-  renderPartySlots(sid);
-  renderImmParty();
-  initTrainTab(sid);
-  renderTrainExp();
-  syncSeriesField(sid,'party',party);
-  return{gain,leveled:nextLv>prevLv,lv:nextLv};
-}
-
 function initTrainTab(sid){
   _trainSid=sid;
   // 显示队伍
@@ -2780,7 +2779,6 @@ function initTrainTab(sid){
         <div class="train-pkm-slot-name">${esc(p.name)}</div>
         ${p.nick?`<div class="train-pkm-slot-nick">「${esc(p.nick)}」</div>`:''}
         ${p.lv?`<div class="train-pkm-slot-lv">Lv.${esc(p.lv)}</div>`:''}
-        <div class="train-pkm-exp"><i style="width:${partyExpPct(p)}%"></i></div>
       </div>`).join('');
   }
   // 地点选择（复用 SERIES_LOCATIONS）
@@ -2820,7 +2818,7 @@ function selectTrainPkm(slotIdx){
   const filledParty=party.filter(p=>p);
   const p=filledParty[slotIdx];if(!p)return;
   const partyIdx=party.findIndex(x=>x===p);
-  _trainPkmData={name:p.name,id:p.pkmId,img:p.img,nick:p.nick,lv:p.lv,exp:partyNormalizeExp(p),partyIdx};
+  _trainPkmData={name:p.name,id:p.pkmId,img:p.img,nick:p.nick,lv:p.lv,partyIdx};
   // 载入或初始化 EV
   const saved=lsGet('pkm_train_ev_'+sid+'_'+p.pkmId);
   _trainEVs=saved||{hp:0,attack:0,defense:0,'special-attack':0,'special-defense':0,speed:0};
@@ -2829,7 +2827,6 @@ function selectTrainPkm(slotIdx){
   const evPanel=document.getElementById('train-ev-panel');if(evPanel)evPanel.style.display='block';
   const aiSec=document.getElementById('train-ai-result');if(aiSec)aiSec.style.display='none';
   renderTrainEVs();
-  renderTrainExp();
   updateImmTrainPlaceholder();
 }
 
@@ -2886,7 +2883,6 @@ function beatPokemon(idx){
   lsSet('pkm_train_ev_'+_trainSid+'_'+_trainPkmData.id,_trainEVs);
   debounceSyncTrainEVs(_trainSid);
   renderTrainEVs();
-  const expResult=applyTrainingExp(pkm);
   // 动画反馈
   const card=document.getElementById('train-card-'+idx);
   if(card){card.classList.add('beat-flash');setTimeout(()=>card.classList.remove('beat-flash'),400);}
@@ -2894,7 +2890,7 @@ function beatPokemon(idx){
   const evText=Object.entries(pkm.evYields).filter(([,v])=>v>0).map(([k,v])=>{
     const s=EV_STATS.find(x=>x.key===k);return`${s?.zh||k}+${v*mult}`;
   }).join(' ');
-  showToast(`${pkm.name}  ${evText}${expResult.gain?` · EXP +${expResult.gain}${expResult.leveled?` · Lv.${expResult.lv}`:''}`:''}`);
+  showToast(`${pkm.name}  ${evText}`);
 }
 
 function selectTrainLocFromMap(loc,encounterKey){
@@ -2941,7 +2937,7 @@ async function loadTrainDistribution(){
           const img=p.sprites?.front_default||'';
           const evYields={};for(const st of(p.stats||[])){if(st.effort>0)evYields[st.stat.name]=st.effort;}
           if(!Object.keys(evYields).length)evYields['hp']=1;
-          items.push({id,name:cnName,img,evYields,baseExp:p.base_experience||50,chance:enc.rate,rate:enc.rate>=30?'高':enc.rate>=10?'中':'低',official:true,versions:enc.versions,methods:enc.methods});
+          items.push({id,name:cnName,img,evYields,chance:enc.rate,rate:enc.rate>=30?'高':enc.rate>=10?'中':'低',official:true,versions:enc.versions,methods:enc.methods});
         }catch(e){}
       }
       if(items.length){
@@ -2981,7 +2977,7 @@ async function loadTrainDistribution(){
         const evYields={};
         for(const st of(p.stats||[])){if(st.effort>0)evYields[st.stat.name]=st.effort;}
         if(!Object.keys(evYields).length)evYields['hp']=1;
-        items.push({id,name:cnName,img,evYields,baseExp:p.base_experience||50,official:false});
+        items.push({id,name:cnName,img,evYields,official:false});
       }catch(e){}
     }
     if(!items.length){
@@ -3006,7 +3002,7 @@ let _trainImmSession=null;
 let _trainImmTimer=null;
 
 function _trainEmptyStats(){
-  return {beats:0,counts:{},evGains:{hp:0,attack:0,defense:0,'special-attack':0,'special-defense':0,speed:0},expGain:0};
+  return {beats:0,counts:{},evGains:{hp:0,attack:0,defense:0,'special-attack':0,'special-defense':0,speed:0}};
 }
 function _trainImmFmtTime(sec){
   sec=Math.max(0,Math.floor(sec||0));
@@ -3054,11 +3050,10 @@ function _trainImmResetSummary(){
   const box=document.getElementById('train-imm-summary');
   if(box){box.style.display='none';box.innerHTML='';}
 }
-function _trainImmRecordBeat(pkm,gains,expGain){
+function _trainImmRecordBeat(pkm,gains){
   _trainImmEnsureSession();
   _trainImmSession.beats+=1;
   _trainImmSession.counts[pkm.name]=(_trainImmSession.counts[pkm.name]||0)+1;
-  _trainImmSession.expGain+=Math.max(0,Number(expGain)||0);
   for(const [stat,val] of Object.entries(gains||{})){
     _trainImmSession.evGains[stat]=(_trainImmSession.evGains[stat]||0)+val;
   }
@@ -3071,7 +3066,7 @@ function _trainImmBuildSummary(){
   const evText=_trainImmEvGainText();
   const loc=_trainSelLoc?.includes('|')?_trainSelLoc.split('|')[1]:'训练点';
   const target=_trainPkmData?(_trainPkmData.name+(_trainPkmData.nick?`「${_trainPkmData.nick}」`:'')):'训练对象';
-  return {elapsedSec,beats:_trainImmSession.beats,counts:{..._trainImmSession.counts},evGains:{..._trainImmSession.evGains},expGain:_trainImmSession.expGain||0,top,evText,loc,target};
+  return {elapsedSec,beats:_trainImmSession.beats,counts:{..._trainImmSession.counts},evGains:{..._trainImmSession.evGains},top,evText,loc,target};
 }
 function _trainImmShowSummary(summary,partnerMsg){
   const box=document.getElementById('train-imm-summary');if(!box||!summary)return;
@@ -3080,7 +3075,6 @@ function _trainImmShowSummary(summary,partnerMsg){
     <div class="tim-summary-main">${esc(summary.target)} 在 ${esc(summary.loc)} 训练了 ${esc(_trainImmFmtTime(summary.elapsedSec))}，击败 ${summary.beats} 只宝可梦。</div>
     <div class="tim-summary-sub">打过：${esc(topText)}</div>
     <div class="tim-summary-sub">EV 收获：${esc(summary.evText||'暂无')}</div>
-    <div class="tim-summary-sub">经验同步：EXP +${summary.expGain||0}</div>
     ${partnerMsg?`<div class="tim-summary-sub">${esc(partnerMsg)}</div>`:''}`;
   box.style.display='block';
 }
@@ -3123,7 +3117,6 @@ function openImmTrain(){
   renderTrainImmGrid();
   // 渲染 EV 进度条
   renderTrainImmEVs();
-  renderTrainExp();
   _trainImmResetSummary();
   _trainImmEnsureSession();
 
@@ -3213,9 +3206,8 @@ function trainImmBeat(idx){
   if(card){card.classList.add('tim-beat-flash');setTimeout(()=>card.classList.remove('tim-beat-flash'),350);}
   // EV获得提示
   const evText=Object.entries(pkm.evYields).filter(([,v])=>v>0).map(([k,v])=>{const s=EV_STATS.find(x=>x.key===k);return`${s?.zh||k}+${v*mult}`;}).join(' ');
-  const expResult=applyTrainingExp(pkm);
-  _trainImmRecordBeat(pkm,actualGains,expResult.gain);
-  showToast(pkm.name+'  '+evText+(expResult.gain?` · EXP +${expResult.gain}${expResult.leveled?` · Lv.${expResult.lv}`:''}`:''));
+  _trainImmRecordBeat(pkm,actualGains);
+  showToast(pkm.name+'  '+evText);
 }
 
 function startTrainImmParticles(){
@@ -3452,7 +3444,7 @@ function selectTrainPkmFromImm(idx){
   const sid=_curSid;
   let party=lsGet('pkm_party_'+sid)||[];
   const p=party[idx];if(!p)return;
-  _trainPkmData={name:p.name,id:p.pkmId,img:p.img,nick:p.nick,lv:p.lv,exp:partyNormalizeExp(p),partyIdx:idx};
+  _trainPkmData={name:p.name,id:p.pkmId,img:p.img,nick:p.nick,lv:p.lv,partyIdx:idx};
   const saved=lsGet('pkm_train_ev_'+sid+'_'+p.pkmId);
   _trainEVs=saved?{...saved}:{hp:0,attack:0,defense:0,'special-attack':0,'special-defense':0,speed:0};
   _trainSid=sid;
@@ -3463,7 +3455,6 @@ function selectTrainPkmFromImm(idx){
   if(p.pkmId){fetchPkm(p.pkmId).then(data=>{const art=data.sprites?.other?.['official-artwork']?.front_default||data.sprites?.front_default||p.img;if(_tSprite&&art)_tSprite.src=art;}).catch(()=>{});}
   const _tName=document.getElementById('train-imm-name');
   if(_tName)_tName.textContent=p.name+(p.nick?`「${p.nick}」`:'');
-  renderTrainExp();
   renderTrainImmEVs();
   if(_trainLocPkm.length)renderTrainImmGrid();
 }
@@ -3580,7 +3571,6 @@ function _immNormalizePartyPkm(p){
     img:p.img||'',
     nick:p.nick||'',
     lv:p.lv||'',
-    exp:partyNormalizeExp(p),
   };
 }
 
@@ -3652,16 +3642,15 @@ function selectTrainPkm(slotIdx){
   let party=lsGet('pkm_party_'+sid)||[];
   if(!Array.isArray(party))party=[];
   while(party.length<6)party.push(null);
-  const filledParty=party.map((p,idx)=>p?{..._immNormalizePartyPkm(p),exp:partyNormalizeExp(p),partyIdx:idx}:null).filter(Boolean);
+  const filledParty=party.map((p,idx)=>p?{..._immNormalizePartyPkm(p),partyIdx:idx}:null).filter(Boolean);
   const p=filledParty[slotIdx];if(!p||!p.id)return;
-  _trainPkmData={name:p.name,id:p.id,img:p.img,nick:p.nick,lv:p.lv,exp:p.exp,partyIdx:p.partyIdx};
+  _trainPkmData={name:p.name,id:p.id,img:p.img,nick:p.nick,lv:p.lv,partyIdx:p.partyIdx};
   const saved=lsGet('pkm_train_ev_'+sid+'_'+p.id);
   _trainEVs=saved||{hp:0,attack:0,defense:0,'special-attack':0,'special-defense':0,speed:0};
   document.querySelectorAll('.train-pkm-slot').forEach((el,i)=>el.classList.toggle('selected',i===slotIdx));
   const evPanel=document.getElementById('train-ev-panel');if(evPanel)evPanel.style.display='block';
   const aiSec=document.getElementById('train-ai-result');if(aiSec)aiSec.style.display='none';
   renderTrainEVs();
-  renderTrainExp();
   updateImmTrainPlaceholder();
 }
 
@@ -3704,7 +3693,7 @@ async function openImm(mode,...args){
       sp.classList.add('enter-new');setTimeout(()=>sp.classList.remove('enter-new'),500);
     }else{
       document.getElementById('hunt-imm-name').textContent='';
-      document.getElementById('hunt-imm-target').textContent='选择地点后点击精灵开始捕猎';
+      document.getElementById('hunt-imm-target').textContent='自由捕捉：选择地点后点击遇到的宝可梦';
       document.getElementById('hunt-imm-num').textContent='0';
       document.getElementById('hunt-imm-sprite').src='css/可达鸭空状态.png';
       const actEl=document.getElementById('hunt-battle-actions');
@@ -3733,7 +3722,6 @@ async function openImm(mode,...args){
     if(tSid)initTrainTab(tSid);
     if(_trainLocPkm.length)renderTrainImmGrid();
     renderTrainImmEVs();
-    renderTrainExp();
     _trainImmResetSummary();
     _trainImmEnsureSession();
     if(_trainPkmData){
@@ -3861,7 +3849,7 @@ function savePartyEdit(sid,idx){
     const num=Math.max(1,Math.min(100,parseInt(lv,10)||1));
     lv=String(num);
   }
-  updatePartyMember(sid,idx,{nick:(nickEl?.value||'').trim(),lv,exp:partyLevelExpStart(lv||1)});
+  updatePartyMember(sid,idx,{nick:(nickEl?.value||'').trim(),lv});
 }
 
 function updatePartyMember(sid,idx,fields){
@@ -3901,8 +3889,7 @@ function replacePartyMember(sid,idx,pkm){
     name:pkm.name,
     img:pkm.img,
     nick:prev.nick||'',
-    lv:prev.lv||'',
-    exp:partyLevelExpStart(prev.lv||1)
+    lv:prev.lv||''
   };
   lsSet('pkm_party_'+sid,party);
   _partyReplaceTarget=null;
@@ -3937,7 +3924,6 @@ function renderPartySlots(sid){
             </div>`
           :`${p.nick?`<div class="party-slot-nick">${esc(p.nick)}</div>`:''}
              <div class="party-slot-lv">${p.lv?'Lv.'+p.lv:''}</div>
-             <div class="party-exp-wrap"><div class="party-exp-fill" style="width:${partyExpPct(p)}%"></div></div>
              <button class="party-speak-btn" onclick="speakPartyMember('${sid}',${i});event.stopPropagation()">💬 说话</button>`
         }
       </div>`;

@@ -489,7 +489,11 @@
 <!-- 宝可梦详情弹窗 -->
 <div class="ov" id="ov-pkm" onclick="if(event.target===this)closeOv('ov-pkm')">
   <div class="modal pkm-detail-modal">
-    <div class="pkm-detail-hero"><div class="pkm-detail-bg" id="pkm-detail-bg"></div><img id="pkm-detail-img" src="" alt="" class="pkm-detail-img" onclick="togglePkmDetailSprite()" title="点击切换动图/静态图"></div>
+    <div class="pkm-detail-hero">
+      <div class="pkm-detail-bg" id="pkm-detail-bg"></div>
+      <button class="pkm-detail-sprite-toggle" id="pkm-detail-sprite-toggle" onclick="togglePkmDetailSprite(event)" title="切换动态图/静态图">动态图</button>
+      <img id="pkm-detail-img" src="" alt="" class="pkm-detail-img" onclick="togglePkmDetailSprite()" title="点击切换动图/静态图">
+    </div>
     <div class="pkm-detail-body">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
         <div><div class="pkm-today-num" id="pkm-detail-num"></div><div class="pkm-detail-name" id="pkm-detail-name"></div></div>
@@ -505,6 +509,7 @@
         <button class="pkm-btn" id="pkm-detail-caught" onclick="togglePkmStatusModal('caught')">✓ 已捕获</button>
         <button class="pkm-btn" id="pkm-detail-liked" onclick="togglePkmStatusModal('liked')">♥ 喜欢</button>
         <button class="pkm-btn" id="pkm-detail-wanted" onclick="togglePkmStatusModal('wanted')">★ 想要</button>
+        <button class="pkm-btn pkm-detail-sprite-action" id="pkm-detail-sprite-action" onclick="togglePkmDetailSprite(event)">动态图</button>
       </div>
       <button class="pkm-btn-ai" style="margin-top:8px" onclick="openPkmChatFromModal()">⬡ 和 AI 聊聊它</button>
     </div>
@@ -571,7 +576,7 @@
       <!-- 进入沉浸式按钮组 -->
       <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
         <button class="btn btn-a" style="flex:1;white-space:nowrap;font-size:.78rem" onclick="enterImmersiveFromSeries('train')">💪 沉浸训练</button>
-        <button class="btn btn-a" style="flex:1;white-space:nowrap;font-size:.78rem" onclick="enterImmersiveFromSeries('hunt')">🎯 沉浸捕猎</button>
+        <button class="btn btn-a" style="flex:1;white-space:nowrap;font-size:.78rem" onclick="enterImmersiveFromSeries('hunt')">🎯 沉浸捕捉</button>
         <button class="btn btn-a" style="flex:1;white-space:nowrap;font-size:.78rem" onclick="enterImmersiveFromSeries('progress')">📋 进度打卡</button>
         <button class="btn btn-a" style="flex:1;white-space:nowrap;font-size:.78rem" onclick="openSeriesCatchRecorder()">📘 记录已捕捉</button>
       </div>
@@ -598,7 +603,7 @@
   </div>
   <div id="imm-mode-bar" style="display:flex;gap:6px;padding:0 14px 8px;flex-shrink:0;position:relative;z-index:2">
     <button id="imm-mode-hunt" onclick="setImmMode('hunt')" style="flex:1;padding:6px;border-radius:8px;font-size:.8rem;background:var(--acc);color:#fff;border:none;cursor:pointer">
-      🎯 捕猎
+      🎯 捕捉
     </button>
     <button id="imm-mode-train" onclick="setImmMode('train')" style="flex:1;padding:6px;border-radius:8px;font-size:.8rem;background:var(--bg3);color:var(--t2);border:1px solid var(--b);cursor:pointer">
       💪 训练
@@ -633,7 +638,7 @@
       <button class="hunt-action-btn hunt-action-catch" onclick="huntActionCatch()">⚫<br><span>捕捉</span></button>
     </div>
     <div class="hunt-nature-pick" id="hunt-nature-pick" style="display:none">
-      <div class="hunt-np-title">捕获到了！选择性格</div>
+      <div class="hunt-np-title">捕捉到了！选择性格</div>
       <div class="hunt-np-target" id="hunt-np-target"></div>
       <div class="hunt-np-grid" id="hunt-np-grid"></div>
       <button class="hunt-np-cancel" onclick="cancelHuntNaturePick()">✕ 没捕到，继续</button>
@@ -641,13 +646,13 @@
     <div class="hunt-imm-success" id="hunt-imm-success" style="display:none">
       <div class="hunt-success-sparks" id="hunt-success-sparks"></div>
       <img class="hunt-success-sprite" id="hunt-success-sprite" src="" alt="">
-      <div class="hunt-success-title">捕获成功！</div>
+      <div class="hunt-success-title">捕捉成功！</div>
       <div class="hunt-success-name" id="hunt-success-name"></div>
       <div class="hunt-success-count" id="hunt-success-count"></div>
     </div>
-    <!-- 狩猎目标列表 -->
+    <!-- 捕捉目标列表 -->
     <div style="padding:10px 14px 4px">
-      <div style="font-size:.72rem;color:var(--t3);font-family:'DM Mono',monospace;margin-bottom:6px">🎯 狩猎目标</div>
+      <div style="font-size:.72rem;color:var(--t3);font-family:'DM Mono',monospace;margin-bottom:6px">🎯 捕捉记录</div>
       <div id="hunt-list"></div>
     </div>
   </div>
@@ -666,7 +671,6 @@
     <div class="tim-hero">
       <img class="tim-sprite" id="train-imm-sprite" src="" alt="">
       <div class="tim-name" id="train-imm-name"></div>
-      <div class="tim-exp" id="train-imm-exp"></div>
       <div class="tim-ev-compact" id="train-imm-ev-bars"></div>
       <div class="tim-ev-total" id="train-imm-ev-total"></div>
     </div>
@@ -757,7 +761,7 @@
       </div>
     </div>
   </div>
-  <!-- 狩猎目标设定弹窗 -->
+  <!-- 捕捉目标设定弹窗 -->
   <div id="hunt-goal-setup" style="display:none;position:absolute;inset:0;z-index:55;background:rgba(0,0,0,.72);align-items:center;justify-content:center">
     <div style="background:var(--bg2);border-radius:14px;padding:20px 18px;width:min(300px,88%);position:relative;box-shadow:0 8px 32px rgba(0,0,0,.5)">
       <button onclick="closeHuntGoalSetup()" style="position:absolute;top:10px;right:12px;background:none;border:none;color:var(--t2);font-size:1.1rem;cursor:pointer;line-height:1">✕</button>
@@ -772,7 +776,7 @@
         <div class="series-inp-group"><span class="series-inp-label">个体值目标</span>
           <input id="hgs-iv" class="series-inp" placeholder="如：6V、HP满（可选）"></div>
       </div>
-      <button class="btn btn-a" style="width:100%;padding:10px;font-size:.88rem" onclick="confirmHuntGoalSetup()">🎯 开始狩猎</button>
+      <button class="btn btn-a" style="width:100%;padding:10px;font-size:.88rem" onclick="confirmHuntGoalSetup()">🎯 开始捕捉</button>
     </div>
   </div>
   <div id="imm-fabs" style="position:absolute;right:14px;bottom:20px;z-index:20;display:flex;flex-direction:column;align-items:center;gap:10px">
