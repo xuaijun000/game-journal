@@ -7,8 +7,11 @@ async function init(){
 }
 function setUser(u){
   const av=document.getElementById('av'),ab=document.getElementById('abtn');
-  if(u){av.textContent=u.email.slice(0,2).toUpperCase();ab.textContent='登出';ab.onclick=()=>db.auth.signOut().then(()=>{games=[];render();});}
-  else{av.textContent='?';ab.textContent='登录';ab.onclick=()=>go('auth',null);}
+  if(u){
+    av.textContent=u.email.slice(0,2).toUpperCase();ab.textContent='登出';ab.onclick=()=>db.auth.signOut().then(()=>{games=[];render();if(window.clearPartnerSession)window.clearPartnerSession();});
+    if(window.initPartner&&!window._partnerInited){window._partnerInited=true;initPartner();}
+  }
+  else{av.textContent='?';ab.textContent='登录';ab.onclick=()=>go('auth',null);if(window.clearPartnerSession)window.clearPartnerSession();}
 }
 async function load(){
   const{data:{session}}=await db.auth.getSession();const user=session?.user;

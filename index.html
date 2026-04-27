@@ -669,6 +669,19 @@
       <div class="tim-ev-compact" id="train-imm-ev-bars"></div>
       <div class="tim-ev-total" id="train-imm-ev-total"></div>
     </div>
+    <div class="tim-session">
+      <div class="tim-session-stat">
+        <span class="tim-session-lbl">TIME</span>
+        <span class="tim-session-val" id="train-imm-timer">00:00</span>
+      </div>
+      <div class="tim-session-stat">
+        <span class="tim-session-lbl">BEAT</span>
+        <span class="tim-session-val" id="train-imm-beat-count">0</span>
+      </div>
+      <div class="tim-session-stat tim-session-partner" id="train-imm-partner-link">伙伴待命</div>
+      <button class="tim-session-end" onclick="finishTrainImmSession()">结束训练</button>
+    </div>
+    <div class="tim-summary" id="train-imm-summary" style="display:none"></div>
     <div class="tim-grid-section">
       <div class="tim-section-lbl">击败以下精灵 获取 EV → 点击它</div>
       <div class="tim-dist-grid" id="train-imm-dist-grid"></div>

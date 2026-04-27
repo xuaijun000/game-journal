@@ -134,9 +134,13 @@ let partnerTypeCache={};
 
 /* ===== INIT ===== */
 async function initPartner(){
+  window._partnerInited=true;
   const{data:{session}}=await db.auth.getSession();
   if(!session?.user){
-    document.getElementById('partner-container').innerHTML=`
+    partnerData=null;
+    updatePartnerFloat();
+    const container=document.getElementById('partner-container');
+    if(container)container.innerHTML=`
       <div class="partner-login-prompt">
         <div class="partner-login-prompt-icon">🎮</div>
         <h3>登录后解锁伙伴功能</h3>
@@ -150,8 +154,8 @@ async function initPartner(){
 
 async function loadPartnerData(userId){
   const{data,error}=await db.from('pkm_partner').select('*').eq('user_id',userId).single();
-  if(error){renderPartnerSelectPrompt();return;}
-  if(data){partnerData=data;checkPartnerDailyReset();await pEnsurePartnerMeta();renderPartnerPage();}
+  if(error){partnerData=null;renderPartnerSelectPrompt();updatePartnerFloat();return;}
+  if(data){partnerData=data;checkPartnerDailyReset();await pEnsurePartnerMeta();renderPartnerPage();updatePartnerFloat();}
   else{renderPartnerSelectPrompt();updatePartnerFloat('partner');}
 }
 
@@ -779,6 +783,46 @@ window.partnerTrackEvent=function(eventType){
   if(changed){partnerData.daily_interactions=di;savePartnerData();}
 };
 
+window.partnerTrackTrainingSession=function(summary){
+  if(!partnerData||!summary||!summary.beats)return '';
+  const prevExp=partnerData.exp||0;
+  const beats=Math.max(0,Number(summary.beats)||0);
+  const expGain=Math.min(45,8+Math.floor(beats*1.6));
+  const bondGain=Math.min(5,1+Math.floor(beats/8));
+  const moodGain=Math.min(8,Math.floor(beats/3));
+  const energyCost=Math.min(18,6+Math.floor(beats/3));
+  const hungerCost=Math.min(12,4+Math.floor(beats/5));
+  const name=partnerData.nickname||partnerData.pkm_name;
+  const defeated=(summary.top&&summary.top.length)?summary.top.join('、'):'几只宝可梦';
+
+  partnerData.exp=(partnerData.exp||0)+expGain;
+  partnerData.bond=pClamp((partnerData.bond||0)+bondGain);
+  partnerData.mood=pClamp((partnerData.mood||0)+moodGain);
+  partnerData.energy=pClamp((partnerData.energy||0)-energyCost);
+  partnerData.hunger=pClamp((partnerData.hunger||0)-hungerCost);
+  partnerData.last_interaction_at=new Date().toISOString();
+  partnerData.last_action='train';
+
+  const di=partnerData.daily_interactions||{};
+  partnerData.daily_interactions={...di,date:pToday(),train_session:(di.train_session||0)+1,total:(di.total||0)+1};
+  const ic=partnerData.interaction_counts||{};
+  partnerData.interaction_counts={...ic,train:(ic.train||0)+1,total:(ic.total||0)+1};
+
+  const diary=`${name}陪你完成沉浸式训练：${summary.loc||'训练点'}，${summary.target||'训练对象'}击败${beats}只，打过${defeated}。`;
+  pAddDiary(diary.slice(0,180));
+  pCheckAchievements();
+  pCheckTaskRewards();
+  savePartnerData().then(()=>{
+    renderPartnerPage();
+    updatePartnerFloat();
+  });
+  const newLv=pLevelFromExp(partnerData.exp);
+  const oldLv=pLevelFromExp(prevExp);
+  showPartnerToast(`<span class="partner-toast-name">${pEsc(name)}</span> 训练同步：EXP +${expGain}，亲密 +${bondGain}`);
+  if(newLv>oldLv) setTimeout(()=>showPartnerToast(`🎉 ${pEsc(name)} 升级了！现在是 Lv.${newLv}！`),1200);
+  return `${name} 获得 EXP +${expGain} / 亲密 +${bondGain}`;
+};
+
 /* ===== AI CHAT ===== */
 function togglePartnerChat(){
   const area=document.getElementById('partner-chat-area');
@@ -901,8 +945,18 @@ function updatePartnerFloat(activePg){
       const btn=Array.from(document.querySelectorAll('nav button')).find(b=>b.textContent.trim()==='伙伴');
       if(btn)btn.click();
     };
-    w.innerHTML=`<img class="pflt-spr" id="pflt-spr" src="" alt=""><div class="pflt-info"><div class="pflt-nm" id="pflt-nm"></div><div class="pflt-st" id="pflt-st"></div></div><div class="pflt-tip" id="pflt-tip">点击查看伙伴详情</div><div class="pflt-dot" id="pflt-dot"></div>`;
-    document.querySelector('main')?.prepend(w);
+    w.innerHTML=`<div class="pflt-orb"><img class="pflt-spr" id="pflt-spr" src="" alt=""><div class="pflt-dot" id="pflt-dot"></div></div>
+      <div class="pflt-info">
+        <div class="pflt-top"><span class="pflt-nm" id="pflt-nm"></span><span class="pflt-lv" id="pflt-lv"></span></div>
+        <div class="pflt-st" id="pflt-st"></div>
+        <div class="pflt-bars">
+          <span class="pflt-bar"><i id="pflt-mood"></i></span>
+          <span class="pflt-bar"><i id="pflt-energy"></i></span>
+          <span class="pflt-bar"><i id="pflt-bond"></i></span>
+        </div>
+      </div>
+      <div class="pflt-go">›</div>`;
+    document.body.appendChild(w);
   }
   w.classList.remove('hidden');
   const d=partnerData;
@@ -920,7 +974,19 @@ function updatePartnerFloat(activePg){
   const neglected=Date.now()-new Date(d.last_interaction_at||Date.now()).getTime()>3600000*4;
   const lv=pLevelFromExp(d.exp||0);
   const stage=pGetBondStage();
-  document.getElementById('pflt-st').textContent=`Lv.${lv} · ${stage.name} · ${needsAttn?'需要关注':neglected?'有点想你了':'状态良好'}`;
+  document.getElementById('pflt-lv').textContent=`Lv.${lv}`;
+  document.getElementById('pflt-st').textContent=`${stage.name} · ${needsAttn?'需要关注':neglected?'有点想你了':'状态良好'}`;
+  const mood=document.getElementById('pflt-mood'),energy=document.getElementById('pflt-energy'),bond=document.getElementById('pflt-bond');
+  if(mood)mood.style.width=pClamp(d.mood||0)+'%';
+  if(energy)energy.style.width=pClamp(d.energy||0)+'%';
+  if(bond)bond.style.width=pClamp(d.bond||0)+'%';
   document.getElementById('pflt-dot').classList.toggle('on',needsAttn||neglected);
 }
 window.updatePartnerFloat=updatePartnerFloat;
+
+window.clearPartnerSession=function(){
+  partnerData=null;
+  partnerChatHistory=[];
+  const w=document.getElementById('pflt');
+  if(w)w.classList.add('hidden');
+};

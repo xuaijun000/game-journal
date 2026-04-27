@@ -2886,6 +2886,108 @@ async function loadTrainDistribution(){
    ⚡ 沉浸式训练界面
    ============================ */
 let _trainImmParticleTimer=null;
+let _trainImmSession=null;
+let _trainImmTimer=null;
+
+function _trainEmptyStats(){
+  return {beats:0,counts:{},evGains:{hp:0,attack:0,defense:0,'special-attack':0,'special-defense':0,speed:0}};
+}
+function _trainImmFmtTime(sec){
+  sec=Math.max(0,Math.floor(sec||0));
+  const m=Math.floor(sec/60),s=sec%60,h=Math.floor(m/60);
+  return h>0?`${String(h).padStart(2,'0')}:${String(m%60).padStart(2,'0')}:${String(s).padStart(2,'0')}`:`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+function _trainImmEnsureSession(){
+  if(!_trainImmSession){
+    _trainImmSession={startedAt:Date.now(),ended:false,..._trainEmptyStats()};
+  }
+  _trainImmStartTimer();
+  _trainImmRenderSession();
+}
+function _trainImmStartTimer(){
+  if(_trainImmTimer)return;
+  _trainImmTimer=setInterval(_trainImmRenderSession,1000);
+}
+function _trainImmStopTimer(){
+  if(_trainImmTimer){clearInterval(_trainImmTimer);_trainImmTimer=null;}
+}
+function _trainImmElapsedSec(){
+  if(!_trainImmSession)return 0;
+  return Math.floor(((Date.now())-_trainImmSession.startedAt)/1000);
+}
+function _trainImmTopCounts(max){
+  const counts=_trainImmSession?.counts||{};
+  return Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,max||4).map(([name,n])=>`${name}×${n}`);
+}
+function _trainImmEvGainText(){
+  const gains=_trainImmSession?.evGains||{};
+  return EV_STATS.map(s=>({label:s.zh,val:gains[s.key]||0})).filter(x=>x.val>0).map(x=>`${x.label}+${x.val}`).join(' / ');
+}
+function _trainImmRenderSession(){
+  const timer=document.getElementById('train-imm-timer');
+  const count=document.getElementById('train-imm-beat-count');
+  const partner=document.getElementById('train-imm-partner-link');
+  if(timer)timer.textContent=_trainImmFmtTime(_trainImmElapsedSec());
+  if(count)count.textContent=String(_trainImmSession?.beats||0);
+  if(partner){
+    const hasPartner=typeof partnerData!=='undefined'&&!!partnerData;
+    partner.textContent=hasPartner?'伙伴同步中：结束训练后结算经验':'未选择伙伴：仅记录本次训练';
+  }
+}
+function _trainImmResetSummary(){
+  const box=document.getElementById('train-imm-summary');
+  if(box){box.style.display='none';box.innerHTML='';}
+}
+function _trainImmRecordBeat(pkm,gains){
+  _trainImmEnsureSession();
+  _trainImmSession.beats+=1;
+  _trainImmSession.counts[pkm.name]=(_trainImmSession.counts[pkm.name]||0)+1;
+  for(const [stat,val] of Object.entries(gains||{})){
+    _trainImmSession.evGains[stat]=(_trainImmSession.evGains[stat]||0)+val;
+  }
+  _trainImmRenderSession();
+}
+function _trainImmBuildSummary(){
+  if(!_trainImmSession)return null;
+  const elapsedSec=_trainImmElapsedSec();
+  const top=_trainImmTopCounts(5);
+  const evText=_trainImmEvGainText();
+  const loc=_trainSelLoc?.includes('|')?_trainSelLoc.split('|')[1]:'训练点';
+  const target=_trainPkmData?(_trainPkmData.name+(_trainPkmData.nick?`「${_trainPkmData.nick}」`:'')):'训练对象';
+  return {elapsedSec,beats:_trainImmSession.beats,counts:{..._trainImmSession.counts},evGains:{..._trainImmSession.evGains},top,evText,loc,target};
+}
+function _trainImmShowSummary(summary,partnerMsg){
+  const box=document.getElementById('train-imm-summary');if(!box||!summary)return;
+  const topText=summary.top.length?summary.top.join('、'):'还没有击败记录';
+  box.innerHTML=`<div class="tim-summary-title">TRAINING REPORT</div>
+    <div class="tim-summary-main">${esc(summary.target)} 在 ${esc(summary.loc)} 训练了 ${esc(_trainImmFmtTime(summary.elapsedSec))}，击败 ${summary.beats} 只宝可梦。</div>
+    <div class="tim-summary-sub">打过：${esc(topText)}</div>
+    <div class="tim-summary-sub">EV 收获：${esc(summary.evText||'暂无')}</div>
+    ${partnerMsg?`<div class="tim-summary-sub">${esc(partnerMsg)}</div>`:''}`;
+  box.style.display='block';
+}
+function finishTrainImmSession(){
+  const summary=_trainImmBuildSummary();
+  if(!summary||summary.beats<=0){showToast('还没有训练记录');return;}
+  _trainImmStopTimer();
+  let partnerMsg='';
+  if(window.partnerTrackTrainingSession){
+    partnerMsg=window.partnerTrackTrainingSession(summary)||'伙伴已记录本次训练';
+  }
+  _trainImmShowSummary(summary,partnerMsg);
+  _trainImmSession={startedAt:Date.now(),ended:false,..._trainEmptyStats()};
+  _trainImmStartTimer();
+  _trainImmRenderSession();
+}
+function _trainImmFinalizeOnClose(){
+  const summary=_trainImmBuildSummary();
+  if(!summary||summary.beats<=0){_trainImmStopTimer();_trainImmSession=null;return;}
+  let partnerMsg='';
+  if(window.partnerTrackTrainingSession)partnerMsg=window.partnerTrackTrainingSession(summary)||'伙伴已记录本次训练';
+  _trainImmShowSummary(summary,partnerMsg);
+  _trainImmStopTimer();
+  _trainImmSession=null;
+}
 
 function openImmTrain(){
   if(!_trainPkmData){showToast('请先选择训练对象');return;}
@@ -2903,6 +3005,8 @@ function openImmTrain(){
   renderTrainImmGrid();
   // 渲染 EV 进度条
   renderTrainImmEVs();
+  _trainImmResetSummary();
+  _trainImmEnsureSession();
 
   // 后台拉高清图
   fetchPkm(_trainPkmData.id).then(p=>{
@@ -2918,6 +3022,7 @@ function openImmTrain(){
 
 function closeImmTrain(){
   stopTrainImmParticles();
+  _trainImmFinalizeOnClose();
   const ov=document.getElementById('ov-train-imm');if(ov)ov.classList.remove('on');
   document.body.style.overflow='';
   // 同步回主 tab
@@ -2960,16 +3065,22 @@ function renderTrainImmEVs(){
 
 function trainImmBeat(idx){
   const pkm=_trainLocPkm[idx];if(!pkm||!_trainPkmData)return;
+  _trainImmEnsureSession();
   const mult=getBoostMultiplier();
   const totalBefore=Object.values(_trainEVs).reduce((a,b)=>a+b,0);
   if(totalBefore>=EV_MAX_TOTAL){showToast('EV 已满 510！');return;}
   let added=false;
+  const actualGains={};
   for(const [stat,ev] of Object.entries(pkm.evYields)){
     if(!ev)continue;
     const gain=ev*mult;
     const curTotal=Object.values(_trainEVs).reduce((a,b)=>a+b,0);
     const actualGain=Math.min(gain,EV_MAX_TOTAL-curTotal,EV_MAX_STAT-(_trainEVs[stat]||0));
-    if(actualGain>0){_trainEVs[stat]=(_trainEVs[stat]||0)+actualGain;added=true;}
+    if(actualGain>0){
+      _trainEVs[stat]=(_trainEVs[stat]||0)+actualGain;
+      actualGains[stat]=(actualGains[stat]||0)+actualGain;
+      added=true;
+    }
   }
   if(!added){showToast('EV 容量已满');return;}
   lsSet('pkm_train_ev_'+_trainSid+'_'+_trainPkmData.id,_trainEVs);
@@ -2983,6 +3094,7 @@ function trainImmBeat(idx){
   if(card){card.classList.add('tim-beat-flash');setTimeout(()=>card.classList.remove('tim-beat-flash'),350);}
   // EV获得提示
   const evText=Object.entries(pkm.evYields).filter(([,v])=>v>0).map(([k,v])=>{const s=EV_STATS.find(x=>x.key===k);return`${s?.zh||k}+${v*mult}`;}).join(' ');
+  _trainImmRecordBeat(pkm,actualGains);
   showToast(pkm.name+'  '+evText);
 }
 
@@ -3244,7 +3356,9 @@ function setImmMode(mode){
     showToast('请先在「训练」tab 加载刷练地点分布');
     return;
   }
-  _immMode=mode==='train'?'train':'hunt';
+  const nextMode=mode==='train'?'train':'hunt';
+  if(_immMode==='train'&&nextMode!=='train')_trainImmFinalizeOnClose();
+  _immMode=nextMode;
   const immBg=document.getElementById('imm-bg');
   if(immBg)immBg.style.backgroundImage=_immMode==='train'?"url('css/沉浸模式 - 训练背景.png')":`url('css/沉浸模式 - 狩猎背景.png')`;
   const huntPanel=document.getElementById('imm-panel-hunt');
@@ -3264,7 +3378,11 @@ function setImmMode(mode){
     trainBtn.style.border=_immMode==='train'?'none':'1px solid var(--b)';
   }
   updateImmTrainPlaceholder();
-  if(_immMode==='train'&&!_trainPkmData)toggleImmPanel('party');
+  if(_immMode==='train'){
+    _trainImmResetSummary();
+    _trainImmEnsureSession();
+    if(!_trainPkmData)toggleImmPanel('party');
+  }
 }
 
 function enterImmersiveFromSeries(mode){
@@ -3499,6 +3617,8 @@ async function openImm(mode,...args){
     if(tSid)initTrainTab(tSid);
     if(_trainLocPkm.length)renderTrainImmGrid();
     renderTrainImmEVs();
+    _trainImmResetSummary();
+    _trainImmEnsureSession();
     if(_trainPkmData){
       const hd=await _immResolvePkmArt(_trainPkmData);
       if(art&&hd){
@@ -3546,7 +3666,7 @@ function closeImm(){
   if(minimap)minimap.style.display='none';
   document.body.style.overflow='';
   const encPanel=document.getElementById('frlg-enc-panel');if(encPanel){encPanel.classList.remove('visible');encPanel.style.display='none';}
-  if(_immMode==='train')renderTrainEVs();
+  if(_immMode==='train'){_trainImmFinalizeOnClose();renderTrainEVs();}
   _huntActionsLocked=false;
 }
 
