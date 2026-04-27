@@ -1274,7 +1274,8 @@ function addToParty(sid,pkm){
   if(emptyIdx<0){showToast('队伍已满（最多6只）');return;}
   const nick=prompt(`给 ${pkm.name} 起个昵称？（回车跳过）`,'')||'';
   const lv=prompt('当前等级？（回车跳过）','')||'';
-  party[emptyIdx]={pkmId:pkm.id,name:pkm.name,img:pkm.img,nick,lv};
+  const cleanLv=lv?String(Math.max(1,Math.min(100,parseInt(lv,10)||1))):'';
+  party[emptyIdx]={pkmId:pkm.id,name:pkm.name,img:pkm.img,nick,lv:cleanLv,exp:partyLevelExpStart(cleanLv||1)};
   lsSet('pkm_party_'+sid,party);
   ['party-search-inp','imm-party-search-inp'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['party-search-results','imm-party-search-results'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('open');});
@@ -2652,6 +2653,71 @@ let _trainSelEncounterKey=''; // FRLG 直接选中的 encounter key
 let _trainDistCache={};   // "sid|loc" → [{id,name,img,evYields:{hp,attack,...}}]
 let _trainLocPkm=[];
 
+function partyLevelExpStart(lv){
+  lv=Math.max(1,Math.min(100,parseInt(lv,10)||1));
+  return Math.floor(Math.pow(lv,3)*0.8);
+}
+function partyLevelFromExp(exp){
+  exp=Math.max(0,Number(exp)||0);
+  let lv=1;
+  while(lv<100&&partyLevelExpStart(lv+1)<=exp)lv++;
+  return lv;
+}
+function partyNormalizeExp(p){
+  if(!p)return 0;
+  const lv=Math.max(1,Math.min(100,parseInt(p.lv,10)||1));
+  const exp=Number(p.exp);
+  return Number.isFinite(exp)?Math.max(exp,partyLevelExpStart(lv)):partyLevelExpStart(lv);
+}
+function partyExpPct(p){
+  if(!p)return 0;
+  const lv=Math.max(1,Math.min(100,parseInt(p.lv,10)||1));
+  const exp=partyNormalizeExp(p);
+  const cur=partyLevelExpStart(lv),next=partyLevelExpStart(Math.min(100,lv+1));
+  return next>cur?Math.max(0,Math.min(100,Math.round((exp-cur)/(next-cur)*100))):100;
+}
+function trainExpGainForPokemon(pkm){
+  const base=Number(pkm?.baseExp||pkm?.base_experience)||Math.max(35,Object.values(pkm?.evYields||{}).reduce((a,b)=>a+b,0)*28);
+  const mult=getBoostMultiplier();
+  return Math.max(1,Math.round(base*mult/2));
+}
+function findTrainPartyIndex(){
+  const sid=_trainSid||_curSid;
+  let party=lsGet('pkm_party_'+sid)||[];
+  if(!Array.isArray(party))return-1;
+  return party.findIndex(p=>p&&Number(p.pkmId)===Number(_trainPkmData?.id)&&(p.nick||'')===(_trainPkmData?.nick||''));
+}
+function renderTrainExp(){
+  const p=_trainPkmData;
+  const el=document.getElementById('train-imm-exp');
+  if(!p){if(el)el.innerHTML='';return;}
+  const lv=Math.max(1,Math.min(100,parseInt(p.lv,10)||partyLevelFromExp(p.exp||0)||1));
+  const exp=partyNormalizeExp(p);
+  const cur=partyLevelExpStart(lv),next=partyLevelExpStart(Math.min(100,lv+1));
+  const pct=next>cur?Math.max(0,Math.min(100,Math.round((exp-cur)/(next-cur)*100))):100;
+  if(el)el.innerHTML=`Lv.${lv} · EXP ${Math.max(0,exp-cur)}/${Math.max(0,next-cur)}<div class="tim-exp-bar"><div class="tim-exp-fill" style="width:${pct}%"></div></div>`;
+}
+function applyTrainingExp(pkm){
+  if(!_trainPkmData)return{gain:0,leveled:false,lv:_trainPkmData.lv||''};
+  const sid=_trainSid||_curSid;
+  const idx=Number.isInteger(_trainPkmData.partyIdx)?_trainPkmData.partyIdx:findTrainPartyIndex();
+  let party=lsGet('pkm_party_'+sid)||[];
+  if(!Array.isArray(party)||idx<0||!party[idx])return{gain:0,leveled:false,lv:_trainPkmData.lv||''};
+  const gain=trainExpGainForPokemon(pkm);
+  const prevLv=Math.max(1,Math.min(100,parseInt(party[idx].lv,10)||partyLevelFromExp(partyNormalizeExp(party[idx]))));
+  let exp=partyNormalizeExp(party[idx])+gain;
+  const nextLv=partyLevelFromExp(exp);
+  party[idx]={...party[idx],exp,lv:String(nextLv)};
+  _trainPkmData={..._trainPkmData,exp,lv:String(nextLv),partyIdx:idx};
+  lsSet('pkm_party_'+sid,party);
+  renderPartySlots(sid);
+  renderImmParty();
+  initTrainTab(sid);
+  renderTrainExp();
+  syncSeriesField(sid,'party',party);
+  return{gain,leveled:nextLv>prevLv,lv:nextLv};
+}
+
 function initTrainTab(sid){
   _trainSid=sid;
   // 显示队伍
@@ -2668,6 +2734,7 @@ function initTrainTab(sid){
         <div class="train-pkm-slot-name">${esc(p.name)}</div>
         ${p.nick?`<div class="train-pkm-slot-nick">「${esc(p.nick)}」</div>`:''}
         ${p.lv?`<div class="train-pkm-slot-lv">Lv.${esc(p.lv)}</div>`:''}
+        <div class="train-pkm-exp"><i style="width:${partyExpPct(p)}%"></i></div>
       </div>`).join('');
   }
   // 地点选择（复用 SERIES_LOCATIONS）
@@ -2706,7 +2773,8 @@ function selectTrainPkm(slotIdx){
   if(!Array.isArray(party))party=[];while(party.length<6)party.push(null);
   const filledParty=party.filter(p=>p);
   const p=filledParty[slotIdx];if(!p)return;
-  _trainPkmData={name:p.name,id:p.pkmId,img:p.img,nick:p.nick,lv:p.lv};
+  const partyIdx=party.findIndex(x=>x===p);
+  _trainPkmData={name:p.name,id:p.pkmId,img:p.img,nick:p.nick,lv:p.lv,exp:partyNormalizeExp(p),partyIdx};
   // 载入或初始化 EV
   const saved=lsGet('pkm_train_ev_'+sid+'_'+p.pkmId);
   _trainEVs=saved||{hp:0,attack:0,defense:0,'special-attack':0,'special-defense':0,speed:0};
@@ -2715,6 +2783,7 @@ function selectTrainPkm(slotIdx){
   const evPanel=document.getElementById('train-ev-panel');if(evPanel)evPanel.style.display='block';
   const aiSec=document.getElementById('train-ai-result');if(aiSec)aiSec.style.display='none';
   renderTrainEVs();
+  renderTrainExp();
   updateImmTrainPlaceholder();
 }
 
@@ -2771,6 +2840,7 @@ function beatPokemon(idx){
   lsSet('pkm_train_ev_'+_trainSid+'_'+_trainPkmData.id,_trainEVs);
   debounceSyncTrainEVs(_trainSid);
   renderTrainEVs();
+  const expResult=applyTrainingExp(pkm);
   // 动画反馈
   const card=document.getElementById('train-card-'+idx);
   if(card){card.classList.add('beat-flash');setTimeout(()=>card.classList.remove('beat-flash'),400);}
@@ -2778,7 +2848,7 @@ function beatPokemon(idx){
   const evText=Object.entries(pkm.evYields).filter(([,v])=>v>0).map(([k,v])=>{
     const s=EV_STATS.find(x=>x.key===k);return`${s?.zh||k}+${v*mult}`;
   }).join(' ');
-  showToast(`${pkm.name}  ${evText}`);
+  showToast(`${pkm.name}  ${evText}${expResult.gain?` · EXP +${expResult.gain}${expResult.leveled?` · Lv.${expResult.lv}`:''}`:''}`);
 }
 
 function selectTrainLocFromMap(loc,encounterKey){
@@ -2825,7 +2895,7 @@ async function loadTrainDistribution(){
           const img=p.sprites?.front_default||'';
           const evYields={};for(const st of(p.stats||[])){if(st.effort>0)evYields[st.stat.name]=st.effort;}
           if(!Object.keys(evYields).length)evYields['hp']=1;
-          items.push({id,name:cnName,img,evYields,chance:enc.rate,rate:enc.rate>=30?'高':enc.rate>=10?'中':'低',official:true,versions:enc.versions,methods:enc.methods});
+          items.push({id,name:cnName,img,evYields,baseExp:p.base_experience||50,chance:enc.rate,rate:enc.rate>=30?'高':enc.rate>=10?'中':'低',official:true,versions:enc.versions,methods:enc.methods});
         }catch(e){}
       }
       if(items.length){
@@ -2865,7 +2935,7 @@ async function loadTrainDistribution(){
         const evYields={};
         for(const st of(p.stats||[])){if(st.effort>0)evYields[st.stat.name]=st.effort;}
         if(!Object.keys(evYields).length)evYields['hp']=1;
-        items.push({id,name:cnName,img,evYields,official:false});
+        items.push({id,name:cnName,img,evYields,baseExp:p.base_experience||50,official:false});
       }catch(e){}
     }
     if(!items.length){
@@ -2890,7 +2960,7 @@ let _trainImmSession=null;
 let _trainImmTimer=null;
 
 function _trainEmptyStats(){
-  return {beats:0,counts:{},evGains:{hp:0,attack:0,defense:0,'special-attack':0,'special-defense':0,speed:0}};
+  return {beats:0,counts:{},evGains:{hp:0,attack:0,defense:0,'special-attack':0,'special-defense':0,speed:0},expGain:0};
 }
 function _trainImmFmtTime(sec){
   sec=Math.max(0,Math.floor(sec||0));
@@ -2938,10 +3008,11 @@ function _trainImmResetSummary(){
   const box=document.getElementById('train-imm-summary');
   if(box){box.style.display='none';box.innerHTML='';}
 }
-function _trainImmRecordBeat(pkm,gains){
+function _trainImmRecordBeat(pkm,gains,expGain){
   _trainImmEnsureSession();
   _trainImmSession.beats+=1;
   _trainImmSession.counts[pkm.name]=(_trainImmSession.counts[pkm.name]||0)+1;
+  _trainImmSession.expGain+=Math.max(0,Number(expGain)||0);
   for(const [stat,val] of Object.entries(gains||{})){
     _trainImmSession.evGains[stat]=(_trainImmSession.evGains[stat]||0)+val;
   }
@@ -2954,7 +3025,7 @@ function _trainImmBuildSummary(){
   const evText=_trainImmEvGainText();
   const loc=_trainSelLoc?.includes('|')?_trainSelLoc.split('|')[1]:'训练点';
   const target=_trainPkmData?(_trainPkmData.name+(_trainPkmData.nick?`「${_trainPkmData.nick}」`:'')):'训练对象';
-  return {elapsedSec,beats:_trainImmSession.beats,counts:{..._trainImmSession.counts},evGains:{..._trainImmSession.evGains},top,evText,loc,target};
+  return {elapsedSec,beats:_trainImmSession.beats,counts:{..._trainImmSession.counts},evGains:{..._trainImmSession.evGains},expGain:_trainImmSession.expGain||0,top,evText,loc,target};
 }
 function _trainImmShowSummary(summary,partnerMsg){
   const box=document.getElementById('train-imm-summary');if(!box||!summary)return;
@@ -2963,6 +3034,7 @@ function _trainImmShowSummary(summary,partnerMsg){
     <div class="tim-summary-main">${esc(summary.target)} 在 ${esc(summary.loc)} 训练了 ${esc(_trainImmFmtTime(summary.elapsedSec))}，击败 ${summary.beats} 只宝可梦。</div>
     <div class="tim-summary-sub">打过：${esc(topText)}</div>
     <div class="tim-summary-sub">EV 收获：${esc(summary.evText||'暂无')}</div>
+    <div class="tim-summary-sub">经验同步：EXP +${summary.expGain||0}</div>
     ${partnerMsg?`<div class="tim-summary-sub">${esc(partnerMsg)}</div>`:''}`;
   box.style.display='block';
 }
@@ -3005,6 +3077,7 @@ function openImmTrain(){
   renderTrainImmGrid();
   // 渲染 EV 进度条
   renderTrainImmEVs();
+  renderTrainExp();
   _trainImmResetSummary();
   _trainImmEnsureSession();
 
@@ -3094,8 +3167,9 @@ function trainImmBeat(idx){
   if(card){card.classList.add('tim-beat-flash');setTimeout(()=>card.classList.remove('tim-beat-flash'),350);}
   // EV获得提示
   const evText=Object.entries(pkm.evYields).filter(([,v])=>v>0).map(([k,v])=>{const s=EV_STATS.find(x=>x.key===k);return`${s?.zh||k}+${v*mult}`;}).join(' ');
-  _trainImmRecordBeat(pkm,actualGains);
-  showToast(pkm.name+'  '+evText);
+  const expResult=applyTrainingExp(pkm);
+  _trainImmRecordBeat(pkm,actualGains,expResult.gain);
+  showToast(pkm.name+'  '+evText+(expResult.gain?` · EXP +${expResult.gain}${expResult.leveled?` · Lv.${expResult.lv}`:''}`:''));
 }
 
 function startTrainImmParticles(){
@@ -3332,7 +3406,7 @@ function selectTrainPkmFromImm(idx){
   const sid=_curSid;
   let party=lsGet('pkm_party_'+sid)||[];
   const p=party[idx];if(!p)return;
-  _trainPkmData={name:p.name,id:p.pkmId,img:p.img,nick:p.nick,lv:p.lv};
+  _trainPkmData={name:p.name,id:p.pkmId,img:p.img,nick:p.nick,lv:p.lv,exp:partyNormalizeExp(p),partyIdx:idx};
   const saved=lsGet('pkm_train_ev_'+sid+'_'+p.pkmId);
   _trainEVs=saved?{...saved}:{hp:0,attack:0,defense:0,'special-attack':0,'special-defense':0,speed:0};
   _trainSid=sid;
@@ -3343,6 +3417,7 @@ function selectTrainPkmFromImm(idx){
   if(p.pkmId){fetchPkm(p.pkmId).then(data=>{const art=data.sprites?.other?.['official-artwork']?.front_default||data.sprites?.front_default||p.img;if(_tSprite&&art)_tSprite.src=art;}).catch(()=>{});}
   const _tName=document.getElementById('train-imm-name');
   if(_tName)_tName.textContent=p.name+(p.nick?`「${p.nick}」`:'');
+  renderTrainExp();
   renderTrainImmEVs();
   if(_trainLocPkm.length)renderTrainImmGrid();
 }
@@ -3466,6 +3541,7 @@ function _immNormalizePartyPkm(p){
     img:p.img||'',
     nick:p.nick||'',
     lv:p.lv||'',
+    exp:partyNormalizeExp(p),
   };
 }
 
@@ -3537,15 +3613,16 @@ function selectTrainPkm(slotIdx){
   let party=lsGet('pkm_party_'+sid)||[];
   if(!Array.isArray(party))party=[];
   while(party.length<6)party.push(null);
-  const filledParty=party.filter(p=>p).map(_immNormalizePartyPkm);
+  const filledParty=party.map((p,idx)=>p?{..._immNormalizePartyPkm(p),exp:partyNormalizeExp(p),partyIdx:idx}:null).filter(Boolean);
   const p=filledParty[slotIdx];if(!p||!p.id)return;
-  _trainPkmData={name:p.name,id:p.id,img:p.img,nick:p.nick,lv:p.lv};
+  _trainPkmData={name:p.name,id:p.id,img:p.img,nick:p.nick,lv:p.lv,exp:p.exp,partyIdx:p.partyIdx};
   const saved=lsGet('pkm_train_ev_'+sid+'_'+p.id);
   _trainEVs=saved||{hp:0,attack:0,defense:0,'special-attack':0,'special-defense':0,speed:0};
   document.querySelectorAll('.train-pkm-slot').forEach((el,i)=>el.classList.toggle('selected',i===slotIdx));
   const evPanel=document.getElementById('train-ev-panel');if(evPanel)evPanel.style.display='block';
   const aiSec=document.getElementById('train-ai-result');if(aiSec)aiSec.style.display='none';
   renderTrainEVs();
+  renderTrainExp();
   updateImmTrainPlaceholder();
 }
 
@@ -3617,6 +3694,7 @@ async function openImm(mode,...args){
     if(tSid)initTrainTab(tSid);
     if(_trainLocPkm.length)renderTrainImmGrid();
     renderTrainImmEVs();
+    renderTrainExp();
     _trainImmResetSummary();
     _trainImmEnsureSession();
     if(_trainPkmData){
@@ -3741,10 +3819,10 @@ function savePartyEdit(sid,idx){
   const lvEl=document.getElementById(`party-lv-${sid}-${idx}`);
   let lv=(lvEl?.value||'').trim();
   if(lv!==''){
-    const num=Math.max(0,Math.min(100,parseInt(lv,10)||0));
+    const num=Math.max(1,Math.min(100,parseInt(lv,10)||1));
     lv=String(num);
   }
-  updatePartyMember(sid,idx,{nick:(nickEl?.value||'').trim(),lv});
+  updatePartyMember(sid,idx,{nick:(nickEl?.value||'').trim(),lv,exp:partyLevelExpStart(lv||1)});
 }
 
 function updatePartyMember(sid,idx,fields){
@@ -3784,7 +3862,8 @@ function replacePartyMember(sid,idx,pkm){
     name:pkm.name,
     img:pkm.img,
     nick:prev.nick||'',
-    lv:prev.lv||''
+    lv:prev.lv||'',
+    exp:partyLevelExpStart(prev.lv||1)
   };
   lsSet('pkm_party_'+sid,party);
   _partyReplaceTarget=null;
@@ -3819,6 +3898,7 @@ function renderPartySlots(sid){
             </div>`
           :`${p.nick?`<div class="party-slot-nick">${esc(p.nick)}</div>`:''}
              <div class="party-slot-lv">${p.lv?'Lv.'+p.lv:''}</div>
+             <div class="party-exp-wrap"><div class="party-exp-fill" style="width:${partyExpPct(p)}%"></div></div>
              <button class="party-speak-btn" onclick="speakPartyMember('${sid}',${i});event.stopPropagation()">💬 说话</button>`
         }
       </div>`;
