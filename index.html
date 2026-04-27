@@ -489,7 +489,7 @@
 <!-- 宝可梦详情弹窗 -->
 <div class="ov" id="ov-pkm" onclick="if(event.target===this)closeOv('ov-pkm')">
   <div class="modal pkm-detail-modal">
-    <div class="pkm-detail-hero"><div class="pkm-detail-bg" id="pkm-detail-bg"></div><img id="pkm-detail-img" src="" alt="" class="pkm-detail-img"></div>
+    <div class="pkm-detail-hero"><div class="pkm-detail-bg" id="pkm-detail-bg"></div><img id="pkm-detail-img" src="" alt="" class="pkm-detail-img" onclick="togglePkmDetailSprite()" title="点击切换动图/静态图"></div>
     <div class="pkm-detail-body">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
         <div><div class="pkm-today-num" id="pkm-detail-num"></div><div class="pkm-detail-name" id="pkm-detail-name"></div></div>
@@ -829,8 +829,9 @@
       <span style="font-size:.78rem;color:var(--t2);font-family:'DM Mono',monospace">👥 队伍</span>
       <button class="btn btn-sm" onclick="toggleImmPanel('party')">✕</button>
     </div>
-    <div class="party-slots" id="imm-party-slots"></div>
-    <div style="margin-top:10px;position:relative">
+    <div class="imm-party-stage" id="imm-party-stage"></div>
+    <div class="party-slots imm-party-bench" id="imm-party-slots"></div>
+    <div style="margin-top:10px;position:relative;z-index:6">
       <input id="imm-party-search-inp" class="series-inp" placeholder="搜索宝可梦加入队伍…"
         oninput="searchImmPartyPkm(this.value)" autocomplete="off">
       <div id="imm-party-search-results" class="pkm-inline-results"></div>

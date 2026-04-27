@@ -36,6 +36,26 @@ function typeTag(t){const c=TYPE_COLOR[t]||'#888';return`<span class="pkm-type" 
 function statBar(name,val){const pct=Math.min(100,Math.round(val/255*100));const c=val>=100?'var(--acc2)':val>=60?'var(--acc)':'var(--warn)';return`<div class="pkm-stat-row"><span class="pkm-stat-lbl">${STAT_ZH[name]||name}</span><div class="pkm-stat-bar"><div class="pkm-stat-fill" style="width:${pct}%;background:${c}"></div></div><span class="pkm-stat-val">${val}</span></div>`;}
 async function fetchPkm(idOrName){const r=await fetch(`${POKEAPI}/pokemon/${idOrName}`);if(!r.ok)throw new Error('未找到');return r.json();}
 async function fetchPkmSpecies(idOrName){const r=await fetch(`${POKEAPI}/pokemon-species/${idOrName}`);if(!r.ok)return null;return r.json();}
+function getPokemonSprite(p,mode='static'){
+  const id=Number(p?.id)||0;
+  const name=String(p?.name||'').toLowerCase();
+  const official=p?.sprites?.other?.['official-artwork']?.front_default||'';
+  const staticSprite=p?.sprites?.front_default||official||'';
+  if(mode==='artwork')return official||staticSprite;
+  if(mode==='animated'){
+    if(name)return`https://play.pokemonshowdown.com/sprites/ani/${name}.gif`;
+    if(id>0&&id<=649)return`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${id}.gif`;
+  }
+  return staticSprite;
+}
+function togglePkmDetailSprite(){
+  const img=document.getElementById('pkm-detail-img');if(!img)return;
+  const staticSrc=img.dataset.staticSrc||img.src;
+  const animatedSrc=img.dataset.animatedSrc||staticSrc;
+  const toAnimated=img.dataset.mode!=='animated'&&animatedSrc&&animatedSrc!==staticSrc;
+  img.dataset.mode=toAnimated?'animated':'static';
+  img.src=toAnimated?animatedSrc:staticSrc;
+}
 function getSpeciesDexId(p,species){
   return Number(species?.id)
     || Number(String(p?.species?.url||'').split('/').filter(Boolean).pop())
@@ -750,10 +770,29 @@ async function loadEvoChain(sp,containerId){
   if(!sp?.evolution_chain?.url)return;
   try{
     const r=await fetch(sp.evolution_chain.url);const ec=await r.json();
-    const chain=[];let cur=ec.chain;while(cur){chain.push(cur.species.name);cur=cur.evolves_to?.[0];}
-    if(chain.length<=1){document.getElementById(containerId).innerHTML='';return;}
-    const items=await Promise.all(chain.map(async n=>{const p=await fetchPkm(n);const s=await fetchPkmSpecies(n);const img=p.sprites?.front_default||'';const cn=getCNName(s,n)||(await getPkmCNName(p.id,n));return{name:n,cn,img,id:p.id};}));
-    document.getElementById(containerId).innerHTML=`<div style="font-size:.68rem;color:var(--t3);margin-bottom:4px;font-family:'DM Mono',monospace">进化链</div><div class="pkm-evo-chain">${items.map((it,i)=>`${i>0?'<span class="pkm-evo-arrow">→</span>':''}<div class="pkm-evo-item" onclick="openPkmDetail(${it.id})"><img src="${it.img}" alt=""><div class="pkm-evo-name">${it.cn}</div></div>`).join('')}</div>`;
+    const paths=[];
+    const walk=(node,path=[])=>{
+      if(!node?.species?.name)return;
+      const next=[...path,node.species.name];
+      if(!node.evolves_to?.length){paths.push(next);return;}
+      node.evolves_to.forEach(child=>walk(child,next));
+    };
+    walk(ec.chain,[]);
+    const uniqueNames=[...new Set(paths.flat())];
+    if(uniqueNames.length<=1){document.getElementById(containerId).innerHTML='';return;}
+    await loadOfficialPkmDex().catch(()=>null);
+    const itemMap={};
+    await Promise.all(uniqueNames.map(async n=>{
+      const p=await fetchPkm(n);
+      const s=await fetchPkmSpecies(p.species?.name||p.id).catch(()=>null);
+      const cn=await getPreferredBaseName(p,s);
+      itemMap[n]={name:n,cn,img:getPokemonSprite(p,'static'),id:p.id};
+    }));
+    const pathHtml=paths.map(path=>`<div class="pkm-evo-chain">${path.map((n,i)=>{
+      const it=itemMap[n];if(!it)return'';
+      return`${i>0?'<span class="pkm-evo-arrow">→</span>':''}<div class="pkm-evo-item" onclick="openPkmDetail(${it.id})"><img src="${it.img}" alt=""><div class="pkm-evo-name">${esc(it.cn)}</div></div>`;
+    }).join('')}</div>`).join('');
+    document.getElementById(containerId).innerHTML=`<div style="font-size:.68rem;color:var(--t3);margin-bottom:4px;font-family:'DM Mono',monospace">进化链</div>${pathHtml}`;
   }catch(e){}
 }
 async function loadPkmCollection(){
@@ -810,9 +849,15 @@ async function openPkmDetail(idOrName){
     }else{
       descEl.innerHTML=`<span style="color:var(--t3)">暂无图鉴信息</span>`;
     }
-    const img=p.sprites?.other?.['official-artwork']?.front_default||p.sprites?.front_default||'';
-    const img2=p.sprites?.front_default||img;
-    document.getElementById('pkm-detail-img').src=img2;document.getElementById('pkm-detail-bg').style.backgroundImage=img?`url(${img})`:'none';
+    const img=getPokemonSprite(p,'artwork');
+    const img2=getPokemonSprite(p,'static');
+    const imgAnimated=getPokemonSprite(p,'animated');
+    const detailImg=document.getElementById('pkm-detail-img');
+    detailImg.dataset.staticSrc=img2;
+    detailImg.dataset.animatedSrc=imgAnimated;
+    detailImg.dataset.mode='static';
+    detailImg.onerror=()=>{detailImg.onerror=null;detailImg.src=img2||img;detailImg.dataset.mode='static';};
+    detailImg.src=img2;document.getElementById('pkm-detail-bg').style.backgroundImage=img?`url(${img})`:'none';
     document.getElementById('pkm-detail-num').textContent=`#${String(dexId||p.id).padStart(3,'0')}`;document.getElementById('pkm-detail-name').textContent=cnName;
     document.getElementById('pkm-detail-types').innerHTML=p.types.map(t=>typeTag(t.type.name)).join('');
     document.getElementById('pkm-detail-meta').textContent=`身高 ${p.height/10}m · 体重 ${p.weight/10}kg`;
@@ -1246,6 +1291,7 @@ function renderPartySlots(sid){
   if(wrap)wrap.innerHTML=html('party-search-inp');
   const immWrap=document.getElementById('imm-party-slots');
   if(immWrap)immWrap.innerHTML=html('imm-party-search-inp');
+  renderImmPartyScene(sid);
 }
 function focusPartySearch(){document.getElementById('party-search-inp')?.focus();}
 function removeFromParty(sid,idx){
@@ -3491,15 +3537,8 @@ function toggleImmPanel(name){
   target.style.display='block';
   target.dataset.open='1';
   if(name==='party'){
-    renderPartySlots(_curSid);
-    let party=lsGet('pkm_party_'+_curSid)||[];
-    if(!Array.isArray(party))party=[];
-    while(party.length<6)party.push(null);
-    const slots=document.getElementById('imm-party-slots');
-    if(slots)slots.innerHTML=party.map((p,i)=>{
-      if(!p)return`<div style="display:inline-flex;flex-direction:column;align-items:center;gap:2px;margin:4px"><div style="width:48px;height:48px;border-radius:6px;background:var(--bg3);border:1px solid var(--b)"></div></div>`;
-      return`<div onclick="selectTrainPkmFromImm(${i})" style="display:inline-flex;flex-direction:column;align-items:center;gap:2px;margin:4px${_immMode==='train'&&!_trainPkmData?';cursor:pointer;border:2px solid var(--acc,#88f)':''}"><img src="${p.img||''}" style="width:48px;height:48px;border-radius:6px;background:var(--bg3);border:1px solid var(--b);object-fit:contain;padding:2px;box-sizing:border-box" onerror="this.style.opacity='.35'"><div style="font-size:.58rem;color:var(--t2);max-width:52px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.nick||p.name||'')}</div></div>`;
-    }).join('');
+    const sid=getActivePartySid();
+    if(sid)renderPartySlots(sid);
   }
   if(name==='catches'){
     initNatureSelect('catch-nature');
@@ -3912,6 +3951,7 @@ function renderPartySlots(sid){
   if(wrap)wrap.innerHTML=html('party-search-inp');
   const immWrap=document.getElementById('imm-party-slots');
   if(immWrap)immWrap.innerHTML=html('imm-party-search-inp');
+  renderImmPartyScene(sid);
 }
 
 function removeFromParty(sid,idx){
@@ -3928,12 +3968,44 @@ function removeFromParty(sid,idx){
   syncSeriesField(sid,'party',party);
 }
 
+const IMM_PARTY_POS=[
+  {x:20,y:66},{x:38,y:50},{x:57,y:64},{x:75,y:48},{x:30,y:82},{x:68,y:82}
+];
+function getActivePartySid(){
+  return _curSid||_trainSid||_immSid;
+}
+function renderImmPartyScene(sid){
+  const stage=document.getElementById('imm-party-stage');
+  if(!stage)return;
+  let party=lsGet('pkm_party_'+sid)||[];
+  if(!Array.isArray(party))party=[];
+  while(party.length<6)party.push(null);
+  const filled=party.filter(Boolean);
+  if(!filled.length){
+    stage.innerHTML='<div class="imm-party-stage-empty">搜索宝可梦加入队伍，它们会在这里一起待机。</div>';
+    return;
+  }
+  stage.innerHTML=party.map((p,i)=>{
+    const pos=IMM_PARTY_POS[i]||{x:50,y:60};
+    if(!p)return`<div class="imm-party-empty-slot" onclick="document.getElementById('imm-party-search-inp')?.focus()" style="left:${pos.x}%;top:${pos.y}%">+</div>`;
+    const selected=_trainPkmData&&Number(_trainPkmData.id)===Number(p.pkmId)&&(_trainPkmData.nick||'')===(p.nick||'');
+    const act=_immMode==='train'?`selectTrainPkmFromImm(${i})`:`togglePartyEdit('${sid}',${i})`;
+    return`<div class="imm-party-mon${selected?' selected':''}" onclick="${act}" style="left:${pos.x}%;top:${pos.y}%;animation-delay:${i*.22}s">
+      <div class="imm-party-sprite-wrap"><img src="${p.img||''}" alt="${esc(p.name)}" onerror="this.style.opacity='.35'"></div>
+      <div class="imm-party-name">${esc(p.nick||p.name)}</div>
+      <div class="imm-party-lv">${p.lv?'Lv.'+esc(p.lv):'Lv.?'}</div>
+    </div>`;
+  }).join('');
+}
+
 function selectInlinePkm(idx,mode){
   const pkm=_inlineSearchResults[idx];
   if(!pkm)return;
   if(mode==='party'){
-    if(_partyReplaceTarget?.sid===_curSid)replacePartyMember(_curSid,_partyReplaceTarget.idx,pkm);
-    else addToParty(_curSid,pkm);
+    const sid=getActivePartySid();
+    if(!sid){showToast('请先选择正在游玩的版本');return;}
+    if(_partyReplaceTarget?.sid===sid)replacePartyMember(sid,_partyReplaceTarget.idx,pkm);
+    else addToParty(sid,pkm);
   }else if(mode==='catch'){
     selectCatchPkm(pkm);
   }

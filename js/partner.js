@@ -353,7 +353,7 @@ function renderPartnerPage(){
         <div class="partner-sprite-area" style="--partner-type-bg:url('${typeBg}')">
           <div class="partner-sprite-bg"></div>
           <div class="partner-effect-burst ${actionCls}" style="background-image:url('${effectImg}')"></div>
-          <img id="partner-sprite" class="partner-sprite ${moodAnim}${actionCls}" src="${spriteUrl}" alt="${pEsc(name)}" onerror="this.onerror=null;this.src='https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${d.pkm_id}.png'">
+          <img id="partner-sprite" class="partner-sprite ${moodAnim}${actionCls}" src="${spriteUrl}" alt="${pEsc(name)}" onerror="this.onerror=null;this.src='${partnerSpriteFallbackUrl(d.pkm_id)}'">
           <div class="partner-mood-badge ${moodBadge.cls}">${moodBadge.text}</div>
           <div class="partner-type-chip">${PARTNER_TYPE_ZH[primaryType]||primaryType}</div>
         </div>
@@ -471,7 +471,7 @@ function pRenderRoster(){
     const lv=pLevelFromExp(r.exp||0);
     const type=r.primary_type||r.types?.[0]||'normal';
     return`<div class="partner-roster-item ${active?'active':''}" onclick="${active?'':'switchPartnerFromRoster('+r.pkm_id+')'}">
-      <img src="${partnerSpriteUrl(r.pkm_id)}" alt="${pEsc(r.pkm_name)}" onerror="this.style.display='none'">
+      <img src="${partnerSpriteUrl(r.pkm_id)}" alt="${pEsc(r.pkm_name)}" onerror="this.onerror=null;this.src='${partnerSpriteFallbackUrl(r.pkm_id)}'">
       <div class="partner-roster-main">
         <div class="partner-roster-name">${pEsc(r.nickname||r.pkm_name)}</div>
         <div class="partner-roster-meta">#${String(r.pkm_id).padStart(4,'0')} · Lv.${lv} · ${PARTNER_TYPE_ZH[type]||type}</div>
@@ -606,7 +606,7 @@ async function openPartnerSelect(){
   const statusLabel={caught:'已捕获',liked:'喜欢',wanted:'想要'};
   grid.innerHTML=unique.map(c=>`
     <div class="partner-select-item" data-id="${c.pkm_id}" data-name="${pEsc(c.pkm_name)}" onclick="selectPartner(${c.pkm_id},this.dataset.name)">
-      <img src="${partnerSpriteUrl(c.pkm_id)}" alt="${pEsc(c.pkm_name)}" onerror="this.style.display='none'">
+      <img src="${partnerSpriteUrl(c.pkm_id)}" alt="${pEsc(c.pkm_name)}" onerror="this.onerror=null;this.src='${partnerSpriteFallbackUrl(c.pkm_id)}'">
       <div class="partner-select-name">${pEsc(c.pkm_name)}</div>
       <div class="partner-select-num">#${String(c.pkm_id).padStart(4,'0')}</div>
       <div class="partner-select-status">${statusLabel[c.status]||c.status}</div>
@@ -909,11 +909,16 @@ function addPartnerBubble(text,role,cls=''){
 
 /* ===== UTILS ===== */
 function partnerSpriteUrl(pkmId){
-  if(pkmId<=649)
-    return`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${pkmId}.gif`;
   const en=partnerTypeCache[pkmId]?.apiName;
   if(en)return`https://play.pokemonshowdown.com/sprites/ani/${en}.gif`;
+  if(pkmId<=649)
+    return`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${pkmId}.gif`;
   return`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pkmId}.png`;
+}
+function partnerSpriteFallbackUrl(pkmId){
+  if(pkmId<=649)
+    return`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${pkmId}.gif`;
+  return partnerSpriteStatic(pkmId);
 }
 function partnerSpriteStatic(pkmId){
   return`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pkmId}.png`;
@@ -965,7 +970,7 @@ function updatePartnerFloat(activePg){
   if(spr.getAttribute('data-src')!==newSrc){
     spr.setAttribute('data-src',newSrc);
     spr.src=newSrc;
-    spr.onerror=()=>{spr.onerror=null;spr.src=partnerSpriteStatic(d.pkm_id);};
+    spr.onerror=()=>{spr.onerror=null;spr.src=partnerSpriteFallbackUrl(d.pkm_id);};
   }
   const moodCls=d.mood>75?'excited':d.energy<25?'tired':'';
   spr.className='pflt-spr'+(moodCls?' '+moodCls:'');
