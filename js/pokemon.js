@@ -31,22 +31,94 @@ let pkmOfficialVariantDataPromise=null;
 const pkmDetailFormsCache={};
 let currentDetailPkmId=null;
 const _52pokeInfoCache={}; // 52poke 精灵信息缓存 {cnName: {abilities,hiddenAbility,evYields}}
+let currentDetailFormKey='';
+
+const ZA_MEGA_FORMS=[
+  {dexId:26,slug:'mega-raichu-x',name:'超级雷丘X',img:'https://archives.bulbagarden.net/wiki/Special:Redirect/file/0026Raichu-Mega%20X%20ZA.png'},
+  {dexId:26,slug:'mega-raichu-y',name:'超级雷丘Y',img:'https://archives.bulbagarden.net/wiki/Special:Redirect/file/0026Raichu-Mega%20Y%20ZA.png'},
+  {dexId:358,slug:'mega-chimecho',name:'超级风铃铃'},
+  {dexId:448,slug:'mega-lucario-z',name:'超级路卡利欧Z',img:'https://legends.pokemon.com/_next/image?q=75&url=%2Fimages%2Fdlc%2Flucario_z_square.png&w=750'},
+  {dexId:445,slug:'mega-garchomp-z',name:'超级烈咬陆鲨Z',img:'https://legends.pokemon.com/_next/image?q=75&url=%2Fimages%2Fdlc%2Fmega_garchomp_z_square.png&w=750'},
+  {dexId:359,slug:'mega-absol-z',name:'超级阿勃梭鲁Z'},
+  {dexId:398,slug:'mega-staraptor',name:'超级姆克鹰'},
+  {dexId:485,slug:'mega-heatran',name:'超级席多蓝恩'},
+  {dexId:478,slug:'mega-froslass',name:'超级雪妖女'},
+  {dexId:491,slug:'mega-darkrai',name:'超级达克莱伊'},
+  {dexId:500,slug:'mega-emboar',name:'超级炎武王'},
+  {dexId:530,slug:'mega-excadrill',name:'超级龙头地鼠'},
+  {dexId:545,slug:'mega-scolipede',name:'超级蜈蚣王'},
+  {dexId:560,slug:'mega-scrafty',name:'超级头巾混混'},
+  {dexId:604,slug:'mega-eelektross',name:'超级麻麻鳗鱼王'},
+  {dexId:609,slug:'mega-chandelure',name:'超级水晶灯火灵'},
+  {dexId:623,slug:'mega-golurk',name:'超级泥偶巨人'},
+  {dexId:687,slug:'mega-malamar',name:'超级乌贼王'},
+  {dexId:689,slug:'mega-barbaracle',name:'超级龟足巨铠'},
+  {dexId:691,slug:'mega-dragalge',name:'超级毒藻龙'},
+  {dexId:768,slug:'mega-golisopod',name:'超级具甲武者'},
+  {dexId:801,slug:'mega-magearna',name:'超级玛机雅娜'},
+  {dexId:870,slug:'mega-falinks',name:'超级列阵兵'},
+  {dexId:740,slug:'mega-crabominable',name:'超级好胜毛蟹'},
+  {dexId:970,slug:'mega-glimmora',name:'超级晶光花'},
+  {dexId:998,slug:'mega-baxcalibur',name:'超级戟脊龙',img:'https://legends.pokemon.com/_next/image?q=75&url=%2Fimages%2Fdlc%2Fmega-baxcalibur-square.png&w=750'},
+  {dexId:807,slug:'mega-zeraora',name:'超级捷拉奥拉',img:'https://legends.pokemon.com/_next/image?q=75&url=%2Fimages%2Fdlc%2Fmega-zeraora-square.png&w=750'},
+  {dexId:678,slug:'mega-meowstic',name:'超级超能妙喵'},
+  {dexId:952,slug:'mega-scovillain',name:'超级狠辣椒'},
+  {dexId:978,slug:'mega-tatsugiri',name:'超级米立龙'},
+];
+const ZA_MEGA_BY_SLUG=Object.fromEntries(ZA_MEGA_FORMS.map(f=>[f.slug,f]));
+function getZaMegaFormsForDex(dexId){
+  return ZA_MEGA_FORMS.filter(f=>Number(f.dexId)===Number(dexId));
+}
+function getZaMegaImage(form){
+  if(!form)return'';
+  const local=(window.PKM_CHAMPIONS_DATA||[]).find(p=>p.slug===form.slug||p.slug===form.slug.replace(/-z$/,''));
+  return local?.spriteUrl||form.img||`https://s-stats-platform-cdn.op.gg/pokemon/images/pokemon/${form.slug}.png?image=q_auto:good,f_webp,w_950&v=1776680235`;
+}
 
 function typeTag(t){const c=TYPE_COLOR[t]||'#888';return`<span class="pkm-type" style="background:${c}22;color:${c};border:1px solid ${c}44">${TYPE_ZH[t]||t}</span>`;}
 function statBar(name,val){const pct=Math.min(100,Math.round(val/255*100));const c=val>=100?'var(--acc2)':val>=60?'var(--acc)':'var(--warn)';return`<div class="pkm-stat-row"><span class="pkm-stat-lbl">${STAT_ZH[name]||name}</span><div class="pkm-stat-bar"><div class="pkm-stat-fill" style="width:${pct}%;background:${c}"></div></div><span class="pkm-stat-val">${val}</span></div>`;}
 async function fetchPkm(idOrName){const r=await fetch(`${POKEAPI}/pokemon/${idOrName}`);if(!r.ok)throw new Error('未找到');return r.json();}
 async function fetchPkmSpecies(idOrName){const r=await fetch(`${POKEAPI}/pokemon-species/${idOrName}`);if(!r.ok)return null;return r.json();}
-function getPokemonSprite(p,mode='static'){
+function uniqNonEmpty(arr){
+  return [...new Set((arr||[]).filter(Boolean))];
+}
+function getShowdownSpriteSlug(name){
+  const raw=String(name||'').toLowerCase();
+  const special={
+    'nidoran-f':'nidoranf','nidoran-m':'nidoranm','mr-mime':'mrmime','mime-jr':'mimejr',
+    'type-null':'typenull','jangmo-o':'jangmoo','hakamo-o':'hakamoo','kommo-o':'kommoo',
+    'flabebe':'flabebe'
+  };
+  return special[raw]||raw.replace(/[^a-z0-9-]/g,'');
+}
+function getPokemonSpriteCandidates(p,mode='static'){
   const id=Number(p?.id)||0;
   const name=String(p?.name||'').toLowerCase();
   const official=p?.sprites?.other?.['official-artwork']?.front_default||'';
   const staticSprite=p?.sprites?.front_default||official||'';
-  if(mode==='artwork')return official||staticSprite;
+  const showdown=p?.sprites?.other?.showdown||{};
+  const genV=p?.sprites?.versions?.['generation-v']?.['black-white']?.animated||{};
+  if(mode==='artwork')return uniqNonEmpty([official,staticSprite]);
   if(mode==='animated'){
-    if(name)return`https://play.pokemonshowdown.com/sprites/ani/${name}.gif`;
-    if(id>0&&id<=649)return`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${id}.gif`;
+    const sd=getShowdownSpriteSlug(name);
+    return uniqNonEmpty([
+      showdown.front_default,showdown.front_shiny,showdown.back_default,showdown.back_shiny,
+      sd?`https://play.pokemonshowdown.com/sprites/ani/${sd}.gif`:'',
+      sd?`https://play.pokemonshowdown.com/sprites/ani-shiny/${sd}.gif`:'',
+      sd?`https://play.pokemonshowdown.com/sprites/ani-back/${sd}.gif`:'',
+      sd?`https://play.pokemonshowdown.com/sprites/ani-back-shiny/${sd}.gif`:'',
+      genV.front_default,genV.front_shiny,genV.back_default,genV.back_shiny,
+      id>0&&id<=649?`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${id}.gif`:''
+    ]);
   }
-  return staticSprite;
+  return uniqNonEmpty([staticSprite,official]);
+}
+function getPokemonSprite(p,mode='static'){
+  return getPokemonSpriteCandidates(p,mode)[0]||'';
+}
+function getPkmDetailAnimatedCandidates(){
+  const img=document.getElementById('pkm-detail-img');if(!img)return[];
+  try{return JSON.parse(img.dataset.animatedCandidates||'[]')||[];}catch{return[];}
 }
 function updatePkmDetailSpriteToggle(){
   const img=document.getElementById('pkm-detail-img');
@@ -56,8 +128,7 @@ function updatePkmDetailSpriteToggle(){
   ].filter(Boolean);
   if(!img||!btns.length)return;
   const staticSrc=img.dataset.staticSrc||'';
-  const animatedSrc=img.dataset.animatedSrc||'';
-  const hasAnimated=!!animatedSrc&&animatedSrc!==staticSrc;
+  const hasAnimated=img.dataset.forceAnimated==='1'||getPkmDetailAnimatedCandidates().some(src=>src&&src!==staticSrc);
   btns.forEach(btn=>{
     btn.disabled=!hasAnimated;
     btn.classList.toggle('on',img.dataset.mode==='animated');
@@ -69,10 +140,35 @@ function togglePkmDetailSprite(ev){
   ev?.stopPropagation?.();
   const img=document.getElementById('pkm-detail-img');if(!img)return;
   const staticSrc=img.dataset.staticSrc||img.src;
-  const animatedSrc=img.dataset.animatedSrc||staticSrc;
-  const toAnimated=img.dataset.mode!=='animated'&&animatedSrc&&animatedSrc!==staticSrc;
+  const forceAnimated=img.dataset.forceAnimated==='1';
+  const candidates=getPkmDetailAnimatedCandidates().filter(src=>src&&(forceAnimated||src!==staticSrc));
+  const animatedSrc=candidates[0]||staticSrc;
+  const toAnimated=img.dataset.mode!=='animated'&&animatedSrc&&(forceAnimated||animatedSrc!==staticSrc);
   img.dataset.mode=toAnimated?'animated':'static';
+  img.dataset.spriteCandidateIndex=toAnimated?'0':'';
+  img.classList.toggle('pkm-detail-img-animated',toAnimated);
   img.src=toAnimated?animatedSrc:staticSrc;
+  updatePkmDetailSpriteToggle();
+}
+function handlePkmDetailSpriteError(){
+  const img=document.getElementById('pkm-detail-img');if(!img)return;
+  if(img.dataset.mode==='animated'){
+    const candidates=getPkmDetailAnimatedCandidates();
+    let idx=parseInt(img.dataset.spriteCandidateIndex||'0',10);
+    while(++idx<candidates.length){
+      if(candidates[idx]&&candidates[idx]!==img.src){
+        img.dataset.spriteCandidateIndex=String(idx);
+        img.src=candidates[idx];
+        return;
+      }
+    }
+    img.dataset.animatedCandidates='[]';
+  }
+  img.dataset.mode='static';
+  img.dataset.spriteCandidateIndex='';
+  img.classList.remove('pkm-detail-img-animated');
+  const fallback=img.dataset.staticSrc||'';
+  if(fallback&&img.src!==fallback)img.src=fallback;
   updatePkmDetailSpriteToggle();
 }
 function getSpeciesDexId(p,species){
@@ -294,6 +390,13 @@ async function getOfficialFormDexDesc(p,species){
 function getDisplayNameWithVariant(baseName,variant){
   if(variant?.name&&variant.name!==baseName&&!variant.subname)return variant.name;
   if(!variant?.subname||variant.subname==='一般')return baseName;
+  const regional={
+    '阿罗拉的样子':'阿罗拉','伽勒尔的样子':'伽勒尔','洗翠的样子':'洗翠','帕底亚的样子':'帕底亚'
+  };
+  if(regional[variant.subname])return `${regional[variant.subname]}${baseName}`;
+  if(variant.subname==='超级进化')return `超级${baseName}`;
+  const megaMatch=variant.subname.match(/^超级进化(.+)$/);
+  if(megaMatch)return `超级${baseName}${megaMatch[1]}`;
   return `${baseName}（${variant.subname}）`;
 }
 function getDetailBaseName(p,species){
@@ -314,10 +417,31 @@ function buildSearchCandidates(){
       const label=getDisplayNameWithVariant(baseName,v);
       const searchText=[baseName,v.name,v.subname,label].filter(Boolean).join(' ');
       const key=`variant-${dexId}-${v.href||label}`;
-      if(!seen.has(key))seen.set(key,{key,label,searchText,target:Number(dexId)});
+      if(!seen.has(key))seen.set(key,{key,label,searchText,target:Number(dexId),variant:v});
     });
   });
+  ZA_MEGA_FORMS.forEach(f=>{
+    const baseName=getCachedOfficialDexName(Number(f.dexId))||PKM_CN_TABLE[Number(f.dexId)]||'';
+    const searchText=[baseName,f.name,f.slug].filter(Boolean).join(' ');
+    const key=`za-${f.slug}`;
+    if(!seen.has(key))seen.set(key,{key,label:f.name,searchText,target:`za:${f.slug}`,zaForm:f});
+  });
   return [...seen.values()];
+}
+async function resolveSearchCandidateTarget(item){
+  if(item?.zaForm)return `za:${item.zaForm.slug}`;
+  if(!item?.variant)return item?.target;
+  try{
+    const baseP=await fetchPkm(item.target);
+    const sp=await fetchPkmSpecies(baseP.species?.name||item.target);
+    const varieties=sp?.varieties||[];
+    for(const variety of varieties){
+      const vp=await fetchPkm(variety.pokemon.name);
+      const variant=await resolveOfficialDexVariant(vp,sp).catch(()=>null);
+      if(variant?.href&&variant.href===item.variant.href)return vp.name;
+    }
+  }catch{}
+  return item.target;
 }
 async function renderDetailForms(p,species,baseName){
   const wrap=document.getElementById('pkm-detail-forms');
@@ -343,12 +467,26 @@ async function renderDetailForms(p,species,baseName){
     forms=forms.filter(Boolean);
     const uniq=new Map();
     forms.forEach(f=>{if(!uniq.has(f.name))uniq.set(f.name,f);});
+    getZaMegaFormsForDex(dexId).forEach(f=>{
+      const key=`za:${f.slug}`;
+      uniq.set(key,{
+        id:`za:${f.slug}`,
+        name:key,
+        key,
+        sprite:getZaMegaImage(f),
+        displayName:f.name,
+        sortKey:`${padDexId(dexId)}-za-${f.slug}`,
+      });
+    });
     forms=[...uniq.values()].sort((a,b)=>a.sortKey.localeCompare(b.sortKey,'en'));
     pkmDetailFormsCache[cacheKey]=forms;
   }
   if(forms.length<=1){wrap.style.display='none';wrap.innerHTML='';return;}
   wrap.style.display='flex';
-  wrap.innerHTML=forms.map(f=>`<button class="pkm-detail-form-chip${f.id===p.id?' on':''}" onclick="openPkmDetail('${f.name}')">${f.sprite?`<img src="${f.sprite}" alt="">`:''}<span>${esc(f.displayName)}</span></button>`).join('');
+  wrap.innerHTML=forms.map(f=>{
+    const active=f.key?f.key===currentDetailFormKey:(!currentDetailFormKey&&f.id===p.id);
+    return`<button class="pkm-detail-form-chip${active?' on':''}" onclick="openPkmDetail('${f.name}')">${f.sprite?`<img src="${f.sprite}" alt="">`:''}<span>${esc(f.displayName)}</span></button>`;
+  }).join('');
 }
 
 // ===== 宝可梦官方简体中文名对照表（全1003只）=====
@@ -850,12 +988,15 @@ async function openPkmDetail(idOrName){
   document.getElementById('ov-pkm').classList.add('on');
   document.getElementById('pkm-detail-name').textContent='加载中…';
   try{
-    const p=await fetchPkm(idOrName);const sp=await fetchPkmSpecies(p.species.url.split('/').slice(-2)[0]);
+    const zaForm=String(idOrName||'').startsWith('za:')?ZA_MEGA_BY_SLUG[String(idOrName).slice(3)]:null;
+    const detailTarget=zaForm?zaForm.dexId:idOrName;
+    currentDetailFormKey=zaForm?`za:${zaForm.slug}`:'';
+    const p=await fetchPkm(detailTarget);const sp=await fetchPkmSpecies(p.species.url.split('/').slice(-2)[0]);
     currentDetailPkmId=p.id;
     const dexId=getSpeciesDexId(p,sp)||Number(p.id);
     const baseCnName=await getPreferredBaseName(p,sp);
     const officialVariant=await resolveOfficialDexVariant(p,sp).catch(()=>null);
-    const cnName=getDisplayNameWithVariant(baseCnName,officialVariant);
+    const cnName=zaForm?zaForm.name:getDisplayNameWithVariant(baseCnName,officialVariant);
     // 图鉴文字：本地官方中文优先，其次 PokéAPI 中文，再回退 52poke / AI
     const descEl=document.getElementById('pkm-detail-desc');
     const descInfo=await getPreferredDexDesc(p,sp);
@@ -868,14 +1009,19 @@ async function openPkmDetail(idOrName){
     }else{
       descEl.innerHTML=`<span style="color:var(--t3)">暂无图鉴信息</span>`;
     }
-    const img=getPokemonSprite(p,'artwork');
-    const img2=getPokemonSprite(p,'static');
-    const imgAnimated=getPokemonSprite(p,'animated');
+    const zaImg=getZaMegaImage(zaForm);
+    const img=zaImg||getPokemonSprite(p,'artwork');
+    const img2=zaImg||getPokemonSprite(p,'static');
+    const animatedCandidates=zaForm?[img2]:getPokemonSpriteCandidates(p,'animated');
     const detailImg=document.getElementById('pkm-detail-img');
     detailImg.dataset.staticSrc=img2;
-    detailImg.dataset.animatedSrc=imgAnimated;
+    detailImg.dataset.animatedSrc=animatedCandidates[0]||'';
+    detailImg.dataset.animatedCandidates=JSON.stringify(animatedCandidates);
+    detailImg.dataset.forceAnimated=zaForm?'1':'';
     detailImg.dataset.mode='static';
-    detailImg.onerror=()=>{detailImg.onerror=null;detailImg.src=img2||img;detailImg.dataset.mode='static';detailImg.dataset.animatedSrc='';updatePkmDetailSpriteToggle();};
+    detailImg.dataset.spriteCandidateIndex='';
+    detailImg.classList.remove('pkm-detail-img-animated');
+    detailImg.onerror=handlePkmDetailSpriteError;
     detailImg.src=img2;document.getElementById('pkm-detail-bg').style.backgroundImage=img?`url(${img})`:'none';
     updatePkmDetailSpriteToggle();
     document.getElementById('pkm-detail-num').textContent=`#${String(dexId||p.id).padStart(3,'0')}`;document.getElementById('pkm-detail-name').textContent=cnName;
@@ -909,9 +1055,12 @@ function onPkmSearch(v){
         .slice(0,16);
       if(localMatches.length){
         const items=await Promise.all(localMatches.map(async item=>{
-          const p=await fetchPkm(item.target);
-          const img=p.sprites?.front_default||'';
-          return`<div class="pkm-mini" onclick="openPkmDetail(${item.target})"><img src="${img}" alt=""><div class="pkm-mini-name">${esc(item.label)}</div></div>`;
+          const target=await resolveSearchCandidateTarget(item);
+          const zaForm=String(target||'').startsWith('za:')?ZA_MEGA_BY_SLUG[String(target).slice(3)]:null;
+          const p=zaForm?null:await fetchPkm(target);
+          const img=zaForm?getZaMegaImage(zaForm):(p.sprites?.front_default||'');
+          const openArg=typeof target==='number'?target:`'${String(target).replace(/'/g,'\\\'')}'`;
+          return`<div class="pkm-mini" onclick="openPkmDetail(${openArg})"><img src="${img}" alt=""><div class="pkm-mini-name">${esc(item.label)}</div></div>`;
         }));
         res.innerHTML=items.join('');
         return;

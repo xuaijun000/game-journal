@@ -221,7 +221,7 @@ async function pFetchPokemonMeta(pkmId){
 
 function pPartnerTypeBg(type){
   const t=type||'normal';
-  return pAssetUrl(`${PARTNER_ASSET_BASE}/types/type-${t}.jpg`);
+  return pAssetUrl(`${PARTNER_ASSET_BASE}/types/type-${t}.png`);
 }
 
 function pPartnerTypeBgDoc(type){
@@ -344,7 +344,6 @@ function renderPartnerPage(){
   const action=d.last_action||'';
   const actionCls=action?` action-${action}`:'';
   const effectImg=pPartnerEffectImg(action);
-  pPreloadPartnerImage(pPartnerTypeBgDoc(primaryType));
   if(action)pPreloadPartnerImage(effectImg);
 
   document.getElementById('partner-container').innerHTML=`
