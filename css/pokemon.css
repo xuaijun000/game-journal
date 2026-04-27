@@ -49,12 +49,6 @@
 .pkm-detail-bg{position:absolute;inset:0;filter:blur(25px);opacity:.32;background-size:cover;background-position:center}
 .pkm-detail-img{position:relative;z-index:2;width:190px;height:190px;object-fit:contain;image-rendering:pixelated;filter:drop-shadow(0 6px 18px rgba(0,0,0,.7));transition:transform .3s ease;cursor:pointer}
 .pkm-detail-img:hover{transform:scale(1.08)}
-.pkm-detail-img.pkm-detail-img-animated{animation:pkmDetailSpriteLive 1.8s ease-in-out infinite;transform-origin:50% 86%}
-@keyframes pkmDetailSpriteLive{
-  0%,100%{transform:translateY(0) rotate(-1.2deg) scale(1)}
-  35%{transform:translateY(-8px) rotate(1.4deg) scale(1.045)}
-  65%{transform:translateY(-3px) rotate(-.6deg) scale(1.02)}
-}
 .pkm-detail-sprite-toggle{
   position:absolute;right:14px;top:14px;z-index:3;
   border:1px solid rgba(255,255,255,.18);border-radius:8px;

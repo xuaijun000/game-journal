@@ -34,8 +34,8 @@ const _52pokeInfoCache={}; // 52poke 精灵信息缓存 {cnName: {abilities,hidd
 let currentDetailFormKey='';
 
 const ZA_MEGA_FORMS=[
-  {dexId:26,slug:'mega-raichu-x',name:'超级雷丘X',img:'https://archives.bulbagarden.net/wiki/Special:Redirect/file/0026Raichu-Mega%20X%20ZA.png'},
-  {dexId:26,slug:'mega-raichu-y',name:'超级雷丘Y',img:'https://archives.bulbagarden.net/wiki/Special:Redirect/file/0026Raichu-Mega%20Y%20ZA.png'},
+  {dexId:26,slug:'mega-raichu-x',name:'超级雷丘X',img:'https://legends.pokemon.com/static-assets/rte/9-12-2025/mega_raichu_x_square.png'},
+  {dexId:26,slug:'mega-raichu-y',name:'超级雷丘Y',img:'https://legends.pokemon.com/static-assets/rte/9-12-2025/mega_raichu_y_square.png'},
   {dexId:358,slug:'mega-chimecho',name:'超级风铃铃'},
   {dexId:448,slug:'mega-lucario-z',name:'超级路卡利欧Z',img:'https://legends.pokemon.com/_next/image?q=75&url=%2Fimages%2Fdlc%2Flucario_z_square.png&w=750'},
   {dexId:445,slug:'mega-garchomp-z',name:'超级烈咬陆鲨Z',img:'https://legends.pokemon.com/_next/image?q=75&url=%2Fimages%2Fdlc%2Fmega_garchomp_z_square.png&w=750'},
@@ -146,7 +146,6 @@ function togglePkmDetailSprite(ev){
   const toAnimated=img.dataset.mode!=='animated'&&animatedSrc&&(forceAnimated||animatedSrc!==staticSrc);
   img.dataset.mode=toAnimated?'animated':'static';
   img.dataset.spriteCandidateIndex=toAnimated?'0':'';
-  img.classList.toggle('pkm-detail-img-animated',toAnimated);
   img.src=toAnimated?animatedSrc:staticSrc;
   updatePkmDetailSpriteToggle();
 }
@@ -166,7 +165,6 @@ function handlePkmDetailSpriteError(){
   }
   img.dataset.mode='static';
   img.dataset.spriteCandidateIndex='';
-  img.classList.remove('pkm-detail-img-animated');
   const fallback=img.dataset.staticSrc||'';
   if(fallback&&img.src!==fallback)img.src=fallback;
   updatePkmDetailSpriteToggle();
@@ -466,7 +464,10 @@ async function renderDetailForms(p,species,baseName){
     }));
     forms=forms.filter(Boolean);
     const uniq=new Map();
-    forms.forEach(f=>{if(!uniq.has(f.name))uniq.set(f.name,f);});
+    forms.forEach(f=>{
+      const key=`poke-${f.displayName||f.name}`;
+      if(!uniq.has(key))uniq.set(key,f);
+    });
     getZaMegaFormsForDex(dexId).forEach(f=>{
       const key=`za:${f.slug}`;
       uniq.set(key,{
@@ -1020,7 +1021,6 @@ async function openPkmDetail(idOrName){
     detailImg.dataset.forceAnimated=zaForm?'1':'';
     detailImg.dataset.mode='static';
     detailImg.dataset.spriteCandidateIndex='';
-    detailImg.classList.remove('pkm-detail-img-animated');
     detailImg.onerror=handlePkmDetailSpriteError;
     detailImg.src=img2;document.getElementById('pkm-detail-bg').style.backgroundImage=img?`url(${img})`:'none';
     updatePkmDetailSpriteToggle();
