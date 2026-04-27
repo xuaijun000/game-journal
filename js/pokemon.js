@@ -82,14 +82,18 @@ async function fetchPkmSpecies(idOrName){const r=await fetch(`${POKEAPI}/pokemon
 function uniqNonEmpty(arr){
   return [...new Set((arr||[]).filter(Boolean))];
 }
-function getShowdownSpriteSlug(name){
+function getShowdownSpriteSlugs(name){
   const raw=String(name||'').toLowerCase();
   const special={
     'nidoran-f':'nidoranf','nidoran-m':'nidoranm','mr-mime':'mrmime','mime-jr':'mimejr',
     'type-null':'typenull','jangmo-o':'jangmoo','hakamo-o':'hakamoo','kommo-o':'kommoo',
     'flabebe':'flabebe'
   };
-  return special[raw]||raw.replace(/[^a-z0-9-]/g,'');
+  const clean=raw.replace(/[^a-z0-9-]/g,'');
+  const compact=clean.replace(/-/g,'');
+  const megaXY=clean.replace(/-mega-([xy])$/,'-mega$1');
+  const megaPrefix=clean.replace(/^mega-/,'').replace(/-([xy])$/,'-mega$1');
+  return uniqNonEmpty([special[raw],clean,compact,megaXY,megaPrefix]);
 }
 function getPokemonSpriteCandidates(p,mode='static'){
   const id=Number(p?.id)||0;
@@ -100,13 +104,16 @@ function getPokemonSpriteCandidates(p,mode='static'){
   const genV=p?.sprites?.versions?.['generation-v']?.['black-white']?.animated||{};
   if(mode==='artwork')return uniqNonEmpty([official,staticSprite]);
   if(mode==='animated'){
-    const sd=getShowdownSpriteSlug(name);
+    const sdList=getShowdownSpriteSlugs(name);
+    const showdownUrls=sdList.flatMap(sd=>[
+      `https://play.pokemonshowdown.com/sprites/ani/${sd}.gif`,
+      `https://play.pokemonshowdown.com/sprites/ani-shiny/${sd}.gif`,
+      `https://play.pokemonshowdown.com/sprites/ani-back/${sd}.gif`,
+      `https://play.pokemonshowdown.com/sprites/ani-back-shiny/${sd}.gif`
+    ]);
     return uniqNonEmpty([
       showdown.front_default,showdown.front_shiny,showdown.back_default,showdown.back_shiny,
-      sd?`https://play.pokemonshowdown.com/sprites/ani/${sd}.gif`:'',
-      sd?`https://play.pokemonshowdown.com/sprites/ani-shiny/${sd}.gif`:'',
-      sd?`https://play.pokemonshowdown.com/sprites/ani-back/${sd}.gif`:'',
-      sd?`https://play.pokemonshowdown.com/sprites/ani-back-shiny/${sd}.gif`:'',
+      ...showdownUrls,
       genV.front_default,genV.front_shiny,genV.back_default,genV.back_shiny,
       id>0&&id<=649?`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/versions/generation-v/black-white/animated/${id}.gif`:''
     ]);
@@ -128,7 +135,7 @@ function updatePkmDetailSpriteToggle(){
   ].filter(Boolean);
   if(!img||!btns.length)return;
   const staticSrc=img.dataset.staticSrc||'';
-  const hasAnimated=img.dataset.forceAnimated==='1'||getPkmDetailAnimatedCandidates().some(src=>src&&src!==staticSrc);
+  const hasAnimated=getPkmDetailAnimatedCandidates().some(src=>src&&src!==staticSrc);
   btns.forEach(btn=>{
     btn.disabled=!hasAnimated;
     btn.classList.toggle('on',img.dataset.mode==='animated');
@@ -140,10 +147,9 @@ function togglePkmDetailSprite(ev){
   ev?.stopPropagation?.();
   const img=document.getElementById('pkm-detail-img');if(!img)return;
   const staticSrc=img.dataset.staticSrc||img.src;
-  const forceAnimated=img.dataset.forceAnimated==='1';
-  const candidates=getPkmDetailAnimatedCandidates().filter(src=>src&&(forceAnimated||src!==staticSrc));
+  const candidates=getPkmDetailAnimatedCandidates().filter(src=>src&&src!==staticSrc);
   const animatedSrc=candidates[0]||staticSrc;
-  const toAnimated=img.dataset.mode!=='animated'&&animatedSrc&&(forceAnimated||animatedSrc!==staticSrc);
+  const toAnimated=img.dataset.mode!=='animated'&&animatedSrc&&animatedSrc!==staticSrc;
   img.dataset.mode=toAnimated?'animated':'static';
   img.dataset.spriteCandidateIndex=toAnimated?'0':'';
   img.src=toAnimated?animatedSrc:staticSrc;
@@ -1013,12 +1019,11 @@ async function openPkmDetail(idOrName){
     const zaImg=getZaMegaImage(zaForm);
     const img=zaImg||getPokemonSprite(p,'artwork');
     const img2=zaImg||getPokemonSprite(p,'static');
-    const animatedCandidates=zaForm?[img2]:getPokemonSpriteCandidates(p,'animated');
+    const animatedCandidates=zaForm?[]:getPokemonSpriteCandidates(p,'animated');
     const detailImg=document.getElementById('pkm-detail-img');
     detailImg.dataset.staticSrc=img2;
     detailImg.dataset.animatedSrc=animatedCandidates[0]||'';
     detailImg.dataset.animatedCandidates=JSON.stringify(animatedCandidates);
-    detailImg.dataset.forceAnimated=zaForm?'1':'';
     detailImg.dataset.mode='static';
     detailImg.dataset.spriteCandidateIndex='';
     detailImg.onerror=handlePkmDetailSpriteError;
