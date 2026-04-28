@@ -2390,7 +2390,6 @@ function scorePkmForBattle(myPkm, opp, activeWeather=''){
       const moves=[mp.move1,mp.move2,mp.move3,mp.move4].filter(m=>m&&m.power>0&&m.cat!=='status');
       let bestPct=0;
       moves.forEach(m=>{const r=calcDamageEst(mp,op,m,activeWeather);if(r&&r.pct>bestPct)bestPct=r.pct;});
-      // 速度加权：先手OHKO价值×1.5（确保能在挨打前秒杀），后手×0.7
       const oppSpd=getEffectiveSpeed(op, activeWeather);
       const isFaster=mySpd>0&&oppSpd>0&&mySpd>oppSpd;
       const speedMul=(mySpd>0&&oppSpd>0)?(isFaster?1.5:0.7):1.0;
@@ -2398,7 +2397,9 @@ function scorePkmForBattle(myPkm, opp, activeWeather=''){
         koScore+=speedMul;
         reasons.push(`可一击秒杀${esc(op.name||'?')}${isFaster?' ⚡先手':oppSpd&&mySpd?' 🐢后手':''}`);
       } else if(bestPct>=50){
-        reasons.push(`两击可KO${esc(op.name||'?')}`);
+        // 2HKO 也享有速度加成，权重较小
+        koScore+=(mySpd>0&&oppSpd>0)?(isFaster?0.4:0.2):0.25;
+        reasons.push(`两击可KO${esc(op.name||'?')}${isFaster?' ⚡先手':''}`);
       }
     });
     // 特性相关加分：免疫某类型
@@ -2465,6 +2466,38 @@ function scorePkmForBattle(myPkm, opp, activeWeather=''){
     return{pkm:mp,offScore,defScore,koCount:Math.round(koScore),koScore,defTypeBonus:+defTypeBonus.toFixed(2),myItemBonus:+myItemBonus.toFixed(2),total,reasons:[...new Set(reasons)].slice(0,5)};
   }).sort((a,b)=>b.total-a.total);
   return selectSynergisticTop3(rawScored);
+}
+
+/* ── 单打首发鲁棒性筛选：在Top3中选最坏对局下限最高的首发 ── */
+function selectSinglesLead(top3, oppPool, activeWeather){
+  if(!top3.length)return null;
+  if(!oppPool.length||top3.length===1)return top3[0];
+
+  const withRobust=top3.map(s=>{
+    const mp=s.pkm;
+    const mySpd=getEffectiveSpeed(mp,activeWeather);
+    let worstExposure=0, bestThreat=0;
+    oppPool.forEach(op=>{
+      const taken=getOppBestEff(op,mp);
+      if(taken>worstExposure)worstExposure=taken;
+      const eff=getBestMoveEff(mp,op);
+      if(eff!==null&&eff>bestThreat)bestThreat=eff;
+    });
+    // floor：能威胁至少一只 且 不被单方面克死
+    const floor=bestThreat-worstExposure*0.6;
+    return{s,floor};
+  });
+
+  const floors=withRobust.map(x=>x.floor);
+  const minFloor=Math.min(...floors), maxFloor=Math.max(...floors);
+  const floorRange=Math.max(maxFloor-minFloor,0.001);
+  const totals=top3.map(s=>s.total);
+  const minTotal=Math.min(...totals), maxTotal=Math.max(...totals);
+  const totalRange=Math.max(maxTotal-minTotal,0.001);
+
+  return withRobust
+    .map(x=>({...x,leadScore:(x.s.total-minTotal)/totalRange*0.65+(x.floor-minFloor)/floorRange*0.35}))
+    .sort((a,b)=>b.leadScore-a.leadScore)[0].s;
 }
 
 /* ── 协同性Top3选择：#2/#3 补强前面宝可梦的弱点属性 ── */
@@ -2808,7 +2841,11 @@ function renderQuickDecisionPanel({scored=[],myPkm=[],opp=[],targetOpp=[],active
   const selected=selectedScores.map(s=>s.pkm).filter(Boolean);
   if(!selected.length)return '';
   const oppPool=(targetOpp&&targetOpp.length?targetOpp:opp).filter(op=>op.name||op.type1);
-  const leadScores=format==='doubles'&&leadPairScored.length?leadPairScored:selectedScores.slice(0,format==='doubles'?2:1);
+  const leadScores=format==='doubles'&&leadPairScored.length
+    ?leadPairScored
+    :format==='singles'
+      ?[selectSinglesLead(selectedScores,oppPool,activeWeather)].filter(Boolean)
+      :selectedScores.slice(0,2);
   const pickHtml=selectedScores.map((s,i)=>renderQuickPkmChip(s.pkm,`#${i+1}`)).join('');
   const leadHtml=leadScores.map(s=>renderQuickPkmChip(s.pkm,'先发')).join('');
 
@@ -2905,7 +2942,7 @@ function predictOppBestCombo(valid, myPkm){
   if(!valid.length)return{combo:[],synergyScore:0,antiScore:0,threatMap:{}};
   if(valid.length<=3)return{combo:valid,synergyScore:0,antiScore:0,threatMap:buildThreatMap(valid,myPkm)};
 
-  // 队友协同分
+  // 队友协同分：两两共现率之和
   const synergyScore=(combo)=>{
     let s=0;
     for(let a=0;a<combo.length;a++){
@@ -2920,18 +2957,18 @@ function predictOppBestCombo(valid, myPkm){
     return s;
   };
 
-  // 克制我方分：对每只我方宝可梦，取combo中最高威胁值
+  // 克制我方分：对方组合中每只对每只我方的威胁全部累加
+  // （原"对每只我方取最高威胁"只奖励存在克星，改为累加可更好区分广度覆盖）
   const antiScore=(combo)=>{
     if(!myPkm.length)return 0;
     let total=0;
-    myPkm.forEach(mp=>{
-      const best=combo.reduce((m,op)=>Math.max(m,oppThreatScore(op,mp)),0);
-      total+=best;
+    combo.forEach(op=>{
+      myPkm.forEach(mp=>{total+=oppThreatScore(op,mp);});
     });
     return total;
   };
 
-  // 枚举所有 C(n,3)，记录原始分
+  // 枚举所有 C(n,3)
   const allCombos=[];
   for(let a=0;a<valid.length-2;a++)
     for(let b=a+1;b<valid.length-1;b++)
@@ -2939,12 +2976,18 @@ function predictOppBestCombo(valid, myPkm){
         allCombos.push([valid[a],valid[b],valid[c]]);
 
   const raw=allCombos.map(combo=>({combo,syn:synergyScore(combo),anti:antiScore(combo)}));
-  const maxSyn=Math.max(...raw.map(r=>r.syn),1);
-  const maxAnti=Math.max(...raw.map(r=>r.anti),1);
+
+  // 使用范围归一化（max-min），避免指标方差低时放大噪声
+  const minSyn=Math.min(...raw.map(r=>r.syn));
+  const maxSyn=Math.max(...raw.map(r=>r.syn));
+  const minAnti=Math.min(...raw.map(r=>r.anti));
+  const maxAnti=Math.max(...raw.map(r=>r.anti));
+  const synRange=Math.max(maxSyn-minSyn,0.001);
+  const antiRange=Math.max(maxAnti-minAnti,0.001);
 
   let best=raw[0],bestBlend=-1;
   raw.forEach(r=>{
-    const blend=(r.syn/maxSyn)*0.3+(r.anti/maxAnti)*0.7;
+    const blend=((r.syn-minSyn)/synRange)*0.3+((r.anti-minAnti)/antiRange)*0.7;
     if(blend>bestBlend){bestBlend=blend;best=r;}
   });
 
@@ -2972,6 +3015,7 @@ function renderOppTeamPrediction(valid, predResult){
   const comboSlugs=new Set(combo.map(op=>op.slug||op.name||''));
 
   const validJson=JSON.stringify(valid.map(op=>({name:op.name,slug:op.slug||'',type1:op.type1})));
+  const comboJson=JSON.stringify(combo.map(op=>({slug:op.slug||'',name:op.name||''})));
 
   const makePkmEl=(op,isPredicted)=>{
     const img=op.slug?(PKM_PC_BY_SLUG[op.slug]?.spriteUrl||''):'';
@@ -2989,7 +3033,7 @@ function renderOppTeamPrediction(valid, predResult){
   const predictedHtml=combo.map(op=>makePkmEl(op,true)).join('');
   const restHtml=valid.filter(op=>!comboSlugs.has(op.slug||op.name||'')).map(op=>makePkmEl(op,false)).join('');
 
-  return`<div class="battle-opp-pred-wrap" id="opp-pred-wrap" data-valid='${validJson.replace(/'/g,"&#39;")}'>
+  return`<div class="battle-opp-pred-wrap" id="opp-pred-wrap" data-valid='${validJson.replace(/'/g,"&#39;")}' data-pred-combo='${comboJson.replace(/'/g,"&#39;")}'>
     <div class="opp-pred-row-label">预测出战</div>
     <div class="opp-pred-combo">${predictedHtml}</div>
     ${restHtml?`<div class="opp-pred-row-label opp-pred-row-label--rest">其余备选（点击可预测后续）</div>
@@ -3005,7 +3049,6 @@ function onOppLeadClick(leadSlug, el){
   const wrap=el.closest('#opp-pred-wrap');
   const wrapId=wrap?.id||'opp-pred-wrap';
 
-  // 已在列表中 → 取消确认，从顺序数组移除
   const idx=_oppConfirmedOrder.findIndex(x=>x.slug===leadSlug&&x.wrapId===wrapId);
   if(idx!==-1){
     _oppConfirmedOrder.splice(idx,1);
@@ -3016,31 +3059,13 @@ function onOppLeadClick(leadSlug, el){
   }
 
   const valid=JSON.parse(wrap.dataset.valid||'[]');
-  // 按出场顺序排列已确认 slug
+  const predCombo=JSON.parse(wrap.dataset.predCombo||'[]'); // 原始预测组合
   const confirmed=_oppConfirmedOrder.filter(x=>x.wrapId===wrapId).map(x=>x.slug);
 
   const resultEl=wrap.querySelector('#opp-lead-result');
   if(!resultEl)return;
   if(!confirmed.length){resultEl.innerHTML='';return;}
 
-  const numPredict=Math.max(0,3-confirmed.length);
-  const remaining=valid.filter(op=>!confirmed.includes(op.slug||''));
-
-  // 合并所有已出场宝可梦的队友率
-  const combinedRates={};
-  confirmed.forEach(confSlug=>{
-    const builds=window.PKM_CHAMPIONS_BUILDS?.[confSlug];
-    (builds?.teammates||[]).forEach(t=>{
-      combinedRates[t.slug]=(combinedRates[t.slug]||0)+t.pct;
-    });
-  });
-
-  const ranked=remaining
-    .map(op=>({...op,rate:combinedRates[op.slug||'']||0}))
-    .sort((a,b)=>b.rate-a.rate)
-    .slice(0,numPredict);
-
-  // 标签：首发 A → 第2个 B → 预测第3只
   const orderLabels=['首发','第2个出场','第3个出场'];
   const confirmedParts=confirmed.map((s,i)=>{
     const name=valid.find(op=>op.slug===s)?.name||s;
@@ -3048,22 +3073,75 @@ function onOppLeadClick(leadSlug, el){
   });
   const labelHtml=confirmedParts.join(' → ');
 
+  const numPredict=Math.max(0,3-confirmed.length);
   if(numPredict===0){
     resultEl.innerHTML=`<div class="opp-lead-label">${labelHtml}（3只已全部出场）</div>`;
     return;
   }
 
-  const backlineHtml=ranked.map(op=>{
+  const remaining=valid.filter(op=>!confirmed.includes(op.slug||''));
+
+  // 各确认宝可梦的队友率取平均（而非累加），保留概率含义
+  const rateMap={};
+  confirmed.forEach(confSlug=>{
+    const builds=window.PKM_CHAMPIONS_BUILDS?.[confSlug];
+    (builds?.teammates||[]).forEach(t=>{
+      if(!rateMap[t.slug])rateMap[t.slug]=[];
+      rateMap[t.slug].push(t.pct);
+    });
+  });
+  const avgRates={};
+  Object.entries(rateMap).forEach(([slug,rates])=>{
+    avgRates[slug]=rates.reduce((a,b)=>a+b,0)/confirmed.length;
+  });
+
+  // 原始预测中未被确认的成员额外加权（它们已经过更严格的组合搜索）
+  remaining.forEach(op=>{
+    const slug=op.slug||'';
+    if(predCombo.some(p=>p.slug===slug))
+      avgRates[slug]=(avgRates[slug]||0)+25;
+  });
+
+  const makePredItem=(op,rate)=>{
     const img=PKM_PC_BY_SLUG[op.slug]?.spriteUrl||'';
-    const pct=op.rate>0?`<span class="pred-rate">${op.rate.toFixed(0)}%</span>`:'';
+    const pct=rate>0?`<span class="pred-rate">${Math.min(rate,100).toFixed(0)}%</span>`:'';
     return`<div class="battle-opp-pred-item">
       ${img?`<img src="${esc(img)}" alt="" onerror="this.style.display='none'">`:''}
       <span class="battle-opp-pred-name">${esc(op.name||op.slug)}</span>${pct}
     </div>`;
-  }).join('');
+  };
 
-  resultEl.innerHTML=`<div class="opp-lead-label">${labelHtml} → 预测第${confirmed.length+1}只：</div>`
-    +(backlineHtml?`<div class="opp-pred-combo">${backlineHtml}</div>`:'<div class="opp-lead-label">暂无队友数据</div>');
+  let backlineHtml='';
+  if(numPredict>=2&&remaining.length>=2){
+    // 剩余2格：枚举所有二元组合，选得分最高的配对
+    let bestPair=null,bestScore=-1;
+    for(let a=0;a<remaining.length-1;a++){
+      for(let b=a+1;b<remaining.length;b++){
+        const opA=remaining[a],opB=remaining[b];
+        const slugA=opA.slug||'',slugB=opB.slug||'';
+        const rA=avgRates[slugA]||0, rB=avgRates[slugB]||0;
+        // 互为队友的额外加成
+        const buildsA=window.PKM_CHAMPIONS_BUILDS?.[slugA];
+        const buildsB=window.PKM_CHAMPIONS_BUILDS?.[slugB];
+        const mutual=
+          ((buildsA?.teammates||[]).find(t=>t.slug===slugB)?.pct||0)+
+          ((buildsB?.teammates||[]).find(t=>t.slug===slugA)?.pct||0);
+        const score=rA+rB+mutual*0.5;
+        if(score>bestScore){bestScore=score;bestPair=[opA,opB];}
+      }
+    }
+    backlineHtml=(bestPair||[]).map(op=>makePredItem(op,avgRates[op.slug||'']||0)).join('');
+    resultEl.innerHTML=`<div class="opp-lead-label">${labelHtml} → 预测剩余2只：</div>`
+      +(backlineHtml?`<div class="opp-pred-combo">${backlineHtml}</div>`:'<div class="opp-lead-label">暂无队友数据</div>');
+  } else {
+    // 剩余1格：直接取最高平均队友率
+    const top=remaining
+      .map(op=>({op,rate:avgRates[op.slug||'']||0}))
+      .sort((a,b)=>b.rate-a.rate)[0];
+    backlineHtml=top?makePredItem(top.op,top.rate):'';
+    resultEl.innerHTML=`<div class="opp-lead-label">${labelHtml} → 预测第${confirmed.length+1}只：</div>`
+      +(backlineHtml?`<div class="opp-pred-combo">${backlineHtml}</div>`:'<div class="opp-lead-label">暂无队友数据</div>');
+  }
 }
 
 /* ── 推荐出战 ── */
