@@ -32,9 +32,10 @@ body{
     linear-gradient(180deg,rgba(22,32,34,.2),transparent 36%),
     url('网站背景.png');
   background-repeat:repeat,no-repeat,no-repeat,no-repeat;
-  background-size:auto,auto,auto,auto;
+  background-size:auto,auto,auto,cover;
   background-position:center,center,center,center;
   background-attachment:fixed;
+  overflow-x:hidden;
 }
 
 body::before,
