@@ -3461,7 +3461,8 @@ function pairSynergyScore(a, b) {
   const bIsSupport = roleB.cls==='role-support' || rolesB.length>0;
   if (aIsSupport !== bIsSupport) score += 4;
   if (rolesA.includes('击掌奇袭') || rolesB.includes('击掌奇袭')) score += 3;
-  if ((rolesA.includes('顺风')||rolesB.includes('顺风')) && Math.abs((a.base?.spe||0)-(b.base?.spe||0))>40) score += 2;
+  // 顺风价值在于全队加速，只要搭档中有顺风使用者即加分
+  if (rolesA.includes('顺风')||rolesB.includes('顺风')) score += 2;
   const getWeaks = p => { const im=ABILITY_TYPE_IMMUNE[p.ability||'']||[]; return B_TYPES.filter(t=>getTypeEff(t,p.type1,p.type2)>=2&&!im.includes(t)); };
   score -= getWeaks(a).filter(t=>getWeaks(b).includes(t)).length * 0.8;
   if ((a.base?.spe||0)>0&&(b.base?.spe||0)>0&&Math.abs((a.base.spe||0)-(b.base.spe||0))>30) score += 1;
@@ -3492,8 +3493,9 @@ function selectBestLeadPair(top4, oppValid) {
     for (let b = a+1; b < oppPool.length; b++) {
       const oa = oppPool[a], ob = oppPool[b];
       const syn = pairSynergyScore(oa, ob);
+      // 双打两只同时上场，威胁应累加而非取最高
       const pressure = top4.reduce((s, t) =>
-        s + Math.max(oppThreatScore(oa, t.pkm), oppThreatScore(ob, t.pkm)), 0);
+        s + oppThreatScore(oa, t.pkm) + oppThreatScore(ob, t.pkm), 0);
       oppCandidates.push({ oa, ob, raw: syn * 1.2 + pressure });
     }
 
@@ -3529,7 +3531,8 @@ function selectBestOppLeadPair(combo4, myPkm) {
       const syn = pairSynergyScore(pa, pb);
       let pressure = 0;
       (myPkm||[]).forEach(mp => {
-        pressure += Math.max(oppThreatScore(pa, mp), oppThreatScore(pb, mp));
+        // 双打两只同时在场，威胁累加
+        pressure += oppThreatScore(pa, mp) + oppThreatScore(pb, mp);
       });
       const total = syn*1.2 + pressure;
       if (total > bestScore) { bestScore=total; best=[pa,pb]; }
@@ -3573,12 +3576,16 @@ function predictOppDoubles(valid, myPkm) {
     }
     return s;
   };
-  const antiScore = combo => { if(!myPkm.length)return 0; let t=0; myPkm.forEach(mp=>{t+=combo.reduce((m,op)=>Math.max(m,oppThreatScore(op,mp)),0);}); return t; };
+  // 全体累加：双打4只都会上场，每只对每只我方的威胁全部计入
+  const antiScore = combo => { if(!myPkm.length)return 0; let t=0; combo.forEach(op=>{myPkm.forEach(mp=>{t+=oppThreatScore(op,mp);});}); return t; };
   const all=[];
   for(let a=0;a<valid.length-3;a++) for(let b=a+1;b<valid.length-2;b++) for(let c=b+1;c<valid.length-1;c++) for(let d=c+1;d<valid.length;d++) all.push([valid[a],valid[b],valid[c],valid[d]]);
   const raw=all.map(combo=>({combo,syn:synScore(combo),anti:antiScore(combo)}));
-  const mxS=Math.max(...raw.map(r=>r.syn),1), mxA=Math.max(...raw.map(r=>r.anti),1);
-  const ranked=raw.map(r=>({...r,v:(r.syn/mxS)*0.4+(r.anti/mxA)*0.6})).sort((a,b)=>b.v-a.v);
+  // 范围归一化，防止低方差指标放大噪声
+  const minSyn=Math.min(...raw.map(r=>r.syn)),maxSyn=Math.max(...raw.map(r=>r.syn));
+  const minAnti=Math.min(...raw.map(r=>r.anti)),maxAnti=Math.max(...raw.map(r=>r.anti));
+  const synRange=Math.max(maxSyn-minSyn,0.001),antiRange=Math.max(maxAnti-minAnti,0.001);
+  const ranked=raw.map(r=>({...r,v:((r.syn-minSyn)/synRange)*0.4+((r.anti-minAnti)/antiRange)*0.6})).sort((a,b)=>b.v-a.v);
   const confidence=ranked.length>=2?Math.min((ranked[0].v-ranked[1].v)/Math.max(ranked[0].v,0.01),1):1;
   const combo4=ranked[0].combo;
   const leadPair=selectBestOppLeadPair(combo4,myPkm);
