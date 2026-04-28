@@ -1,8 +1,9 @@
-// 自动生成 — Pokemon Champions 技能数据 (919 个)
-// 来源: op.gg + PokeAPI，勿手动修改
-// 注册到对战数据注册表（battle_registry.js 须先加载）
-(window.BATTLE_REGISTRY['champions'] = window.BATTLE_REGISTRY['champions'] || {});
-window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
+// 自动生成 — Pokemon Champions 技能数据（含效果描述）
+// 生成时间：2026-04-28T23:30:23.502Z
+// 效果描述来源：PokeAPI（zh-Hans 优先，无中文回落英文）
+// 共 919 个技能，808 个有效果描述，919 个有优先度字段
+(function(){
+  const data = [
   {
     "slug": "pound",
     "name": "拍击",
@@ -11,7 +12,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 40,
     "acc": 100,
-    "pp": 35
+    "pp": 35,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "karate-chop",
@@ -21,7 +24,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 50,
     "acc": 100,
-    "pp": 25
+    "pp": 25,
+    "effect": "Has an increased chance for a critical hit.",
+    "priority": 0
   },
   {
     "slug": "double-slap",
@@ -31,7 +36,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 15,
     "acc": 85,
-    "pp": 10
+    "pp": 10,
+    "effect": "Hits 2-5 times in one turn.",
+    "priority": 0
   },
   {
     "slug": "comet-punch",
@@ -41,7 +48,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 18,
     "acc": 85,
-    "pp": 15
+    "pp": 15,
+    "effect": "Hits 2-5 times in one turn.",
+    "priority": 0
   },
   {
     "slug": "mega-punch",
@@ -51,7 +60,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 85,
-    "pp": 20
+    "pp": 20,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "pay-day",
@@ -61,7 +72,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 40,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Scatters money on the ground worth five times the user’s level.",
+    "priority": 0
   },
   {
     "slug": "fire-punch",
@@ -71,7 +84,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 75,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to burn the target.",
+    "priority": 0
   },
   {
     "slug": "ice-punch",
@@ -81,7 +96,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 75,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to freeze the target.",
+    "priority": 0
   },
   {
     "slug": "thunder-punch",
@@ -91,7 +108,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 75,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to paralyze the target.",
+    "priority": 0
   },
   {
     "slug": "scratch",
@@ -101,7 +120,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 40,
     "acc": 100,
-    "pp": 35
+    "pp": 35,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "vice-grip",
@@ -111,7 +132,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 55,
     "acc": 100,
-    "pp": 30
+    "pp": 30,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "guillotine",
@@ -121,7 +144,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 30,
     "acc": 30,
-    "pp": 5
+    "pp": 5,
+    "effect": "Causes a one-hit KO.",
+    "priority": 0
   },
   {
     "slug": "razor-wind",
@@ -131,7 +156,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Requires a turn to charge before attacking.",
+    "priority": 0
   },
   {
     "slug": "swords-dance",
@@ -141,7 +168,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Raises the user’s Attack by two stages.",
+    "priority": 0
   },
   {
     "slug": "cut",
@@ -151,7 +180,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 50,
     "acc": 95,
-    "pp": 30
+    "pp": 30,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "gust",
@@ -161,7 +192,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 40,
     "acc": 100,
-    "pp": 35
+    "pp": 35,
+    "effect": "Inflicts regular damage and can hit Pokémon in the air.",
+    "priority": 0
   },
   {
     "slug": "wing-attack",
@@ -171,7 +204,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 60,
     "acc": 100,
-    "pp": 35
+    "pp": 35,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "whirlwind",
@@ -181,7 +216,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Immediately ends wild battles.  Forces trainers to switch Pokémon.",
+    "priority": -6
   },
   {
     "slug": "fly",
@@ -191,7 +228,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 90,
     "acc": 95,
-    "pp": 15
+    "pp": 15,
+    "effect": "User flies high into the air, dodging all attacks, and hits next turn.",
+    "priority": 0
   },
   {
     "slug": "bind",
@@ -201,7 +240,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 15,
     "acc": 85,
-    "pp": 20
+    "pp": 20,
+    "effect": "Prevents the target from fleeing and inflicts damage for 2-5 turns.",
+    "priority": 0
   },
   {
     "slug": "slam",
@@ -211,7 +252,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 75,
-    "pp": 20
+    "pp": 20,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "vine-whip",
@@ -221,7 +264,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 45,
     "acc": 100,
-    "pp": 25
+    "pp": 25,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "stomp",
@@ -231,7 +276,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 65,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Has a chance to make the target flinch.",
+    "priority": 0
   },
   {
     "slug": "double-kick",
@@ -241,7 +288,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 30,
     "acc": 100,
-    "pp": 30
+    "pp": 30,
+    "effect": "Hits twice in one turn.",
+    "priority": 0
   },
   {
     "slug": "mega-kick",
@@ -251,7 +300,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 120,
     "acc": 75,
-    "pp": 5
+    "pp": 5,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "jump-kick",
@@ -261,7 +312,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 95,
-    "pp": 10
+    "pp": 10,
+    "effect": "If the user misses, it takes half the damage it would have inflicted in recoil.",
+    "priority": 0
   },
   {
     "slug": "rolling-kick",
@@ -271,7 +324,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 60,
     "acc": 85,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to make the target flinch.",
+    "priority": 0
   },
   {
     "slug": "sand-attack",
@@ -281,7 +336,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Lowers the target’s accuracy by one stage.",
+    "priority": 0
   },
   {
     "slug": "headbutt",
@@ -291,7 +348,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 70,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to make the target flinch.",
+    "priority": 0
   },
   {
     "slug": "horn-attack",
@@ -301,7 +360,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 65,
     "acc": 100,
-    "pp": 25
+    "pp": 25,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "fury-attack",
@@ -311,7 +372,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 15,
     "acc": 85,
-    "pp": 20
+    "pp": 20,
+    "effect": "Hits 2-5 times in one turn.",
+    "priority": 0
   },
   {
     "slug": "horn-drill",
@@ -321,7 +384,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 30,
     "acc": 30,
-    "pp": 5
+    "pp": 5,
+    "effect": "Causes a one-hit KO.",
+    "priority": 0
   },
   {
     "slug": "tackle",
@@ -331,7 +396,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 40,
     "acc": 100,
-    "pp": 35
+    "pp": 35,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "body-slam",
@@ -341,7 +408,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 85,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to paralyze the target.",
+    "priority": 0
   },
   {
     "slug": "wrap",
@@ -351,7 +420,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 15,
     "acc": 90,
-    "pp": 20
+    "pp": 20,
+    "effect": "Prevents the target from fleeing and inflicts damage for 2-5 turns.",
+    "priority": 0
   },
   {
     "slug": "take-down",
@@ -361,7 +432,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 90,
     "acc": 85,
-    "pp": 20
+    "pp": 20,
+    "effect": "User receives 1/4 the damage it inflicts in recoil.",
+    "priority": 0
   },
   {
     "slug": "thrash",
@@ -371,7 +444,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 120,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Hits every turn for 2-3 turns, then confuses the user.",
+    "priority": 0
   },
   {
     "slug": "double-edge",
@@ -381,7 +456,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 120,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "User receives 1/3 the damage inflicted in recoil.",
+    "priority": 0
   },
   {
     "slug": "tail-whip",
@@ -391,7 +468,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 30
+    "pp": 30,
+    "effect": "Lowers the target’s Defense by one stage.",
+    "priority": 0
   },
   {
     "slug": "poison-sting",
@@ -401,7 +480,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 15,
     "acc": 100,
-    "pp": 35
+    "pp": 35,
+    "effect": "Has a chance to poison the target.",
+    "priority": 0
   },
   {
     "slug": "twineedle",
@@ -411,7 +492,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 25,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Hits twice in the same turn.  Has a chance to poison the target.",
+    "priority": 0
   },
   {
     "slug": "pin-missile",
@@ -421,7 +504,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 25,
     "acc": 95,
-    "pp": 20
+    "pp": 20,
+    "effect": "Hits 2-5 times in one turn.",
+    "priority": 0
   },
   {
     "slug": "leer",
@@ -431,7 +516,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 30
+    "pp": 30,
+    "effect": "Lowers the target’s Defense by one stage.",
+    "priority": 0
   },
   {
     "slug": "bite",
@@ -441,7 +528,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 60,
     "acc": 100,
-    "pp": 25
+    "pp": 25,
+    "effect": "Has a chance to make the target flinch.",
+    "priority": 0
   },
   {
     "slug": "growl",
@@ -451,7 +540,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 40
+    "pp": 40,
+    "effect": "Lowers the target’s Attack by one stage.",
+    "priority": 0
   },
   {
     "slug": "roar",
@@ -461,7 +552,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Immediately ends wild battles.  Forces trainers to switch Pokémon.",
+    "priority": -6
   },
   {
     "slug": "sing",
@@ -471,7 +564,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 55,
-    "pp": 15
+    "pp": 15,
+    "effect": "Puts the target to sleep.",
+    "priority": 0
   },
   {
     "slug": "supersonic",
@@ -481,7 +576,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 55,
-    "pp": 20
+    "pp": 20,
+    "effect": "Confuses the target.",
+    "priority": 0
   },
   {
     "slug": "sonic-boom",
@@ -491,7 +588,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 90,
     "acc": 90,
-    "pp": 20
+    "pp": 20,
+    "effect": "Inflicts 20 points of damage.",
+    "priority": 0
   },
   {
     "slug": "disable",
@@ -501,7 +600,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Disables the target’s last used move for 1-8 turns.",
+    "priority": 0
   },
   {
     "slug": "acid",
@@ -511,7 +612,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 40,
     "acc": 100,
-    "pp": 30
+    "pp": 30,
+    "effect": "Has a chance to lower the target’s Special Defense by one stage.",
+    "priority": 0
   },
   {
     "slug": "ember",
@@ -521,7 +624,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 40,
     "acc": 100,
-    "pp": 25
+    "pp": 25,
+    "effect": "Has a chance to burn the target.",
+    "priority": 0
   },
   {
     "slug": "flamethrower",
@@ -531,7 +636,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 90,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to burn the target.",
+    "priority": 0
   },
   {
     "slug": "mist",
@@ -541,7 +648,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 30
+    "pp": 30,
+    "effect": "Protects the user’s stats from being changed by enemy moves.",
+    "priority": 0
   },
   {
     "slug": "water-gun",
@@ -551,7 +660,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 40,
     "acc": 100,
-    "pp": 25
+    "pp": 25,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "hydro-pump",
@@ -561,7 +672,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 110,
     "acc": 80,
-    "pp": 5
+    "pp": 5,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "surf",
@@ -571,7 +684,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 90,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Inflicts regular damage and can hit Dive users.",
+    "priority": 0
   },
   {
     "slug": "ice-beam",
@@ -581,7 +696,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 90,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to freeze the target.",
+    "priority": 0
   },
   {
     "slug": "blizzard",
@@ -591,7 +708,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 110,
     "acc": 70,
-    "pp": 5
+    "pp": 5,
+    "effect": "Has a chance to freeze the target.",
+    "priority": 0
   },
   {
     "slug": "psybeam",
@@ -601,7 +720,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 65,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Has a chance to confuse the target.",
+    "priority": 0
   },
   {
     "slug": "bubble-beam",
@@ -611,7 +732,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 65,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Has a chance to lower the target’s Speed by one stage.",
+    "priority": 0
   },
   {
     "slug": "aurora-beam",
@@ -621,7 +744,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 65,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Has a chance to lower the target’s Attack by one stage.",
+    "priority": 0
   },
   {
     "slug": "hyper-beam",
@@ -631,7 +756,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 150,
     "acc": 90,
-    "pp": 5
+    "pp": 5,
+    "effect": "User foregoes its next turn to recharge.",
+    "priority": 0
   },
   {
     "slug": "peck",
@@ -641,7 +768,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 35,
     "acc": 100,
-    "pp": 35
+    "pp": 35,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "drill-peck",
@@ -651,7 +780,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "submission",
@@ -661,7 +792,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 80,
-    "pp": 20
+    "pp": 20,
+    "effect": "User receives 1/4 the damage it inflicts in recoil.",
+    "priority": 0
   },
   {
     "slug": "low-kick",
@@ -671,7 +804,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Inflicts more damage to heavier targets, with a maximum of 120 power.",
+    "priority": 0
   },
   {
     "slug": "counter",
@@ -681,7 +816,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Inflicts twice the damage the user received from the last physical hit it took.",
+    "priority": -5
   },
   {
     "slug": "seismic-toss",
@@ -691,7 +828,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Inflicts damage equal to the user’s level.",
+    "priority": 0
   },
   {
     "slug": "strength",
@@ -701,7 +840,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "absorb",
@@ -711,7 +852,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 20,
     "acc": 100,
-    "pp": 25
+    "pp": 25,
+    "effect": "Drains half the damage inflicted to heal the user.",
+    "priority": 0
   },
   {
     "slug": "mega-drain",
@@ -721,7 +864,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 40,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Drains half the damage inflicted to heal the user.",
+    "priority": 0
   },
   {
     "slug": "leech-seed",
@@ -731,7 +876,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "effect": "Seeds the target, stealing HP from it every turn.",
+    "priority": 0
   },
   {
     "slug": "growth",
@@ -741,7 +888,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Raises the user’s Attack and Special Attack by one stage.",
+    "priority": 0
   },
   {
     "slug": "razor-leaf",
@@ -751,7 +900,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 55,
     "acc": 95,
-    "pp": 25
+    "pp": 25,
+    "effect": "Has an increased chance for a critical hit.",
+    "priority": 0
   },
   {
     "slug": "solar-beam",
@@ -761,7 +912,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 120,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Requires a turn to charge before attacking.",
+    "priority": 0
   },
   {
     "slug": "poison-powder",
@@ -771,7 +924,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 75,
-    "pp": 35
+    "pp": 35,
+    "effect": "Poisons the target.",
+    "priority": 0
   },
   {
     "slug": "stun-spore",
@@ -781,7 +936,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 75,
-    "pp": 30
+    "pp": 30,
+    "effect": "Paralyzes the target.",
+    "priority": 0
   },
   {
     "slug": "sleep-powder",
@@ -791,7 +948,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 75,
-    "pp": 15
+    "pp": 15,
+    "effect": "Puts the target to sleep.",
+    "priority": 0
   },
   {
     "slug": "petal-dance",
@@ -801,7 +960,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 120,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Hits every turn for 2-3 turns, then confuses the user.",
+    "priority": 0
   },
   {
     "slug": "string-shot",
@@ -811,7 +972,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 95,
-    "pp": 40
+    "pp": 40,
+    "effect": "Lowers the target’s Speed by two stages.",
+    "priority": 0
   },
   {
     "slug": "dragon-rage",
@@ -821,7 +984,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 100,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts 40 points of damage.",
+    "priority": 0
   },
   {
     "slug": "fire-spin",
@@ -831,7 +996,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 35,
     "acc": 85,
-    "pp": 15
+    "pp": 15,
+    "effect": "Prevents the target from fleeing and inflicts damage for 2-5 turns.",
+    "priority": 0
   },
   {
     "slug": "thunder-shock",
@@ -841,7 +1008,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 40,
     "acc": 100,
-    "pp": 30
+    "pp": 30,
+    "effect": "Has a chance to paralyze the target.",
+    "priority": 0
   },
   {
     "slug": "thunderbolt",
@@ -851,7 +1020,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 90,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to paralyze the target.",
+    "priority": 0
   },
   {
     "slug": "thunder-wave",
@@ -861,7 +1032,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 90,
-    "pp": 20
+    "pp": 20,
+    "effect": "Paralyzes the target.",
+    "priority": 0
   },
   {
     "slug": "thunder",
@@ -871,7 +1044,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 110,
     "acc": 70,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to paralyze the target.",
+    "priority": 0
   },
   {
     "slug": "rock-throw",
@@ -881,7 +1056,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 50,
     "acc": 90,
-    "pp": 15
+    "pp": 15,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "earthquake",
@@ -891,7 +1068,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage and can hit Dig users.",
+    "priority": 0
   },
   {
     "slug": "fissure",
@@ -901,7 +1080,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 30,
     "acc": 30,
-    "pp": 5
+    "pp": 5,
+    "effect": "Causes a one-hit KO.",
+    "priority": 0
   },
   {
     "slug": "dig",
@@ -911,7 +1092,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "User digs underground, dodging all attacks, and hits next turn.",
+    "priority": 0
   },
   {
     "slug": "toxic",
@@ -921,7 +1104,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "effect": "Badly poisons the target, inflicting more damage every turn.",
+    "priority": 0
   },
   {
     "slug": "confusion",
@@ -931,7 +1116,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 50,
     "acc": 100,
-    "pp": 25
+    "pp": 25,
+    "effect": "Has a chance to confuse the target.",
+    "priority": 0
   },
   {
     "slug": "psychic",
@@ -941,7 +1128,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 90,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to lower the target’s Special Defense by one stage.",
+    "priority": 0
   },
   {
     "slug": "hypnosis",
@@ -951,7 +1140,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 60,
-    "pp": 20
+    "pp": 20,
+    "effect": "Puts the target to sleep.",
+    "priority": 0
   },
   {
     "slug": "meditate",
@@ -961,7 +1152,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 40
+    "pp": 40,
+    "effect": "Raises the user’s Attack by one stage.",
+    "priority": 0
   },
   {
     "slug": "agility",
@@ -971,7 +1164,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 30
+    "pp": 30,
+    "effect": "Raises the user’s Speed by two stages.",
+    "priority": 0
   },
   {
     "slug": "quick-attack",
@@ -981,7 +1176,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 40,
     "acc": 100,
-    "pp": 30
+    "pp": 30,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 1
   },
   {
     "slug": "rage",
@@ -991,7 +1188,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 20,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "If the user is hit after using this move, its Attack rises by one stage.",
+    "priority": 0
   },
   {
     "slug": "teleport",
@@ -1001,7 +1200,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Immediately ends wild battles.  No effect otherwise.",
+    "priority": -6
   },
   {
     "slug": "night-shade",
@@ -1011,7 +1212,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 100,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Inflicts damage equal to the user’s level.",
+    "priority": 0
   },
   {
     "slug": "mimic",
@@ -1021,7 +1224,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Copies the target’s last used move.",
+    "priority": 0
   },
   {
     "slug": "screech",
@@ -1031,7 +1236,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 85,
-    "pp": 40
+    "pp": 40,
+    "effect": "Lowers the target’s Defense by two stages.",
+    "priority": 0
   },
   {
     "slug": "double-team",
@@ -1041,7 +1248,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 15
+    "pp": 15,
+    "effect": "Raises the user’s evasion by one stage.",
+    "priority": 0
   },
   {
     "slug": "recover",
@@ -1051,7 +1260,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 5
+    "pp": 5,
+    "effect": "Heals the user by half its max HP.",
+    "priority": 0
   },
   {
     "slug": "harden",
@@ -1061,7 +1272,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 30
+    "pp": 30,
+    "effect": "Raises the user’s Defense by one stage.",
+    "priority": 0
   },
   {
     "slug": "minimize",
@@ -1071,7 +1284,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Raises the user’s evasion by two stages.",
+    "priority": 0
   },
   {
     "slug": "smokescreen",
@@ -1081,7 +1296,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Lowers the target’s accuracy by one stage.",
+    "priority": 0
   },
   {
     "slug": "confuse-ray",
@@ -1091,7 +1308,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Confuses the target.",
+    "priority": 0
   },
   {
     "slug": "withdraw",
@@ -1101,7 +1320,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 40
+    "pp": 40,
+    "effect": "Raises the user’s Defense by one stage.",
+    "priority": 0
   },
   {
     "slug": "defense-curl",
@@ -1111,7 +1332,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 40
+    "pp": 40,
+    "effect": "Raises user’s Defense by one stage.",
+    "priority": 0
   },
   {
     "slug": "barrier",
@@ -1121,7 +1344,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Raises the user’s Defense by two stages.",
+    "priority": 0
   },
   {
     "slug": "light-screen",
@@ -1131,7 +1356,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 30
+    "pp": 30,
+    "effect": "Reduces damage from special attacks by 50% for five turns.",
+    "priority": 0
   },
   {
     "slug": "haze",
@@ -1141,7 +1368,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 30
+    "pp": 30,
+    "effect": "Resets all Pokémon’s stats, accuracy, and evasion.",
+    "priority": 0
   },
   {
     "slug": "reflect",
@@ -1151,7 +1380,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Reduces damage from physical attacks by half.",
+    "priority": 0
   },
   {
     "slug": "focus-energy",
@@ -1161,7 +1392,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 30
+    "pp": 30,
+    "effect": "Increases the user’s chance to score a critical hit.",
+    "priority": 0
   },
   {
     "slug": "bide",
@@ -1171,7 +1404,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 10,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "User waits for two turns, then hits back for twice the damage it took.",
+    "priority": 1
   },
   {
     "slug": "metronome",
@@ -1181,7 +1416,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Randomly selects and uses any move in the game.",
+    "priority": 0
   },
   {
     "slug": "mirror-move",
@@ -1191,7 +1428,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Uses the target’s last used move.",
+    "priority": 0
   },
   {
     "slug": "self-destruct",
@@ -1201,7 +1440,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 200,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "User faints.",
+    "priority": 0
   },
   {
     "slug": "egg-bomb",
@@ -1211,7 +1452,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 75,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "lick",
@@ -1221,7 +1464,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 30,
     "acc": 100,
-    "pp": 30
+    "pp": 30,
+    "effect": "Has a chance to paralyze the target.",
+    "priority": 0
   },
   {
     "slug": "smog",
@@ -1231,7 +1476,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 30,
     "acc": 70,
-    "pp": 20
+    "pp": 20,
+    "effect": "Has a chance to poison the target.",
+    "priority": 0
   },
   {
     "slug": "sludge",
@@ -1241,7 +1488,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 65,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Has a chance to poison the target.",
+    "priority": 0
   },
   {
     "slug": "bone-club",
@@ -1251,7 +1500,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 65,
     "acc": 85,
-    "pp": 20
+    "pp": 20,
+    "effect": "Has a chance to make the target flinch.",
+    "priority": 0
   },
   {
     "slug": "fire-blast",
@@ -1261,7 +1512,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 110,
     "acc": 85,
-    "pp": 5
+    "pp": 5,
+    "effect": "Has a chance to burn the target.",
+    "priority": 0
   },
   {
     "slug": "waterfall",
@@ -1271,7 +1524,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to make the target flinch.",
+    "priority": 0
   },
   {
     "slug": "clamp",
@@ -1281,7 +1536,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 35,
     "acc": 85,
-    "pp": 15
+    "pp": 15,
+    "effect": "Prevents the target from fleeing and inflicts damage for 2-5 turns.",
+    "priority": 0
   },
   {
     "slug": "swift",
@@ -1291,7 +1548,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 60,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Never misses.",
+    "priority": 0
   },
   {
     "slug": "skull-bash",
@@ -1301,7 +1560,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 130,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Raises the user’s Defense by one stage.  User charges for one turn before attacking.",
+    "priority": 0
   },
   {
     "slug": "spike-cannon",
@@ -1311,7 +1572,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 20,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Hits 2-5 times in one turn.",
+    "priority": 0
   },
   {
     "slug": "constrict",
@@ -1321,7 +1584,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 10,
     "acc": 100,
-    "pp": 35
+    "pp": 35,
+    "effect": "Has a chance to lower the target’s Speed by one stage.",
+    "priority": 0
   },
   {
     "slug": "amnesia",
@@ -1331,7 +1596,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Raises the user’s Special Defense by two stages.",
+    "priority": 0
   },
   {
     "slug": "kinesis",
@@ -1341,7 +1608,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 80,
-    "pp": 15
+    "pp": 15,
+    "effect": "Lowers the target’s accuracy by one stage.",
+    "priority": 0
   },
   {
     "slug": "soft-boiled",
@@ -1351,7 +1620,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 5
+    "pp": 5,
+    "effect": "Heals the user by half its max HP.",
+    "priority": 0
   },
   {
     "slug": "high-jump-kick",
@@ -1361,7 +1632,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 130,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "effect": "If the user misses, it takes half the damage it would have inflicted in recoil.",
+    "priority": 0
   },
   {
     "slug": "glare",
@@ -1371,7 +1644,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 30
+    "pp": 30,
+    "effect": "Paralyzes the target.",
+    "priority": 0
   },
   {
     "slug": "dream-eater",
@@ -1381,7 +1656,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 100,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Only works on sleeping Pokémon.  Drains half the damage inflicted to heal the user.",
+    "priority": 0
   },
   {
     "slug": "poison-gas",
@@ -1391,7 +1668,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 90,
-    "pp": 40
+    "pp": 40,
+    "effect": "Poisons the target.",
+    "priority": 0
   },
   {
     "slug": "barrage",
@@ -1401,7 +1680,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 15,
     "acc": 85,
-    "pp": 20
+    "pp": 20,
+    "effect": "Hits 2-5 times in one turn.",
+    "priority": 0
   },
   {
     "slug": "leech-life",
@@ -1411,7 +1692,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Drains half the damage inflicted to heal the user.",
+    "priority": 0
   },
   {
     "slug": "lovely-kiss",
@@ -1421,7 +1704,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 75,
-    "pp": 10
+    "pp": 10,
+    "effect": "Puts the target to sleep.",
+    "priority": 0
   },
   {
     "slug": "sky-attack",
@@ -1431,7 +1716,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 140,
     "acc": 90,
-    "pp": 5
+    "pp": 5,
+    "effect": "User charges for one turn before attacking.  Has a chance to make the target flinch.",
+    "priority": 0
   },
   {
     "slug": "transform",
@@ -1441,7 +1728,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "User becomes a copy of the target until it leaves battle.",
+    "priority": 0
   },
   {
     "slug": "bubble",
@@ -1451,7 +1740,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 40,
     "acc": 100,
-    "pp": 30
+    "pp": 30,
+    "effect": "Has a chance to lower the target’s Speed by one stage.",
+    "priority": 0
   },
   {
     "slug": "dizzy-punch",
@@ -1461,7 +1752,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 70,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to confuse the target.",
+    "priority": 0
   },
   {
     "slug": "spore",
@@ -1471,7 +1764,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Puts the target to sleep.",
+    "priority": 0
   },
   {
     "slug": "flash",
@@ -1481,7 +1776,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Lowers the target’s accuracy by one stage.",
+    "priority": 0
   },
   {
     "slug": "psywave",
@@ -1491,7 +1788,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 100,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Inflicts damage between 50% and 150% of the user’s level.",
+    "priority": 0
   },
   {
     "slug": "splash",
@@ -1501,7 +1800,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 40
+    "pp": 40,
+    "effect": "Does nothing.",
+    "priority": 0
   },
   {
     "slug": "acid-armor",
@@ -1511,7 +1812,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Raises the user’s Defense by two stages.",
+    "priority": 0
   },
   {
     "slug": "crabhammer",
@@ -1521,7 +1824,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has an increased chance for a critical hit.",
+    "priority": 0
   },
   {
     "slug": "explosion",
@@ -1531,7 +1836,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 250,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "User faints.",
+    "priority": 0
   },
   {
     "slug": "fury-swipes",
@@ -1541,7 +1848,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 18,
     "acc": 80,
-    "pp": 15
+    "pp": 15,
+    "effect": "Hits 2-5 times in one turn.",
+    "priority": 0
   },
   {
     "slug": "bonemerang",
@@ -1551,7 +1860,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 50,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "effect": "Hits twice in one turn.",
+    "priority": 0
   },
   {
     "slug": "rest",
@@ -1561,7 +1872,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 5
+    "pp": 5,
+    "effect": "User sleeps for two turns, completely healing itself.",
+    "priority": 0
   },
   {
     "slug": "rock-slide",
@@ -1571,7 +1884,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 75,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to make the target flinch.",
+    "priority": 0
   },
   {
     "slug": "hyper-fang",
@@ -1581,7 +1896,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 90,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to make the target flinch.",
+    "priority": 0
   },
   {
     "slug": "sharpen",
@@ -1591,7 +1908,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 30
+    "pp": 30,
+    "effect": "Raises the user’s Attack by one stage.",
+    "priority": 0
   },
   {
     "slug": "conversion",
@@ -1601,7 +1920,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 30
+    "pp": 30,
+    "effect": "User’s type changes to the type of one of its moves at random.",
+    "priority": 0
   },
   {
     "slug": "tri-attack",
@@ -1611,7 +1932,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to burn, freeze, or paralyze the target.",
+    "priority": 0
   },
   {
     "slug": "super-fang",
@@ -1621,7 +1944,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 90,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts damage equal to half the target’s HP.",
+    "priority": 0
   },
   {
     "slug": "slash",
@@ -1631,7 +1956,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 70,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Has an increased chance for a critical hit.",
+    "priority": 0
   },
   {
     "slug": "substitute",
@@ -1641,7 +1968,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Transfers 1/4 of the user’s max HP into a doll, protecting the user from further damage or status changes until it breaks.",
+    "priority": 0
   },
   {
     "slug": "struggle",
@@ -1651,7 +1980,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 50,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "User takes 1/4 its max HP in recoil.",
+    "priority": 0
   },
   {
     "slug": "sketch",
@@ -1661,7 +1992,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Permanently becomes the target’s last used move.",
+    "priority": 0
   },
   {
     "slug": "triple-kick",
@@ -1671,7 +2004,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 10,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "effect": "Hits three times, increasing power by 100% with each successful hit.",
+    "priority": 0
   },
   {
     "slug": "thief",
@@ -1681,7 +2016,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 60,
     "acc": 100,
-    "pp": 25
+    "pp": 25,
+    "effect": "Takes the target’s item.",
+    "priority": 0
   },
   {
     "slug": "spider-web",
@@ -1691,7 +2028,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Prevents the target from leaving battle.",
+    "priority": 0
   },
   {
     "slug": "mind-reader",
@@ -1701,7 +2040,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 5
+    "pp": 5,
+    "effect": "Ensures that the user’s next move will hit the target.",
+    "priority": 0
   },
   {
     "slug": "nightmare",
@@ -1711,7 +2052,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Target loses 1/4 its max HP every turn as long as it’s asleep.",
+    "priority": 0
   },
   {
     "slug": "flame-wheel",
@@ -1721,7 +2064,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 60,
     "acc": 100,
-    "pp": 25
+    "pp": 25,
+    "effect": "Has a chance to burn the target.  Lets frozen Pokémon thaw themselves.",
+    "priority": 0
   },
   {
     "slug": "snore",
@@ -1731,7 +2076,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 50,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to make the target flinch.  Only works if the user is sleeping.",
+    "priority": 0
   },
   {
     "slug": "curse",
@@ -1741,7 +2088,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Ghosts pay half their max HP to hurt the target every turn.  Others decrease Speed but raise Attack and Defense.",
+    "priority": 0
   },
   {
     "slug": "flail",
@@ -1751,7 +2100,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Inflicts more damage when the user has less HP remaining, with a maximum of 200 power.",
+    "priority": 0
   },
   {
     "slug": "conversion-2",
@@ -1761,7 +2112,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 30
+    "pp": 30,
+    "effect": "Changes the user’s type to a random type either resistant or immune to the last move used against it.",
+    "priority": 0
   },
   {
     "slug": "aeroblast",
@@ -1771,7 +2124,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 100,
     "acc": 95,
-    "pp": 5
+    "pp": 5,
+    "effect": "Has an increased chance for a critical hit.",
+    "priority": 0
   },
   {
     "slug": "cotton-spore",
@@ -1781,7 +2136,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 40
+    "pp": 40,
+    "effect": "Lowers the target’s Speed by two stages.",
+    "priority": 0
   },
   {
     "slug": "reversal",
@@ -1791,7 +2148,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Inflicts more damage when the user has less HP remaining, with a maximum of 200 power.",
+    "priority": 0
   },
   {
     "slug": "spite",
@@ -1801,7 +2160,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Lowers the PP of the target’s last used move by 4.",
+    "priority": 0
   },
   {
     "slug": "powder-snow",
@@ -1811,7 +2172,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 40,
     "acc": 100,
-    "pp": 25
+    "pp": 25,
+    "effect": "Has a chance to freeze the target.",
+    "priority": 0
   },
   {
     "slug": "protect",
@@ -1821,7 +2184,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Prevents any moves from hitting the user this turn.",
+    "priority": 4
   },
   {
     "slug": "mach-punch",
@@ -1831,7 +2196,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 40,
     "acc": 100,
-    "pp": 30
+    "pp": 30,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 1
   },
   {
     "slug": "scary-face",
@@ -1841,7 +2208,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Lowers the target’s Speed by two stages.",
+    "priority": 0
   },
   {
     "slug": "feint-attack",
@@ -1851,7 +2220,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 60,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Never misses.",
+    "priority": 0
   },
   {
     "slug": "sweet-kiss",
@@ -1861,7 +2232,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 75,
-    "pp": 10
+    "pp": 10,
+    "effect": "Confuses the target.",
+    "priority": 0
   },
   {
     "slug": "belly-drum",
@@ -1871,7 +2244,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "User pays half its max HP to max out its Attack.",
+    "priority": 0
   },
   {
     "slug": "sludge-bomb",
@@ -1881,7 +2256,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 90,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to poison the target.",
+    "priority": 0
   },
   {
     "slug": "mud-slap",
@@ -1891,7 +2268,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 20,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to lower the target’s accuracy by one stage.",
+    "priority": 0
   },
   {
     "slug": "octazooka",
@@ -1901,7 +2280,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 65,
     "acc": 85,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to lower the target’s accuracy by one stage.",
+    "priority": 0
   },
   {
     "slug": "spikes",
@@ -1911,7 +2292,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Scatters Spikes, hurting opposing Pokémon that switch in.",
+    "priority": 0
   },
   {
     "slug": "zap-cannon",
@@ -1921,7 +2304,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 120,
     "acc": 50,
-    "pp": 5
+    "pp": 5,
+    "effect": "Has a chance to paralyze the target.",
+    "priority": 0
   },
   {
     "slug": "foresight",
@@ -1931,7 +2316,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 40
+    "pp": 40,
+    "effect": "Forces the target to have no Evade, and allows it to be hit by Normal and Fighting moves even if it’s a Ghost.",
+    "priority": 0
   },
   {
     "slug": "destiny-bond",
@@ -1941,7 +2328,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 5
+    "pp": 5,
+    "effect": "If the user faints this turn, the target automatically will, too.",
+    "priority": 0
   },
   {
     "slug": "perish-song",
@@ -1951,7 +2340,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 5
+    "pp": 5,
+    "effect": "User and target both faint after three turns.",
+    "priority": 0
   },
   {
     "slug": "icy-wind",
@@ -1961,7 +2352,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 55,
     "acc": 95,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to lower the target’s Speed by one stage.",
+    "priority": 0
   },
   {
     "slug": "detect",
@@ -1971,7 +2364,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 5
+    "pp": 5,
+    "effect": "Prevents any moves from hitting the user this turn.",
+    "priority": 4
   },
   {
     "slug": "bone-rush",
@@ -1981,7 +2376,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 25,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "effect": "Hits 2-5 times in one turn.",
+    "priority": 0
   },
   {
     "slug": "lock-on",
@@ -1991,7 +2388,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 5
+    "pp": 5,
+    "effect": "Ensures that the user’s next move will hit the target.",
+    "priority": 0
   },
   {
     "slug": "outrage",
@@ -2001,7 +2400,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 120,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Hits every turn for 2-3 turns, then confuses the user.",
+    "priority": 0
   },
   {
     "slug": "sandstorm",
@@ -2011,7 +2412,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Changes the weather to a sandstorm for five turns.",
+    "priority": 0
   },
   {
     "slug": "giga-drain",
@@ -2021,7 +2424,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 75,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Drains half the damage inflicted to heal the user.",
+    "priority": 0
   },
   {
     "slug": "endure",
@@ -2031,7 +2436,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Prevents the user’s HP from lowering below 1 this turn.",
+    "priority": 4
   },
   {
     "slug": "charm",
@@ -2041,7 +2448,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Lowers the target’s Attack by two stages.",
+    "priority": 0
   },
   {
     "slug": "rollout",
@@ -2051,7 +2460,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 30,
     "acc": 90,
-    "pp": 20
+    "pp": 20,
+    "effect": "Power doubles every turn this move is used in succession after the first, resetting after five turns.",
+    "priority": 0
   },
   {
     "slug": "false-swipe",
@@ -2061,7 +2472,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 40,
     "acc": 100,
-    "pp": 40
+    "pp": 40,
+    "effect": "Cannot lower the target’s HP below 1.",
+    "priority": 0
   },
   {
     "slug": "swagger",
@@ -2071,7 +2484,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 85,
-    "pp": 15
+    "pp": 15,
+    "effect": "Raises the target’s Attack by two stages and confuses the target.",
+    "priority": 0
   },
   {
     "slug": "milk-drink",
@@ -2081,7 +2496,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 5
+    "pp": 5,
+    "effect": "Heals the user by half its max HP.",
+    "priority": 0
   },
   {
     "slug": "spark",
@@ -2091,7 +2508,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 65,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Has a chance to paralyze the target.",
+    "priority": 0
   },
   {
     "slug": "fury-cutter",
@@ -2101,7 +2520,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 40,
     "acc": 95,
-    "pp": 20
+    "pp": 20,
+    "effect": "Power doubles every turn this move is used in succession after the first, maxing out after five turns.",
+    "priority": 0
   },
   {
     "slug": "steel-wing",
@@ -2111,7 +2532,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 70,
     "acc": 90,
-    "pp": 25
+    "pp": 25,
+    "effect": "Has a chance to raise the user’s Defense by one stage.",
+    "priority": 0
   },
   {
     "slug": "mean-look",
@@ -2121,7 +2544,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 5
+    "pp": 5,
+    "effect": "Prevents the target from leaving battle.",
+    "priority": 0
   },
   {
     "slug": "attract",
@@ -2131,7 +2556,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Target falls in love if it has the opposite gender, and has a 50% chance to refuse attacking the user.",
+    "priority": 0
   },
   {
     "slug": "sleep-talk",
@@ -2141,7 +2568,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Randomly uses one of the user’s other three moves.  Only works if the user is sleeping.",
+    "priority": 0
   },
   {
     "slug": "heal-bell",
@@ -2151,7 +2580,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 5
+    "pp": 5,
+    "effect": "Cures the entire party of major status effects.",
+    "priority": 0
   },
   {
     "slug": "return",
@@ -2161,7 +2592,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Power increases with happiness, up to a maximum of 102.",
+    "priority": 0
   },
   {
     "slug": "present",
@@ -2171,7 +2604,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 90,
     "acc": 90,
-    "pp": 15
+    "pp": 15,
+    "effect": "Randomly inflicts damage with power from 40 to 120 or heals the target for 1/4 its max HP.",
+    "priority": 0
   },
   {
     "slug": "frustration",
@@ -2181,7 +2616,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Power increases as happiness decreases, up to a maximum of 102.",
+    "priority": 0
   },
   {
     "slug": "safeguard",
@@ -2191,7 +2628,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 25
+    "pp": 25,
+    "effect": "Protects the user’s field from major status ailments and confusion for five turns.",
+    "priority": 0
   },
   {
     "slug": "pain-split",
@@ -2201,7 +2640,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Sets the user’s and targets’s HP to the average of their current HP.",
+    "priority": 0
   },
   {
     "slug": "sacred-fire",
@@ -2211,7 +2652,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 95,
-    "pp": 5
+    "pp": 5,
+    "effect": "Has a chance to burn the target.  Lets frozen Pokémon thaw themselves.",
+    "priority": 0
   },
   {
     "slug": "magnitude",
@@ -2221,7 +2664,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 100,
-    "pp": 30
+    "pp": 30,
+    "effect": "Power varies randomly from 10 to 150.",
+    "priority": 0
   },
   {
     "slug": "dynamic-punch",
@@ -2231,7 +2676,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 50,
-    "pp": 5
+    "pp": 5,
+    "effect": "Has a chance to confuse the target.",
+    "priority": 0
   },
   {
     "slug": "megahorn",
@@ -2241,7 +2688,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 120,
     "acc": 85,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "dragon-breath",
@@ -2251,7 +2700,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 60,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Has a chance to paralyze the target.",
+    "priority": 0
   },
   {
     "slug": "baton-pass",
@@ -2261,7 +2712,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 40
+    "pp": 40,
+    "effect": "Allows the trainer to switch out the user and pass effects along to its replacement.",
+    "priority": 0
   },
   {
     "slug": "encore",
@@ -2271,7 +2724,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Forces the target to repeat its last used move every turn for 2 to 6 turns.",
+    "priority": 0
   },
   {
     "slug": "pursuit",
@@ -2281,7 +2736,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 40,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Has double power against, and can hit, Pokémon attempting to switch out.",
+    "priority": 0
   },
   {
     "slug": "rapid-spin",
@@ -2291,7 +2748,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 50,
     "acc": 100,
-    "pp": 40
+    "pp": 40,
+    "effect": "Frees the user from binding moves, removes Leech Seed, and blows away Spikes.",
+    "priority": 0
   },
   {
     "slug": "sweet-scent",
@@ -2301,7 +2760,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Lowers the target’s evasion by one stage.",
+    "priority": 0
   },
   {
     "slug": "iron-tail",
@@ -2311,7 +2772,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 75,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to lower the target’s Defense by one stage.",
+    "priority": 0
   },
   {
     "slug": "metal-claw",
@@ -2321,7 +2784,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 50,
     "acc": 95,
-    "pp": 35
+    "pp": 35,
+    "effect": "Has a chance to raise the user’s Attack by one stage.",
+    "priority": 0
   },
   {
     "slug": "vital-throw",
@@ -2331,7 +2796,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 70,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Never misses.",
+    "priority": -1
   },
   {
     "slug": "morning-sun",
@@ -2341,7 +2808,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 5
+    "pp": 5,
+    "effect": "Heals the user by half its max HP.  Affected by weather.",
+    "priority": 0
   },
   {
     "slug": "synthesis",
@@ -2351,7 +2820,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 5
+    "pp": 5,
+    "effect": "Heals the user by half its max HP.  Affected by weather.",
+    "priority": 0
   },
   {
     "slug": "moonlight",
@@ -2361,7 +2832,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 5
+    "pp": 5,
+    "effect": "Heals the user by half its max HP.  Affected by weather.",
+    "priority": 0
   },
   {
     "slug": "hidden-power",
@@ -2371,7 +2844,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 60,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Power and type depend upon user’s IVs.  Power can range from 30 to 70.",
+    "priority": 0
   },
   {
     "slug": "cross-chop",
@@ -2381,7 +2856,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 80,
-    "pp": 5
+    "pp": 5,
+    "effect": "Has an increased chance for a critical hit.",
+    "priority": 0
   },
   {
     "slug": "twister",
@@ -2391,7 +2868,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 40,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Has a chance to make the target flinch.",
+    "priority": 0
   },
   {
     "slug": "rain-dance",
@@ -2401,7 +2880,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 5
+    "pp": 5,
+    "effect": "Changes the weather to rain for five turns.",
+    "priority": 0
   },
   {
     "slug": "sunny-day",
@@ -2411,7 +2892,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 5
+    "pp": 5,
+    "effect": "Changes the weather to sunny for five turns.",
+    "priority": 0
   },
   {
     "slug": "crunch",
@@ -2421,7 +2904,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to lower the target’s Defense by one stage.",
+    "priority": 0
   },
   {
     "slug": "mirror-coat",
@@ -2431,7 +2916,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 100,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Inflicts twice the damage the user received from the last special hit it took.",
+    "priority": -5
   },
   {
     "slug": "psych-up",
@@ -2441,7 +2928,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Discards the user’s stat changes and copies the target’s.",
+    "priority": 0
   },
   {
     "slug": "extreme-speed",
@@ -2451,7 +2940,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 2
   },
   {
     "slug": "ancient-power",
@@ -2461,7 +2952,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 60,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Has a chance to raise all of the user’s stats by one stage.",
+    "priority": 0
   },
   {
     "slug": "shadow-ball",
@@ -2471,7 +2964,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to lower the target’s Special Defense by one stage.",
+    "priority": 0
   },
   {
     "slug": "future-sight",
@@ -2481,7 +2976,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 120,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Hits the target two turns later.",
+    "priority": 0
   },
   {
     "slug": "rock-smash",
@@ -2491,7 +2988,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 40,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to lower the target’s Defense by one stage.",
+    "priority": 0
   },
   {
     "slug": "whirlpool",
@@ -2501,7 +3000,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 35,
     "acc": 85,
-    "pp": 15
+    "pp": 15,
+    "effect": "Prevents the target from leaving battle and inflicts 1/16 its max HP in damage for 2-5 turns.",
+    "priority": 0
   },
   {
     "slug": "beat-up",
@@ -2511,7 +3012,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Hits once for every conscious Pokémon the trainer has.",
+    "priority": 0
   },
   {
     "slug": "fake-out",
@@ -2521,7 +3024,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 40,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Can only be used as the first move after the user enters battle.  Causes the target to flinch.",
+    "priority": 3
   },
   {
     "slug": "uproar",
@@ -2531,7 +3036,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 90,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Forced to use this move for several turns.  Pokémon cannot fall asleep in that time.",
+    "priority": 0
   },
   {
     "slug": "stockpile",
@@ -2541,7 +3048,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Stores energy up to three times for use with Spit Up and Swallow.",
+    "priority": 0
   },
   {
     "slug": "spit-up",
@@ -2551,7 +3060,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 100,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Power is 100 times the amount of energy Stockpiled.",
+    "priority": 0
   },
   {
     "slug": "swallow",
@@ -2561,7 +3072,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Recovers 1/4 HP after one Stockpile, 1/2 HP after two Stockpiles, or full HP after three Stockpiles.",
+    "priority": 0
   },
   {
     "slug": "heat-wave",
@@ -2571,7 +3084,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 95,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to burn the target.",
+    "priority": 0
   },
   {
     "slug": "hail",
@@ -2581,7 +3096,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Changes the weather to a hailstorm for five turns.",
+    "priority": 0
   },
   {
     "slug": "torment",
@@ -2591,7 +3108,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Prevents the target from using the same move twice in a row.",
+    "priority": 0
   },
   {
     "slug": "flatter",
@@ -2601,7 +3120,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Raises the target’s Special Attack by one stage and confuses the target.",
+    "priority": 0
   },
   {
     "slug": "will-o-wisp",
@@ -2611,7 +3132,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 85,
-    "pp": 15
+    "pp": 15,
+    "effect": "Burns the target.",
+    "priority": 0
   },
   {
     "slug": "memento",
@@ -2621,7 +3144,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Lowers the target’s Attack and Special Attack by two stages.  User faints.",
+    "priority": 0
   },
   {
     "slug": "facade",
@@ -2631,7 +3156,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 70,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Power doubles if user is burned, paralyzed, or poisoned.",
+    "priority": 0
   },
   {
     "slug": "focus-punch",
@@ -2641,7 +3168,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 150,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "If the user takes damage before attacking, the attack is canceled.",
+    "priority": -3
   },
   {
     "slug": "smelling-salts",
@@ -2651,7 +3180,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 70,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "If the target is paralyzed, inflicts double damage and cures the paralysis.",
+    "priority": 0
   },
   {
     "slug": "follow-me",
@@ -2661,7 +3192,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Redirects the target’s single-target effects to the user for this turn.",
+    "priority": 2
   },
   {
     "slug": "nature-power",
@@ -2671,7 +3204,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Uses a move which depends upon the terrain.",
+    "priority": 0
   },
   {
     "slug": "charge",
@@ -2681,7 +3216,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Raises the user’s Special Defense by one stage.  User’s Electric moves have doubled power next turn.",
+    "priority": 0
   },
   {
     "slug": "taunt",
@@ -2691,7 +3228,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "For the next few turns, the target can only use damaging moves.",
+    "priority": 0
   },
   {
     "slug": "helping-hand",
@@ -2701,7 +3240,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Ally’s next move inflicts half more damage.",
+    "priority": 5
   },
   {
     "slug": "trick",
@@ -2711,7 +3252,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "User and target swap items.",
+    "priority": 0
   },
   {
     "slug": "role-play",
@@ -2721,7 +3264,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Copies the target’s ability.",
+    "priority": 0
   },
   {
     "slug": "wish",
@@ -2731,7 +3276,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "User will recover half its max HP at the end of the next turn.",
+    "priority": 0
   },
   {
     "slug": "assist",
@@ -2741,7 +3288,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Randomly selects and uses one of the trainer’s other Pokémon’s moves.",
+    "priority": 0
   },
   {
     "slug": "ingrain",
@@ -2751,7 +3300,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Prevents the user from leaving battle.  User regains 1/16 of its max HP every turn.",
+    "priority": 0
   },
   {
     "slug": "superpower",
@@ -2761,7 +3312,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 120,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Lowers the user’s Attack and Defense by one stage after inflicting damage.",
+    "priority": 0
   },
   {
     "slug": "magic-coat",
@@ -2771,7 +3324,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 15
+    "pp": 15,
+    "effect": "Reflects back the first effect move used on the user this turn.",
+    "priority": 4
   },
   {
     "slug": "recycle",
@@ -2781,7 +3336,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "User recovers the item it last used up.",
+    "priority": 0
   },
   {
     "slug": "revenge",
@@ -2791,7 +3348,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 60,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts double damage if the user takes damage before attacking this turn.",
+    "priority": -4
   },
   {
     "slug": "brick-break",
@@ -2801,7 +3360,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 75,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Destroys Reflect and Light Screen.",
+    "priority": 0
   },
   {
     "slug": "yawn",
@@ -2811,7 +3372,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Target sleeps at the end of the next turn.",
+    "priority": 0
   },
   {
     "slug": "knock-off",
@@ -2821,7 +3384,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 65,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Target drops its held item.",
+    "priority": 0
   },
   {
     "slug": "endeavor",
@@ -2831,7 +3396,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Lowers the target’s HP to equal the user’s.",
+    "priority": 0
   },
   {
     "slug": "eruption",
@@ -2841,7 +3408,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 150,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Inflicts more damage when the user has more HP remaining, with a maximum of 150 power.",
+    "priority": 0
   },
   {
     "slug": "skill-swap",
@@ -2851,7 +3420,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "User and target swap abilities.",
+    "priority": 0
   },
   {
     "slug": "imprison",
@@ -2861,7 +3432,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Prevents the target from using any moves that the user also knows.",
+    "priority": 0
   },
   {
     "slug": "refresh",
@@ -2871,7 +3444,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Cleanses the user of a burn, paralysis, or poison.",
+    "priority": 0
   },
   {
     "slug": "grudge",
@@ -2881,7 +3456,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 5
+    "pp": 5,
+    "effect": "If the user faints this turn, the PP of the move that fainted it drops to 0.",
+    "priority": 0
   },
   {
     "slug": "snatch",
@@ -2891,7 +3468,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Steals the target’s move, if it’s self-targeted.",
+    "priority": 4
   },
   {
     "slug": "secret-power",
@@ -2901,7 +3480,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 70,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Has a chance to inflict a status effect which depends upon the terrain.",
+    "priority": 0
   },
   {
     "slug": "dive",
@@ -2911,7 +3492,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "User dives underwater, dodging all attacks, and hits next turn.",
+    "priority": 0
   },
   {
     "slug": "arm-thrust",
@@ -2921,7 +3504,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 15,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Hits 2-5 times in one turn.",
+    "priority": 0
   },
   {
     "slug": "camouflage",
@@ -2931,7 +3516,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "User’s type changes to match the terrain.",
+    "priority": 0
   },
   {
     "slug": "tail-glow",
@@ -2941,7 +3528,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Raises the user’s Special Attack by three stages.",
+    "priority": 0
   },
   {
     "slug": "luster-purge",
@@ -2951,7 +3540,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 95,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Has a chance to lower the target’s Special Defense by one stage.",
+    "priority": 0
   },
   {
     "slug": "mist-ball",
@@ -2961,7 +3552,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 95,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Has a chance to lower the target’s Special Attack by one stage.",
+    "priority": 0
   },
   {
     "slug": "feather-dance",
@@ -2971,7 +3564,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Lowers the target’s Attack by two stages.",
+    "priority": 0
   },
   {
     "slug": "teeter-dance",
@@ -2981,7 +3576,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Confuses the target.",
+    "priority": 0
   },
   {
     "slug": "blaze-kick",
@@ -2991,7 +3588,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 85,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has an increased chance for a critical hit and a chance to burn the target.",
+    "priority": 0
   },
   {
     "slug": "mud-sport",
@@ -3001,7 +3600,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 15
+    "pp": 15,
+    "effect": "Halves all Electric-type damage.",
+    "priority": 0
   },
   {
     "slug": "ice-ball",
@@ -3011,7 +3612,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 30,
     "acc": 90,
-    "pp": 20
+    "pp": 20,
+    "effect": "Power doubles every turn this move is used in succession after the first, resetting after five turns.",
+    "priority": 0
   },
   {
     "slug": "needle-arm",
@@ -3021,7 +3624,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 60,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to make the target flinch.",
+    "priority": 0
   },
   {
     "slug": "slack-off",
@@ -3031,7 +3636,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 5
+    "pp": 5,
+    "effect": "Heals the user by half its max HP.",
+    "priority": 0
   },
   {
     "slug": "hyper-voice",
@@ -3041,7 +3648,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 90,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "poison-fang",
@@ -3051,7 +3660,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 50,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to badly poison the target.",
+    "priority": 0
   },
   {
     "slug": "crush-claw",
@@ -3061,7 +3672,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 75,
     "acc": 95,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to lower the target’s Defense by one stage.",
+    "priority": 0
   },
   {
     "slug": "blast-burn",
@@ -3071,7 +3684,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 150,
     "acc": 90,
-    "pp": 5
+    "pp": 5,
+    "effect": "User foregoes its next turn to recharge.",
+    "priority": 0
   },
   {
     "slug": "hydro-cannon",
@@ -3081,7 +3696,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 150,
     "acc": 90,
-    "pp": 5
+    "pp": 5,
+    "effect": "User foregoes its next turn to recharge.",
+    "priority": 0
   },
   {
     "slug": "meteor-mash",
@@ -3091,7 +3708,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 90,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to raise the user’s Attack by one stage.",
+    "priority": 0
   },
   {
     "slug": "astonish",
@@ -3101,7 +3720,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 30,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to make the target flinch.",
+    "priority": 0
   },
   {
     "slug": "weather-ball",
@@ -3111,7 +3732,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 50,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "If there be weather, this move has doubled power and the weather’s type.",
+    "priority": 0
   },
   {
     "slug": "aromatherapy",
@@ -3121,7 +3744,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 5
+    "pp": 5,
+    "effect": "Cures the entire party of major status effects.",
+    "priority": 0
   },
   {
     "slug": "fake-tears",
@@ -3131,7 +3756,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Lowers the target’s Special Defense by two stages.",
+    "priority": 0
   },
   {
     "slug": "air-cutter",
@@ -3141,7 +3768,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 60,
     "acc": 95,
-    "pp": 25
+    "pp": 25,
+    "effect": "Has an increased chance for a critical hit.",
+    "priority": 0
   },
   {
     "slug": "overheat",
@@ -3151,7 +3780,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 130,
     "acc": 90,
-    "pp": 5
+    "pp": 5,
+    "effect": "Lowers the user’s Special Attack by two stages after inflicting damage.",
+    "priority": 0
   },
   {
     "slug": "odor-sleuth",
@@ -3161,7 +3792,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 40
+    "pp": 40,
+    "effect": "Forces the target to have no Evade, and allows it to be hit by Normal and Fighting moves even if it’s a Ghost.",
+    "priority": 0
   },
   {
     "slug": "rock-tomb",
@@ -3171,7 +3804,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 60,
     "acc": 95,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to lower the target’s Speed by one stage.",
+    "priority": 0
   },
   {
     "slug": "silver-wind",
@@ -3181,7 +3816,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 60,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Has a chance to raise all of the user’s stats by one stage.",
+    "priority": 0
   },
   {
     "slug": "metal-sound",
@@ -3191,7 +3828,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 85,
-    "pp": 40
+    "pp": 40,
+    "effect": "Lowers the target’s Special Defense by two stages.",
+    "priority": 0
   },
   {
     "slug": "grass-whistle",
@@ -3201,7 +3840,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 55,
-    "pp": 15
+    "pp": 15,
+    "effect": "Puts the target to sleep.",
+    "priority": 0
   },
   {
     "slug": "tickle",
@@ -3211,7 +3852,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Lowers the target’s Attack and Defense by one stage.",
+    "priority": 0
   },
   {
     "slug": "cosmic-power",
@@ -3221,7 +3864,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Raises the user’s Defense and Special Defense by one stage.",
+    "priority": 0
   },
   {
     "slug": "water-spout",
@@ -3231,7 +3876,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 150,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Inflicts more damage when the user has more HP remaining, with a maximum of 150 power.",
+    "priority": 0
   },
   {
     "slug": "signal-beam",
@@ -3241,7 +3888,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 75,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to confuse the target.",
+    "priority": 0
   },
   {
     "slug": "shadow-punch",
@@ -3251,7 +3900,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 60,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Never misses.",
+    "priority": 0
   },
   {
     "slug": "extrasensory",
@@ -3261,7 +3912,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Has a chance to make the target flinch.",
+    "priority": 0
   },
   {
     "slug": "sky-uppercut",
@@ -3271,7 +3924,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 85,
     "acc": 90,
-    "pp": 15
+    "pp": 15,
+    "effect": "Inflicts regular damage and can hit Bounce and Fly users.",
+    "priority": 0
   },
   {
     "slug": "sand-tomb",
@@ -3281,7 +3936,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 35,
     "acc": 85,
-    "pp": 15
+    "pp": 15,
+    "effect": "Prevents the target from fleeing and inflicts damage for 2-5 turns.",
+    "priority": 0
   },
   {
     "slug": "sheer-cold",
@@ -3291,7 +3948,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 30,
     "acc": 30,
-    "pp": 5
+    "pp": 5,
+    "effect": "Causes a one-hit KO.",
+    "priority": 0
   },
   {
     "slug": "muddy-water",
@@ -3301,7 +3960,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 90,
     "acc": 85,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to lower the target’s accuracy by one stage.",
+    "priority": 0
   },
   {
     "slug": "bullet-seed",
@@ -3311,7 +3972,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 25,
     "acc": 100,
-    "pp": 30
+    "pp": 30,
+    "effect": "Hits 2-5 times in one turn.",
+    "priority": 0
   },
   {
     "slug": "aerial-ace",
@@ -3321,7 +3984,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 60,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Never misses.",
+    "priority": 0
   },
   {
     "slug": "icicle-spear",
@@ -3331,7 +3996,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 25,
     "acc": 100,
-    "pp": 30
+    "pp": 30,
+    "effect": "Hits 2-5 times in one turn.",
+    "priority": 0
   },
   {
     "slug": "iron-defense",
@@ -3341,7 +4008,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 15
+    "pp": 15,
+    "effect": "Raises the user’s Defense by two stages.",
+    "priority": 0
   },
   {
     "slug": "block",
@@ -3351,7 +4020,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 5
+    "pp": 5,
+    "effect": "Prevents the target from leaving battle.",
+    "priority": 0
   },
   {
     "slug": "howl",
@@ -3361,7 +4032,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 40
+    "pp": 40,
+    "effect": "Raises the user’s Attack by one stage.",
+    "priority": 0
   },
   {
     "slug": "dragon-claw",
@@ -3371,7 +4044,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "frenzy-plant",
@@ -3381,7 +4056,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 150,
     "acc": 90,
-    "pp": 5
+    "pp": 5,
+    "effect": "User foregoes its next turn to recharge.",
+    "priority": 0
   },
   {
     "slug": "bulk-up",
@@ -3391,7 +4068,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Raises the user’s Attack and Defense by one stage.",
+    "priority": 0
   },
   {
     "slug": "bounce",
@@ -3401,7 +4080,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 85,
     "acc": 85,
-    "pp": 5
+    "pp": 5,
+    "effect": "User bounces high into the air, dodging all attacks, and hits next turn.",
+    "priority": 0
   },
   {
     "slug": "mud-shot",
@@ -3411,7 +4092,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 55,
     "acc": 95,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to lower the target’s Speed by one stage.",
+    "priority": 0
   },
   {
     "slug": "poison-tail",
@@ -3421,7 +4104,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 50,
     "acc": 100,
-    "pp": 25
+    "pp": 25,
+    "effect": "Has an increased chance for a critical hit and a chance to poison the target.",
+    "priority": 0
   },
   {
     "slug": "covet",
@@ -3431,7 +4116,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 60,
     "acc": 100,
-    "pp": 25
+    "pp": 25,
+    "effect": "Takes the target’s item.",
+    "priority": 0
   },
   {
     "slug": "volt-tackle",
@@ -3441,7 +4128,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 120,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "User takes 1/3 the damage inflicted in recoil.  Has a chance to paralyze the target.",
+    "priority": 0
   },
   {
     "slug": "magical-leaf",
@@ -3451,7 +4140,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 60,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Never misses.",
+    "priority": 0
   },
   {
     "slug": "water-sport",
@@ -3461,7 +4152,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 15
+    "pp": 15,
+    "effect": "Halves all Fire-type damage.",
+    "priority": 0
   },
   {
     "slug": "calm-mind",
@@ -3471,7 +4164,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Raises the user’s Special Attack and Special Defense by one stage.",
+    "priority": 0
   },
   {
     "slug": "leaf-blade",
@@ -3481,7 +4176,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 90,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has an increased chance for a critical hit.",
+    "priority": 0
   },
   {
     "slug": "dragon-dance",
@@ -3491,7 +4188,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Raises the user’s Attack and Speed by one stage.",
+    "priority": 0
   },
   {
     "slug": "rock-blast",
@@ -3501,7 +4200,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 25,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "effect": "Hits 2-5 times in one turn.",
+    "priority": 0
   },
   {
     "slug": "shock-wave",
@@ -3511,7 +4212,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 60,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Never misses.",
+    "priority": 0
   },
   {
     "slug": "water-pulse",
@@ -3521,7 +4224,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 60,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Has a chance to confuse the target.",
+    "priority": 0
   },
   {
     "slug": "doom-desire",
@@ -3531,7 +4236,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 140,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Hits the target two turns later.",
+    "priority": 0
   },
   {
     "slug": "psycho-boost",
@@ -3541,7 +4248,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 140,
     "acc": 90,
-    "pp": 5
+    "pp": 5,
+    "effect": "Lowers the user’s Special Attack by two stages after inflicting damage.",
+    "priority": 0
   },
   {
     "slug": "roost",
@@ -3551,7 +4260,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 5
+    "pp": 5,
+    "effect": "Heals the user by half its max HP.",
+    "priority": 0
   },
   {
     "slug": "gravity",
@@ -3561,7 +4272,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 5
+    "pp": 5,
+    "effect": "Disables moves and immunities that involve flying or levitating for five turns.",
+    "priority": 0
   },
   {
     "slug": "miracle-eye",
@@ -3571,7 +4284,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 40
+    "pp": 40,
+    "effect": "Forces the target to have no evasion, and allows it to be hit by Psychic moves even if it’s Dark.",
+    "priority": 0
   },
   {
     "slug": "wake-up-slap",
@@ -3581,7 +4296,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 70,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "If the target is asleep, has double power and wakes it up.",
+    "priority": 0
   },
   {
     "slug": "hammer-arm",
@@ -3591,7 +4308,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "effect": "Lowers user’s Speed by one stage.",
+    "priority": 0
   },
   {
     "slug": "gyro-ball",
@@ -3601,7 +4320,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Power raises when the user has lower Speed, up to a maximum of 150.",
+    "priority": 0
   },
   {
     "slug": "healing-wish",
@@ -3611,7 +4332,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "User faints.  Its replacement has its HP fully restored and any major status effect removed.",
+    "priority": 0
   },
   {
     "slug": "brine",
@@ -3621,7 +4344,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 65,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has double power against Pokémon that have less than half their max HP remaining.",
+    "priority": 0
   },
   {
     "slug": "natural-gift",
@@ -3631,7 +4356,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Power and type depend on the held berry.",
+    "priority": 0
   },
   {
     "slug": "feint",
@@ -3641,7 +4368,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 30,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Hits through Protect and Detect.",
+    "priority": 2
   },
   {
     "slug": "pluck",
@@ -3651,7 +4380,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 60,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "If target has a berry, inflicts double damage and uses the berry.",
+    "priority": 0
   },
   {
     "slug": "tailwind",
@@ -3661,7 +4392,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 15
+    "pp": 15,
+    "effect": "For three turns, friendly Pokémon have doubled Speed.",
+    "priority": 0
   },
   {
     "slug": "acupressure",
@@ -3671,7 +4404,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 30
+    "pp": 30,
+    "effect": "Raises one of a friendly Pokémon’s stats at random by two stages.",
+    "priority": 0
   },
   {
     "slug": "metal-burst",
@@ -3681,7 +4416,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Strikes back at the last Pokémon to hit the user this turn with 1.5× the damage.",
+    "priority": 0
   },
   {
     "slug": "u-turn",
@@ -3691,7 +4428,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 70,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "User must switch out after attacking.",
+    "priority": 0
   },
   {
     "slug": "close-combat",
@@ -3701,7 +4440,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 120,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Lowers the user’s Defense and Special Defense by one stage after inflicting damage.",
+    "priority": 0
   },
   {
     "slug": "payback",
@@ -3711,7 +4452,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 50,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Power is doubled if the target has already moved this turn.",
+    "priority": 0
   },
   {
     "slug": "assurance",
@@ -3721,7 +4464,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 60,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Power is doubled if the target has already received damage this turn.",
+    "priority": 0
   },
   {
     "slug": "embargo",
@@ -3731,7 +4476,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Target cannot use held items.",
+    "priority": 0
   },
   {
     "slug": "fling",
@@ -3741,7 +4488,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Throws held item at the target; power depends on the item.",
+    "priority": 0
   },
   {
     "slug": "psycho-shift",
@@ -3751,7 +4500,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Transfers the user’s major status effect to the target.",
+    "priority": 0
   },
   {
     "slug": "trump-card",
@@ -3761,7 +4512,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": null,
     "acc": null,
-    "pp": 5
+    "pp": 5,
+    "effect": "Power increases when this move has less PP, up to a maximum of 200.",
+    "priority": 0
   },
   {
     "slug": "heal-block",
@@ -3771,7 +4524,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Prevents target from restoring its HP for five turns.",
+    "priority": 0
   },
   {
     "slug": "wring-out",
@@ -3781,7 +4536,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 100,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Power increases against targets with more HP remaining, up to a maximum of 121 power.",
+    "priority": 0
   },
   {
     "slug": "power-trick",
@@ -3791,7 +4548,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "User swaps Attack and Defense.",
+    "priority": 0
   },
   {
     "slug": "gastro-acid",
@@ -3801,7 +4560,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Nullifies target’s ability until it leaves battle.",
+    "priority": 0
   },
   {
     "slug": "lucky-chant",
@@ -3811,7 +4572,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 30
+    "pp": 30,
+    "effect": "Prevents the target from scoring critical hits for five turns.",
+    "priority": 0
   },
   {
     "slug": "me-first",
@@ -3821,7 +4584,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Uses the target’s move against it before it attacks, with power increased by half.",
+    "priority": 0
   },
   {
     "slug": "copycat",
@@ -3831,7 +4596,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Uses the target’s last used move.",
+    "priority": 0
   },
   {
     "slug": "power-swap",
@@ -3841,7 +4608,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "User swaps Attack and Special Attack changes with the target.",
+    "priority": 0
   },
   {
     "slug": "guard-swap",
@@ -3851,7 +4620,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "User swaps Defense and Special Defense changes with the target.",
+    "priority": 0
   },
   {
     "slug": "punishment",
@@ -3861,7 +4632,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Power increases against targets with more raised stats, up to a maximum of 200.",
+    "priority": 0
   },
   {
     "slug": "last-resort",
@@ -3871,7 +4644,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 140,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Can only be used after all of the user’s other moves have been used.",
+    "priority": 0
   },
   {
     "slug": "worry-seed",
@@ -3881,7 +4656,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Changes the target’s ability to Insomnia.",
+    "priority": 0
   },
   {
     "slug": "sucker-punch",
@@ -3891,7 +4668,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 70,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Only works if the target is about to use a damaging move.",
+    "priority": 1
   },
   {
     "slug": "toxic-spikes",
@@ -3901,7 +4680,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Scatters poisoned spikes, poisoning opposing Pokémon that switch in.",
+    "priority": 0
   },
   {
     "slug": "heart-swap",
@@ -3911,7 +4692,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "User and target swap stat changes.",
+    "priority": 0
   },
   {
     "slug": "aqua-ring",
@@ -3921,7 +4704,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Restores 1/16 of the user’s max HP each turn.",
+    "priority": 0
   },
   {
     "slug": "magnet-rise",
@@ -3931,7 +4716,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "User is immune to Ground moves and effects for five turns.",
+    "priority": 0
   },
   {
     "slug": "flare-blitz",
@@ -3941,7 +4728,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 120,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "User takes 1/3 the damage inflicted in recoil.  Has a chance to burn the target.",
+    "priority": 0
   },
   {
     "slug": "force-palm",
@@ -3951,7 +4740,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 60,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to paralyze the target.",
+    "priority": 0
   },
   {
     "slug": "aura-sphere",
@@ -3961,7 +4752,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Never misses.",
+    "priority": 0
   },
   {
     "slug": "rock-polish",
@@ -3971,7 +4764,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Raises the user’s Speed by two stages.",
+    "priority": 0
   },
   {
     "slug": "poison-jab",
@@ -3981,7 +4776,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Has a chance to poison the target.",
+    "priority": 0
   },
   {
     "slug": "dark-pulse",
@@ -3991,7 +4788,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to make the target flinch.",
+    "priority": 0
   },
   {
     "slug": "night-slash",
@@ -4001,7 +4800,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 70,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has an increased chance for a critical hit.",
+    "priority": 0
   },
   {
     "slug": "aqua-tail",
@@ -4011,7 +4812,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 90,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "seed-bomb",
@@ -4021,7 +4824,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "air-slash",
@@ -4031,7 +4836,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 75,
     "acc": 95,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to make the target flinch.",
+    "priority": 0
   },
   {
     "slug": "x-scissor",
@@ -4041,7 +4848,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "bug-buzz",
@@ -4051,7 +4860,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 90,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to lower the target’s Special Defense by one stage.",
+    "priority": 0
   },
   {
     "slug": "dragon-pulse",
@@ -4061,7 +4872,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 85,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "dragon-rush",
@@ -4071,7 +4884,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 75,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to make the target flinch.",
+    "priority": 0
   },
   {
     "slug": "power-gem",
@@ -4081,7 +4896,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "drain-punch",
@@ -4091,7 +4908,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 75,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Drains half the damage inflicted to heal the user.",
+    "priority": 0
   },
   {
     "slug": "vacuum-wave",
@@ -4101,7 +4920,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 40,
     "acc": 100,
-    "pp": 30
+    "pp": 30,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 1
   },
   {
     "slug": "focus-blast",
@@ -4111,7 +4932,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 120,
     "acc": 70,
-    "pp": 5
+    "pp": 5,
+    "effect": "Has a chance to lower the target’s Special Defense by one stage.",
+    "priority": 0
   },
   {
     "slug": "energy-ball",
@@ -4121,7 +4944,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 90,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to lower the target’s Special Defense by one stage.",
+    "priority": 0
   },
   {
     "slug": "brave-bird",
@@ -4131,7 +4956,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 120,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "User receives 1/3 the damage inflicted in recoil.",
+    "priority": 0
   },
   {
     "slug": "earth-power",
@@ -4141,7 +4968,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 90,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to lower the target’s Special Defense by one stage.",
+    "priority": 0
   },
   {
     "slug": "switcheroo",
@@ -4151,7 +4980,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "User and target swap items.",
+    "priority": 0
   },
   {
     "slug": "giga-impact",
@@ -4161,7 +4992,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 150,
     "acc": 90,
-    "pp": 5
+    "pp": 5,
+    "effect": "User foregoes its next turn to recharge.",
+    "priority": 0
   },
   {
     "slug": "nasty-plot",
@@ -4171,7 +5004,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Raises the user’s Special Attack by two stages.",
+    "priority": 0
   },
   {
     "slug": "bullet-punch",
@@ -4181,7 +5016,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 40,
     "acc": 100,
-    "pp": 30
+    "pp": 30,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 1
   },
   {
     "slug": "avalanche",
@@ -4191,7 +5028,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 60,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts double damage if the user takes damage before attacking this turn.",
+    "priority": -4
   },
   {
     "slug": "ice-shard",
@@ -4201,7 +5040,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 40,
     "acc": 100,
-    "pp": 30
+    "pp": 30,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 1
   },
   {
     "slug": "shadow-claw",
@@ -4211,7 +5052,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 70,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has an increased chance for a critical hit.",
+    "priority": 0
   },
   {
     "slug": "thunder-fang",
@@ -4221,7 +5064,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 65,
     "acc": 95,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to paralyze the target and a chance to make the target flinch.",
+    "priority": 0
   },
   {
     "slug": "ice-fang",
@@ -4231,7 +5076,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 65,
     "acc": 95,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to freeze the target and a chance to make the target flinch.",
+    "priority": 0
   },
   {
     "slug": "fire-fang",
@@ -4241,7 +5088,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 65,
     "acc": 95,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to burn the target and a chance to make the target flinch.",
+    "priority": 0
   },
   {
     "slug": "shadow-sneak",
@@ -4251,7 +5100,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 40,
     "acc": 100,
-    "pp": 30
+    "pp": 30,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 1
   },
   {
     "slug": "mud-bomb",
@@ -4261,7 +5112,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 65,
     "acc": 85,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to lower the target’s accuracy by one stage.",
+    "priority": 0
   },
   {
     "slug": "psycho-cut",
@@ -4271,7 +5124,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 70,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Has an increased chance for a critical hit.",
+    "priority": 0
   },
   {
     "slug": "zen-headbutt",
@@ -4281,7 +5136,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 90,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to make the target flinch.",
+    "priority": 0
   },
   {
     "slug": "mirror-shot",
@@ -4291,7 +5148,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 65,
     "acc": 85,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to lower the target’s accuracy by one stage.",
+    "priority": 0
   },
   {
     "slug": "flash-cannon",
@@ -4301,7 +5160,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to lower the target’s Special Defense by one stage.",
+    "priority": 0
   },
   {
     "slug": "rock-climb",
@@ -4311,7 +5172,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 90,
     "acc": 85,
-    "pp": 20
+    "pp": 20,
+    "effect": "Has a chance to confuse the target.",
+    "priority": 0
   },
   {
     "slug": "defog",
@@ -4321,7 +5184,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 15
+    "pp": 15,
+    "effect": "Lowers the target’s evasion by one stage.  Removes field effects from the enemy field.",
+    "priority": 0
   },
   {
     "slug": "trick-room",
@@ -4331,7 +5196,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 5
+    "pp": 5,
+    "effect": "For five turns, slower Pokémon will act before faster Pokémon.",
+    "priority": -7
   },
   {
     "slug": "draco-meteor",
@@ -4341,7 +5208,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 130,
     "acc": 90,
-    "pp": 5
+    "pp": 5,
+    "effect": "Lowers the user’s Special Attack by two stages after inflicting damage.",
+    "priority": 0
   },
   {
     "slug": "discharge",
@@ -4351,7 +5220,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to paralyze the target.",
+    "priority": 0
   },
   {
     "slug": "lava-plume",
@@ -4361,7 +5232,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to burn the target.",
+    "priority": 0
   },
   {
     "slug": "leaf-storm",
@@ -4371,7 +5244,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 130,
     "acc": 90,
-    "pp": 5
+    "pp": 5,
+    "effect": "Lowers the user’s Special Attack by two stages after inflicting damage.",
+    "priority": 0
   },
   {
     "slug": "power-whip",
@@ -4381,7 +5256,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 120,
     "acc": 85,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "rock-wrecker",
@@ -4391,7 +5268,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 150,
     "acc": 90,
-    "pp": 5
+    "pp": 5,
+    "effect": "User foregoes its next turn to recharge.",
+    "priority": 0
   },
   {
     "slug": "cross-poison",
@@ -4401,7 +5280,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 70,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Has an increased chance for a critical hit and a chance to poison the target.",
+    "priority": 0
   },
   {
     "slug": "gunk-shot",
@@ -4411,7 +5292,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 120,
     "acc": 80,
-    "pp": 5
+    "pp": 5,
+    "effect": "Has a chance to poison the target.",
+    "priority": 0
   },
   {
     "slug": "iron-head",
@@ -4421,7 +5304,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to make the target flinch.",
+    "priority": 0
   },
   {
     "slug": "magnet-bomb",
@@ -4431,7 +5316,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 60,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Never misses.",
+    "priority": 0
   },
   {
     "slug": "stone-edge",
@@ -4441,7 +5328,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 80,
-    "pp": 5
+    "pp": 5,
+    "effect": "Has an increased chance for a critical hit.",
+    "priority": 0
   },
   {
     "slug": "captivate",
@@ -4451,7 +5340,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Lowers the target’s Special Attack by two stages if it’s the opposite gender.",
+    "priority": 0
   },
   {
     "slug": "stealth-rock",
@@ -4461,7 +5352,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Causes damage when opposing Pokémon switch in.",
+    "priority": 0
   },
   {
     "slug": "grass-knot",
@@ -4471,7 +5364,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 100,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Inflicts more damage to heavier targets, with a maximum of 120 power.",
+    "priority": 0
   },
   {
     "slug": "chatter",
@@ -4481,7 +5376,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 65,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Has a higher chance to confuse the target when the recorded sound is louder.",
+    "priority": 0
   },
   {
     "slug": "judgment",
@@ -4491,7 +5388,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 100,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "If the user is holding a appropriate plate or drive, the damage inflicted will match it.",
+    "priority": 0
   },
   {
     "slug": "bug-bite",
@@ -4501,7 +5400,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 60,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "If target has a berry, inflicts double damage and uses the berry.",
+    "priority": 0
   },
   {
     "slug": "charge-beam",
@@ -4511,7 +5412,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 50,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to raise the user’s Special Attack by one stage.",
+    "priority": 0
   },
   {
     "slug": "wood-hammer",
@@ -4521,7 +5424,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 120,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "User receives 1/3 the damage inflicted in recoil.",
+    "priority": 0
   },
   {
     "slug": "aqua-jet",
@@ -4531,7 +5436,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 40,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 1
   },
   {
     "slug": "attack-order",
@@ -4541,7 +5448,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 90,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has an increased chance for a critical hit.",
+    "priority": 0
   },
   {
     "slug": "defend-order",
@@ -4551,7 +5460,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Raises the user’s Defense and Special Defense by one stage.",
+    "priority": 0
   },
   {
     "slug": "heal-order",
@@ -4561,7 +5472,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Heals the user by half its max HP.",
+    "priority": 0
   },
   {
     "slug": "head-smash",
@@ -4571,7 +5484,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 150,
     "acc": 80,
-    "pp": 5
+    "pp": 5,
+    "effect": "User receives 1/2 the damage inflicted in recoil.",
+    "priority": 0
   },
   {
     "slug": "double-hit",
@@ -4581,7 +5496,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 35,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "effect": "Hits twice in one turn.",
+    "priority": 0
   },
   {
     "slug": "roar-of-time",
@@ -4591,7 +5508,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 150,
     "acc": 90,
-    "pp": 5
+    "pp": 5,
+    "effect": "User foregoes its next turn to recharge.",
+    "priority": 0
   },
   {
     "slug": "spacial-rend",
@@ -4601,7 +5520,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 100,
     "acc": 95,
-    "pp": 5
+    "pp": 5,
+    "effect": "Has an increased chance for a critical hit.",
+    "priority": 0
   },
   {
     "slug": "lunar-dance",
@@ -4611,7 +5532,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "User faints, and its replacement is fully healed.",
+    "priority": 0
   },
   {
     "slug": "crush-grip",
@@ -4621,7 +5544,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Power increases against targets with more HP remaining, up to a maximum of 121 power.",
+    "priority": 0
   },
   {
     "slug": "magma-storm",
@@ -4631,7 +5556,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 100,
     "acc": 75,
-    "pp": 5
+    "pp": 5,
+    "effect": "Prevents the target from fleeing and inflicts damage for 2-5 turns.",
+    "priority": 0
   },
   {
     "slug": "dark-void",
@@ -4641,7 +5568,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 50,
-    "pp": 10
+    "pp": 10,
+    "effect": "Puts the target to sleep.",
+    "priority": 0
   },
   {
     "slug": "seed-flare",
@@ -4651,7 +5580,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 120,
     "acc": 85,
-    "pp": 5
+    "pp": 5,
+    "effect": "Has a chance to lower the target’s Special Defense by two stages.",
+    "priority": 0
   },
   {
     "slug": "ominous-wind",
@@ -4661,7 +5592,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 60,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Has a chance to raise all of the user’s stats by one stage.",
+    "priority": 0
   },
   {
     "slug": "shadow-force",
@@ -4671,7 +5604,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 120,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "User vanishes, dodging all attacks, and hits next turn.  Hits through Protect and Detect.",
+    "priority": 0
   },
   {
     "slug": "hone-claws",
@@ -4681,7 +5616,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 15
+    "pp": 15,
+    "effect": "Raises the user’s Attack and accuracy by one stage.",
+    "priority": 0
   },
   {
     "slug": "wide-guard",
@@ -4691,7 +5628,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Prevents any multi-target moves from hitting friendly Pokémon this turn.",
+    "priority": 3
   },
   {
     "slug": "guard-split",
@@ -4701,7 +5640,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Averages Defense and Special Defense with the target.",
+    "priority": 0
   },
   {
     "slug": "power-split",
@@ -4711,7 +5652,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Averages Attack and Special Attack with the target.",
+    "priority": 0
   },
   {
     "slug": "wonder-room",
@@ -4721,7 +5664,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "All Pokémon’s Defense and Special Defense are swapped for 5 turns.",
+    "priority": 0
   },
   {
     "slug": "psyshock",
@@ -4731,7 +5676,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts damage based on the target’s Defense, not Special Defense.",
+    "priority": 0
   },
   {
     "slug": "venoshock",
@@ -4741,7 +5688,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 65,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts double damage if the target is Poisoned.",
+    "priority": 0
   },
   {
     "slug": "autotomize",
@@ -4751,7 +5700,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 15
+    "pp": 15,
+    "effect": "Raises the user’s Speed by two stages and halves the user’s weight.",
+    "priority": 0
   },
   {
     "slug": "rage-powder",
@@ -4761,7 +5712,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Redirects the target’s single-target effects to the user for this turn.",
+    "priority": 2
   },
   {
     "slug": "telekinesis",
@@ -4771,7 +5724,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 15
+    "pp": 15,
+    "effect": "Moves have 100% accuracy against the target for three turns.",
+    "priority": 0
   },
   {
     "slug": "magic-room",
@@ -4781,7 +5736,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Negates held items for five turns.",
+    "priority": 0
   },
   {
     "slug": "smack-down",
@@ -4791,7 +5748,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 50,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Removes any immunity to Ground damage.",
+    "priority": 0
   },
   {
     "slug": "storm-throw",
@@ -4801,7 +5760,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 60,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Always scores a critical hit.",
+    "priority": 0
   },
   {
     "slug": "flame-burst",
@@ -4811,7 +5772,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 70,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Deals splash damage to Pokémon next to the target.",
+    "priority": 0
   },
   {
     "slug": "sludge-wave",
@@ -4821,7 +5784,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 95,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to poison the target.",
+    "priority": 0
   },
   {
     "slug": "quiver-dance",
@@ -4831,7 +5796,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Raises the user’s Special Attack, Special Defense, and Speed by one stage each.",
+    "priority": 0
   },
   {
     "slug": "heavy-slam",
@@ -4841,7 +5808,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Power is higher when the user weighs more than the target, up to a maximum of 120.",
+    "priority": 0
   },
   {
     "slug": "synchronoise",
@@ -4851,7 +5820,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 120,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Hits any Pokémon that shares a type with the user.",
+    "priority": 0
   },
   {
     "slug": "electro-ball",
@@ -4861,7 +5832,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 100,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Power is higher when the user has greater Speed than the target, up to a maximum of 150.",
+    "priority": 0
   },
   {
     "slug": "soak",
@@ -4871,7 +5844,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Changes the target’s type to Water.",
+    "priority": 0
   },
   {
     "slug": "flame-charge",
@@ -4881,7 +5856,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 50,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Inflicts regular damage.  Raises the user’s Speed by one stage.",
+    "priority": 0
   },
   {
     "slug": "coil",
@@ -4891,7 +5868,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Raises the user’s Attack, Defense, and accuracy by one stage each.",
+    "priority": 0
   },
   {
     "slug": "low-sweep",
@@ -4901,7 +5880,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 65,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Lowers the target’s Speed by one stage.",
+    "priority": 0
   },
   {
     "slug": "acid-spray",
@@ -4911,7 +5892,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 40,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Lowers the target’s Special Defense by two stages.",
+    "priority": 0
   },
   {
     "slug": "foul-play",
@@ -4921,7 +5904,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 95,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Calculates damage with the target’s attacking stat.",
+    "priority": 0
   },
   {
     "slug": "simple-beam",
@@ -4931,7 +5916,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Changes the target’s ability to Simple.",
+    "priority": 0
   },
   {
     "slug": "entrainment",
@@ -4941,7 +5928,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Copies the user’s ability onto the target.",
+    "priority": 0
   },
   {
     "slug": "after-you",
@@ -4951,7 +5940,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 15
+    "pp": 15,
+    "effect": "Makes the target act next this turn.",
+    "priority": 0
   },
   {
     "slug": "round",
@@ -4961,7 +5952,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 60,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has double power if it’s used more than once per turn.",
+    "priority": 0
   },
   {
     "slug": "echoed-voice",
@@ -4971,7 +5964,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 40,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Power increases by 100% for each consecutive use by any friendly Pokémon, to a maximum of 200.",
+    "priority": 0
   },
   {
     "slug": "chip-away",
@@ -4981,7 +5976,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 70,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Ignores the target’s stat modifiers.",
+    "priority": 0
   },
   {
     "slug": "clear-smog",
@@ -4991,7 +5988,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 50,
     "acc": null,
-    "pp": 15
+    "pp": 15,
+    "effect": "Removes all of the target’s stat modifiers.",
+    "priority": 0
   },
   {
     "slug": "stored-power",
@@ -5001,7 +6000,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 20,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Power is higher the more the user’s stats have been raised, to a maximum of 31×.",
+    "priority": 0
   },
   {
     "slug": "quick-guard",
@@ -5011,7 +6012,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 15
+    "pp": 15,
+    "effect": "Prevents any priority moves from hitting friendly Pokémon this turn.",
+    "priority": 3
   },
   {
     "slug": "ally-switch",
@@ -5021,7 +6024,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 15
+    "pp": 15,
+    "effect": "User switches places with the friendly Pokémon opposite it.",
+    "priority": 2
   },
   {
     "slug": "scald",
@@ -5031,7 +6036,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to burn the target.",
+    "priority": 0
   },
   {
     "slug": "shell-smash",
@@ -5041,7 +6048,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 15
+    "pp": 15,
+    "effect": "Raises user’s Attack, Special Attack, and Speed by two stages.  Lower user’s Defense and Special Defense by one stage.",
+    "priority": 0
   },
   {
     "slug": "heal-pulse",
@@ -5051,7 +6060,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Heals the target for half its max HP.",
+    "priority": 0
   },
   {
     "slug": "hex",
@@ -5061,7 +6072,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 65,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has double power if the target has a major status ailment.",
+    "priority": 0
   },
   {
     "slug": "sky-drop",
@@ -5071,7 +6084,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 60,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Carries the target high into the air, dodging all attacks against either, and drops it next turn.",
+    "priority": 0
   },
   {
     "slug": "shift-gear",
@@ -5081,7 +6096,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Raises the user’s Attack by one stage and its Speed by two stages.",
+    "priority": 0
   },
   {
     "slug": "circle-throw",
@@ -5091,7 +6108,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 60,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "effect": "Ends wild battles.  Forces trainers to switch Pokémon.",
+    "priority": -6
   },
   {
     "slug": "incinerate",
@@ -5101,7 +6120,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 60,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Destroys the target’s held berry.",
+    "priority": 0
   },
   {
     "slug": "quash",
@@ -5111,7 +6132,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Makes the target act last this turn.",
+    "priority": 0
   },
   {
     "slug": "acrobatics",
@@ -5121,7 +6144,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 55,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has double power if the user has no held item.",
+    "priority": 0
   },
   {
     "slug": "reflect-type",
@@ -5131,7 +6156,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 15
+    "pp": 15,
+    "effect": "User becomes the target’s type.",
+    "priority": 0
   },
   {
     "slug": "retaliate",
@@ -5141,7 +6168,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 70,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Has double power if a friendly Pokémon fainted last turn.",
+    "priority": 0
   },
   {
     "slug": "final-gambit",
@@ -5151,7 +6180,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 100,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Inflicts damage equal to the user’s remaining HP.  User faints.",
+    "priority": 0
   },
   {
     "slug": "bestow",
@@ -5161,7 +6192,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 15
+    "pp": 15,
+    "effect": "Gives the user’s held item to the target.",
+    "priority": 0
   },
   {
     "slug": "inferno",
@@ -5171,7 +6204,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 100,
     "acc": 50,
-    "pp": 5
+    "pp": 5,
+    "effect": "Has a chance to burn the target.",
+    "priority": 0
   },
   {
     "slug": "water-pledge",
@@ -5181,7 +6216,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "With Grass Pledge, halves opposing Pokémon’s Speed for four turns.",
+    "priority": 0
   },
   {
     "slug": "fire-pledge",
@@ -5191,7 +6228,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "With Water Pledge, doubles the effect chance of friendly Pokémon’s moves for four turns.",
+    "priority": 0
   },
   {
     "slug": "grass-pledge",
@@ -5201,7 +6240,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "With Fire Pledge, damages opposing Pokémon for 1/8 their max HP every turn for four turns.",
+    "priority": 0
   },
   {
     "slug": "volt-switch",
@@ -5211,7 +6252,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 70,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "User must switch out after attacking.",
+    "priority": 0
   },
   {
     "slug": "struggle-bug",
@@ -5221,7 +6264,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 50,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Has a chance to lower the target’s Special Attack by one stage.",
+    "priority": 0
   },
   {
     "slug": "bulldoze",
@@ -5231,7 +6276,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 60,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Has a chance to lower the target’s Speed by one stage.",
+    "priority": 0
   },
   {
     "slug": "frost-breath",
@@ -5241,7 +6288,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 60,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "effect": "Always scores a critical hit.",
+    "priority": 0
   },
   {
     "slug": "dragon-tail",
@@ -5251,7 +6300,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 60,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "effect": "Ends wild battles.  Forces trainers to switch Pokémon.",
+    "priority": -6
   },
   {
     "slug": "work-up",
@@ -5261,7 +6312,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 30
+    "pp": 30,
+    "effect": "Raises the user’s Attack and Special Attack by one stage each.",
+    "priority": 0
   },
   {
     "slug": "electroweb",
@@ -5271,7 +6324,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 55,
     "acc": 95,
-    "pp": 15
+    "pp": 15,
+    "effect": "Lowers the target’s Speed by one stage.",
+    "priority": 0
   },
   {
     "slug": "wild-charge",
@@ -5281,7 +6336,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 90,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "User receives 1/4 the damage it inflicts in recoil.",
+    "priority": 0
   },
   {
     "slug": "drill-run",
@@ -5291,7 +6348,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 95,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has an increased chance for a critical hit.",
+    "priority": 0
   },
   {
     "slug": "dual-chop",
@@ -5301,7 +6360,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 40,
     "acc": 90,
-    "pp": 15
+    "pp": 15,
+    "effect": "Hits twice in one turn.",
+    "priority": 0
   },
   {
     "slug": "heart-stamp",
@@ -5311,7 +6372,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 60,
     "acc": 100,
-    "pp": 25
+    "pp": 25,
+    "effect": "Has a chance to make the target flinch.",
+    "priority": 0
   },
   {
     "slug": "horn-leech",
@@ -5321,7 +6384,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 75,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Drains half the damage inflicted to heal the user.",
+    "priority": 0
   },
   {
     "slug": "sacred-sword",
@@ -5331,7 +6396,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 90,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Ignores the target’s stat modifiers.",
+    "priority": 0
   },
   {
     "slug": "razor-shell",
@@ -5341,7 +6408,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 75,
     "acc": 95,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to lower the target’s Defense by one stage.",
+    "priority": 0
   },
   {
     "slug": "heat-crash",
@@ -5351,7 +6420,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Power is higher when the user weighs more than the target, up to a maximum of 120.",
+    "priority": 0
   },
   {
     "slug": "leaf-tornado",
@@ -5361,7 +6432,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 65,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to lower the target’s accuracy by one stage.",
+    "priority": 0
   },
   {
     "slug": "steamroller",
@@ -5371,7 +6444,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 65,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Has a chance to make the target flinch.",
+    "priority": 0
   },
   {
     "slug": "cotton-guard",
@@ -5381,7 +6456,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Raises the user’s Defense by three stages.",
+    "priority": 0
   },
   {
     "slug": "night-daze",
@@ -5391,7 +6468,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 85,
     "acc": 95,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to lower the target’s accuracy by one stage.",
+    "priority": 0
   },
   {
     "slug": "psystrike",
@@ -5401,7 +6480,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 100,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts damage based on the target’s Defense, not Special Defense.",
+    "priority": 0
   },
   {
     "slug": "tail-slap",
@@ -5411,7 +6492,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 25,
     "acc": 85,
-    "pp": 10
+    "pp": 10,
+    "effect": "Hits 2-5 times in one turn.",
+    "priority": 0
   },
   {
     "slug": "hurricane",
@@ -5421,7 +6504,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 110,
     "acc": 70,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to confuse the target.",
+    "priority": 0
   },
   {
     "slug": "head-charge",
@@ -5431,7 +6516,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 120,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "User receives 1/4 the damage it inflicts in recoil.",
+    "priority": 0
   },
   {
     "slug": "gear-grind",
@@ -5441,7 +6528,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 50,
     "acc": 85,
-    "pp": 15
+    "pp": 15,
+    "effect": "Hits twice in one turn.",
+    "priority": 0
   },
   {
     "slug": "searing-shot",
@@ -5451,7 +6540,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 100,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Has a chance to burn the target.",
+    "priority": 0
   },
   {
     "slug": "techno-blast",
@@ -5461,7 +6552,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 120,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "If the user is holding a appropriate plate or drive, the damage inflicted will match it.",
+    "priority": 0
   },
   {
     "slug": "relic-song",
@@ -5471,7 +6564,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 75,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to put the target to sleep.",
+    "priority": 0
   },
   {
     "slug": "secret-sword",
@@ -5481,7 +6576,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 85,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts damage based on the target’s Defense, not Special Defense.",
+    "priority": 0
   },
   {
     "slug": "glaciate",
@@ -5491,7 +6588,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 65,
     "acc": 95,
-    "pp": 10
+    "pp": 10,
+    "effect": "Lowers the target’s Speed by one stage.",
+    "priority": 0
   },
   {
     "slug": "bolt-strike",
@@ -5501,7 +6600,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 130,
     "acc": 85,
-    "pp": 5
+    "pp": 5,
+    "effect": "Has a chance to paralyze the target.",
+    "priority": 0
   },
   {
     "slug": "blue-flare",
@@ -5511,7 +6612,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 130,
     "acc": 85,
-    "pp": 5
+    "pp": 5,
+    "effect": "Has a chance to burn the target.",
+    "priority": 0
   },
   {
     "slug": "fiery-dance",
@@ -5521,7 +6624,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to raise the user’s Special Attack by one stage.",
+    "priority": 0
   },
   {
     "slug": "freeze-shock",
@@ -5531,7 +6636,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 140,
     "acc": 90,
-    "pp": 5
+    "pp": 5,
+    "effect": "Requires a turn to charge before attacking.  Has a chance to paralyze the target.",
+    "priority": 0
   },
   {
     "slug": "ice-burn",
@@ -5541,7 +6648,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 140,
     "acc": 90,
-    "pp": 5
+    "pp": 5,
+    "effect": "Requires a turn to charge before attacking.  Has a chance to burn the target.",
+    "priority": 0
   },
   {
     "slug": "snarl",
@@ -5551,7 +6660,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 55,
     "acc": 95,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to lower the target’s Special Attack by one stage.",
+    "priority": 0
   },
   {
     "slug": "icicle-crash",
@@ -5561,7 +6672,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 85,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to make the target flinch.",
+    "priority": 0
   },
   {
     "slug": "v-create",
@@ -5571,7 +6684,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 180,
     "acc": 95,
-    "pp": 5
+    "pp": 5,
+    "effect": "Lowers the user’s Defense, Special Defense, and Speed by one stage each.",
+    "priority": 0
   },
   {
     "slug": "fusion-flare",
@@ -5581,7 +6696,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 100,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "With Fusion Bolt, inflicts double damage.",
+    "priority": 0
   },
   {
     "slug": "fusion-bolt",
@@ -5591,7 +6708,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "With Fusion Flare, inflicts double damage.",
+    "priority": 0
   },
   {
     "slug": "flying-press",
@@ -5601,7 +6720,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 95,
-    "pp": 10
+    "pp": 10,
+    "effect": "Deals both Fighting and Flying-type damage.",
+    "priority": 0
   },
   {
     "slug": "mat-block",
@@ -5611,7 +6732,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Protects all friendly Pokémon from damaging moves.  Only works on the first turn after the user is sent out.",
+    "priority": 0
   },
   {
     "slug": "belch",
@@ -5621,7 +6744,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 120,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "effect": "Can only be used after the user has eaten a berry.",
+    "priority": 0
   },
   {
     "slug": "rototiller",
@@ -5631,7 +6756,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Raises the Attack and Special Attack of all Grass Pokémon in battle.",
+    "priority": 0
   },
   {
     "slug": "sticky-web",
@@ -5641,7 +6768,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Covers the opposing field, lowering opponents’ Speed by one stage upon switching in.",
+    "priority": 0
   },
   {
     "slug": "fell-stinger",
@@ -5651,7 +6780,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 50,
     "acc": 100,
-    "pp": 25
+    "pp": 25,
+    "effect": "Raises the user’s Attack by two stages if it KOs the target.",
+    "priority": 0
   },
   {
     "slug": "phantom-force",
@@ -5661,7 +6792,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 90,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "User vanishes, dodging all attacks, and hits next turn.  Hits through Protect and Detect.",
+    "priority": 0
   },
   {
     "slug": "trick-or-treat",
@@ -5671,7 +6804,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Adds Ghost to the target’s types.",
+    "priority": 0
   },
   {
     "slug": "noble-roar",
@@ -5681,7 +6816,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 30
+    "pp": 30,
+    "effect": "Lowers the target’s Attack and Special Attack by one stage.",
+    "priority": 0
   },
   {
     "slug": "ion-deluge",
@@ -5691,7 +6828,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 25
+    "pp": 25,
+    "effect": "Changes all Normal moves to Electric moves for the rest of the turn.",
+    "priority": 1
   },
   {
     "slug": "parabolic-charge",
@@ -5701,7 +6840,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 65,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Heals the user for half the total damage dealt to all targets.",
+    "priority": 0
   },
   {
     "slug": "forests-curse",
@@ -5711,7 +6852,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Adds Grass to the target’s types.",
+    "priority": 0
   },
   {
     "slug": "petal-blizzard",
@@ -5721,7 +6864,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 90,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Inflicts regular damage.",
+    "priority": 0
   },
   {
     "slug": "freeze-dry",
@@ -5731,7 +6876,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 70,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Super-effective against Water.",
+    "priority": 0
   },
   {
     "slug": "disarming-voice",
@@ -5741,7 +6888,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 40,
     "acc": null,
-    "pp": 15
+    "pp": 15,
+    "effect": "Never misses.",
+    "priority": 0
   },
   {
     "slug": "parting-shot",
@@ -5751,7 +6900,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Lowers all targets’ Attack and Special Attack by one stage.  Makes the user switch out.",
+    "priority": 0
   },
   {
     "slug": "topsy-turvy",
@@ -5761,7 +6912,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Inverts the target’s stat modifiers.",
+    "priority": 0
   },
   {
     "slug": "draining-kiss",
@@ -5771,7 +6924,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 50,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Drains 75% of the damage inflicted to heal the user.",
+    "priority": 0
   },
   {
     "slug": "crafty-shield",
@@ -5781,7 +6936,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Protects all friendly Pokémon from non-damaging moves.",
+    "priority": 3
   },
   {
     "slug": "flower-shield",
@@ -5791,7 +6948,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Raises the Defense of all Grass Pokémon in battle.",
+    "priority": 0
   },
   {
     "slug": "grassy-terrain",
@@ -5801,7 +6960,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "For five turns, heals all Pokémon on the ground for 1/16 max HP each turn and strengthens their Grass moves to 1.5× their power.",
+    "priority": 0
   },
   {
     "slug": "misty-terrain",
@@ -5811,7 +6972,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "For five turns, protects all Pokémon on the ground from major status ailments and confusion, and halves the power of incoming Dragon moves.",
+    "priority": 0
   },
   {
     "slug": "electrify",
@@ -5821,7 +6984,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Changes the target’s move’s type to Electric if it hasn’t moved yet this turn.",
+    "priority": 0
   },
   {
     "slug": "play-rough",
@@ -5831,7 +6996,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 90,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to lower the target’s Attack by one stage.",
+    "priority": 0
   },
   {
     "slug": "fairy-wind",
@@ -5841,7 +7008,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 40,
     "acc": 100,
-    "pp": 30
+    "pp": 30,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "moonblast",
@@ -5851,7 +7020,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 95,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to lower the target’s Special Attack by one stage.",
+    "priority": 0
   },
   {
     "slug": "boomburst",
@@ -5861,7 +7032,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 140,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage.",
+    "priority": 0
   },
   {
     "slug": "fairy-lock",
@@ -5871,7 +7044,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Prevents all Pokémon from fleeing or switching out during the next turn.",
+    "priority": 0
   },
   {
     "slug": "kings-shield",
@@ -5881,7 +7056,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Blocks damaging attacks and lowers attacking Pokémon’s Attack by two stages on contact.  Switches Aegislash to Shield Forme.",
+    "priority": 4
   },
   {
     "slug": "play-nice",
@@ -5891,7 +7068,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Lowers the target’s Attack by one stage.",
+    "priority": 0
   },
   {
     "slug": "confide",
@@ -5901,7 +7080,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Lowers the target’s Special Attack by one stage.",
+    "priority": 0
   },
   {
     "slug": "diamond-storm",
@@ -5911,7 +7092,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 95,
-    "pp": 5
+    "pp": 5,
+    "effect": "Has a chance to raise the user’s Defense by two stages for each target hit.",
+    "priority": 0
   },
   {
     "slug": "steam-eruption",
@@ -5921,7 +7104,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 110,
     "acc": 95,
-    "pp": 5
+    "pp": 5,
+    "effect": "Has a chance to burn the target.",
+    "priority": 0
   },
   {
     "slug": "hyperspace-hole",
@@ -5931,7 +7116,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": null,
-    "pp": 5
+    "pp": 5,
+    "effect": "Ignores and destroys protection effects.",
+    "priority": 0
   },
   {
     "slug": "water-shuriken",
@@ -5941,7 +7128,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 15,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Hits 2–5 times.",
+    "priority": 1
   },
   {
     "slug": "mystical-fire",
@@ -5951,7 +7140,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 75,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to lower the target’s Special Attack by one stage.",
+    "priority": 0
   },
   {
     "slug": "spiky-shield",
@@ -5961,7 +7152,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Blocks damaging attacks and damages attacking Pokémon for 1/8 their max HP.",
+    "priority": 4
   },
   {
     "slug": "aromatic-mist",
@@ -5971,7 +7164,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Raises a selected ally’s Special Defense by one stage.",
+    "priority": 0
   },
   {
     "slug": "eerie-impulse",
@@ -5981,7 +7176,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Lowers the target’s Special Attack by two stages.",
+    "priority": 0
   },
   {
     "slug": "venom-drench",
@@ -5991,7 +7188,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Lowers the target’s Attack, Special Attack, and Speed by one stage if it is poisoned.",
+    "priority": 0
   },
   {
     "slug": "powder",
@@ -6001,7 +7200,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Explodes if the target uses a Fire move this turn, damaging it for 1/4 its max HP and preventing the move.",
+    "priority": 1
   },
   {
     "slug": "geomancy",
@@ -6011,7 +7212,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Takes one turn to charge, then raises the user’s Special Attack, Special Defense, and Speed by two stages.",
+    "priority": 0
   },
   {
     "slug": "magnetic-flux",
@@ -6021,7 +7224,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Raises the Defense and Special Defense of all friendly Pokémon with Plus or Minus by one stage.",
+    "priority": 0
   },
   {
     "slug": "happy-hour",
@@ -6031,7 +7236,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 30
+    "pp": 30,
+    "effect": "Doubles prize money.",
+    "priority": 0
   },
   {
     "slug": "electric-terrain",
@@ -6041,7 +7248,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "For five turns, prevents all Pokémon on the ground from sleeping and strengthens their Electric moves to 1.5× their power.",
+    "priority": 0
   },
   {
     "slug": "dazzling-gleam",
@@ -6051,7 +7260,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "celebrate",
@@ -6061,7 +7272,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 40
+    "pp": 40,
+    "effect": "Does nothing.",
+    "priority": 0
   },
   {
     "slug": "hold-hands",
@@ -6071,7 +7284,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 40
+    "pp": 40,
+    "effect": "Does nothing.",
+    "priority": 0
   },
   {
     "slug": "baby-doll-eyes",
@@ -6081,7 +7296,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 30
+    "pp": 30,
+    "effect": "Lowers the target’s Attack by one stage.",
+    "priority": 1
   },
   {
     "slug": "nuzzle",
@@ -6091,7 +7308,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 20,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Has a chance to paralyze the target.",
+    "priority": 0
   },
   {
     "slug": "hold-back",
@@ -6101,7 +7320,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 40,
     "acc": 100,
-    "pp": 40
+    "pp": 40,
+    "effect": "Cannot lower the target’s HP below 1.",
+    "priority": 0
   },
   {
     "slug": "infestation",
@@ -6111,7 +7332,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 20,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Prevents the target from fleeing and inflicts damage for 2-5 turns.",
+    "priority": 0
   },
   {
     "slug": "power-up-punch",
@@ -6121,7 +7344,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 40,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Raises the user’s Attack by one stage after inflicting damage.",
+    "priority": 0
   },
   {
     "slug": "oblivion-wing",
@@ -6131,7 +7356,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Drains 75% of the damage inflicted to heal the user.",
+    "priority": 0
   },
   {
     "slug": "thousand-arrows",
@@ -6141,7 +7368,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 90,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Grounds the target, and hits even Flying-type or levitating Pokémon.",
+    "priority": 0
   },
   {
     "slug": "thousand-waves",
@@ -6151,7 +7380,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 90,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Prevents the target from leaving battle.",
+    "priority": 0
   },
   {
     "slug": "lands-wrath",
@@ -6161,7 +7392,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 90,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "light-of-ruin",
@@ -6171,7 +7404,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 140,
     "acc": 90,
-    "pp": 5
+    "pp": 5,
+    "effect": "User receives 1/2 the damage inflicted in recoil.",
+    "priority": 0
   },
   {
     "slug": "origin-pulse",
@@ -6181,7 +7416,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 110,
     "acc": 85,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "precipice-blades",
@@ -6191,7 +7428,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 120,
     "acc": 85,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "dragon-ascent",
@@ -6201,7 +7440,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 120,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Lowers the user’s Defense and Special Defense by one stage after inflicting damage.",
+    "priority": 0
   },
   {
     "slug": "hyperspace-fury",
@@ -6211,7 +7452,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": null,
-    "pp": 5
+    "pp": 5,
+    "effect": "Ignores and destroys protection effects.",
+    "priority": 0
   },
   {
     "slug": "breakneck-blitz--physical",
@@ -6221,7 +7464,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "breakneck-blitz--special",
@@ -6231,7 +7476,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "all-out-pummeling--physical",
@@ -6241,7 +7488,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "all-out-pummeling--special",
@@ -6251,7 +7500,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "supersonic-skystrike--physical",
@@ -6261,7 +7512,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "supersonic-skystrike--special",
@@ -6271,7 +7524,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "acid-downpour--physical",
@@ -6281,7 +7536,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "acid-downpour--special",
@@ -6291,7 +7548,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "tectonic-rage--physical",
@@ -6301,7 +7560,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "tectonic-rage--special",
@@ -6311,7 +7572,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "continental-crush--physical",
@@ -6321,7 +7584,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "continental-crush--special",
@@ -6331,7 +7596,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "savage-spin-out--physical",
@@ -6341,7 +7608,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "savage-spin-out--special",
@@ -6351,7 +7620,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "never-ending-nightmare--physical",
@@ -6361,7 +7632,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "never-ending-nightmare--special",
@@ -6371,7 +7644,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "corkscrew-crash--physical",
@@ -6381,7 +7656,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "corkscrew-crash--special",
@@ -6391,7 +7668,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "inferno-overdrive--physical",
@@ -6401,7 +7680,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "inferno-overdrive--special",
@@ -6411,7 +7692,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "hydro-vortex--physical",
@@ -6421,7 +7704,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "hydro-vortex--special",
@@ -6431,7 +7716,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "bloom-doom--physical",
@@ -6441,7 +7728,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "bloom-doom--special",
@@ -6451,7 +7740,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "gigavolt-havoc--physical",
@@ -6461,7 +7752,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "gigavolt-havoc--special",
@@ -6471,7 +7764,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "shattered-psyche--physical",
@@ -6481,7 +7776,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "shattered-psyche--special",
@@ -6491,7 +7788,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "subzero-slammer--physical",
@@ -6501,7 +7800,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "subzero-slammer--special",
@@ -6511,7 +7812,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "devastating-drake--physical",
@@ -6521,7 +7824,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "devastating-drake--special",
@@ -6531,7 +7836,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "black-hole-eclipse--physical",
@@ -6541,7 +7848,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "black-hole-eclipse--special",
@@ -6551,7 +7860,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "twinkle-tackle--physical",
@@ -6561,7 +7872,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "twinkle-tackle--special",
@@ -6571,7 +7884,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "catastropika",
@@ -6581,7 +7896,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 210,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "shore-up",
@@ -6591,7 +7908,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 5
+    "pp": 5,
+    "effect": "Heals the user for ½ its max HP, or ⅔ during a sandstorm.",
+    "priority": 0
   },
   {
     "slug": "first-impression",
@@ -6601,7 +7920,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 90,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Can only be used as the first move after the user enters battle.",
+    "priority": 2
   },
   {
     "slug": "baneful-bunker",
@@ -6611,7 +7932,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Grants the user protection for the rest of the turn and poisons any Pokémon that tries to use a contact move on it.",
+    "priority": 4
   },
   {
     "slug": "spirit-shackle",
@@ -6621,7 +7944,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Traps the target.",
+    "priority": 0
   },
   {
     "slug": "darkest-lariat",
@@ -6631,7 +7956,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 85,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Ignores the target’s stat modifiers.",
+    "priority": 0
   },
   {
     "slug": "sparkling-aria",
@@ -6641,7 +7968,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 90,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Cures the target of burns.",
+    "priority": 0
   },
   {
     "slug": "ice-hammer",
@@ -6651,7 +7980,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "effect": "Lowers user’s Speed by one stage.",
+    "priority": 0
   },
   {
     "slug": "floral-healing",
@@ -6661,7 +7992,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Heals the target for ½ its max HP, or ⅔ on Grassy Terrain.",
+    "priority": 0
   },
   {
     "slug": "high-horsepower",
@@ -6671,7 +8004,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 95,
     "acc": 95,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "strength-sap",
@@ -6681,7 +8016,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Heals the user by the target’s current Attack stat and lowers the target’s Attack by one stage.",
+    "priority": 0
   },
   {
     "slug": "solar-blade",
@@ -6691,7 +8028,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 125,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Requires a turn to charge before attacking.",
+    "priority": 0
   },
   {
     "slug": "leafage",
@@ -6701,7 +8040,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 40,
     "acc": 100,
-    "pp": 40
+    "pp": 40,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "spotlight",
@@ -6711,7 +8052,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 15
+    "pp": 15,
+    "effect": "Forces the target’s opponents to aim at the target for the rest of the turn.",
+    "priority": 3
   },
   {
     "slug": "toxic-thread",
@@ -6721,7 +8064,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Poisons the target and lowers its Speed by one stage.",
+    "priority": 0
   },
   {
     "slug": "laser-focus",
@@ -6731,7 +8076,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 30
+    "pp": 30,
+    "effect": "Guarantees a critical hit with the user’s next move.",
+    "priority": 0
   },
   {
     "slug": "gear-up",
@@ -6741,7 +8088,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Raises the Attack and Special Attack of all friendly Pokémon with Plus or Minus by one stage.",
+    "priority": 0
   },
   {
     "slug": "throat-chop",
@@ -6751,7 +8100,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Prevents the target from using sound-based moves for two turns.",
+    "priority": 0
   },
   {
     "slug": "pollen-puff",
@@ -6761,7 +8112,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 90,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Damages opponents, but heals allies for 50% of their max HP.",
+    "priority": 0
   },
   {
     "slug": "anchor-shot",
@@ -6771,7 +8124,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Traps the target.",
+    "priority": 0
   },
   {
     "slug": "psychic-terrain",
@@ -6781,7 +8136,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Protects Pokémon on the ground from priority moves and increases the power of their  Psychic moves by 50%.",
+    "priority": 0
   },
   {
     "slug": "lunge",
@@ -6791,7 +8148,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Lowers the target’s Attack by one stage after inflicting damage.",
+    "priority": 0
   },
   {
     "slug": "fire-lash",
@@ -6801,7 +8160,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Lowers the target’s Defense by one stage after inflicting damage.",
+    "priority": 0
   },
   {
     "slug": "power-trip",
@@ -6811,7 +8172,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 20,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Power is higher the more the user’s stats have been raised, to a maximum of 31×.",
+    "priority": 0
   },
   {
     "slug": "burn-up",
@@ -6821,7 +8184,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 130,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Removes the user’s Fire type after inflicting damage.",
+    "priority": 0
   },
   {
     "slug": "speed-swap",
@@ -6831,7 +8196,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Exchanges the user’s Speed with the target’s.",
+    "priority": 0
   },
   {
     "slug": "smart-strike",
@@ -6841,7 +8208,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 70,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Never misses.",
+    "priority": 0
   },
   {
     "slug": "purify",
@@ -6851,7 +8220,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Cures the target of a major status ailment and heals the user for 50% of its max HP.",
+    "priority": 0
   },
   {
     "slug": "revelation-dance",
@@ -6861,7 +8232,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 90,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has the same type as the user.",
+    "priority": 0
   },
   {
     "slug": "core-enforcer",
@@ -6871,7 +8244,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 100,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Nullifies the target’s ability if it moves earlier.",
+    "priority": 0
   },
   {
     "slug": "trop-kick",
@@ -6881,7 +8256,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 70,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Lowers the target’s Attack by one stage after inflicting damage.",
+    "priority": 0
   },
   {
     "slug": "instruct",
@@ -6891,7 +8268,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 15
+    "pp": 15,
+    "effect": "Forces the target to repeat its last used move.",
+    "priority": 0
   },
   {
     "slug": "beak-blast",
@@ -6901,7 +8280,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Inflicts a burn on any Pokémon that makes contact before the attack.",
+    "priority": -3
   },
   {
     "slug": "clanging-scales",
@@ -6911,7 +8292,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 110,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Lowers the user’s Defense by one stage after inflicting damage.",
+    "priority": 0
   },
   {
     "slug": "dragon-hammer",
@@ -6921,7 +8304,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 90,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "brutal-swing",
@@ -6931,7 +8316,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 60,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "aurora-veil",
@@ -6941,7 +8328,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Reduces damage five turns, but must be used during hail.",
+    "priority": 0
   },
   {
     "slug": "sinister-arrow-raid",
@@ -6951,7 +8340,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 180,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "malicious-moonsault",
@@ -6961,7 +8352,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 180,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "oceanic-operetta",
@@ -6971,7 +8364,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 195,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "guardian-of-alola",
@@ -6981,7 +8376,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Damages the target for 75% of its remaining HP.",
+    "priority": 0
   },
   {
     "slug": "soul-stealing-7-star-strike",
@@ -6991,7 +8388,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 195,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "stoked-sparksurfer",
@@ -7001,7 +8400,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 175,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Has a chance to paralyze the target.",
+    "priority": 0
   },
   {
     "slug": "pulverizing-pancake",
@@ -7011,7 +8412,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 210,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "extreme-evoboost",
@@ -7021,7 +8424,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Raises all of the user’s stats by two stages.",
+    "priority": 0
   },
   {
     "slug": "genesis-supernova",
@@ -7031,7 +8436,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 185,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Changes the terrain to Psychic Terrain after inflicting damage.",
+    "priority": 0
   },
   {
     "slug": "shell-trap",
@@ -7041,7 +8448,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 150,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Only inflicts damage if the user was hit by a physical move this turn.",
+    "priority": -3
   },
   {
     "slug": "fleur-cannon",
@@ -7051,7 +8460,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 130,
     "acc": 90,
-    "pp": 5
+    "pp": 5,
+    "effect": "Lowers the user’s Special Attack by two stages after inflicting damage.",
+    "priority": 0
   },
   {
     "slug": "psychic-fangs",
@@ -7061,7 +8472,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 85,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Destroys Reflect and Light Screen.",
+    "priority": 0
   },
   {
     "slug": "stomping-tantrum",
@@ -7071,7 +8484,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 75,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has double power if the user’s last move failed.",
+    "priority": 0
   },
   {
     "slug": "shadow-bone",
@@ -7081,7 +8496,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 85,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to lower the target’s Defense by one stage.",
+    "priority": 0
   },
   {
     "slug": "accelerock",
@@ -7091,7 +8508,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 40,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 1
   },
   {
     "slug": "liquidation",
@@ -7101,7 +8520,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 85,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to lower the target’s Defense by one stage.",
+    "priority": 0
   },
   {
     "slug": "prismatic-laser",
@@ -7111,7 +8532,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 160,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "User foregoes its next turn to recharge.",
+    "priority": 0
   },
   {
     "slug": "spectral-thief",
@@ -7121,7 +8544,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 90,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Steals the target’s stat increases, then inflicts damage.",
+    "priority": 0
   },
   {
     "slug": "sunsteel-strike",
@@ -7131,7 +8556,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Cannot be disrupted by abilities.",
+    "priority": 0
   },
   {
     "slug": "moongeist-beam",
@@ -7141,7 +8568,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 100,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Cannot be disrupted by abilities.",
+    "priority": 0
   },
   {
     "slug": "tearful-look",
@@ -7151,7 +8580,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Lowers the target’s Attack and Special Attack by one stage.",
+    "priority": 0
   },
   {
     "slug": "zing-zap",
@@ -7161,7 +8592,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to make the target flinch.",
+    "priority": 0
   },
   {
     "slug": "natures-madness",
@@ -7171,7 +8604,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 90,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts damage equal to half the target’s HP.",
+    "priority": 0
   },
   {
     "slug": "multi-attack",
@@ -7181,7 +8616,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 120,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "If the user is holding a appropriate plate or drive, the damage inflicted will match it.",
+    "priority": 0
   },
   {
     "slug": "10-000-000-volt-thunderbolt",
@@ -7191,7 +8628,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 195,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "mind-blown",
@@ -7201,7 +8640,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 150,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Inflicts damage, and the user takes damage equal to half of its max HP, rounded up.",
+    "priority": 0
   },
   {
     "slug": "plasma-fists",
@@ -7211,7 +8652,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "After inflicting damage, causes all Normal-type moves to become Electric-type for the remainder of the turn.",
+    "priority": 0
   },
   {
     "slug": "photon-geyser",
@@ -7221,7 +8664,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 100,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "light-that-burns-the-sky",
@@ -7231,7 +8676,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 200,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts damage using either Attack or Special Attack stat, whichever is higher.",
+    "priority": 0
   },
   {
     "slug": "searing-sunraze-smash",
@@ -7241,7 +8688,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 200,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Cannot be disrupted by abilities.",
+    "priority": 0
   },
   {
     "slug": "menacing-moonraze-maelstrom",
@@ -7251,7 +8700,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 200,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Cannot be disrupted by abilities.",
+    "priority": 0
   },
   {
     "slug": "lets-snuggle-forever",
@@ -7261,7 +8712,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 190,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "splintered-stormshards",
@@ -7271,7 +8724,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 190,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts damage and removes any terrain present on the battlefield.",
+    "priority": 0
   },
   {
     "slug": "clangorous-soulblaze",
@@ -7281,7 +8736,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 185,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "effect": "Inflicts damage to all opposing Pokémon and increases the user’s Attack, Defense, Special Attack, Special Defense, and Speed by one stage each.",
+    "priority": 0
   },
   {
     "slug": "zippy-zap",
@@ -7291,7 +8748,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 2
   },
   {
     "slug": "splishy-splash",
@@ -7301,7 +8760,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 90,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "floaty-fall",
@@ -7311,7 +8772,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 90,
     "acc": 95,
-    "pp": 15
+    "pp": 15,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "pika-papow",
@@ -7321,7 +8784,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 20,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "bouncy-bubble",
@@ -7331,7 +8796,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 60,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "buzzy-buzz",
@@ -7341,7 +8808,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 60,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "sizzly-slide",
@@ -7351,7 +8820,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 60,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "glitzy-glow",
@@ -7361,7 +8832,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": 95,
-    "pp": 15
+    "pp": 15,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "baddy-bad",
@@ -7371,7 +8844,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": 95,
-    "pp": 15
+    "pp": 15,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "sappy-seed",
@@ -7381,7 +8856,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "freezy-frost",
@@ -7391,7 +8868,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 100,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "sparkly-swirl",
@@ -7401,7 +8880,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 120,
     "acc": 85,
-    "pp": 5
+    "pp": 5,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "veevee-volley",
@@ -7411,7 +8892,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 20,
     "acc": null,
-    "pp": 20
+    "pp": 20,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "double-iron-bash",
@@ -7421,7 +8904,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 60,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Hits twice in one turn.",
+    "priority": 0
   },
   {
     "slug": "max-guard",
@@ -7431,7 +8916,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Prevents any moves from hitting the user this turn.",
+    "priority": 4
   },
   {
     "slug": "dynamax-cannon",
@@ -7441,7 +8928,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 100,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Sets Light Screen on the user’s side of the field after inflicting damage.",
+    "priority": 0
   },
   {
     "slug": "snipe-shot",
@@ -7451,7 +8940,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Sets Reflect on the user’s side of the field after inflicting damage.",
+    "priority": 0
   },
   {
     "slug": "jaw-lock",
@@ -7461,7 +8952,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Seeds the target after inflicting damage.",
+    "priority": 0
   },
   {
     "slug": "stuff-cheeks",
@@ -7471,7 +8964,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Cures the entire party of major status effects after inflicting damage.",
+    "priority": 0
   },
   {
     "slug": "no-retreat",
@@ -7481,7 +8976,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 5
+    "pp": 5,
+    "effect": "Hits twice in one turn, with a chance to make the target flinch.",
+    "priority": 0
   },
   {
     "slug": "tar-shot",
@@ -7491,7 +8988,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "priority": 0
   },
   {
     "slug": "magic-powder",
@@ -7501,7 +8999,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "priority": 0
   },
   {
     "slug": "dragon-darts",
@@ -7511,7 +9010,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 50,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "teatime",
@@ -7521,7 +9021,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "octolock",
@@ -7531,7 +9032,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "priority": 0
   },
   {
     "slug": "bolt-beak",
@@ -7541,7 +9043,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 85,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "fishious-rend",
@@ -7551,7 +9054,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 85,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "court-change",
@@ -7561,7 +9065,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "max-flare",
@@ -7571,7 +9076,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "max-flutterby",
@@ -7581,7 +9088,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 10,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "max-lightning",
@@ -7591,7 +9100,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 10,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "max-strike",
@@ -7601,7 +9112,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 10,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "max-knuckle",
@@ -7611,7 +9124,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 10,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "max-phantasm",
@@ -7621,7 +9136,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 10,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "max-hailstorm",
@@ -7631,7 +9148,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 10,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "max-ooze",
@@ -7641,7 +9160,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 10,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "max-geyser",
@@ -7651,7 +9172,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 10,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "max-airstream",
@@ -7661,7 +9184,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 10,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "max-starfall",
@@ -7671,7 +9196,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 10,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "max-wyrmwind",
@@ -7681,7 +9208,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 10,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "max-mindstorm",
@@ -7691,7 +9220,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 10,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "max-rockfall",
@@ -7701,7 +9232,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 10,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "max-quake",
@@ -7711,7 +9244,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 10,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "max-darkness",
@@ -7721,7 +9256,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 10,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "max-overgrowth",
@@ -7731,7 +9268,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 10,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "max-steelspike",
@@ -7741,7 +9280,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 10,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "clangorous-soul",
@@ -7751,7 +9292,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "priority": 0
   },
   {
     "slug": "body-press",
@@ -7761,7 +9303,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "decorate",
@@ -7771,7 +9314,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 15
+    "pp": 15,
+    "priority": 0
   },
   {
     "slug": "drum-beating",
@@ -7781,7 +9325,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to lower the target’s Speed by one stage.",
+    "priority": 0
   },
   {
     "slug": "snap-trap",
@@ -7791,7 +9337,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 35,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Prevents the target from fleeing and inflicts damage for 2-5 turns.",
+    "priority": 0
   },
   {
     "slug": "pyro-ball",
@@ -7801,7 +9349,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 120,
     "acc": 90,
-    "pp": 5
+    "pp": 5,
+    "effect": "Has a chance to burn the target.",
+    "priority": 0
   },
   {
     "slug": "behemoth-blade",
@@ -7811,7 +9361,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "priority": 0
   },
   {
     "slug": "behemoth-bash",
@@ -7821,7 +9372,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "priority": 0
   },
   {
     "slug": "aura-wheel",
@@ -7831,7 +9383,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 110,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "breaking-swipe",
@@ -7841,7 +9394,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 60,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Lowers the target’s Attack by one stage after inflicting damage.",
+    "priority": 0
   },
   {
     "slug": "branch-poke",
@@ -7851,7 +9406,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 40,
     "acc": 100,
-    "pp": 40
+    "pp": 40,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "overdrive",
@@ -7861,7 +9418,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "apple-acid",
@@ -7871,7 +9429,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "grav-apple",
@@ -7881,7 +9440,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Lowers the target’s Defense by one stage after inflicting damage.",
+    "priority": 0
   },
   {
     "slug": "spirit-break",
@@ -7891,7 +9452,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 75,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "effect": "Has a chance to lower the target’s Special Attack by one stage.",
+    "priority": 0
   },
   {
     "slug": "strange-steam",
@@ -7901,7 +9464,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 90,
     "acc": 95,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to confuse the target.",
+    "priority": 0
   },
   {
     "slug": "life-dew",
@@ -7911,7 +9476,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "obstruct",
@@ -7921,7 +9487,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 4
   },
   {
     "slug": "false-surrender",
@@ -7931,7 +9498,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Never misses.",
+    "priority": 0
   },
   {
     "slug": "meteor-assault",
@@ -7941,7 +9510,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 150,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "User foregoes its next turn to recharge.",
+    "priority": 0
   },
   {
     "slug": "eternabeam",
@@ -7951,7 +9522,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 160,
     "acc": 90,
-    "pp": 5
+    "pp": 5,
+    "effect": "User foregoes its next turn to recharge.",
+    "priority": 0
   },
   {
     "slug": "steel-beam",
@@ -7961,7 +9534,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 140,
     "acc": 95,
-    "pp": 5
+    "pp": 5,
+    "effect": "Inflicts damage, and the user takes damage equal to half of its max HP, rounded up.",
+    "priority": 0
   },
   {
     "slug": "expanding-force",
@@ -7971,7 +9546,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "steel-roller",
@@ -7981,7 +9558,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 130,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "scale-shot",
@@ -7991,7 +9570,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 25,
     "acc": 90,
-    "pp": 20
+    "pp": 20,
+    "effect": "Boosts the user’s Speed and lowers their Defense by one stage after inflicting damage two to five times in a row.",
+    "priority": 0
   },
   {
     "slug": "meteor-beam",
@@ -8001,7 +9582,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 120,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "shell-side-arm",
@@ -8011,7 +9594,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 90,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "misty-explosion",
@@ -8021,7 +9606,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 100,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "grassy-glide",
@@ -8031,7 +9618,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 55,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "rising-voltage",
@@ -8041,7 +9630,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 70,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "terrain-pulse",
@@ -8051,7 +9642,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 50,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "skitter-smack",
@@ -8061,7 +9654,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 70,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "burning-jealousy",
@@ -8071,7 +9666,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 70,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "lash-out",
@@ -8081,7 +9678,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 75,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "poltergeist",
@@ -8091,7 +9690,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 110,
     "acc": 90,
-    "pp": 5
+    "pp": 5,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "corrosive-gas",
@@ -8101,7 +9702,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 40
+    "pp": 40,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "coaching",
@@ -8111,7 +9714,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "flip-turn",
@@ -8121,7 +9726,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 60,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "triple-axel",
@@ -8131,7 +9738,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 20,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "dual-wingbeat",
@@ -8141,7 +9750,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 40,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "scorching-sands",
@@ -8151,7 +9762,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 70,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Has a chance to burn the target.",
+    "priority": 0
   },
   {
     "slug": "jungle-healing",
@@ -8161,7 +9774,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "wicked-blow",
@@ -8171,7 +9786,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 75,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "surging-strikes",
@@ -8181,7 +9798,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 25,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "thunder-cage",
@@ -8191,7 +9810,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": 90,
-    "pp": 15
+    "pp": 15,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "dragon-energy",
@@ -8201,7 +9822,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 150,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "freezing-glare",
@@ -8211,7 +9834,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 90,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "fiery-wrath",
@@ -8221,7 +9846,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 90,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "thunderous-kick",
@@ -8231,7 +9858,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 90,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "glacial-lance",
@@ -8241,7 +9870,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 120,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "astral-barrage",
@@ -8251,7 +9882,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 120,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "eerie-spell",
@@ -8261,7 +9894,9 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "effect": "Inflicts regular damage with no additional effect.",
+    "priority": 0
   },
   {
     "slug": "dire-claw",
@@ -8271,7 +9906,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "priority": 0
   },
   {
     "slug": "psyshield-bash",
@@ -8281,7 +9917,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 70,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "power-shift",
@@ -8291,7 +9928,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "stone-axe",
@@ -8301,7 +9939,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 65,
     "acc": 90,
-    "pp": 15
+    "pp": 15,
+    "priority": 0
   },
   {
     "slug": "springtide-storm",
@@ -8311,7 +9950,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 100,
     "acc": 80,
-    "pp": 5
+    "pp": 5,
+    "priority": 0
   },
   {
     "slug": "mystical-power",
@@ -8321,7 +9961,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 70,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "raging-fury",
@@ -8331,7 +9972,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 120,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "wave-crash",
@@ -8341,7 +9983,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 120,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "chloroblast",
@@ -8351,7 +9994,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 150,
     "acc": 95,
-    "pp": 5
+    "pp": 5,
+    "priority": 0
   },
   {
     "slug": "mountain-gale",
@@ -8361,7 +10005,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 85,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "victory-dance",
@@ -8371,7 +10016,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "headlong-rush",
@@ -8381,7 +10027,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 120,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "priority": 0
   },
   {
     "slug": "barb-barrage",
@@ -8391,7 +10038,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 60,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "esper-wing",
@@ -8401,7 +10049,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "bitter-malice",
@@ -8411,7 +10060,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 75,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "shelter",
@@ -8421,7 +10071,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "triple-arrows",
@@ -8431,7 +10082,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 90,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "infernal-parade",
@@ -8441,7 +10093,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 60,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "priority": 0
   },
   {
     "slug": "ceaseless-edge",
@@ -8451,7 +10104,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 65,
     "acc": 90,
-    "pp": 15
+    "pp": 15,
+    "priority": 0
   },
   {
     "slug": "bleakwind-storm",
@@ -8461,7 +10115,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 100,
     "acc": 80,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "wildbolt-storm",
@@ -8471,7 +10126,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 100,
     "acc": 80,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "sandsear-storm",
@@ -8481,7 +10137,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 100,
     "acc": 80,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "lunar-blessing",
@@ -8491,7 +10148,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 5
+    "pp": 5,
+    "priority": 0
   },
   {
     "slug": "take-heart",
@@ -8501,7 +10159,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "tera-blast",
@@ -8511,7 +10170,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "silk-trap",
@@ -8521,7 +10181,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "priority": 4
   },
   {
     "slug": "axe-kick",
@@ -8531,7 +10192,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 120,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "last-respects",
@@ -8541,7 +10203,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 50,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "lumina-crash",
@@ -8551,7 +10214,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "order-up",
@@ -8561,7 +10225,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "jet-punch",
@@ -8571,7 +10236,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 60,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "priority": 1
   },
   {
     "slug": "spicy-extract",
@@ -8581,7 +10247,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 15
+    "pp": 15,
+    "priority": 0
   },
   {
     "slug": "spin-out",
@@ -8591,7 +10258,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "priority": 0
   },
   {
     "slug": "population-bomb",
@@ -8601,7 +10269,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 20,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "ice-spinner",
@@ -8611,7 +10280,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "priority": 0
   },
   {
     "slug": "glaive-rush",
@@ -8621,7 +10291,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 120,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "priority": 0
   },
   {
     "slug": "revival-blessing",
@@ -8631,7 +10302,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 1
+    "pp": 1,
+    "priority": 0
   },
   {
     "slug": "salt-cure",
@@ -8641,7 +10313,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 40,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "priority": 0
   },
   {
     "slug": "triple-dive",
@@ -8651,7 +10324,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 30,
     "acc": 95,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "mortal-spin",
@@ -8661,7 +10335,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 30,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "priority": 0
   },
   {
     "slug": "doodle",
@@ -8671,7 +10346,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "fillet-away",
@@ -8681,7 +10357,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "kowtow-cleave",
@@ -8691,7 +10368,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 85,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "flower-trick",
@@ -8701,7 +10379,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 70,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "torch-song",
@@ -8711,7 +10390,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "aqua-step",
@@ -8721,7 +10401,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "raging-bull",
@@ -8731,7 +10412,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 90,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "make-it-rain",
@@ -8741,7 +10423,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 120,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "priority": 0
   },
   {
     "slug": "psyblade",
@@ -8751,7 +10434,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "priority": 0
   },
   {
     "slug": "hydro-steam",
@@ -8761,7 +10445,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "priority": 0
   },
   {
     "slug": "ruination",
@@ -8771,7 +10456,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 1,
     "acc": 90,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "collision-course",
@@ -8781,7 +10467,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "priority": 0
   },
   {
     "slug": "electro-drift",
@@ -8791,7 +10478,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 100,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "priority": 0
   },
   {
     "slug": "shed-tail",
@@ -8801,7 +10489,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "chilly-reception",
@@ -8811,7 +10500,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "tidy-up",
@@ -8821,7 +10511,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "snowscape",
@@ -8831,7 +10522,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": null,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "pounce",
@@ -8841,7 +10533,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 50,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "priority": 0
   },
   {
     "slug": "trailblaze",
@@ -8851,7 +10544,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 50,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "priority": 0
   },
   {
     "slug": "chilling-water",
@@ -8861,7 +10555,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 50,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "priority": 0
   },
   {
     "slug": "hyper-drill",
@@ -8871,7 +10566,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "priority": 0
   },
   {
     "slug": "twin-beam",
@@ -8881,7 +10577,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 40,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "rage-fist",
@@ -8891,7 +10588,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 50,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "armor-cannon",
@@ -8901,7 +10599,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 120,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "priority": 0
   },
   {
     "slug": "bitter-blade",
@@ -8911,7 +10610,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 90,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "double-shock",
@@ -8921,7 +10621,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 120,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "priority": 0
   },
   {
     "slug": "gigaton-hammer",
@@ -8931,7 +10632,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 160,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "priority": 0
   },
   {
     "slug": "comeuppance",
@@ -8941,7 +10643,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 1,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "aqua-cutter",
@@ -8951,7 +10654,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 70,
     "acc": 100,
-    "pp": 20
+    "pp": 20,
+    "priority": 0
   },
   {
     "slug": "blazing-torque",
@@ -8961,7 +10665,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "wicked-torque",
@@ -8971,7 +10676,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 80,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "noxious-torque",
@@ -8981,7 +10687,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "combat-torque",
@@ -8991,7 +10698,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "magical-torque",
@@ -9001,7 +10709,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "blood-moon",
@@ -9011,7 +10720,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 140,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "priority": 0
   },
   {
     "slug": "matcha-gotcha",
@@ -9021,7 +10731,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": 90,
-    "pp": 15
+    "pp": 15,
+    "priority": 0
   },
   {
     "slug": "syrup-bomb",
@@ -9031,7 +10742,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 60,
     "acc": 85,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "ivy-cudgel",
@@ -9041,7 +10753,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "electro-shot",
@@ -9051,7 +10764,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 130,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "tera-starstorm",
@@ -9061,7 +10775,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 120,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "priority": 0
   },
   {
     "slug": "fickle-beam",
@@ -9071,7 +10786,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "priority": 0
   },
   {
     "slug": "burning-bulwark",
@@ -9081,7 +10797,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 0,
-    "pp": 10
+    "pp": 10,
+    "priority": 4
   },
   {
     "slug": "thunderclap",
@@ -9091,7 +10808,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 70,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "priority": 1
   },
   {
     "slug": "mighty-cleave",
@@ -9101,7 +10819,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 95,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "priority": 0
   },
   {
     "slug": "tachyon-cutter",
@@ -9111,7 +10830,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 50,
     "acc": 0,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "hard-press",
@@ -9121,7 +10841,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 0,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "dragon-cheer",
@@ -9131,7 +10852,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "status",
     "power": null,
     "acc": 0,
-    "pp": 15
+    "pp": 15,
+    "priority": 0
   },
   {
     "slug": "alluring-voice",
@@ -9141,7 +10863,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 80,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "temper-flare",
@@ -9151,7 +10874,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 75,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "supercell-slam",
@@ -9161,7 +10885,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 100,
     "acc": 95,
-    "pp": 15
+    "pp": 15,
+    "priority": 0
   },
   {
     "slug": "psychic-noise",
@@ -9171,7 +10896,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 75,
     "acc": 100,
-    "pp": 10
+    "pp": 10,
+    "priority": 0
   },
   {
     "slug": "upper-hand",
@@ -9181,7 +10907,8 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "physical",
     "power": 65,
     "acc": 100,
-    "pp": 15
+    "pp": 15,
+    "priority": 3
   },
   {
     "slug": "malignant-chain",
@@ -9191,6 +10918,11 @@ window.MOVES_CHAMPIONS_DATA = window.BATTLE_REGISTRY['champions'].moves = [
     "cat": "special",
     "power": 100,
     "acc": 100,
-    "pp": 5
+    "pp": 5,
+    "priority": 0
   }
 ];
+  if(!window.BATTLE_REGISTRY) window.BATTLE_REGISTRY={};
+  if(!window.BATTLE_REGISTRY['champions']) window.BATTLE_REGISTRY['champions']={};
+  window.BATTLE_REGISTRY['champions'].moves = data;
+})();
