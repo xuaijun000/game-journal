@@ -2200,11 +2200,13 @@ function analyzeMatchups(){
       const weakHtml=renderTeamWeaknessWarning(scored);
       const speedHtml=renderSpeedAnalysis(scored,opp);
       const oppPredHtml=renderOppTeamPrediction(oppValid,predResult);
+      const quickHtml=renderQuickDecisionPanel({scored,myPkm,opp:oppValid,targetOpp,activeWeather,format:'singles'});
       const recSubtitle=targetOpp.length<oppValid.length
         ?`针对预测出战阵容（${targetOpp.map(op=>esc(op.name||'?')).join('、')}）`
         :'针对已知对方阵容';
       resultBox.innerHTML=`
         <div class="battle-result-box">
+          ${quickHtml}
           ${oppPredHtml?`<div class="battle-result-section">
             <div class="battle-result-hdr"><span class="battle-result-title">🔮 对方出战预测</span><span class="battle-datasrc-note">队友协同 30% + 克制我方 70% · 点击首发可预测后续</span></div>
             ${oppPredHtml}
@@ -2671,6 +2673,199 @@ function renderOppDamage(opp, myPkm, activeWeather=''){
   if(!rows) return '';
   const header=myPkm.map(mp=>`<th>${esc(mp.name||'?')}</th>`).join('');
   return`<div class="opp-dmg-wrap"><table class="opp-dmg-table"><tr><th>对方↓ / 我方→</th>${header}</tr>${rows}</table></div>`;
+}
+
+/* ── 快速决策看板 ── */
+function quickSprite(pkm, isOpp=false){
+  if(!pkm)return '';
+  if(!isOpp&&pkm._spriteUrl)return pkm._spriteUrl;
+  if(pkm.spriteUrl)return pkm.spriteUrl;
+  if(pkm.slug&&PKM_PC_BY_SLUG[pkm.slug]?.spriteUrl)return PKM_PC_BY_SLUG[pkm.slug].spriteUrl;
+  return '';
+}
+
+function quickTypeEff(atkType, defPkm){
+  if(!atkType||!defPkm)return 1;
+  const immune=ABILITY_TYPE_IMMUNE[defPkm.ability||'']||[];
+  if(immune.includes(atkType))return 0;
+  return getTypeEff(atkType, defPkm.type1, defPkm.type2);
+}
+
+function quickEffText(eff){
+  if(eff===0)return '免疫';
+  if(eff===0.25)return '1/4';
+  if(eff===0.5)return '1/2';
+  if(eff===1)return '1倍';
+  return `${eff}倍`;
+}
+
+function collectQuickOppAttackTypes(opp){
+  const map=new Map();
+  const add=(type, weight, source)=>{
+    if(!type)return;
+    const cur=map.get(type)||{type,weight:0,sources:new Set()};
+    cur.weight+=Number(weight)||0;
+    if(source)cur.sources.add(source);
+    map.set(type,cur);
+  };
+  (opp||[]).forEach(op=>{
+    let usedMoves=false;
+    (op.predictedMoves||[]).forEach(pm=>{
+      const mv=MOVES_BY_SLUG?.[pm.slug];
+      if(!mv||!mv.type||mv.cat==='status'||!mv.power)return;
+      usedMoves=true;
+      add(mv.type, pm.pct||30, op.name||op.type1||'?');
+    });
+    if(!usedMoves){
+      add(op.type1, 45, op.name||op.type1||'?');
+      add(op.type2, 28, op.name||op.type2||'?');
+    }
+  });
+  return [...map.values()].sort((a,b)=>b.weight-a.weight);
+}
+
+function getQuickIncomingThreats(selected, opp, activeWeather='', limit=4){
+  const threats=[];
+  (selected||[]).forEach(mp=>{
+    (opp||[]).forEach(op=>{
+      const oppAbility=resolveOppAbility(op);
+      const oppItemSlug=op.predictedItem?.slug||'';
+      const oppAsAtk={
+        name:op.name,type1:op.type1,type2:op.type2,base:op.base||{},
+        ability:oppAbility,item:oppItemSlug,level:50,
+        move1:null,move2:null,move3:null,move4:null,
+      };
+      let best=null;
+      (op.predictedMoves||[]).forEach(pm=>{
+        const mv=MOVES_BY_SLUG?.[pm.slug];
+        if(!mv||!mv.power||mv.cat==='status')return;
+        const res=calcDamageEst(oppAsAtk,mp,mv,activeWeather);
+        if(res&&(!best||res.pct>best.pct))best={pct:res.pct,move:mv.name||mv.nameEn||'',type:mv.type,op,mp};
+      });
+      if(best){
+        threats.push(best);
+        return;
+      }
+      const typeRows=[op.type1,op.type2].filter(Boolean).map(t=>({type:t,eff:quickTypeEff(t,mp)}));
+      const worst=typeRows.sort((a,b)=>b.eff-a.eff)[0];
+      if(worst&&worst.eff>=2)threats.push({pct:0,eff:worst.eff,move:TYPE_ZH[worst.type]||worst.type,type:worst.type,op,mp});
+    });
+  });
+  return threats
+    .filter(t=>t.pct>=35||t.eff>=2)
+    .sort((a,b)=>(b.pct||0)-(a.pct||0)||(b.eff||0)-(a.eff||0))
+    .slice(0,limit);
+}
+
+function getQuickBreakthroughs(selectedScores, opp, activeWeather='', limit=3){
+  const rows=[];
+  (selectedScores||[]).forEach(s=>{
+    const mp=s.pkm;
+    (opp||[]).forEach(op=>{
+      let best=null;
+      [mp.move1,mp.move2,mp.move3,mp.move4].filter(m=>m&&m.power>0&&m.cat!=='status').forEach(mv=>{
+        const res=calcDamageEst(mp,op,mv,activeWeather);
+        if(res&&(!best||res.pct>best.pct))best={pct:res.pct,move:mv.name||mv.nameEn||'',typeMul:res.typeMul,mp,op};
+      });
+      if(best){
+        rows.push(best);
+        return;
+      }
+      const eff=getBestMoveEff(mp,op);
+      if(eff&&eff>=2)rows.push({pct:0,typeMul:eff,move:'属性克制',mp,op});
+    });
+  });
+  return rows
+    .filter(r=>r.pct>=35||r.typeMul>=2)
+    .sort((a,b)=>(b.pct||0)-(a.pct||0)||(b.typeMul||0)-(a.typeMul||0))
+    .slice(0,limit);
+}
+
+function getQuickSafeSwitchRows(selected, allMyPkm, opp, limit=3){
+  const selectedSet=new Set((selected||[]).map(p=>p.name));
+  return collectQuickOppAttackTypes(opp).slice(0,6).map(row=>{
+    const safe=(selected||[]).filter(p=>quickTypeEff(row.type,p)<=0.5);
+    const exposed=(selected||[]).filter(p=>quickTypeEff(row.type,p)>=2);
+    const bench=(allMyPkm||[]).filter(p=>!selectedSet.has(p.name)&&quickTypeEff(row.type,p)<=0.5);
+    return{...row,safe,exposed,bench,risk:exposed.length*2+(safe.length?0:1)+(row.weight/100)};
+  }).filter(r=>r.exposed.length||!r.safe.length)
+    .sort((a,b)=>b.risk-a.risk)
+    .slice(0,limit);
+}
+
+function renderQuickPkmChip(pkm, note='', isOpp=false){
+  const img=quickSprite(pkm,isOpp);
+  return`<div class="bqd-pkm-chip">
+    ${img?`<img src="${esc(img)}" alt="" onerror="this.style.display='none'">`:''}
+    <span>${esc(pkm?.name||'?')}</span>
+    ${note?`<em>${esc(note)}</em>`:''}
+  </div>`;
+}
+
+function renderQuickDecisionPanel({scored=[],myPkm=[],opp=[],targetOpp=[],activeWeather='',format='singles',leadPairScored=[]}={}){
+  const pickCount=format==='doubles'?4:3;
+  const selectedScores=scored.slice(0,pickCount);
+  const selected=selectedScores.map(s=>s.pkm).filter(Boolean);
+  if(!selected.length)return '';
+  const oppPool=(targetOpp&&targetOpp.length?targetOpp:opp).filter(op=>op.name||op.type1);
+  const leadScores=format==='doubles'&&leadPairScored.length?leadPairScored:selectedScores.slice(0,format==='doubles'?2:1);
+  const pickHtml=selectedScores.map((s,i)=>renderQuickPkmChip(s.pkm,`#${i+1}`)).join('');
+  const leadHtml=leadScores.map(s=>renderQuickPkmChip(s.pkm,'先发')).join('');
+
+  const threats=getQuickIncomingThreats(selected,oppPool,activeWeather,4);
+  const threatHtml=threats.length?threats.map(t=>{
+    const pct=t.pct?`${t.pct}%`:`${quickEffText(t.eff)}`;
+    return`<div class="bqd-line bqd-line-danger">
+      <span class="bqd-line-main">${esc(t.op?.name||'?')} -> ${esc(t.mp?.name||'?')}</span>
+      <span class="bqd-line-meta">${esc(t.move||'威胁')} · ${pct}</span>
+    </div>`;
+  }).join(''):`<div class="bqd-empty">暂无明显高危打点</div>`;
+
+  const breaks=getQuickBreakthroughs(selectedScores,oppPool,activeWeather,3);
+  const breakHtml=breaks.length?breaks.map(r=>{
+    const value=r.pct?`${r.pct}%`:`${quickEffText(r.typeMul)}`;
+    return`<div class="bqd-line bqd-line-good">
+      <span class="bqd-line-main">${esc(r.mp?.name||'?')} -> ${esc(r.op?.name||'?')}</span>
+      <span class="bqd-line-meta">${esc(r.move||'突破')} · ${value}</span>
+    </div>`;
+  }).join(''):`<div class="bqd-empty">没有稳定高压突破口</div>`;
+
+  const switchRows=getQuickSafeSwitchRows(selected,myPkm,oppPool,3);
+  const switchHtml=switchRows.length?switchRows.map(r=>{
+    const typeTag=`<span class="coverage-type-tag type-${r.type}">${TYPE_ZH[r.type]||r.type}</span>`;
+    const safeNames=r.safe.length?r.safe.map(p=>esc(p.name)).join('、'):(r.bench.length?`候补 ${r.bench.slice(0,2).map(p=>esc(p.name)).join('、')}`:'无人稳定抗');
+    const exposed=r.exposed.length?`危险：${r.exposed.map(p=>esc(p.name)).join('、')}`:'';
+    return`<div class="bqd-switch-row">
+      <div>${typeTag}<span class="bqd-switch-safe">${safeNames}</span></div>
+      ${exposed?`<span class="bqd-switch-risk">${exposed}</span>`:''}
+    </div>`;
+  }).join(''):`<div class="bqd-empty">当前选择没有突出的集体弱点</div>`;
+
+  return`<div class="battle-result-section bqd-panel">
+    <div class="battle-result-hdr">
+      <span class="battle-result-title">快速决策看板</span>
+      <span class="battle-datasrc-note">先看这里，长表用于复盘</span>
+    </div>
+    <div class="bqd-grid">
+      <div class="bqd-card bqd-card-primary">
+        <div class="bqd-label">${format==='doubles'?'推荐4只':'推荐3只'}</div>
+        <div class="bqd-pkm-rail">${pickHtml}</div>
+        ${leadHtml?`<div class="bqd-lead"><span>开局</span>${leadHtml}</div>`:''}
+      </div>
+      <div class="bqd-card">
+        <div class="bqd-label">最大危险</div>
+        ${threatHtml}
+      </div>
+      <div class="bqd-card">
+        <div class="bqd-label">优先突破</div>
+        ${breakHtml}
+      </div>
+      <div class="bqd-card">
+        <div class="bqd-label">安全换入</div>
+        ${switchHtml}
+      </div>
+    </div>
+  </div>`;
 }
 
 /* ── 对方宝可梦角色识别（基于 predictedMoves）── */
@@ -3197,19 +3392,52 @@ function pairSynergyScore(a, b) {
 }
 
 /* ── 从4只中选最佳先发2只 ── */
-function selectBestLeadPair(top4, oppLead) {
+/* ── 从top4中选最鲁棒先发2只：对对方所有可能先发搭档求期望威胁 ── */
+function selectBestLeadPair(top4, oppValid) {
   if (top4.length <= 2) return top4;
+  const oppPool = (oppValid||[]).filter(op => op.name||op.type1);
+
+  // 无对方信息时退化为纯协同
+  if (!oppPool.length) {
+    let best = null, bv = -Infinity;
+    for (let a = 0; a < top4.length-1; a++)
+      for (let b = a+1; b < top4.length; b++) {
+        const s = pairSynergyScore(top4[a].pkm, top4[b].pkm);
+        if (s > bv) { bv = s; best = [top4[a], top4[b]]; }
+      }
+    return best || top4.slice(0,2);
+  }
+
+  // 枚举对方所有可能先发搭档，按协同+压制力算原始权重
+  const oppCandidates = [];
+  for (let a = 0; a < oppPool.length-1; a++)
+    for (let b = a+1; b < oppPool.length; b++) {
+      const oa = oppPool[a], ob = oppPool[b];
+      const syn = pairSynergyScore(oa, ob);
+      const pressure = top4.reduce((s, t) =>
+        s + Math.max(oppThreatScore(oa, t.pkm), oppThreatScore(ob, t.pkm)), 0);
+      oppCandidates.push({ oa, ob, raw: syn * 1.2 + pressure });
+    }
+
+  // 线性归一化，最低保留 0.1 底权，使低概率先发不被完全忽视
+  const minRaw = Math.min(...oppCandidates.map(c => c.raw));
+  const maxRaw = Math.max(...oppCandidates.map(c => c.raw), minRaw + 0.01);
+  oppCandidates.forEach(c => { c.w = (c.raw - minRaw) / (maxRaw - minRaw) + 0.1; });
+  const totalW = oppCandidates.reduce((s, c) => s + c.w, 0);
+  oppCandidates.forEach(c => { c.w /= totalW; });
+
+  // 对我方每种先发搭档，计算期望威胁
   let best = null, bestScore = -Infinity;
-  for (let a = 0; a < top4.length-1; a++) {
+  for (let a = 0; a < top4.length-1; a++)
     for (let b = a+1; b < top4.length; b++) {
       const pa = top4[a].pkm, pb = top4[b].pkm;
       const syn = pairSynergyScore(pa, pb);
-      let incomingThreat = 0;
-      (oppLead||[]).slice(0,2).forEach(op => { incomingThreat += oppThreatScore(op,pa)+oppThreatScore(op,pb); });
-      const total = syn*1.5 - incomingThreat;
-      if (total > bestScore) { bestScore=total; best=[top4[a],top4[b]]; }
+      const expectedThreat = oppCandidates.reduce((s, { oa, ob, w }) =>
+        s + w * (oppThreatScore(oa, pa) + oppThreatScore(oa, pb) +
+                 oppThreatScore(ob, pa) + oppThreatScore(ob, pb)), 0);
+      const total = syn * 1.5 - expectedThreat;
+      if (total > bestScore) { bestScore = total; best = [top4[a], top4[b]]; }
     }
-  }
   return best || top4.slice(0,2);
 }
 
@@ -3251,10 +3479,10 @@ function selectSynTop4(scored) {
 
 /* ── 预测对方最优出战4只 + 先发2只（C(n,4) + 角色标签） ── */
 function predictOppDoubles(valid, myPkm) {
-  if (!valid.length) return {combo4:[],leadPair:[],threatMap:{},spreadWarn:[]};
+  if (!valid.length) return {combo4:[],leadPair:[],threatMap:{},spreadWarn:[],confidence:0};
   if (valid.length <= 4) {
     const lp = selectBestOppLeadPair(valid, myPkm);
-    return {combo4:valid, leadPair:lp, threatMap:buildThreatMap(valid,myPkm), spreadWarn:collectSpreadWarn(valid)};
+    return {combo4:valid, leadPair:lp, threatMap:buildThreatMap(valid,myPkm), spreadWarn:collectSpreadWarn(valid), confidence:1};
   }
   const synScore = combo => {
     let s=0;
@@ -3272,11 +3500,11 @@ function predictOppDoubles(valid, myPkm) {
   for(let a=0;a<valid.length-3;a++) for(let b=a+1;b<valid.length-2;b++) for(let c=b+1;c<valid.length-1;c++) for(let d=c+1;d<valid.length;d++) all.push([valid[a],valid[b],valid[c],valid[d]]);
   const raw=all.map(combo=>({combo,syn:synScore(combo),anti:antiScore(combo)}));
   const mxS=Math.max(...raw.map(r=>r.syn),1), mxA=Math.max(...raw.map(r=>r.anti),1);
-  let best=raw[0],bv=-1;
-  raw.forEach(r=>{const v=(r.syn/mxS)*0.4+(r.anti/mxA)*0.6; if(v>bv){bv=v;best=r;}});
-  const combo4=best.combo;
+  const ranked=raw.map(r=>({...r,v:(r.syn/mxS)*0.4+(r.anti/mxA)*0.6})).sort((a,b)=>b.v-a.v);
+  const confidence=ranked.length>=2?Math.min((ranked[0].v-ranked[1].v)/Math.max(ranked[0].v,0.01),1):1;
+  const combo4=ranked[0].combo;
   const leadPair=selectBestOppLeadPair(combo4,myPkm);
-  return {combo4, leadPair, threatMap:buildThreatMap(combo4,myPkm), spreadWarn:collectSpreadWarn(combo4)};
+  return {combo4, leadPair, threatMap:buildThreatMap(combo4,myPkm), spreadWarn:collectSpreadWarn(combo4), confidence};
 }
 
 /* ── 收集对方范围技警告 ── */
@@ -3509,13 +3737,17 @@ function analyzeDoubles() {
       const activeWeather=detectMyWeather(myPkm);
       const oppValid=opp.filter(op=>op.name||op.type1);
       const predResult=predictOppDoubles(oppValid,myPkm);
-      const targetOpp=predResult.combo4.length>=2?predResult.combo4:oppValid;
+      // 置信度低（<8%）或无明确预测时，对全队均等评分，避免预测偏差单向传播
+      const highConf=predResult.confidence>=0.08&&predResult.combo4.length>=4&&predResult.combo4.length<oppValid.length;
+      const targetOpp=highConf?predResult.combo4:oppValid;
       const rawScored=scorePkmForBattle(myPkm,targetOpp,activeWeather);
       const top4scored=selectSynTop4(rawScored);
       const top4=top4scored.slice(0,4);
-      const leadPairScored=selectBestLeadPair(top4,predResult.leadPair);
+      // 先发推荐对对方所有可能先发搭档求期望，不依赖单一预测
+      const leadPairScored=selectBestLeadPair(top4,oppValid);
       const oppPredHtml=renderDOppPrediction(oppValid,predResult);
       const myRecHtml=renderDoublesRec(top4,leadPairScored,targetOpp);
+      const quickHtml=renderQuickDecisionPanel({scored:top4scored,myPkm,opp:oppValid,targetOpp,activeWeather,format:'doubles',leadPairScored});
       const fieldCtrlHtml=renderDFieldControl(myPkm, oppValid);
       const spreadRiskHtml=renderDSpreadRisk(top4.map(s=>s.pkm));
       const matrixHtml=renderBattleMatrix(myPkm,opp);
@@ -3525,11 +3757,12 @@ function analyzeDoubles() {
       const dmgHtml=renderBattleDamage(myPkm, opp, activeWeather);
       const oppDmgHtml=renderOppDamage(opp, myPkm, activeWeather);
       resultBox.innerHTML=`<div class="battle-result-box">
+        ${quickHtml}
         ${oppPredHtml?`<div class="battle-result-section">
-          <div class="battle-result-hdr"><span class="battle-result-title">🔮 对方出战预测</span><span class="battle-datasrc-note">协同40%+克制我方60% · 先发另行预测</span></div>
+          <div class="battle-result-hdr"><span class="battle-result-title">🔮 对方出战预测</span><span class="battle-datasrc-note">协同40%+克制我方60%${oppValid.length>4?` · 置信度${Math.round(predResult.confidence*100)}%${highConf?'':' ⚠低·推荐已对全队均等评分'}`:''}</span></div>
           ${oppPredHtml}</div>`:''}
         <div class="battle-result-section">
-          <div class="battle-result-hdr"><span class="battle-result-title">推荐出战阵容（双打 6选4）</span></div>
+          <div class="battle-result-hdr"><span class="battle-result-title">推荐出战阵容（双打 6选4）</span><span class="battle-datasrc-note">${highConf?`针对预测出战（${targetOpp.map(op=>esc(op.name||'?')).join('、')}）`:'针对全部已知对方成员'}</span></div>
           ${myRecHtml}</div>
         <div class="battle-result-section">
           <div class="battle-result-hdr"><span class="battle-result-title">场地控制分析</span></div>
@@ -3616,4 +3849,4 @@ function calcDAllStats() {
     </div>`;
   }).join('')}</div>`;
 }
-
+
