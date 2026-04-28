@@ -53,14 +53,7 @@
 </header>
 <main>
   <div class="pg on" id="pg-list">
-    <div class="tab-banner"><img src="css/游戏库 Tab Banner.jpg" alt="" decoding="async" fetchpriority="high"></div>
-    <div class="stats">
-      <div class="sc" style="--c:var(--acc)"><div class="sn" id="s-total">0</div><div class="sl">总收录</div></div>
-      <div class="sc" style="--c:var(--acc)"><div class="sn" id="s-pl">0</div><div class="sl">游玩中</div></div>
-      <div class="sc" style="--c:var(--acc2)"><div class="sn" id="s-dn">0</div><div class="sl">已通关</div></div>
-      <div class="sc" style="--c:var(--warn)"><div class="sn" id="s-hr">0</div><div class="sl">总时长h</div></div>
-      <div class="sc" style="--c:var(--acc2)"><div class="sn" id="s-av">—</div><div class="sl">平均评分</div></div>
-    </div>
+    <div class="tab-banner"><img src="css/游戏库 Tab Banner.png" alt="" decoding="async" fetchpriority="high"></div>
     <div class="tb">
       <input type="text" id="q" placeholder="搜索游戏名称…" oninput="render()" autocomplete="off">
       <select id="fst" onchange="render()"><option value="">全部状态</option><option value="playing">游玩中</option><option value="done">已通关</option><option value="wishlist">想玩</option><option value="dropped">放弃</option></select>
@@ -87,6 +80,7 @@
     <div class="gg" id="gg"><div style="text-align:center;padding:3rem;color:var(--t3)">加载中…</div></div>
   </div>
   <div class="pg" id="pg-disc">
+    <div class="tab-banner"><img src="css/发现 Tab Banner.png" alt="" loading="lazy" decoding="async"></div>
     <div class="disc-header">
       <div class="disc-tabs">
         <button class="disc-tab on" data-mode="rating" onclick="switchDiscTab(this)">综合评分榜</button>
@@ -107,6 +101,44 @@
     <div class="rank-list" id="rank-list"><div class="disc-loading">加载中<span class="disc-loading-dots"><span></span><span></span><span></span></span></div></div>
   </div>
   <div class="pg" id="pg-stats">
+    <div class="tab-banner"><img src="css/统计 Tab Banner.png" alt="" loading="lazy" decoding="async"></div>
+    <div class="stats stats-overview">
+      <div class="sc" style="--c:var(--acc)"><div class="sn" id="s-total">0</div><div class="sl">总收录</div></div>
+      <div class="sc" style="--c:var(--acc)"><div class="sn" id="s-pl">0</div><div class="sl">游玩中</div></div>
+      <div class="sc" style="--c:var(--acc2)"><div class="sn" id="s-dn">0</div><div class="sl">已通关</div></div>
+      <div class="sc" style="--c:var(--warn)"><div class="sn" id="s-hr">0</div><div class="sl">总时长h</div></div>
+      <div class="sc" style="--c:var(--acc2)"><div class="sn" id="s-av">—</div><div class="sl">平均评分</div></div>
+    </div>
+    <div class="stats-workbench">
+      <section class="stats-panel stats-panel-wide">
+        <div class="stats-panel-head"><h3>游玩洞察</h3><span id="stats-density"></span></div>
+        <div class="stats-insights" id="stats-insights"></div>
+      </section>
+      <section class="stats-panel">
+        <div class="stats-panel-head"><h3>时长排行</h3><span>TOP 5</span></div>
+        <div class="stats-list" id="stats-top-hours"></div>
+      </section>
+      <section class="stats-panel">
+        <div class="stats-panel-head"><h3>高分档案</h3><span>RATING</span></div>
+        <div class="stats-list" id="stats-top-rated"></div>
+      </section>
+      <section class="stats-panel">
+        <div class="stats-panel-head"><h3>待处理</h3><span>QUEUE</span></div>
+        <div class="stats-list" id="stats-next-up"></div>
+      </section>
+      <section class="stats-panel">
+        <div class="stats-panel-head"><h3>资料整理</h3><span>CLEANUP</span></div>
+        <div class="stats-list" id="stats-cleanup"></div>
+      </section>
+      <section class="stats-panel">
+        <div class="stats-panel-head"><h3>平台投入</h3><span>HOURS</span></div>
+        <div class="stats-list" id="stats-platform-hours"></div>
+      </section>
+      <section class="stats-panel">
+        <div class="stats-panel-head"><h3>类型表现</h3><span>AVG</span></div>
+        <div class="stats-list" id="stats-genre-score"></div>
+      </section>
+    </div>
     <div class="cg">
       <div class="cc"><h3>状态分布</h3><div class="cw"><canvas id="ch-st"></canvas></div></div>
       <div class="cc"><h3>类型分布</h3><div class="cw"><canvas id="ch-gn"></canvas></div></div>
@@ -128,7 +160,7 @@
     </div>
   </div>
   <div class="pg" id="pg-pkm">
-    <div class="tab-banner"><img src="css/宝可梦 Tab Banner.jpg" alt="" loading="lazy" decoding="async"></div>
+    <div class="tab-banner"><img src="css/宝可梦 Tab Banner.png" alt="" loading="lazy" decoding="async"></div>
     <div id="pkm-active-catches" style="display:none" class="pkm-active-catches-box">
       <div class="pkm-active-catches-hdr">
         <span class="pkm-active-catches-title">▶ 当前游玩 · 捕获记录</span>
@@ -195,7 +227,7 @@
     <div id="partner-container"><div style="text-align:center;padding:3rem;color:var(--t3)">加载中…</div></div>
   </div>
   <div class="pg" id="pg-anime">
-    <div class="tab-banner"><img src="css/动漫漫画 Tab Banner.jpg" alt="" loading="lazy" decoding="async"></div>
+    <div class="tab-banner"><img src="css/动漫 Tab Banner.png" alt="" loading="lazy" decoding="async"></div>
     <div class="media-pg">
       <div class="disc-tabs" style="margin-bottom:.5rem">
         <div class="disc-tab-btn on" id="anime-tab-list" onclick="switchMediaTab('anime','list',this)">📋 我的记录</div>
@@ -226,7 +258,7 @@
     </div>
   </div>
   <div class="pg" id="pg-manga">
-    <div class="tab-banner"><img src="css/动漫漫画 Tab Banner.jpg" alt="" loading="lazy" decoding="async"></div>
+    <div class="tab-banner"><img src="css/漫画 Tab Banner.png" alt="" loading="lazy" decoding="async"></div>
     <div class="media-pg">
       <div class="disc-tabs" style="margin-bottom:.5rem">
         <div class="disc-tab-btn on" id="manga-tab-list" onclick="switchMediaTab('manga','list',this)">📋 我的记录</div>
@@ -258,7 +290,7 @@
   </div>
   <!-- ====== 宝可梦对战助手 ====== -->
   <div class="pg" id="pg-battle">
-    <div class="tab-banner"><img src="css/宝可梦对战 Tab Banner.jpg" alt="" loading="lazy" decoding="async"></div>
+    <div class="tab-banner"><img src="css/宝可梦对战 Tab Banner.png" alt="" loading="lazy" decoding="async"></div>
     <div style="padding:.9rem 0 .4rem;display:flex;align-items:baseline;gap:.5rem">
       <span style="font-size:1.05rem;font-weight:700;font-family:'Noto Serif SC',serif;color:var(--t)">对战助手</span>
       <span id="battle-mode-label" style="display:none;font-size:.7rem;color:var(--acc);font-family:'DM Mono',monospace"></span>

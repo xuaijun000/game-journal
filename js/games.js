@@ -1,4 +1,5 @@
 function setPF(p,el){pff=p;document.querySelectorAll('.pfchip').forEach(c=>c.classList.remove('on'));el.classList.add('on');render();}
+function refreshStatsIfVisible(){if(document.getElementById('pg-stats')?.classList.contains('on')&&typeof drawCharts==='function')drawCharts();}
 function render(){
   const q=document.getElementById('q').value.toLowerCase();
   const fs=document.getElementById('fst').value,so=document.getElementById('fso').value;
@@ -119,7 +120,7 @@ async function saveGame(){
     localStorage.setItem('gj',JSON.stringify(games));
   }
   if(window.partnerTrackEvent)window.partnerTrackEvent('game_log');
-  closeOv('ov-edit');render();
+  closeOv('ov-edit');render();refreshStatsIfVisible();
 }
 async function delGame(){
   if(!editId||!confirm('确认删除这款游戏？'))return;
@@ -127,7 +128,7 @@ async function delGame(){
   if(user)await db.from('games').delete().eq('id',editId).eq('user_id',user.id);
   games=games.filter(g=>(g.id||g._id)!=editId);
   if(!user)localStorage.setItem('gj',JSON.stringify(games));
-  document.querySelectorAll('.ov').forEach(o=>o.classList.remove('on'));render();
+  document.querySelectorAll('.ov').forEach(o=>o.classList.remove('on'));render();refreshStatsIfVisible();
 }
 function go(pg,btn){
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
@@ -169,7 +170,7 @@ async function syncSteam(){
         added++;
       }
     }
-    msg.style.color='var(--acc2)';msg.textContent=`✓ 新增 ${added} 款，更新 ${updated} 款时长`;render();
+    msg.style.color='var(--acc2)';msg.textContent=`✓ 新增 ${added} 款，更新 ${updated} 款时长`;render();refreshStatsIfVisible();
   }catch(e){msg.style.color='var(--danger)';msg.textContent=`同步失败：${e.message}`;}
   finally{btn.disabled=false;btn.textContent='↓ 同步 Steam 库';}
 }
