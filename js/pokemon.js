@@ -1144,13 +1144,13 @@ function openSeriesDetail(el){
   document.getElementById('ov-series').classList.add('on');
   // 从 Supabase 数据填充本地内存
   if(log.notes!=null)       lsSet('pkm_notes_'+seriesId,    Array.isArray(log.notes)?log.notes:[]);
-  if(log.party!=null)       lsSet('pkm_party_'+seriesId,    log.party);
-  if(log.progress!=null)    lsSet('pkm_progress_'+seriesId, log.progress);
-  if(log.hunts!=null)       lsSet('pkm_hunt_'+seriesId,     log.hunts);
+  if(log.party!=null)       setSeriesParty(seriesId,log.party,{sync:false});
+  if(log.progress!=null)    setSeriesProgress(seriesId,log.progress,{sync:false});
+  if(log.hunts!=null)       setSeriesHunts(seriesId,log.hunts,{sync:false});
   // 训练 EV：{pkmId: {hp,attack,...}} → 逐只写入内存
   if(log.training_evs!=null){
     Object.entries(log.training_evs).forEach(([pkmId,evs])=>{
-      lsSet('pkm_train_ev_'+seriesId+'_'+pkmId,evs);
+      setTrainEVs(seriesId,pkmId,evs,{sync:false});
     });
   }
   renderQuickNotes(seriesId);
@@ -1367,6 +1367,70 @@ const _lsMem={};
 function lsGet(k){try{const v=localStorage.getItem(k);return v!=null?JSON.parse(v):(_lsMem[k]??null);}catch{return _lsMem[k]??null;}}
 function lsSet(k,v){_lsMem[k]=v;try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
 
+function cloneJson(v){
+  try{return JSON.parse(JSON.stringify(v));}catch{return v;}
+}
+
+function normalizePartyList(party){
+  const list=Array.isArray(party)?party.slice(0,6):[];
+  while(list.length<6)list.push(null);
+  return list;
+}
+
+function getSeriesPlayState(sid){
+  return {
+    party:normalizePartyList(lsGet('pkm_party_'+sid)||[]),
+    progress:lsGet('pkm_progress_'+sid)||{},
+    hunts:lsGet('pkm_hunt_'+sid)||[],
+    trainingEvs:collectSeriesTrainingEVs(sid),
+  };
+}
+
+function getSeriesParty(sid){return getSeriesPlayState(sid).party;}
+function setSeriesParty(sid,party,{sync=true}={}){
+  const list=normalizePartyList(party);
+  lsSet('pkm_party_'+sid,list);
+  if(sync)syncSeriesField(sid,'party',list);
+  return list;
+}
+function getSeriesProgress(sid){return getSeriesPlayState(sid).progress;}
+function setSeriesProgress(sid,progress,{sync=true}={}){
+  const value=progress&&typeof progress==='object'?progress:{};
+  lsSet('pkm_progress_'+sid,value);
+  if(sync)syncSeriesField(sid,'progress',value);
+  return value;
+}
+function getSeriesHunts(sid){return getSeriesPlayState(sid).hunts;}
+function setSeriesHunts(sid,hunts,{sync='immediate'}={}){
+  const list=Array.isArray(hunts)?hunts:[];
+  lsSet('pkm_hunt_'+sid,list);
+  if(sync==='debounce')debounceSyncHunts(sid,list);
+  else if(sync)syncSeriesField(sid,'hunts',list);
+  return list;
+}
+function getTrainEVs(sid,pkmId){
+  return lsGet('pkm_train_ev_'+sid+'_'+pkmId)||{hp:0,attack:0,defense:0,'special-attack':0,'special-defense':0,speed:0};
+}
+function setTrainEVs(sid,pkmId,evs,{sync='debounce'}={}){
+  const value=evs&&typeof evs==='object'?evs:{};
+  lsSet('pkm_train_ev_'+sid+'_'+pkmId,value);
+  if(sync==='debounce')debounceSyncTrainEVs(sid);
+  else if(sync)syncSeriesField(sid,'training_evs',collectSeriesTrainingEVs(sid));
+  return value;
+}
+function collectSeriesTrainingEVs(sid){
+  const prefix='pkm_train_ev_'+sid+'_';
+  const evObj={};
+  Object.entries(_lsMem).forEach(([k,v])=>{if(k.startsWith(prefix))evObj[k.slice(prefix.length)]=v;});
+  try{
+    for(let i=0;i<localStorage.length;i++){
+      const k=localStorage.key(i);
+      if(k&&k.startsWith(prefix)&&!(k.slice(prefix.length) in evObj))evObj[k.slice(prefix.length)]=JSON.parse(localStorage.getItem(k));
+    }
+  }catch{}
+  return evObj;
+}
+
 /* 把单个 jsonb 字段写回 pkm_series_log（fire-and-forget） */
 async function syncSeriesField(sid,field,value){
   const{data:{session}}=await db.auth.getSession();if(!session?.user)return;
@@ -1378,19 +1442,20 @@ async function syncSeriesField(sid,field,value){
   }
   if(pkmSeriesLogs[sid])pkmSeriesLogs[sid][field]=value;
 }
-let _huntSyncTimer=null;
-function debounceSyncHunts(sid,list){clearTimeout(_huntSyncTimer);_huntSyncTimer=setTimeout(()=>syncSeriesField(sid,'hunts',list),1500);}
+const _seriesSyncTimers={};
+function queueSeriesFieldSync(sid,field,value,delay=1500){
+  const key=sid+'|'+field;
+  clearTimeout(_seriesSyncTimers[key]);
+  const snapshot=cloneJson(value);
+  _seriesSyncTimers[key]=setTimeout(()=>{
+    delete _seriesSyncTimers[key];
+    syncSeriesField(sid,field,snapshot);
+  },delay);
+}
+function debounceSyncHunts(sid,list){queueSeriesFieldSync(sid,'hunts',list,1500);}
 
-let _trainEVSyncTimer=null;
 function debounceSyncTrainEVs(sid){
-  clearTimeout(_trainEVSyncTimer);
-  _trainEVSyncTimer=setTimeout(()=>{
-    // 把当前 series 所有精灵的 EV 汇总成一个 object 存回 Supabase
-    const prefix='pkm_train_ev_'+sid+'_';
-    const evObj={};
-    Object.entries(_lsMem).forEach(([k,v])=>{if(k.startsWith(prefix))evObj[k.slice(prefix.length)]=v;});
-    syncSeriesField(sid,'training_evs',evObj);
-  },1200);
+  queueSeriesFieldSync(sid,'training_evs',collectSeriesTrainingEVs(sid),1200);
 }
 
 /* ── 当前系列 ID ── */
@@ -1443,38 +1508,7 @@ function delQuickNote(sid,idx){
 /* ============================
    👥 队伍追踪
    ============================ */
-function renderPartySlots(sid){
-  let party=lsGet('pkm_party_'+sid)||[];if(!Array.isArray(party))party=[];while(party.length<6)party.push(null);
-  const html=(searchId)=>party.map((p,i)=>{
-    if(p){
-      return`<div class="party-slot filled">
-        <button class="party-slot-del" onclick="removeFromParty('${sid}',${i});event.stopPropagation()">✕</button>
-        <img src="${p.img||''}" alt="" onerror="this.style.display='none'">
-        <div class="party-slot-name">${esc(p.name)}</div>
-        ${p.nick?`<div class="party-slot-nick">${esc(p.nick)}</div>`:''}
-        <div class="party-slot-lv">${p.lv?'Lv.'+p.lv:''}</div>
-        <button class="party-speak-btn" onclick="speakPartyMember('${sid}',${i});event.stopPropagation()">💬 说话</button>
-      </div>`;
-    }
-    return`<div class="party-slot" onclick="document.getElementById('${searchId}')?.focus()">
-      <div class="party-slot-empty-icon">+</div>
-      <div class="party-slot-empty-lbl">空位</div>
-    </div>`;
-  }).join('');
-  const wrap=document.getElementById('party-slots');
-  if(wrap)wrap.innerHTML=html('party-search-inp');
-  const immWrap=document.getElementById('imm-party-slots');
-  if(immWrap)immWrap.innerHTML=html('imm-party-search-inp');
-  renderImmPartyScene(sid);
-}
 function focusPartySearch(){document.getElementById('party-search-inp')?.focus();}
-function removeFromParty(sid,idx){
-  let party=lsGet('pkm_party_'+sid)||[];if(!Array.isArray(party))party=[];while(party.length<6)party.push(null);
-  party[idx]=null;lsSet('pkm_party_'+sid,party);
-  renderPartySlots(sid);
-  if(typeof initTrainTab==='function')initTrainTab(sid);
-  syncSeriesField(sid,'party',party);
-}
 let _partySearchT=null;
 function searchPartyPkm(v){
   clearTimeout(_partySearchT);
@@ -1489,20 +1523,19 @@ function searchImmPartyPkm(v){
   _partySearchT=setTimeout(()=>doInlineSearch(v,res,'party'),400);
 }
 function addToParty(sid,pkm){
-  let party=lsGet('pkm_party_'+sid)||[];if(!Array.isArray(party))party=[];while(party.length<6)party.push(null);
+  let party=getSeriesParty(sid);
   const emptyIdx=party.findIndex(p=>p===null);
   if(emptyIdx<0){showToast('队伍已满（最多6只）');return;}
   const nick=prompt(`给 ${pkm.name} 起个昵称？（回车跳过）`,'')||'';
   const lv=prompt('当前等级？（回车跳过）','')||'';
   const cleanLv=lv?String(Math.max(1,Math.min(100,parseInt(lv,10)||1))):'';
   party[emptyIdx]={pkmId:pkm.id,name:pkm.name,img:pkm.img,nick,lv:cleanLv};
-  lsSet('pkm_party_'+sid,party);
+  setSeriesParty(sid,party);
   ['party-search-inp','imm-party-search-inp'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['party-search-results','imm-party-search-results'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('open');});
   renderPartySlots(sid);
   renderImmParty();
   if(typeof initTrainTab==='function')initTrainTab(sid);
-  syncSeriesField(sid,'party',party);
 }
 
 /* ============================
@@ -1512,7 +1545,7 @@ function renderProgress(sid){
   const list=document.getElementById('progress-list');if(!list)return;
   const checkpoints=SERIES_CHECKPOINTS[sid];
   if(!checkpoints){list.innerHTML='<div style="color:var(--t3);font-size:.82rem;padding:8px 0">该作品暂无预设进度节点</div>';return;}
-  const done=lsGet('pkm_progress_'+sid)||{};
+  const done=getSeriesProgress(sid);
   const total=checkpoints.length;const doneCount=Object.keys(done).length;
   const pct=Math.round(doneCount/total*100);
   list.innerHTML=`<div class="progress-head">
@@ -1540,10 +1573,10 @@ function renderProgress(sid){
   }).join('')+'</div>';
 }
 function toggleCheckpoint(sid,idx){
-  const done=lsGet('pkm_progress_'+sid)||{};
+  const done=getSeriesProgress(sid);
   const wasNew=!done[idx];
   if(done[idx])delete done[idx];else done[idx]={ts:Date.now()};
-  lsSet('pkm_progress_'+sid,done);renderProgress(sid);syncSeriesField(sid,'progress',done);
+  setSeriesProgress(sid,done);renderProgress(sid);
   if(wasNew)setTimeout(()=>spawnCheckpointBurst(idx),30);
 }
 
@@ -2113,7 +2146,7 @@ function renderHuntDist(items,isOfficial,srcLabel){
   // 沉浸模式下立即同步区域精灵网格（必须在 hunt-dist-grid 检查之前）
   const ov=document.getElementById('ov-imm');
   if(ov&&ov.style.display!=='none'&&_immMode==='hunt'){
-    const curList=lsGet('pkm_hunt_'+_immSid)||[];
+    const curList=getSeriesHunts(_immSid);
     renderHuntAreaGrid(curList[_immIdx]||null);
   }
   const grid=document.getElementById('hunt-dist-grid');if(!grid)return;
@@ -2145,13 +2178,12 @@ function selectDistPkm(idx){
   // 直接开始目标捕捉
   const sid=_curSid;
   const loc=_huntSelLoc.includes('|')?_huntSelLoc.split('|')[1]:'';
-  const list=lsGet('pkm_hunt_'+sid)||[];
+  const list=getSeriesHunts(sid);
   let idx2=list.findIndex(t=>t.pkmId===pkm.id&&!t.done);
   if(idx2<0){
     list.push({pkmId:pkm.id,name:pkm.name,img:pkm.img,nature:'—',iv:'—',count:0,done:false,ts:Date.now(),loc});
     idx2=list.length-1;
-    lsSet('pkm_hunt_'+sid,list);
-    syncSeriesField(sid,'hunts',list);
+    setSeriesHunts(sid,list);
     renderHuntList(sid);
   }
   openImmHunt(sid,idx2);
@@ -2160,7 +2192,7 @@ function selectDistPkm(idx){
 /* ── 捕捉记录列表 ── */
 function renderHuntList(sid){
   const el=document.getElementById('hunt-list');if(!el)return;
-  const list=lsGet('pkm_hunt_'+sid)||[];
+  const list=getSeriesHunts(sid);
   const active=list.filter(t=>!t.done);const done=list.filter(t=>t.done);
   if(!list.length){el.innerHTML='<div style="font-size:.78rem;color:var(--t3);text-align:center;padding:20px 0;font-family:\'DM Mono\',monospace">选择地点后点击宝可梦开始自由捕捉</div>';return;}
   const renderCard=(t,i)=>{
@@ -2183,7 +2215,7 @@ function renderHuntList(sid){
 }
 function huntDel(sid,idx){
   if(!confirm('删除这个捕捉记录？'))return;
-  const list=lsGet('pkm_hunt_'+sid)||[];list.splice(idx,1);lsSet('pkm_hunt_'+sid,list);renderHuntList(sid);syncSeriesField(sid,'hunts',list);
+  const list=getSeriesHunts(sid);list.splice(idx,1);setSeriesHunts(sid,list);renderHuntList(sid);
 }
 
 /* ============================
@@ -2419,9 +2451,6 @@ async function getCatchAIRec(){
   btn.disabled=false;btn.textContent='✦ AI推荐性格 + 努力值';
 }
 
-async function saveCatch(){
-  await persistCatchRecord();
-}
 
 async function loadCatchList(sid){
   const el=document.getElementById('catch-list');if(!el)return;
@@ -2501,58 +2530,12 @@ async function doInlineSearch(v,resEl,mode){
   }catch(e){resEl.innerHTML=`<div class="pkm-inline-item" style="color:var(--danger)">搜索失败</div>`;}
 }
 let _inlineSearchResults=[];
-function selectInlinePkm(idx,mode){
-  const pkm=_inlineSearchResults[idx];if(!pkm)return;
-  if(mode==='party')addToParty(_curSid,pkm);
-  else if(mode==='catch')selectCatchPkm(pkm);
-}
 
 /* ============================
    🎯 沉浸式狩猎界面
    ============================ */
 let _immSid='',_immIdx=-1;
 
-async function openImmHunt(sid,idx){
-  const list=lsGet('pkm_hunt_'+sid)||[];
-  const t=list[idx];if(!t||t.done)return;
-  _immSid=sid;_immIdx=idx;
-  _huntActionsLocked=false;
-
-  const natZh=getNatureZh(t.nature);
-  const locBadge=document.getElementById('hunt-imm-loc');
-  if(locBadge)locBadge.textContent='📍 '+(t.loc||'野外');
-
-  document.getElementById('hunt-imm-name').textContent=t.name;
-  document.getElementById('hunt-imm-target').textContent=
-    NATURES.some(n=>n.id===t.nature)?natZh+'性格 目标':'🎯 '+t.name;
-  document.getElementById('hunt-imm-num').textContent=t.count;
-  document.getElementById('hunt-imm-sprite').src=t.img||'';
-  document.getElementById('hunt-imm-bg').style.backgroundImage=`url(${t.img||''})`;
-  document.getElementById('hunt-imm-success').style.display='none';
-  document.getElementById('hunt-nature-pick').style.display='none';
-
-  // 填充区域精灵分布网格
-  renderHuntAreaGrid(t);
-
-  // 入场动画
-  const sp=document.getElementById('hunt-imm-sprite');
-  sp.classList.remove('fight-hit','run-away','shiny');void sp.offsetWidth;
-  sp.classList.add('enter-new');setTimeout(()=>sp.classList.remove('enter-new'),500);
-
-  const ov=document.getElementById('ov-hunt-imm');
-  ov.classList.add('on');
-  document.body.style.overflow='hidden';
-  startHuntParticles();
-
-  // 高清图（后台拉取）
-  try{
-    const p=await fetchPkm(t.pkmId);
-    const art=p.sprites?.other?.['official-artwork']?.front_default||p.sprites?.front_default||t.img;
-    document.getElementById('hunt-imm-sprite').src=art;
-    document.getElementById('hunt-imm-bg').style.backgroundImage=`url(${art})`;
-    document.getElementById('hunt-success-sprite').src=art;
-  }catch(e){}
-}
 
 function getHuntLocLabel(){
   return _huntSelLoc?.includes('|')?_huntSelLoc.split('|')[1]:'野外';
@@ -2575,12 +2558,11 @@ function startFreeCapture(pkm){
   if(!pkm)return;
   const sid=_immSid||_curSid;
   const loc=getHuntLocLabel();
-  const list=lsGet('pkm_hunt_'+sid)||[];
+  const list=getSeriesHunts(sid);
   list.push({pkmId:pkm.id,name:pkm.name,img:pkm.img,nature:'any',iv:'—',count:1,done:false,ts:Date.now(),loc,free:true});
   _immSid=sid;
   _immIdx=list.length-1;
-  lsSet('pkm_hunt_'+sid,list);
-  debounceSyncHunts(sid,list);
+  setSeriesHunts(sid,list,{sync:'debounce'});
   renderHuntList(sid);
   setHuntHeroForCapture(pkm,'自由捕捉',1);
   renderHuntAreaGrid(list[_immIdx]);
@@ -2642,11 +2624,10 @@ function confirmHuntGoalSetup(){
   const nature=document.getElementById('hgs-nature')?.value||'—';
   const iv=document.getElementById('hgs-iv')?.value?.trim()||'—';
   const loc=_huntSelLoc.includes('|')?_huntSelLoc.split('|')[1]:'';
-  const list=lsGet('pkm_hunt_'+_immSid)||[];
+  const list=getSeriesHunts(_immSid);
   const newT={pkmId:pkm.id,name:pkm.name,img:pkm.img,nature,iv,count:0,done:false,ts:Date.now(),loc};
   list.push(newT);_immIdx=list.length-1;
-  lsSet('pkm_hunt_'+_immSid,list);
-  syncSeriesField(_immSid,'hunts',list);renderHuntList(_immSid);
+  setSeriesHunts(_immSid,list);renderHuntList(_immSid);
   const locBadge=document.getElementById('imm-loc');if(locBadge&&loc)locBadge.textContent='📍 '+loc;
   const natZh=getNatureZh(nature);
   document.getElementById('hunt-imm-name').textContent=pkm.name;
@@ -2662,7 +2643,7 @@ function confirmHuntGoalSetup(){
 function huntEncounterFromGrid(idx){
   if(_huntActionsLocked)return;
   const pkm=_huntLocPkm[idx];if(!pkm)return;
-  const list=lsGet('pkm_hunt_'+_immSid)||[];
+  const list=getSeriesHunts(_immSid);
   const t=list[_immIdx];
   // 无激活目标 → 自由捕捉，不要求先设目标
   if(!t||t.done){
@@ -2690,25 +2671,17 @@ function huntEncounterFromGrid(idx){
   }
 }
 
-function closeImmHunt(){
-  stopHuntParticles();
-  const ov=document.getElementById('ov-hunt-imm');
-  ov.classList.remove('on');
-  document.body.style.overflow='';
-  _huntActionsLocked=false;
-}
 
 /* ── 战斗动作 ── */
 function _huntCountUp(){
-  const list=lsGet('pkm_hunt_'+_immSid)||[];
+  const list=getSeriesHunts(_immSid);
   if(!list[_immIdx]||list[_immIdx].done)return 0;
   list[_immIdx].count++;
-  lsSet('pkm_hunt_'+_immSid,list);
+  setSeriesHunts(_immSid,list,{sync:'debounce'});
   const cnt=list[_immIdx].count;
   const numEl=document.getElementById('hunt-imm-num');
   numEl.textContent=cnt;numEl.classList.remove('pop');void numEl.offsetWidth;numEl.classList.add('pop');
   if(HUNT_MILESTONE_TEXT[cnt])showHuntNarration(HUNT_MILESTONE_TEXT[cnt]);
-  debounceSyncHunts(_immSid,list);
   return cnt;
 }
 
@@ -2723,18 +2696,6 @@ function _checkShiny(){
   }
 }
 
-function huntActionFight(){
-  if(_huntActionsLocked)return;
-  _huntActionsLocked=true;
-  // 红闪 + 精灵抖动
-  const ov=document.getElementById('ov-imm');
-  const fl=document.createElement('div');fl.className='hunt-screen-flash-red';if(ov)ov.appendChild(fl);setTimeout(()=>fl.remove(),280);
-  const sp=document.getElementById('hunt-imm-sprite');
-  sp.classList.remove('fight-hit','enter-new');void sp.offsetWidth;sp.classList.add('fight-hit');
-  _huntCountUp();
-  _checkShiny();
-  setTimeout(()=>{sp.classList.remove('fight-hit');_huntActionsLocked=false;},420);
-}
 
 function huntActionRun(){
   if(_huntActionsLocked)return;
@@ -2759,7 +2720,7 @@ function huntActionCatch(){
 }
 
 function showHuntNaturePick(){
-  const list=lsGet('pkm_hunt_'+_immSid)||[];
+  const list=getSeriesHunts(_immSid);
   const t=list[_immIdx];if(!t)return;
   const pick=document.getElementById('hunt-nature-pick');if(!pick)return;
   const targetEl=document.getElementById('hunt-np-target');
@@ -2786,7 +2747,7 @@ function cancelHuntNaturePick(){
 }
 
 function huntSelectNature(natId){
-  const list=lsGet('pkm_hunt_'+_immSid)||[];
+  const list=getSeriesHunts(_immSid);
   const t=list[_immIdx];if(!t)return;
   const hasNature=t.nature&&t.nature!=='any'&&t.nature!=='—'&&NATURES.some(n=>n.id===t.nature);
   document.getElementById('hunt-nature-pick').style.display='none';
@@ -2810,27 +2771,6 @@ function huntSelectNature(natId){
 }
 
 /* ── 粒子背景 ── */
-function startHuntParticles(){
-  stopHuntParticles();
-  const container=document.getElementById('hunt-imm-particles');if(!container)return;
-  container.innerHTML='';
-  const colors=['rgba(200,144,64,.6)','rgba(90,184,154,.5)','rgba(255,255,255,.35)','rgba(160,100,220,.4)','rgba(90,140,220,.4)'];
-  let active=0;
-  _huntParticleTimer=setInterval(()=>{
-    if(active>40)return;
-    const el=document.createElement('div');el.className='hunt-particle';
-    const size=2+Math.random()*4;
-    const dur=3+Math.random()*4;
-    const dx=(Math.random()-0.5)*70;
-    el.style.cssText=`left:${Math.random()*100}%;bottom:${5+Math.random()*40}%;width:${size}px;height:${size}px;background:${colors[Math.floor(Math.random()*colors.length)]};--pdx:${dx}px;animation-duration:${dur}s;`;
-    container.appendChild(el);active++;
-    setTimeout(()=>{el.remove();active--;},dur*1000);
-  },180);
-}
-function stopHuntParticles(){
-  if(_huntParticleTimer){clearInterval(_huntParticleTimer);_huntParticleTimer=null;}
-  const c=document.getElementById('hunt-imm-particles');if(c)c.innerHTML='';
-}
 
 function spawnBall(x,y){
   const el=document.createElement('div');
@@ -2850,11 +2790,10 @@ function spawnFlash(){
 }
 
 function confirmImmCatch(){
-  const list=lsGet('pkm_hunt_'+_immSid)||[];
+  const list=getSeriesHunts(_immSid);
   const t=list[_immIdx];if(!t)return;
   t.done=true;
-  lsSet('pkm_hunt_'+_immSid,list);
-  syncSeriesField(_immSid,'hunts',list);
+  setSeriesHunts(_immSid,list);
 
   // 显示成功动画层
   const suc=document.getElementById('hunt-imm-success');
@@ -2920,8 +2859,7 @@ let _trainLocPkm=[];
 function initTrainTab(sid){
   _trainSid=sid;
   // 显示队伍
-  let party=lsGet('pkm_party_'+sid)||[];
-  if(!Array.isArray(party))party=[];while(party.length<6)party.push(null);
+  let party=getSeriesParty(sid);
   const slots=document.getElementById('train-pkm-slots');if(!slots)return;
   const filledParty=party.filter(p=>p);
   if(!filledParty.length){
@@ -2965,24 +2903,6 @@ function initTrainTab(sid){
   }
 }
 
-function selectTrainPkm(slotIdx){
-  const sid=_trainSid;
-  let party=lsGet('pkm_party_'+sid)||[];
-  if(!Array.isArray(party))party=[];while(party.length<6)party.push(null);
-  const filledParty=party.filter(p=>p);
-  const p=filledParty[slotIdx];if(!p)return;
-  const partyIdx=party.findIndex(x=>x===p);
-  _trainPkmData={name:p.name,id:p.pkmId,img:p.img,nick:p.nick,lv:p.lv,partyIdx};
-  // 载入或初始化 EV
-  const saved=lsGet('pkm_train_ev_'+sid+'_'+p.pkmId);
-  _trainEVs=saved||{hp:0,attack:0,defense:0,'special-attack':0,'special-defense':0,speed:0};
-  // 高亮选中
-  document.querySelectorAll('.train-pkm-slot').forEach((el,i)=>el.classList.toggle('selected',i===slotIdx));
-  const evPanel=document.getElementById('train-ev-panel');if(evPanel)evPanel.style.display='block';
-  const aiSec=document.getElementById('train-ai-result');if(aiSec)aiSec.style.display='none';
-  renderTrainEVs();
-  updateImmTrainPlaceholder();
-}
 
 function renderTrainEVs(){
   const bars=document.getElementById('train-ev-bars');if(!bars)return;
@@ -3007,8 +2927,7 @@ function renderTrainEVs(){
 function resetTrainEVs(){
   if(!_trainPkmData)return;
   _trainEVs={hp:0,attack:0,defense:0,'special-attack':0,'special-defense':0,speed:0};
-  lsSet('pkm_train_ev_'+_trainSid+'_'+_trainPkmData.id,_trainEVs);
-  debounceSyncTrainEVs(_trainSid);
+  setTrainEVs(_trainSid,_trainPkmData.id,_trainEVs,{sync:'debounce'});
   renderTrainEVs();showToast('EV 已重置');
 }
 
@@ -3034,8 +2953,7 @@ function beatPokemon(idx){
     if(actualGain>0){_trainEVs[stat]=(_trainEVs[stat]||0)+actualGain;added=true;}
   }
   if(!added){showToast('EV 容量已满');return;}
-  lsSet('pkm_train_ev_'+_trainSid+'_'+_trainPkmData.id,_trainEVs);
-  debounceSyncTrainEVs(_trainSid);
+  setTrainEVs(_trainSid,_trainPkmData.id,_trainEVs,{sync:'debounce'});
   renderTrainEVs();
   // 动画反馈
   const card=document.getElementById('train-card-'+idx);
@@ -3255,45 +3173,7 @@ function _trainImmFinalizeOnClose(){
   _trainImmSession=null;
 }
 
-function openImmTrain(){
-  if(!_trainPkmData){showToast('请先选择训练对象');return;}
-  if(!_trainLocPkm.length){showToast('请先加载地点精灵分布');return;}
-  const ov=document.getElementById('ov-train-imm');if(!ov)return;
 
-  // 填入训练精灵信息
-  const art=document.getElementById('train-imm-sprite');
-  if(art){art.src=_trainPkmData.img||'';art.classList.remove('train-imm-beat');void art.offsetWidth;}
-  const bg=document.getElementById('train-imm-bg');
-  if(bg)bg.style.backgroundImage=`url(${_trainPkmData.img||''})`;
-  document.getElementById('train-imm-name').textContent=_trainPkmData.name+(_trainPkmData.nick?`「${_trainPkmData.nick}」`:'');
-
-  // 渲染训练目标精灵网格
-  renderTrainImmGrid();
-  // 渲染 EV 进度条
-  renderTrainImmEVs();
-  _trainImmResetSummary();
-  _trainImmEnsureSession();
-
-  // 后台拉高清图
-  fetchPkm(_trainPkmData.id).then(p=>{
-    const hd=p.sprites?.other?.['official-artwork']?.front_default||p.sprites?.front_default||_trainPkmData.img;
-    if(art)art.src=hd;
-    if(bg)bg.style.backgroundImage=`url(${hd})`;
-  }).catch(()=>{});
-
-  ov.classList.add('on');
-  document.body.style.overflow='hidden';
-  startTrainImmParticles();
-}
-
-function closeImmTrain(){
-  stopTrainImmParticles();
-  _trainImmFinalizeOnClose();
-  const ov=document.getElementById('ov-train-imm');if(ov)ov.classList.remove('on');
-  document.body.style.overflow='';
-  // 同步回主 tab
-  renderTrainEVs();
-}
 
 function renderTrainImmGrid(){
   const grid=document.getElementById('train-imm-dist-grid');if(!grid)return;
@@ -3349,8 +3229,7 @@ function trainImmBeat(idx){
     }
   }
   if(!added){showToast('EV 容量已满');return;}
-  lsSet('pkm_train_ev_'+_trainSid+'_'+_trainPkmData.id,_trainEVs);
-  debounceSyncTrainEVs(_trainSid);
+  setTrainEVs(_trainSid,_trainPkmData.id,_trainEVs,{sync:'debounce'});
   renderTrainImmEVs();
   // 精灵抖动
   const sp=document.getElementById('train-imm-sprite');
@@ -3364,24 +3243,6 @@ function trainImmBeat(idx){
   showToast(pkm.name+'  '+evText);
 }
 
-function startTrainImmParticles(){
-  stopTrainImmParticles();
-  const container=document.getElementById('train-imm-particles');if(!container)return;
-  container.innerHTML='';
-  const colors=['rgba(200,144,64,.5)','rgba(90,184,154,.4)','rgba(160,100,220,.35)','rgba(255,255,255,.25)'];
-  let active=0;
-  _trainImmParticleTimer=setInterval(()=>{
-    if(active>30)return;
-    const el=document.createElement('div');el.className='hunt-particle';
-    const size=2+Math.random()*3;const dur=3+Math.random()*4;const dx=(Math.random()-.5)*60;
-    el.style.cssText=`left:${Math.random()*100}%;bottom:${5+Math.random()*30}%;width:${size}px;height:${size}px;background:${colors[Math.floor(Math.random()*colors.length)]};--pdx:${dx}px;animation-duration:${dur}s;`;
-    container.appendChild(el);active++;setTimeout(()=>{el.remove();active--;},dur*1000);
-  },220);
-}
-function stopTrainImmParticles(){
-  if(_trainImmParticleTimer){clearInterval(_trainImmParticleTimer);_trainImmParticleTimer=null;}
-  const c=document.getElementById('train-imm-particles');if(c)c.innerHTML='';
-}
 
 function renderTrainDist(items,isOfficial,srcLabel){
   _trainLocPkm=items;
@@ -3447,11 +3308,6 @@ function typewriter(el,text,speed){
 }
 
 /* ── 捕获光束 ── */
-function spawnCaptureBeam(){
-  const ov=document.getElementById('ov-imm');if(!ov)return;
-  const beam=document.createElement('div');beam.className='capture-beam';
-  ov.appendChild(beam);setTimeout(()=>beam.remove(),800);
-}
 
 /* ── 进度打卡爆发粒子 ── */
 function spawnCheckpointBurst(idx){
@@ -3519,7 +3375,7 @@ async function genAdventureLog(){
 
 /* ── ② 宝可梦对话 ── */
 async function speakPartyMember(sid,idx){
-  let party=lsGet('pkm_party_'+sid)||[];if(!Array.isArray(party))party=[];while(party.length<6)party.push(null);
+  let party=getSeriesParty(sid);
   const p=party[idx];if(!p)return;
   const resultEl=document.getElementById('party-speak-result');
   resultEl.style.display='block';
@@ -3596,11 +3452,10 @@ function updateImmTrainPlaceholder(){
 
 function selectTrainPkmFromImm(idx){
   const sid=_curSid;
-  let party=lsGet('pkm_party_'+sid)||[];
+  let party=getSeriesParty(sid);
   const p=party[idx];if(!p)return;
   _trainPkmData={name:p.name,id:p.pkmId,img:p.img,nick:p.nick,lv:p.lv,partyIdx:idx};
-  const saved=lsGet('pkm_train_ev_'+sid+'_'+p.pkmId);
-  _trainEVs=saved?{...saved}:{hp:0,attack:0,defense:0,'special-attack':0,'special-defense':0,speed:0};
+  _trainEVs=getTrainEVs(sid,p.pkmId);
   _trainSid=sid;
   toggleImmPanel('__none__');
   updateImmTrainPlaceholder();
@@ -3708,9 +3563,7 @@ function toggleImmPanel(name){
 function renderImmParty(){
   const row=document.getElementById('imm-party-row');
   if(!row)return;
-  let party=lsGet('pkm_party_'+_curSid)||[];
-  if(!Array.isArray(party))party=[];
-  while(party.length<6)party.push(null);
+  let party=getSeriesParty(_curSid);
   row.innerHTML=party.slice(0,6).map(p=>{
     if(!p)return '<div style="width:24px;height:24px;border-radius:4px;background:var(--bg3);border:1px solid var(--b)"></div>';
     return `<img src="${p.img||''}" alt="${esc(p.name||'party')}" title="${esc(p.name||'party')}" style="width:24px;height:24px;border-radius:4px;background:var(--bg3);border:1px solid var(--b);object-fit:contain;padding:2px;box-sizing:border-box" onerror="this.style.opacity='.35'">`;
@@ -3793,14 +3646,11 @@ async function saveCatch(){
 
 function selectTrainPkm(slotIdx){
   const sid=_trainSid;
-  let party=lsGet('pkm_party_'+sid)||[];
-  if(!Array.isArray(party))party=[];
-  while(party.length<6)party.push(null);
+  let party=getSeriesParty(sid);
   const filledParty=party.map((p,idx)=>p?{..._immNormalizePartyPkm(p),partyIdx:idx}:null).filter(Boolean);
   const p=filledParty[slotIdx];if(!p||!p.id)return;
   _trainPkmData={name:p.name,id:p.id,img:p.img,nick:p.nick,lv:p.lv,partyIdx:p.partyIdx};
-  const saved=lsGet('pkm_train_ev_'+sid+'_'+p.id);
-  _trainEVs=saved||{hp:0,attack:0,defense:0,'special-attack':0,'special-defense':0,speed:0};
+  _trainEVs=getTrainEVs(sid,p.id);
   document.querySelectorAll('.train-pkm-slot').forEach((el,i)=>el.classList.toggle('selected',i===slotIdx));
   const evPanel=document.getElementById('train-ev-panel');if(evPanel)evPanel.style.display='block';
   const aiSec=document.getElementById('train-ai-result');if(aiSec)aiSec.style.display='none';
@@ -3830,7 +3680,7 @@ async function openImm(mode,...args){
     const[sid,idx]=args;
     const i=idx??-1;
     _immSid=sid;_immIdx=i;_huntActionsLocked=false;
-    const list=lsGet('pkm_hunt_'+sid)||[];
+    const list=getSeriesHunts(sid);
     const t=i>=0?list[i]:null;
     if(loc)loc.textContent='📍 '+(t?.loc||'野外');
     document.getElementById('hunt-imm-success').style.display='none';
@@ -3945,7 +3795,7 @@ function openImmMapPicker(){
       closeImmMapFull();
       if(_immMode==='hunt'){
         selectHuntLocFromMap(zhName, key);
-        const _refreshHuntGrid=()=>{const list=lsGet('pkm_hunt_'+_immSid)||[];renderHuntAreaGrid(list[_immIdx]||null);};
+        const _refreshHuntGrid=()=>{const list=getSeriesHunts(_immSid);renderHuntAreaGrid(list[_immIdx]||null);};
         if(_huntDistCache[_huntSelLoc]){_huntLocPkm=_huntDistCache[_huntSelLoc];_refreshHuntGrid();}
         else{loadHuntDistribution().then(_refreshHuntGrid);}
       }else{
@@ -4007,18 +3857,15 @@ function savePartyEdit(sid,idx){
 }
 
 function updatePartyMember(sid,idx,fields){
-  let party=lsGet('pkm_party_'+sid)||[];
-  if(!Array.isArray(party))party=[];
-  while(party.length<6)party.push(null);
+  let party=getSeriesParty(sid);
   if(!party[idx])return;
   party[idx]={...party[idx],...fields};
-  lsSet('pkm_party_'+sid,party);
+  setSeriesParty(sid,party);
   _partyEditingSlot=null;
   _partyReplaceTarget=null;
   renderPartySlots(sid);
   renderImmParty();
   if(typeof initTrainTab==='function')initTrainTab(sid);
-  syncSeriesField(sid,'party',party);
 }
 
 function queuePartyReplace(sid,idx,searchId){
@@ -4034,9 +3881,7 @@ function queuePartyReplace(sid,idx,searchId){
 }
 
 function replacePartyMember(sid,idx,pkm){
-  let party=lsGet('pkm_party_'+sid)||[];
-  if(!Array.isArray(party))party=[];
-  while(party.length<6)party.push(null);
+  let party=getSeriesParty(sid);
   const prev=party[idx]||{};
   party[idx]={
     pkmId:pkm.id,
@@ -4045,19 +3890,16 @@ function replacePartyMember(sid,idx,pkm){
     nick:prev.nick||'',
     lv:prev.lv||''
   };
-  lsSet('pkm_party_'+sid,party);
+  setSeriesParty(sid,party);
   _partyReplaceTarget=null;
   _partyEditingSlot={sid,idx};
   renderPartySlots(sid);
   renderImmParty();
   if(typeof initTrainTab==='function')initTrainTab(sid);
-  syncSeriesField(sid,'party',party);
 }
 
 function renderPartySlots(sid){
-  let party=lsGet('pkm_party_'+sid)||[];
-  if(!Array.isArray(party))party=[];
-  while(party.length<6)party.push(null);
+  let party=getSeriesParty(sid);
   const html=(searchId)=>party.map((p,i)=>{
     if(p){
       const editing=isPartySlotEditing(sid,i);
@@ -4095,17 +3937,14 @@ function renderPartySlots(sid){
 }
 
 function removeFromParty(sid,idx){
-  let party=lsGet('pkm_party_'+sid)||[];
-  if(!Array.isArray(party))party=[];
-  while(party.length<6)party.push(null);
+  let party=getSeriesParty(sid);
   party[idx]=null;
-  lsSet('pkm_party_'+sid,party);
+  setSeriesParty(sid,party);
   if(isPartySlotEditing(sid,idx))_partyEditingSlot=null;
   if(_partyReplaceTarget?.sid===sid&&_partyReplaceTarget?.idx===idx)_partyReplaceTarget=null;
   renderPartySlots(sid);
   renderImmParty();
   if(typeof initTrainTab==='function')initTrainTab(sid);
-  syncSeriesField(sid,'party',party);
 }
 
 const IMM_PARTY_POS=[
@@ -4117,9 +3956,7 @@ function getActivePartySid(){
 function renderImmPartyScene(sid){
   const stage=document.getElementById('imm-party-stage');
   if(!stage)return;
-  let party=lsGet('pkm_party_'+sid)||[];
-  if(!Array.isArray(party))party=[];
-  while(party.length<6)party.push(null);
+  let party=getSeriesParty(sid);
   const filled=party.filter(Boolean);
   if(!filled.length){
     stage.innerHTML='<div class="imm-party-stage-empty">搜索宝可梦加入队伍，它们会在这里一起待机。</div>';
