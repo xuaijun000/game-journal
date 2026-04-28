@@ -98,6 +98,16 @@
       <div class="disc-pfchip" data-pf="167" onclick="setDiscPF('167',this)">PS5</div>
       <div class="disc-pfchip" data-pf="48" onclick="setDiscPF('48',this)">PS4</div>
     </div>
+    <div class="disc-platform-wrap">
+      <div class="disc-platform-head">
+        <div class="disc-platform-title">平台榜单</div>
+        <div class="disc-board-tabs">
+          <button class="disc-board-tab on" data-board-group="modern" onclick="setDiscBoardGroup('modern',this)">现行平台</button>
+          <button class="disc-board-tab" data-board-group="retro" onclick="setDiscBoardGroup('retro',this)">中古主机</button>
+        </div>
+      </div>
+      <div class="disc-platform-boards" id="disc-platform-boards"></div>
+    </div>
     <div class="rank-list" id="rank-list"><div class="disc-loading">加载中<span class="disc-loading-dots"><span></span><span></span><span></span></span></div></div>
   </div>
   <div class="pg" id="pg-stats">

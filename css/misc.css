@@ -1,8 +1,9 @@
 /* === Tab Banner === */
-.tab-banner{width:100vw;height:clamp(150px,18vw,260px);border-radius:0;margin-bottom:1.4rem;margin-top:-2.1rem;margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);overflow:hidden;position:relative;flex-shrink:0;background:var(--bg)}
+.pg.on:has(> .tab-banner)::before{display:none}
+.tab-banner{width:100vw;height:clamp(150px,18vw,260px);border-radius:0;margin-bottom:1.4rem;margin-top:calc(-2.1rem - 62px);margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);overflow:hidden;position:relative;flex-shrink:0;background:var(--bg)}
 .tab-banner img{width:100%;height:100%;object-fit:fill;filter:brightness(.82) saturate(1.08);display:block}
 .tab-banner::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(15,26,28,.04) 0%,transparent 58%,var(--bg) 100%);pointer-events:none}
-@media(max-width:700px){.tab-banner{height:clamp(120px,32vw,190px);margin-top:-1.4rem}}
+@media(max-width:700px){.tab-banner{height:clamp(120px,32vw,190px);margin-top:calc(-1.4rem - 62px)}}
 
 /* === 空状态插图 === */
 .empty-psyduck{width:80px;height:80px;object-fit:contain;opacity:.55;margin-bottom:.6rem;display:block;margin-left:auto;margin-right:auto}

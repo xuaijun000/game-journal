@@ -1,23 +1,22 @@
-let discMode='rating',discPF='all',discBusy=false;
+let discMode='rating',discPF='all',discBoardGroup='modern',discBusy=false,discBoardToken=0;
 window._gtlProgressContext='';
 window._mtlProgressContext='';
 
 function switchDiscTab(el){document.querySelectorAll('.disc-tab').forEach(t=>t.classList.remove('on'));el.classList.add('on');discMode=el.dataset.mode;loadDisc();}
 function setDiscPF(pf,el){document.querySelectorAll('.disc-pfchip').forEach(c=>c.classList.remove('on'));el.classList.add('on');discPF=pf;loadDisc();}
+function setDiscBoardGroup(group,el){
+  discBoardGroup=group;
+  document.querySelectorAll('.disc-board-tab').forEach(t=>t.classList.remove('on'));
+  if(el)el.classList.add('on');
+  loadDiscPlatformBoards();
+}
 async function loadDisc(){
   if(discBusy)return;discBusy=true;
   const rl=document.getElementById('rank-list');
   rl.innerHTML='<div class="disc-loading">加载中<span class="disc-loading-dots"><span></span><span></span><span></span></span></div>';
+  loadDiscPlatformBoards();
   try{
-    const now=Math.floor(Date.now()/1000);
-    const pf=discPF!=='all'?`& platforms = (${discPF})`:'';
-    const queries={
-      rating:`fields name,cover.url,total_rating,total_rating_count,platforms.name,first_release_date,involved_companies.company.name,involved_companies.developer,summary,storyline,genres.name,url;where total_rating_count > 200 & total_rating != null ${pf};sort total_rating desc; limit 30;`,
-      recent:`fields name,cover.url,total_rating,total_rating_count,platforms.name,first_release_date,involved_companies.company.name,involved_companies.developer,summary,storyline,genres.name,url;where first_release_date > ${now-365*24*3600} & first_release_date < ${now} & total_rating_count > 20 ${pf};sort first_release_date desc; limit 30;`,
-      hype:`fields name,cover.url,hypes,platforms.name,first_release_date,involved_companies.company.name,involved_companies.developer,summary,storyline,genres.name,url;where first_release_date > ${now} & hypes != null ${pf};sort hypes desc; limit 30;`,
-      popular:`fields name,cover.url,total_rating,total_rating_count,platforms.name,first_release_date,involved_companies.company.name,involved_companies.developer,summary,storyline,genres.name,url;where total_rating_count > 50 ${pf};sort total_rating_count desc; limit 30;`
-    };
-    const res=await fetch(IGDB_PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({igdbRaw:queries[discMode]})});
+    const res=await fetch(IGDB_PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({igdbRaw:buildDiscQuery(discMode,discPF,30)})});
     if(!res.ok)throw new Error(`HTTP ${res.status}`);
     const data=await res.json();
     if(!Array.isArray(data)||!data.length){rl.innerHTML='<div class="disc-loading">暂无数据</div>';return;}
@@ -25,15 +24,49 @@ async function loadDisc(){
   }catch(e){rl.innerHTML=`<div class="disc-loading" style="color:var(--danger)">加载失败：${e.message}</div>`;}
   finally{discBusy=false;}
 }
+function buildDiscQuery(mode,pfId='all',limit=30){
+  const now=Math.floor(Date.now()/1000);
+  const pf=pfId!=='all'?`& platforms = (${pfId})`:'';
+  const fields='fields name,cover.url,total_rating,total_rating_count,platforms.name,first_release_date,involved_companies.company.name,involved_companies.developer,summary,storyline,genres.name,url;';
+  const queries={
+    rating:`${fields}where total_rating_count > 200 & total_rating != null ${pf};sort total_rating desc; limit ${limit};`,
+    recent:`${fields}where first_release_date > ${now-365*24*3600} & first_release_date < ${now} & total_rating_count > 20 ${pf};sort first_release_date desc; limit ${limit};`,
+    hype:`fields name,cover.url,hypes,platforms.name,first_release_date,involved_companies.company.name,involved_companies.developer,summary,storyline,genres.name,url;where first_release_date > ${now} & hypes != null ${pf};sort hypes desc; limit ${limit};`,
+    popular:`${fields}where total_rating_count > 50 ${pf};sort total_rating_count desc; limit ${limit};`
+  };
+  return queries[mode]||queries.rating;
+}
 let discDataCache=[];
+let discBoardCache={};
+const DISC_PLATFORM_BOARD_GROUPS={
+  modern:[
+    {key:'pc',label:'PC',pf:'6'},
+    {key:'xbox',label:'Xbox Series / One',pf:'49,169'},
+    {key:'ps5',label:'PS5',pf:'167'},
+    {key:'switch',label:'Switch',pf:'130'},
+    {key:'ps4',label:'PS4',pf:'48'},
+    {key:'xbox360',label:'Xbox 360',pf:'12'}
+  ],
+  retro:[
+    {key:'ps-retro',label:'PlayStation 中古',pf:'7,8,9,38,46'},
+    {key:'nintendo-home',label:'任天堂家用机',pf:'18,19,4,21,5,41'},
+    {key:'nintendo-handheld',label:'任天堂掌机',pf:'33,22,24,20,37'},
+    {key:'sega-retro',label:'SEGA 中古',pf:'64,29,32,23'},
+    {key:'xbox-retro',label:'Xbox / Xbox 360',pf:'11,12'},
+    {key:'arcade-retro',label:'街机 / Neo Geo',pf:'52,80'}
+  ]
+};
+const DISC_MODE_LABEL={rating:'综合评分',recent:'近期新游',hype:'期待新作',popular:'人气热榜'};
+function currentDiscBoards(){return DISC_PLATFORM_BOARD_GROUPS[discBoardGroup]||DISC_PLATFORM_BOARD_GROUPS.modern;}
+function normalizeDiscGame(g){
+  const cover=g.cover?.url?g.cover.url.replace('t_thumb','t_cover_big'):null;
+  const dev=(g.involved_companies||[]).find(c=>c.developer)?.company?.name||'';
+  const year=g.first_release_date?new Date(g.first_release_date*1000).getFullYear():'';
+  return{name:g.name,cover,developer:dev,year:year||null,rating:g.total_rating||null,ratingCount:g.total_rating_count||null,hypes:g.hypes||null,platforms:g.platforms||[],summary:g.summary||'',storyline:g.storyline||'',url:g.url||''};
+}
 function renderRankList(data){
   const rl=document.getElementById('rank-list');
-  discDataCache=data.map(g=>{
-    const cover=g.cover?.url?g.cover.url.replace('t_thumb','t_cover_big'):null;
-    const dev=(g.involved_companies||[]).find(c=>c.developer)?.company?.name||'';
-    const year=g.first_release_date?new Date(g.first_release_date*1000).getFullYear():'';
-    return{name:g.name,cover,developer:dev,year:year||null,rating:g.total_rating||null,ratingCount:g.total_rating_count||null,hypes:g.hypes||null,platforms:g.platforms||[],summary:g.summary||'',storyline:g.storyline||'',url:g.url||''};
-  });
+  discDataCache=data.map(normalizeDiscGame);
   const myNames=new Set(games.map(g=>g.name.toLowerCase().trim()));
   rl.innerHTML=data.map((g,i)=>{
     const rank=i+1;
@@ -61,6 +94,53 @@ function renderRankList(data){
     </div>`;
   }).join('');
 }
+async function loadDiscPlatformBoards(){
+  const token=++discBoardToken;
+  const boards=currentDiscBoards();
+  renderDiscBoardShells(boards);
+  try{
+    const results=await Promise.all(boards.map(async b=>{
+      const res=await fetch(IGDB_PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({igdbRaw:buildDiscQuery(discMode,b.pf,6)})});
+      if(!res.ok)throw new Error(`HTTP ${res.status}`);
+      const data=await res.json();
+      return{...b,data:Array.isArray(data)?data:[]};
+    }));
+    if(token!==discBoardToken)return;
+    results.forEach(b=>{
+      discBoardCache[b.key]=b.data.map(normalizeDiscGame);
+      renderDiscPlatformBoard(b.key,discBoardCache[b.key]);
+    });
+  }catch(e){
+    if(token!==discBoardToken)return;
+    boards.forEach(b=>setDiscBoardHTML(b.key,`<div class="disc-board-loading" style="color:var(--danger)">加载失败</div>`));
+  }
+}
+function renderDiscBoardShells(boards){
+  const wrap=document.getElementById('disc-platform-boards');
+  if(!wrap)return;
+  wrap.innerHTML=boards.map(b=>`
+    <section class="disc-platform-board">
+      <div class="disc-board-head"><h3>${esc(b.label)} 独立榜</h3><span>${esc(DISC_MODE_LABEL[discMode]||'IGDB')}</span></div>
+      <div class="disc-board-list" id="disc-board-${esc(b.key)}"><div class="disc-board-loading">加载中…</div></div>
+    </section>`).join('');
+}
+function setDiscBoardHTML(key,html){const el=document.getElementById(`disc-board-${key}`);if(el)el.innerHTML=html;}
+function discBoardScore(g){
+  if(discMode==='hype')return g.hypes||'—';
+  if(discMode==='popular')return g.ratingCount?(g.ratingCount>9999?(g.ratingCount/1000).toFixed(1)+'k':g.ratingCount):'—';
+  return g.rating?Math.round(g.rating):'—';
+}
+function renderDiscPlatformBoard(key,list){
+  if(!list.length){setDiscBoardHTML(key,'<div class="disc-board-loading">暂无数据</div>');return;}
+  setDiscBoardHTML(key,list.map((g,i)=>`
+    <button class="disc-board-item" onclick="openDiscBoardDetail('${key}',${i})">
+      <span class="disc-board-rank">${i+1}</span>
+      ${g.cover?`<img src="${esc(g.cover)}" alt="" loading="lazy" onerror="this.style.display='none'">`:'<span class="disc-board-ph">🎮</span>'}
+      <span class="disc-board-main"><span>${esc(g.name||'未命名')}</span><em>${esc([g.developer,g.year].filter(Boolean).join(' · ')||'IGDB')}</em></span>
+      <strong>${esc(String(discBoardScore(g)))}</strong>
+    </button>`).join(''));
+}
+function openDiscBoardDetail(key,idx){const g=discBoardCache[key]?.[idx];if(g)openDiscDetail(g);}
 async function addFromDisc(g,bid){
   const btn=document.getElementById(bid);if(!btn||btn.classList.contains('added'))return;
   btn.textContent='添加中…';btn.disabled=true;
