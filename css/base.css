@@ -34,6 +34,7 @@ body{
   background-repeat:repeat,no-repeat,no-repeat,no-repeat;
   background-size:auto,auto,auto,auto;
   background-position:center,center,center,center;
+  background-attachment:fixed;
 }
 
 body::before,
