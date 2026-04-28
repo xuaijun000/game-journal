@@ -352,7 +352,12 @@ function renderPartnerPage(){
         <div class="partner-sprite-area" style="--partner-type-bg:url('${typeBg}')">
           <div class="partner-sprite-bg"></div>
           <div class="partner-effect-burst ${actionCls}" style="background-image:url('${effectImg}')"></div>
-          <img id="partner-sprite" class="partner-sprite ${moodAnim}${actionCls}" src="${spriteUrl}" alt="${pEsc(name)}" onerror="this.onerror=null;this.src='${partnerSpriteFallbackUrl(d.pkm_id)}'">
+          <div class="partner-model-stage" id="partner-model-stage">
+            <div class="partner-model-shadow"></div>
+            <div class="partner-model-object" id="partner-model-object">
+              <img id="partner-sprite" class="partner-sprite partner-sprite-3d ${moodAnim}${actionCls}" src="${spriteUrl}" alt="${pEsc(name)}" draggable="false" onerror="this.onerror=null;this.src='${partnerSpriteFallbackUrl(d.pkm_id)}'">
+            </div>
+          </div>
           <div class="partner-mood-badge ${moodBadge.cls}">${moodBadge.text}</div>
           <div class="partner-type-chip">${PARTNER_TYPE_ZH[primaryType]||primaryType}</div>
         </div>
@@ -405,6 +410,7 @@ function renderPartnerPage(){
       </div>
     </div>`;
   updatePartnerFloat('partner');
+  initPartnerModelDrag();
 }
 
 function pStatBar(label,key,val,color){
@@ -904,6 +910,55 @@ function addPartnerBubble(text,role,cls=''){
   msgs.appendChild(div);
   msgs.scrollTop=msgs.scrollHeight;
   return div;
+}
+
+/* ===== 3D PARTNER STAGE ===== */
+function initPartnerModelDrag(){
+  const stage=document.getElementById('partner-model-stage');
+  if(!stage)return;
+  let rotX=-8;
+  let rotY=0;
+  let dragging=false;
+  let lastX=0;
+  let lastY=0;
+  const apply=()=>{
+    stage.style.setProperty('--partner-rot-x',`${rotX}deg`);
+    stage.style.setProperty('--partner-rot-y',`${rotY}deg`);
+  };
+  const endDrag=()=>{
+    dragging=false;
+    stage.classList.remove('dragging');
+  };
+  apply();
+  stage.addEventListener('pointerdown',e=>{
+    dragging=true;
+    lastX=e.clientX;
+    lastY=e.clientY;
+    stage.classList.add('dragging');
+    stage.setPointerCapture?.(e.pointerId);
+    e.preventDefault();
+  });
+  stage.addEventListener('pointermove',e=>{
+    if(!dragging)return;
+    const dx=e.clientX-lastX;
+    const dy=e.clientY-lastY;
+    lastX=e.clientX;
+    lastY=e.clientY;
+    rotY+=dx*0.42;
+    rotX=pClampModelRot(rotX-dy*0.28,-28,18);
+    apply();
+  });
+  stage.addEventListener('pointerup',endDrag);
+  stage.addEventListener('pointercancel',endDrag);
+  stage.addEventListener('dblclick',()=>{
+    rotX=-8;
+    rotY=0;
+    apply();
+  });
+}
+
+function pClampModelRot(v,min,max){
+  return Math.max(min,Math.min(max,v));
 }
 
 /* ===== UTILS ===== */
