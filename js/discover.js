@@ -45,7 +45,7 @@ function renderRankList(data){
     else if(discMode==='popular'&&g.total_rating_count){sv=g.total_rating_count>9999?(g.total_rating_count/1000).toFixed(1)+'k':g.total_rating_count;sl='评分人数';}
     const year=g.first_release_date?new Date(g.first_release_date*1000).getFullYear():'';
     const dev=(g.involved_companies||[]).find(c=>c.developer)?.company?.name||'';
-    const pft=(g.platforms||[]).slice(0,4).map(p=>{const pid=String(p.id||'');const cls=pid==='6'?'tst':pid==='48'||pid==='49'?'tx':pid==='167'?'tsw':pid==='169'||pid==='130'?'tp':'';return`<span class="tag ${cls}" style="font-size:.65rem;padding:1px 6px">${p.name}</span>`;}).join('');
+    const pft=(g.platforms||[]).slice(0,4).map(p=>{const pid=String(p.id||'');const cls=pid==='6'?'tst':pid==='49'||pid==='169'?'tx':pid==='130'?'tsw':pid==='48'||pid==='167'?'tp':'';return`<span class="tag ${cls}" style="font-size:.65rem;padding:1px 6px">${p.name}</span>`;}).join('');
     const added=myNames.has((g.name||'').toLowerCase().trim());
     const bid=`ab${i}`;
     const gj=JSON.stringify({name:g.name,cover,developer:dev,year:year||null}).replace(/'/g,"&#39;");
@@ -85,7 +85,7 @@ function openDiscDetail(g){
   document.getElementById('disc-year').textContent=g.year||'';
   document.getElementById('disc-score').textContent=g.rating?Math.round(g.rating)+' 分':'';
   document.getElementById('disc-rcount').textContent=g.ratingCount?(g.ratingCount>999?(g.ratingCount/1000).toFixed(1)+'k':g.ratingCount)+' 人评分':'';
-  const pft=(g.platforms||[]).slice(0,5).map(p=>{const pid=String(p.id||'');const cls=pid==='6'?'tst':pid==='48'||pid==='49'?'tx':pid==='167'?'tsw':pid==='169'||pid==='130'?'tp':'';return`<span class="tag ${cls}" style="font-size:.68rem">${p.name}</span>`;}).join('');
+  const pft=(g.platforms||[]).slice(0,5).map(p=>{const pid=String(p.id||'');const cls=pid==='6'?'tst':pid==='49'||pid==='169'?'tx':pid==='130'?'tsw':pid==='48'||pid==='167'?'tp':'';return`<span class="tag ${cls}" style="font-size:.68rem">${p.name}</span>`;}).join('');
   document.getElementById('disc-ptags').innerHTML=pft;
   const sumEl=document.getElementById('disc-summary');sumEl.textContent=g.summary||'暂无简介';
   const stEl=document.getElementById('disc-storyline');if(g.storyline){stEl.textContent=g.storyline;stEl.style.display='block';}else stEl.style.display='none';

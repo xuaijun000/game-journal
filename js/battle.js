@@ -3141,7 +3141,7 @@ function selectDOpp(i, pkmId, cnName, slug='') {
 
 /* ── 双打支援角色识别 ── */
 const BD_SUPPORT_SLUGS = {
-  'fake-out':'假哭', 'tailwind':'顺风', 'trick-room':'奇异空间',
+  'fake-out':'击掌奇袭', 'fake-tears':'假哭', 'tailwind':'顺风', 'trick-room':'奇异空间',
   'follow-me':'引导', 'rage-powder':'引导', 'helping-hand':'鼓气加油',
   'icy-wind':'速控', 'electroweb':'速控', 'bulldoze':'速控',
   'rain-dance':'天气', 'sunny-day':'天气', 'sandstorm':'天气', 'snowscape':'天气',
@@ -3187,7 +3187,7 @@ function pairSynergyScore(a, b) {
   const aIsSupport = roleA.cls==='role-support' || rolesA.length>0;
   const bIsSupport = roleB.cls==='role-support' || rolesB.length>0;
   if (aIsSupport !== bIsSupport) score += 4;
-  if (rolesA.includes('假哭') || rolesB.includes('假哭')) score += 3;
+  if (rolesA.includes('击掌奇袭') || rolesB.includes('击掌奇袭')) score += 3;
   if ((rolesA.includes('顺风')||rolesB.includes('顺风')) && Math.abs((a.base?.spe||0)-(b.base?.spe||0))>40) score += 2;
   const getWeaks = p => { const im=ABILITY_TYPE_IMMUNE[p.ability||'']||[]; return B_TYPES.filter(t=>getTypeEff(t,p.type1,p.type2)>=2&&!im.includes(t)); };
   score -= getWeaks(a).filter(t=>getWeaks(b).includes(t)).length * 0.8;
@@ -3204,13 +3204,32 @@ function selectBestLeadPair(top4, oppLead) {
     for (let b = a+1; b < top4.length; b++) {
       const pa = top4[a].pkm, pb = top4[b].pkm;
       const syn = pairSynergyScore(pa, pb);
-      let threat = 0;
-      (oppLead||[]).slice(0,2).forEach(op => { threat += oppThreatScore(op,pa)+oppThreatScore(op,pb); });
-      const total = syn*1.5 + threat;
+      let incomingThreat = 0;
+      (oppLead||[]).slice(0,2).forEach(op => { incomingThreat += oppThreatScore(op,pa)+oppThreatScore(op,pb); });
+      const total = syn*1.5 - incomingThreat;
       if (total > bestScore) { bestScore=total; best=[top4[a],top4[b]]; }
     }
   }
   return best || top4.slice(0,2);
+}
+
+/* ── 预测对方先发2只：对方搭档协同 + 对我方全队压制 ── */
+function selectBestOppLeadPair(combo4, myPkm) {
+  if (combo4.length <= 2) return combo4;
+  let best = null, bestScore = -Infinity;
+  for (let a = 0; a < combo4.length-1; a++) {
+    for (let b = a+1; b < combo4.length; b++) {
+      const pa = combo4[a], pb = combo4[b];
+      const syn = pairSynergyScore(pa, pb);
+      let pressure = 0;
+      (myPkm||[]).forEach(mp => {
+        pressure += Math.max(oppThreatScore(pa, mp), oppThreatScore(pb, mp));
+      });
+      const total = syn*1.2 + pressure;
+      if (total > bestScore) { bestScore=total; best=[pa,pb]; }
+    }
+  }
+  return best || combo4.slice(0,2);
 }
 
 /* ── 协同Top4选择 ── */
@@ -3234,7 +3253,7 @@ function selectSynTop4(scored) {
 function predictOppDoubles(valid, myPkm) {
   if (!valid.length) return {combo4:[],leadPair:[],threatMap:{},spreadWarn:[]};
   if (valid.length <= 4) {
-    const lp = selectBestLeadPair(valid.map(p=>({pkm:p})), myPkm).map(s=>s.pkm||s);
+    const lp = selectBestOppLeadPair(valid, myPkm);
     return {combo4:valid, leadPair:lp, threatMap:buildThreatMap(valid,myPkm), spreadWarn:collectSpreadWarn(valid)};
   }
   const synScore = combo => {
@@ -3256,7 +3275,7 @@ function predictOppDoubles(valid, myPkm) {
   let best=raw[0],bv=-1;
   raw.forEach(r=>{const v=(r.syn/mxS)*0.4+(r.anti/mxA)*0.6; if(v>bv){bv=v;best=r;}});
   const combo4=best.combo;
-  const leadPair=selectBestLeadPair(combo4.map(p=>({pkm:p})),myPkm.slice(0,2)).map(s=>s.pkm||s);
+  const leadPair=selectBestOppLeadPair(combo4,myPkm);
   return {combo4, leadPair, threatMap:buildThreatMap(combo4,myPkm), spreadWarn:collectSpreadWarn(combo4)};
 }
 
@@ -3384,7 +3403,7 @@ function renderDFieldControl(myPkm, oppValid) {
   const sharedControlRows = [
     { label:'顺风', has:(slugs)=>slugs.includes('tailwind') },
     { label:'奇异空间', has:(slugs)=>slugs.includes('trick-room') },
-    { label:'假哭/跟我来', has:(slugs)=>slugs.includes('fake-out') || slugs.includes('follow-me') || slugs.includes('rage-powder') },
+    { label:'击掌奇袭/引导', has:(slugs)=>slugs.includes('fake-out') || slugs.includes('follow-me') || slugs.includes('rage-powder') },
     { label:'鼓气加油', has:(slugs)=>slugs.includes('helping-hand') },
     { label:'天气', has:(slugs, pkm, fromMoves)=>Boolean(ABILITY_WEATHER_SET[pkm.ability||'']) || fromMoves.some(s=>weatherMoves.has(s)) },
     { label:'地形', has:(slugs, pkm, fromMoves)=>fromMoves.some(s=>terrainMoves.has(s)) },
