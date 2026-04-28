@@ -31,8 +31,9 @@ body{
     radial-gradient(ellipse at 88% 94%,rgba(255,179,163,.06) 0%,transparent 50%),
     linear-gradient(180deg,rgba(22,32,34,.2),transparent 36%),
     url('网站背景.png');
-  background-repeat:repeat,no-repeat,no-repeat,repeat;
-  background-size:auto,auto,auto,256px 256px;
+  background-repeat:repeat,no-repeat,no-repeat,no-repeat;
+  background-size:auto,auto,auto,cover;
+  background-position:center,center,center,center;
 }
 
 body::before,
