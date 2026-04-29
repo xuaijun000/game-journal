@@ -1,5 +1,6 @@
 /* === PIXELFISH Theme Base === */
 :root{
+  --header-h:62px;
   --bg:#0f1a1c;
   --bg2:#162022;
   --bg3:#1c2a2d;
@@ -81,7 +82,7 @@ header{
   background:linear-gradient(180deg,rgba(15,26,28,.82),rgba(15,26,28,.56));
   backdrop-filter:blur(14px);
   border-bottom:1px solid var(--b);
-  height:62px;
+  min-height:var(--header-h);
   display:flex;
   align-items:center;
   padding:0 1.6rem;
@@ -103,7 +104,7 @@ header::before{
 .logo{display:flex;align-items:center;white-space:nowrap;flex-shrink:0}
 .logo img{height:36px;width:auto;display:block;filter:drop-shadow(0 0 10px rgba(126,205,196,.2))}
 
-nav{display:flex;align-items:center;gap:4px;flex:1;overflow-x:auto;scrollbar-width:none}
+nav{display:flex;align-items:center;gap:4px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none}
 nav::-webkit-scrollbar{display:none}
 nav button{
   background:none;
@@ -123,7 +124,7 @@ nav button:hover{color:var(--t);background:rgba(126,205,196,.1)}
 nav button.on{color:var(--t);background:rgba(126,205,196,.18);box-shadow:inset 0 0 0 1px rgba(126,205,196,.2)}
 .nav-sep{width:1px;height:15px;background:var(--b2);margin:0 6px;flex-shrink:0}
 
-.hdr-r{display:flex;align-items:center;gap:8px;margin-left:auto}
+.hdr-r{display:flex;align-items:center;gap:8px;margin-left:auto;flex-shrink:0}
 .av{width:28px;height:28px;border-radius:50%;background:var(--bg3);border:1px solid var(--b2);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--acc);font-family:'DM Mono',monospace}
 .hbtn{background:transparent;border:1px solid var(--b2);border-radius:999px;padding:5px 14px;color:var(--acc);font-family:'Space Grotesk',sans-serif;font-size:.78rem;cursor:pointer;transition:all .15s}
 .hbtn:hover{color:var(--t);border-color:var(--acc);background:rgba(126,205,196,.08)}
@@ -228,7 +229,29 @@ main{max-width:1080px;margin:0 auto;padding:2.1rem 1.5rem 4.5rem}
   .stats-workbench{grid-template-columns:1fr}
 }
 
+@media(max-width:860px){
+  header{gap:.7rem}
+  nav button{padding:5px 10px}
+  .nav-sep{margin:0 3px}
+}
+
 @media(max-width:640px){
+  :root{--header-h:104px}
+  header{
+    align-items:center;
+    align-content:center;
+    flex-wrap:wrap;
+    gap:.45rem .75rem;
+    padding:.55rem 1rem;
+  }
+  .logo{order:1}
+  .hdr-r{order:2;margin-left:auto}
+  nav{
+    order:3;
+    flex:0 0 100%;
+    width:100%;
+    padding-bottom:2px;
+  }
   .stats{grid-template-columns:repeat(2,1fr)}
   .stats-insight-v{font-size:1.22rem}
   .stats-game-row{grid-template-columns:38px minmax(0,1fr) auto}

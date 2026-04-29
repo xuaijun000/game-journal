@@ -100,5 +100,6 @@
 /* Responsive */
 @media(max-width:640px){.stats{grid-template-columns:repeat(3,1fr)}.cg{grid-template-columns:1fr}.row2{grid-template-columns:1fr}.disc-header{flex-direction:column;align-items:flex-start}.disc-tabs{flex-wrap:wrap}}
 #pkm-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;opacity:.45}
-main,header{position:relative;z-index:1}
+main{position:relative;z-index:1}
+header{position:sticky;z-index:1000}
 
