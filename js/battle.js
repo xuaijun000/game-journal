@@ -985,6 +985,7 @@ let battleEditSpriteCache={}; // slot -> sprite URL
 let battleSrchT=null;
 let battleMoveDropdownBound=false;
 let battleMyTeamId=null;     // 分析页选中的我方队伍
+let battleSelectedMegaKey='auto'; // auto=自动推荐；none=本场不 Mega；slot:N=指定 Mega
 let battleOppPkm=[{},{},{},{},{},{} ];  // 对方6只（{name,type1,type2}）
 let battleAnalysisMyTeam=null;
 let battleCurrentVersion = '';
@@ -1558,6 +1559,10 @@ async function selectBpkmFromDrop(pkmId, cnName, slug=''){
   };
 
   if(localPkm){
+    const curP=battleEditTeam.pokemon[battleEditSlot];
+    curP.slug=localPkm.slug;
+    curP.currentVariety=localPkm.slug;
+    curP.basePkmName=baseSlugFromMega(localPkm.slug)||localPkm.slug;
     // 本地数据直接使用，无需网络请求
     applyPkmData(
       localPkm.types[0]||'', localPkm.types[1]||'',
@@ -1568,7 +1573,7 @@ async function selectBpkmFromDrop(pkmId, cnName, slug=''){
     const baseName=localPkm.slug.replace(/^mega-/,'').replace(/-(mega|alolan|galarian|hisuian|paldean|x|y)$/,'');
     const varieties=PKM_LIST
       .filter(p=>p.slug===localPkm.slug||p.slug.startsWith(baseName+'-')||p.slug===baseName)
-      .map(p=>({is_default:p.slug===baseName||p.slug===localPkm.slug,pokemon:{name:p.slug}}));
+      .map(p=>({name:p.slug,displayName:getFormDisplayName(baseName,p.slug),isDefault:p.slug===baseName||p.slug===localPkm.slug,pokemon:{name:p.slug}}));
     if(varieties.length>1){
       const p2=battleEditTeam.pokemon[battleEditSlot];
       p2.varieties=varieties;
@@ -1610,6 +1615,140 @@ function getFormDisplayName(baseName,varietyName){
   return suffix.replace(/-/g,' ');
 }
 
+/* ──────── Mega 出战规则 ──────── */
+function isMegaSlug(slug){
+  return /^mega-/.test(slug||'')||/-(mega|mega-x|mega-y)$/.test(slug||'');
+}
+
+function baseSlugFromMega(slug){
+  if(!slug)return '';
+  const raw=String(slug).replace(/^mega-/,'').replace(/-(mega|mega-x|mega-y)$/,'');
+  const candidates=[raw, raw.replace(/-(x|y)$/,'')];
+  return candidates.find(s=>PKM_PC_BY_SLUG[s])||candidates[0]||raw;
+}
+
+function inferBattlePkmSlug(pkm){
+  if(pkm?.slug)return pkm.slug;
+  if(pkm?.currentVariety)return pkm.currentVariety;
+  const byName=PKM_LIST.find(x=>x.name===pkm?.name);
+  return byName?.slug||'';
+}
+
+function getMegaFormsForBattlePkm(pkm){
+  const slug=inferBattlePkmSlug(pkm);
+  const base=isMegaSlug(slug)?baseSlugFromMega(slug):slug;
+  if(!base)return [];
+  return PKM_LIST.filter(x=>isMegaSlug(x.slug)&&baseSlugFromMega(x.slug)===base);
+}
+
+function hasBattleMegaStone(pkm){
+  const item=pkm?.item||'';
+  const data=ITEMS_BY_NAME[item]||ITEMS_BY_SLUG[item];
+  return data?.category==='mega'||/进化石|Mega Stone/i.test(item);
+}
+
+function getBattleMegaCandidates(teamPkm){
+  return (teamPkm||[])
+    .map((p,idx)=>({p,slot:p._slotIndex??idx,slug:inferBattlePkmSlug(p)}))
+    .filter(x=>x.p?.name&&(isMegaSlug(x.slug)||hasBattleMegaStone(x.p)||getMegaFormsForBattlePkm(x.p).length));
+}
+
+function applyBattleDexDataToPkm(pkm,dex,tag){
+  if(!dex)return pkm;
+  const next={...pkm};
+  next.name=dex.name||next.name;
+  next.slug=dex.slug||next.slug;
+  next.type1=dex.types?.[0]||next.type1||'';
+  next.type2=dex.types?.[1]||'';
+  next.base=dex.stats?{...dex.stats}:next.base;
+  next.abilities=Array.isArray(dex.abilities)?[...dex.abilities]:(next.abilities||[]);
+  if(next.abilities.length&&!next.abilities.includes(next.ability))next.ability=next.abilities[0];
+  if(dex.learnset)next.learnableMovesEn=[...dex.learnset];
+  if(dex.spriteUrl)next._spriteUrl=dex.spriteUrl;
+  next.currentVariety=dex.slug||next.currentVariety;
+  next._megaState=tag||'';
+  return next;
+}
+
+function resolveBattleMegaForm(pkm){
+  const slug=inferBattlePkmSlug(pkm);
+  if(isMegaSlug(slug))return PKM_PC_BY_SLUG[slug]||null;
+  const forms=getMegaFormsForBattlePkm(pkm);
+  if(!forms.length)return null;
+  const item=String(pkm?.item||'').toLowerCase();
+  if(item.includes(' x')||item.includes('x')||item.includes('Ｘ'))return forms.find(f=>/-x$/.test(f.slug))||forms[0];
+  if(item.includes(' y')||item.includes('y')||item.includes('Ｙ'))return forms.find(f=>/-y$/.test(f.slug))||forms[0];
+  return forms[0];
+}
+
+function resolveBattleBaseForm(pkm){
+  const slug=inferBattlePkmSlug(pkm);
+  const baseSlug=isMegaSlug(slug)?baseSlugFromMega(slug):slug;
+  return PKM_PC_BY_SLUG[baseSlug]||PKM_LIST.find(x=>x.name===pkm?.name&&!isMegaSlug(x.slug))||null;
+}
+
+function cloneBattleTeamForMegaRule(myPkm, selectedMegaKey='none'){
+  return (myPkm||[]).map((p,idx)=>{
+    const slot=p._slotIndex??idx;
+    const isChosen=selectedMegaKey===`slot:${slot}`;
+    const candidate=isMegaSlug(inferBattlePkmSlug(p))||hasBattleMegaStone(p)||getMegaFormsForBattlePkm(p).length;
+    if(!candidate)return {...p,_slotIndex:slot,_megaState:''};
+    if(isChosen){
+      const mega=resolveBattleMegaForm(p);
+      return applyBattleDexDataToPkm({...p,_slotIndex:slot},mega,'mega');
+    }
+    const base=resolveBattleBaseForm(p);
+    return applyBattleDexDataToPkm({...p,_slotIndex:slot},base,'base');
+  });
+}
+
+function chooseBestBattleMegaKey(myPkm, opp, activeWeather, pickCount){
+  const candidates=getBattleMegaCandidates(myPkm);
+  if(!candidates.length)return 'none';
+  const keys=candidates.map(c=>`slot:${c.slot}`);
+  let bestKey=keys[0]||'none',bestScore=-Infinity;
+  keys.forEach(key=>{
+    const team=cloneBattleTeamForMegaRule(myPkm,key);
+    const scored=scorePkmForBattle(team,opp,activeWeather);
+    const total=scored.slice(0,pickCount).reduce((s,x)=>s+(x.total||0),0);
+    if(total>bestScore){bestScore=total;bestKey=key;}
+  });
+  return bestKey;
+}
+
+function prepareBattleTeamForMegaRule(myPkm, opp, activeWeather, format='singles'){
+  const pickCount=format==='doubles'?4:3;
+  const baseTeam=(myPkm||[]).map((p,idx)=>({...p,_slotIndex:p._slotIndex??idx}));
+  const selectedKey=(format==='doubles'?bdSelectedMegaKey:battleSelectedMegaKey)||'auto';
+  const megaKey=selectedKey==='auto'?chooseBestBattleMegaKey(baseTeam,opp,activeWeather,pickCount):selectedKey;
+  const team=cloneBattleTeamForMegaRule(baseTeam,megaKey);
+  return{team,megaKey};
+}
+
+function renderBattleMegaSelect(team, selectedKey, onChangeName){
+  const pkm=Array.isArray(team?.pokemon)?team.pokemon.map((p,slot)=>({...p,_slotIndex:slot})).filter(p=>p.name):[];
+  const candidates=getBattleMegaCandidates(pkm);
+  if(!candidates.length)return '';
+  const opts=[
+    `<option value="auto"${selectedKey==='auto'?' selected':''}>自动推荐本场 Mega</option>`,
+    `<option value="none"${selectedKey==='none'?' selected':''}>本场不 Mega</option>`,
+    ...candidates.map(({p,slot})=>`<option value="slot:${slot}"${selectedKey===`slot:${slot}`?' selected':''}>${esc(p.name)}${p.item?` · ${esc(p.item)}`:''}</option>`)
+  ].join('');
+  return `<div class="battle-mega-select-wrap">
+    <span class="battle-mega-select-label">本场 Mega</span>
+    <select class="bpkm-inp battle-mega-select" onchange="${onChangeName}(this.value)">${opts}</select>
+  </div>`;
+}
+
+function describeBattleMegaPlan(myPkm, megaKey){
+  const chosen=myPkm.find(p=>p._megaState==='mega');
+  const reverted=myPkm.filter(p=>p._megaState==='base');
+  if(!chosen&&!reverted.length)return '';
+  const chosenText=chosen?`本场 Mega：${esc(chosen.name)}`:'本场不 Mega';
+  const revertedText=reverted.length?`；${reverted.map(p=>esc(p.name)).join('、')} 按普通形态/普通特性计算`:'';
+  return `<div class="battle-mega-plan">${chosenText}${revertedText}</div>`;
+}
+
 async function loadPkmForms(pkmId,baseName,cnName){
   try{
     const sr=await fetch(`${POKEAPI}/pokemon-species/${pkmId}`);
@@ -1647,6 +1786,41 @@ async function selectBpkmForm(varietyName){
   const p=battleEditTeam.pokemon[battleEditSlot];
   if(!p)return;
   try{
+    const local=PKM_PC_BY_SLUG[varietyName];
+    if(local){
+      p.name=local.name||p.name;
+      p.slug=local.slug;
+      p.currentVariety=local.slug;
+      p.basePkmName=baseSlugFromMega(local.slug)||local.slug;
+      p.type1=local.types?.[0]||'';
+      p.type2=local.types?.[1]||'';
+      p.base={...(local.stats||{})};
+      p.abilities=[...(local.abilities||[])];
+      if(p.abilities.length&&!p.abilities.includes(p.ability))p.ability=p.abilities[0];
+      p.learnableMovesEn=[...(local.learnset||[])];
+      battleEditSpriteCache[battleEditSlot]=local.spriteUrl||'';
+      p._spriteUrl=local.spriteUrl||p._spriteUrl||'';
+      const nameInput=document.getElementById('bpkm-name-inp');
+      if(nameInput)nameInput.value=p.name;
+      const nameEl=document.getElementById('bpkm-preview-name')||document.querySelector('.bpkm-preview-name');
+      if(nameEl)nameEl.textContent=p.name;
+      const spriteEl=document.getElementById('bpkm-sprite');
+      if(spriteEl&&p._spriteUrl)spriteEl.src=p._spriteUrl;
+      const s1=document.getElementById('bpkm-type1');
+      const s2=document.getElementById('bpkm-type2');
+      if(s1)s1.value=p.type1;if(s2)s2.value=p.type2||'';
+      STAT_KEYS_B.forEach(k=>{const el=document.getElementById(`bpkm-base-${k}`);if(el&&p.base[k]!==undefined)el.value=p.base[k];});
+      const abInp=document.getElementById('bpkm-ability');
+      if(abInp)abInp.value=p.ability||'';
+      const abChips=document.getElementById('bpkm-ability-chips');
+      if(abChips)abChips.innerHTML=p.abilities.map(a=>`<span class="bpkm-ability-chip${p.ability===a?' active':''}" onclick="selectBpkmAbility('${esc(a)}')">${esc(a)}</span>`).join('');
+      const typesEl=document.getElementById('bpkm-preview-types');
+      if(typesEl)typesEl.innerHTML=(p.type1?`<span class="coverage-type-tag type-${p.type1}">${TYPE_ZH[p.type1]||p.type1}</span>`:'')+
+        (p.type2?`<span class="coverage-type-tag type-${p.type2}">${TYPE_ZH[p.type2]||p.type2}</span>`:'');
+      renderBpkmFormChips();
+      onBpkmStatChange();
+      return;
+    }
     const r=await fetch(`${POKEAPI}/pokemon/${varietyName}`);
     if(!r.ok)return;
     const d=await r.json();
@@ -1679,6 +1853,8 @@ async function selectBpkmForm(varietyName){
     if(typesEl)typesEl.innerHTML=(t1?`<span class="coverage-type-tag type-${t1}">${TYPE_ZH[t1]||t1}</span>`:'')+
       (t2?`<span class="coverage-type-tag type-${t2}">${TYPE_ZH[t2]||t2}</span>`:'');
     p.currentVariety=varietyName;
+    p.slug=varietyName;
+    p.basePkmName=baseSlugFromMega(varietyName)||p.basePkmName;
     renderBpkmFormChips();
     onBpkmStatChange();
   }catch(e){console.warn('selectBpkmForm error',e);}
@@ -1754,7 +1930,13 @@ function gatherSlotForm(){
       pp:parseInt(document.getElementById(`bpkm-move${i}-pp`)?.value)||null,
     };
   });
-  p.abilities=battleEditTeam.pokemon[battleEditSlot]?.abilities||[];
+  const prev=battleEditTeam.pokemon[battleEditSlot]||{};
+  p.abilities=prev.abilities||[];
+  p.learnableMovesEn=prev.learnableMovesEn||[];
+  p.varieties=prev.varieties||[];
+  p.slug=prev.slug||prev.currentVariety||'';
+  p.currentVariety=prev.currentVariety||p.slug||'';
+  p.basePkmName=prev.basePkmName||baseSlugFromMega(p.slug)||p.slug||'';
   battleEditTeam.pokemon[battleEditSlot]=p;
 }
 
@@ -1987,14 +2169,20 @@ function selectOppPkmFromDrop(i,pkmId,cnName,slug=''){
 
 function onMyTeamSelect(teamId){
   battleMyTeamId=teamId;
+  battleSelectedMegaKey='auto';
   const team=battleTeams.find(t=>t.id===teamId);
   const preview=document.getElementById('battle-my-preview');
   if(!team||!preview)return;
   const pkm=Array.isArray(team.pokemon)?team.pokemon.filter(p=>p.name):[];
-  preview.innerHTML=pkm.map(p=>{
+  const chips=pkm.map(p=>{
     const img=p._spriteUrl?`<img src="${esc(p._spriteUrl)}" alt="" onerror="this.style.display='none'">`:' ';
     return`<div class="battle-my-pkm-chip">${img}${esc(p.name)}</div>`;
   }).join('');
+  preview.innerHTML=chips+renderBattleMegaSelect(team,battleSelectedMegaKey,'onBattleMegaSelect');
+}
+
+function onBattleMegaSelect(value){
+  battleSelectedMegaKey=value||'auto';
 }
 
 /* ── 属性相克计算 ── */
@@ -2176,8 +2364,8 @@ function analyzeMatchups(){
   if(!opp.length){showToast('请至少填入对方一只宝可梦的属性');return;}
   const myTeam=battleTeams.find(t=>t.id===battleMyTeamId);
   if(!myTeam){showToast('请先选择我的队伍');return;}
-  const myPkm=(myTeam.pokemon||[]).filter(p=>p.name);
-  if(!myPkm.length){showToast('队伍为空，请先录入队伍成员');return;}
+  const rawMyPkm=(myTeam.pokemon||[]).map((p,idx)=>({...p,_slotIndex:idx})).filter(p=>p.name);
+  if(!rawMyPkm.length){showToast('队伍为空，请先录入队伍成员');return;}
   battleAnalysisMyTeam=myTeam;
 
   const resultBox=document.getElementById('battle-analysis-result');
@@ -2186,33 +2374,36 @@ function analyzeMatchups(){
 
   setTimeout(()=>{
     try{
-      const activeWeather=detectMyWeather(myPkm);
-      // ── 博弈核心：先预测对方出战3只，再针对性推荐我方 ──
+      const rawWeather=detectMyWeather(rawMyPkm);
+      // ── 预测只作参考；实际推荐和分析按对方全队评分，避免预测错误时信息缺口 ──
       const oppValid=opp.filter(op=>op.name||op.type1);
-      const predResult=predictOppBestCombo(oppValid,myPkm);
-      const targetOpp=predResult.combo.length>=2?predResult.combo:oppValid;
-      const scored=scorePkmForBattle(myPkm,targetOpp,activeWeather);
+      const predResult=predictOppBestCombo(oppValid,rawMyPkm);
+      const analysisOpp=oppValid;
+      const megaPrep=prepareBattleTeamForMegaRule(rawMyPkm,analysisOpp,rawWeather,'singles');
+      const myPkm=megaPrep.team;
+      const activeWeather=detectMyWeather(myPkm)||rawWeather;
+      const scored=scorePkmForBattle(myPkm,analysisOpp,activeWeather);
       const matrixHtml=renderBattleMatrix(myPkm,opp);
       const coverageHtml=renderBattleCoverage(myPkm,opp);
       const dmgHtml=renderBattleDamage(myPkm,opp,activeWeather);
       const oppDmgHtml=renderOppDamage(opp,myPkm,activeWeather);
-      const recHtml=renderBattleRec(scored,targetOpp);
+      const recHtml=renderBattleRec(scored,analysisOpp);
       const weakHtml=renderTeamWeaknessWarning(scored);
       const speedHtml=renderSpeedAnalysis(scored,opp);
       const oppPredHtml=renderOppTeamPrediction(oppValid,predResult);
-      const quickHtml=renderQuickDecisionPanel({scored,myPkm,opp:oppValid,targetOpp,activeWeather,format:'singles'});
-      const recSubtitle=targetOpp.length<oppValid.length
-        ?`针对预测出战阵容（${targetOpp.map(op=>esc(op.name||'?')).join('、')}）`
-        :'针对已知对方阵容';
+      const quickHtml=renderQuickDecisionPanel({scored,myPkm,opp:oppValid,targetOpp:analysisOpp,activeWeather,format:'singles'});
+      const megaPlanHtml=describeBattleMegaPlan(myPkm,megaPrep.megaKey);
+      const recSubtitle='针对对方全部已知成员';
       resultBox.innerHTML=`
         <div class="battle-result-box">
           ${quickHtml}
           ${oppPredHtml?`<div class="battle-result-section">
-            <div class="battle-result-hdr"><span class="battle-result-title">🔮 对方出战预测</span><span class="battle-datasrc-note">队友协同 30% + 克制我方 70% · 点击首发可预测后续</span></div>
+            <div class="battle-result-hdr"><span class="battle-result-title">🔮 对方出战预测</span><span class="battle-datasrc-note">仅作参考；推荐、伤害、速度按对方全队计算 · 点击首发可预测后续</span></div>
             ${oppPredHtml}
           </div>`:''}
           <div class="battle-result-section">
             <div class="battle-result-hdr"><span class="battle-result-title">推荐出战阵容</span><span class="battle-datasrc-note">${recSubtitle}</span></div>
+            ${megaPlanHtml}
             ${recHtml}
           </div>
           <div class="battle-result-section">
@@ -3168,6 +3359,11 @@ function renderBattleRec(scored, opp){
       return null;
     })():null;
     const abilityTag=abilityLabel?`<span class="battle-ability-tag ${abilityLabel.cls}" title="${esc(ability)}">${abilityLabel.txt}</span>`:'';
+    const megaTag=pkm._megaState==='mega'
+      ?`<span class="battle-mega-tag is-mega">本场 Mega</span>`
+      :pkm._megaState==='base'
+        ?`<span class="battle-mega-tag is-base">普通形态</span>`
+        :'';
     // 恐吓警告：对方有恐吓 且 我方是物理攻击手
     const physRole=role.cls==='role-phys'||role.cls==='role-mixed';
     const intimidateWarn=oppHasIntimidate&&physRole?`<div class="battle-rec-reason warn-intimidate">⚠ 对方有恐吓，物攻实效约降33%</div>`:'';
@@ -3186,7 +3382,7 @@ function renderBattleRec(scored, opp){
       <span class="battle-rec-rank ${rankCls[i]}">${rankLabel[i]}</span>
       <div class="battle-rec-sprite">${img}</div>
       <div class="battle-rec-body">
-        <div class="battle-rec-name">${esc(pkm.name)}<span class="battle-role-tag ${role.cls}">${role.label}</span>${abilityTag}</div>
+        <div class="battle-rec-name">${esc(pkm.name)}<span class="battle-role-tag ${role.cls}">${role.label}</span>${abilityTag}${megaTag}</div>
         <div class="battle-rec-score">进攻+${s.offScore.toFixed(1)} 防御-${s.defScore.toFixed(1)} 综合${s.total.toFixed(1)}</div>
         <div class="battle-rec-reasons">
           ${allReasons.map(r=>`<div class="battle-rec-reason">${r}</div>`).join('')}
@@ -3277,6 +3473,7 @@ function calcAllStats(){
 
 /* ── 状态 ── */
 let bdMyTeamId = null;
+let bdSelectedMegaKey = 'auto';
 let bdOppPkm = [{},{},{},{},{},{}];
 const bdOppComposing = {};
 const bdOppSearchTimers = {};
@@ -3325,13 +3522,19 @@ function renderDTeamSel() {
 
 function onDMyTeamSelect(teamId) {
   bdMyTeamId = teamId;
+  bdSelectedMegaKey = 'auto';
   const team = battleTeams.find(t => t.id === teamId);
   const preview = document.getElementById('bd-my-preview');
   if (!team || !preview) return;
-  preview.innerHTML = (Array.isArray(team.pokemon) ? team.pokemon.filter(p => p.name) : []).map(p => {
+  const chips = (Array.isArray(team.pokemon) ? team.pokemon.filter(p => p.name) : []).map(p => {
     const img = p._spriteUrl ? `<img src="${esc(p._spriteUrl)}" alt="" onerror="this.style.display='none'">` : '';
     return `<div class="battle-my-pkm-chip">${img}${esc(p.name)}</div>`;
   }).join('');
+  preview.innerHTML = chips + renderBattleMegaSelect(team,bdSelectedMegaKey,'onDBattleMegaSelect');
+}
+
+function onDBattleMegaSelect(value) {
+  bdSelectedMegaKey = value || 'auto';
 }
 
 /* ── 对方6槽输入（前缀 bdopp-，独立于单打） ── */
@@ -3695,12 +3898,17 @@ function renderDoublesRec(top4, leadPairScored, targetOpp) {
     const spreadRoles=detectDSupportRoles(pkm).filter(r=>r==='范围技');
     const supportTag=sRoles.length?`<span class="battle-ability-tag ab-speed">${sRoles[0]}</span>`:'';
     const spreadTag=spreadRoles.length?`<span class="battle-ability-tag ab-weather">范围技</span>`:'';
+    const megaTag=pkm._megaState==='mega'
+      ?`<span class="battle-mega-tag is-mega">本场 Mega</span>`
+      :pkm._megaState==='base'
+        ?`<span class="battle-mega-tag is-base">普通形态</span>`
+        :'';
     const intimidateWarn=oppHasIntimidate&&(role.cls==='role-phys'||role.cls==='role-mixed')?`<div class="battle-rec-reason warn-intimidate">⚠ 对方有恐吓，物攻约降33%</div>`:'';
     return `<div class="battle-rec-card ${rankClass[i]||''}">
       <span class="battle-rec-rank">${rankLabel[i]||''}</span>${leadBadge}
       <div class="battle-rec-sprite">${img}</div>
       <div class="battle-rec-body">
-        <div class="battle-rec-name">${esc(pkm.name)}<span class="battle-role-tag ${role.cls}">${role.label}</span>${supportTag}${spreadTag}</div>
+        <div class="battle-rec-name">${esc(pkm.name)}<span class="battle-role-tag ${role.cls}">${role.label}</span>${supportTag}${spreadTag}${megaTag}</div>
         <div class="battle-rec-score">进攻+${s.offScore.toFixed(1)} 防御-${s.defScore.toFixed(1)} 综合${s.total.toFixed(1)}</div>
         <div class="battle-rec-reasons">${s.reasons.map(r=>`<div class="battle-rec-reason">${r}</div>`).join('')}${intimidateWarn}</div>
       </div>
@@ -3810,8 +4018,8 @@ function analyzeDoubles() {
   if(!opp.length){showToast('请至少填入对方一只宝可梦的属性');return;}
   const myTeam=battleTeams.find(t=>t.id===bdMyTeamId);
   if(!myTeam){showToast('请先选择我的阵容');return;}
-  const myPkm=(myTeam.pokemon||[]).filter(p=>p.name);
-  if(!myPkm.length){showToast('阵容为空，请先录入队伍成员');return;}
+  const rawMyPkm=(myTeam.pokemon||[]).map((p,idx)=>({...p,_slotIndex:idx})).filter(p=>p.name);
+  if(!rawMyPkm.length){showToast('阵容为空，请先录入队伍成员');return;}
 
   const resultBox=document.getElementById('bd-analysis-result');
   resultBox.style.display='block';
@@ -3819,20 +4027,23 @@ function analyzeDoubles() {
 
   setTimeout(()=>{
     try{
-      const activeWeather=detectMyWeather(myPkm);
+      const rawWeather=detectMyWeather(rawMyPkm);
       const oppValid=opp.filter(op=>op.name||op.type1);
-      const predResult=predictOppDoubles(oppValid,myPkm);
-      // 置信度低（<8%）或无明确预测时，对全队均等评分，避免预测偏差单向传播
-      const highConf=predResult.confidence>=0.08&&predResult.combo4.length>=4&&predResult.combo4.length<oppValid.length;
-      const targetOpp=highConf?predResult.combo4:oppValid;
-      const rawScored=scorePkmForBattle(myPkm,targetOpp,activeWeather);
+      const predResult=predictOppDoubles(oppValid,rawMyPkm);
+      // 预测只作参考；实际推荐和分析按对方全队评分，避免预测偏差单向传播
+      const analysisOpp=oppValid;
+      const megaPrep=prepareBattleTeamForMegaRule(rawMyPkm,analysisOpp,rawWeather,'doubles');
+      const myPkm=megaPrep.team;
+      const activeWeather=detectMyWeather(myPkm)||rawWeather;
+      const rawScored=scorePkmForBattle(myPkm,analysisOpp,activeWeather);
       const top4scored=selectSynTop4(rawScored);
       const top4=top4scored.slice(0,4);
       // 先发推荐对对方所有可能先发搭档求期望，不依赖单一预测
       const leadPairScored=selectBestLeadPair(top4,oppValid);
       const oppPredHtml=renderDOppPrediction(oppValid,predResult);
-      const myRecHtml=renderDoublesRec(top4,leadPairScored,targetOpp);
-      const quickHtml=renderQuickDecisionPanel({scored:top4scored,myPkm,opp:oppValid,targetOpp,activeWeather,format:'doubles',leadPairScored});
+      const myRecHtml=renderDoublesRec(top4,leadPairScored,analysisOpp);
+      const megaPlanHtml=describeBattleMegaPlan(myPkm,megaPrep.megaKey);
+      const quickHtml=renderQuickDecisionPanel({scored:top4scored,myPkm,opp:oppValid,targetOpp:analysisOpp,activeWeather,format:'doubles',leadPairScored});
       const fieldCtrlHtml=renderDFieldControl(myPkm, oppValid);
       const spreadRiskHtml=renderDSpreadRisk(top4.map(s=>s.pkm));
       const matrixHtml=renderBattleMatrix(myPkm,opp);
@@ -3844,10 +4055,11 @@ function analyzeDoubles() {
       resultBox.innerHTML=`<div class="battle-result-box">
         ${quickHtml}
         ${oppPredHtml?`<div class="battle-result-section">
-          <div class="battle-result-hdr"><span class="battle-result-title">🔮 对方出战预测</span><span class="battle-datasrc-note">协同40%+克制我方60%${oppValid.length>4?` · 置信度${Math.round(predResult.confidence*100)}%${highConf?'':' ⚠低·推荐已对全队均等评分'}`:''}</span></div>
+          <div class="battle-result-hdr"><span class="battle-result-title">🔮 对方出战预测</span><span class="battle-datasrc-note">协同40%+克制我方60% · 仅作参考，推荐按全队评分${oppValid.length>4?` · 置信度${Math.round(predResult.confidence*100)}%`:''}</span></div>
           ${oppPredHtml}</div>`:''}
         <div class="battle-result-section">
-          <div class="battle-result-hdr"><span class="battle-result-title">推荐出战阵容（双打 6选4）</span><span class="battle-datasrc-note">${highConf?`针对预测出战（${targetOpp.map(op=>esc(op.name||'?')).join('、')}）`:'针对全部已知对方成员'}</span></div>
+          <div class="battle-result-hdr"><span class="battle-result-title">推荐出战阵容（双打 6选4）</span><span class="battle-datasrc-note">针对全部已知对方成员</span></div>
+          ${megaPlanHtml}
           ${myRecHtml}</div>
         <div class="battle-result-section">
           <div class="battle-result-hdr"><span class="battle-result-title">场地控制分析</span></div>
@@ -3934,4 +4146,3 @@ function calcDAllStats() {
     </div>`;
   }).join('')}</div>`;
 }
-

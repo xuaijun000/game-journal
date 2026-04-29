@@ -101,6 +101,13 @@
 .battle-my-preview{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .battle-my-pkm-chip{display:flex;align-items:center;gap:5px;padding:4px 8px;background:var(--bg3);border:1px solid var(--b2);border-radius:2px;font-size:.72rem;color:var(--t2)}
 .battle-my-pkm-chip img{width:28px;height:28px;object-fit:contain;image-rendering:pixelated}
+.battle-mega-select-wrap{display:flex;align-items:center;gap:8px;width:100%;margin-top:4px;padding:8px;background:rgba(200,144,64,.06);border:1px solid rgba(200,144,64,.22);border-radius:var(--r)}
+.battle-mega-select-label{font-size:.62rem;color:var(--acc);font-family:'DM Mono',monospace;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+.battle-mega-select{min-width:0;flex:1;padding:6px 8px;font-size:.75rem}
+.battle-mega-plan{margin:10px 14px 0;padding:8px 10px;background:rgba(200,144,64,.08);border-left:3px solid var(--acc);border-radius:2px;color:var(--t2);font-size:.76rem;line-height:1.5}
+.battle-mega-tag{display:inline-block;font-size:.6rem;border-radius:3px;padding:1px 5px;margin-left:5px;vertical-align:middle;font-weight:600}
+.battle-mega-tag.is-mega{color:#ffd166;background:rgba(255,209,102,.14);border:1px solid rgba(255,209,102,.25)}
+.battle-mega-tag.is-base{color:var(--t3);background:rgba(255,255,255,.05);border:1px solid var(--b2)}
 
 /* ── 分析结果 ── */
 .battle-result-box{margin-top:1.2rem;display:flex;flex-direction:column;gap:16px}
@@ -454,4 +461,3 @@
 .bd-opp-lead-pkm img{width:44px;height:44px;object-fit:contain}
 .bd-opp-lead-name{font-size:.75rem;font-weight:600;color:var(--t);text-align:center}
 .rank-4{border-left:3px solid var(--t3)}
-
