@@ -84,7 +84,8 @@
 .partner-console{perspective:1400px;min-height:620px}
 .partner-console-inner{position:relative;min-height:620px;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.2,.8,.2,1)}
 .partner-console.is-flipped .partner-console-inner{transform:rotateY(180deg)}
-.partner-console-face{position:absolute;inset:0;overflow:hidden;backface-visibility:hidden;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:linear-gradient(145deg,rgba(23,31,33,.94),rgba(10,14,15,.96));box-shadow:0 18px 44px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.06)}
+.partner-console-face{position:absolute;inset:0;overflow:hidden;backface-visibility:hidden;pointer-events:none;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:linear-gradient(145deg,rgba(23,31,33,.94),rgba(10,14,15,.96));box-shadow:0 18px 44px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.06)}
+.partner-console:not(.is-flipped) .partner-console-front,.partner-console.is-flipped .partner-console-back{pointer-events:auto}
 .partner-console-face::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(126,205,196,.12),transparent 32%,rgba(200,144,64,.08));pointer-events:none}
 .partner-console-front{display:flex;flex-direction:column;gap:16px;padding:18px}
 .partner-console-back{transform:rotateY(180deg);padding:16px;overflow-y:auto;max-height:calc(100vh - 118px)}
@@ -106,6 +107,7 @@
 .partner-console-detail{position:relative;z-index:1;margin-top:14px}
 .partner-box{--pbox-accent:var(--acc);position:relative;overflow:hidden;display:block;width:100%;margin:0;background:linear-gradient(145deg,rgba(23,31,33,.94),rgba(12,16,17,.96));border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:1rem;box-shadow:0 16px 38px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.05)}
 .partner-console-detail .partner-box{background:transparent;border:0;border-radius:0;box-shadow:none;padding:0}
+.partner-console-detail .partner-box-hdr{display:none}
 .partner-console-detail .partner-box::before,.partner-console-detail .partner-box::after{display:none}
 .partner-box::before{content:'';position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,var(--pbox-accent),transparent 68%);opacity:.9}
 .partner-box::after{content:'';position:absolute;right:-46px;top:-56px;width:132px;height:132px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.08),transparent 68%);pointer-events:none}
