@@ -425,22 +425,26 @@ function pStatBar(label,key,val,color){
 
 function pRenderTasks(){
   const di=partnerData.daily_interactions||{};
+  const doneCount=DAILY_TASKS.filter(t=>t.check(di)).length;
+  const pct=Math.round(doneCount/DAILY_TASKS.length*100);
   const rows=DAILY_TASKS.map(t=>{
     const done=t.check(di);
     return`<div class="partner-task ${done?'done':''}">
-      <span class="partner-task-icon">${done?'✅':'⬜'}</span>
+      <span class="partner-task-icon">${done?'✓':'○'}</span>
       <span class="partner-task-text">${t.text}</span>
       <span class="partner-task-reward">${done?'已完成':t.reward}</span>
     </div>`;
   }).join('');
-  return`<div class="partner-box">
-    <div class="partner-box-hdr">📋 今日任务</div>
+  return`<div class="partner-box partner-task-box">
+    <div class="partner-box-hdr"><span><b>今日任务</b><em>Daily Route</em></span><i>${doneCount}/${DAILY_TASKS.length}</i></div>
+    <div class="partner-section-meter"><div style="width:${pct}%"></div></div>
     <div class="partner-task-list">${rows}</div>
   </div>`;
 }
 
 function pRenderInventory(){
   const inv=partnerData.inventory||{};
+  const total=Object.keys(PARTNER_ITEMS).reduce((s,k)=>s+(inv[k]||0),0);
   const items=Object.entries(PARTNER_ITEMS).map(([key,item])=>{
     const cnt=inv[key]||0;
     return`<div class="partner-item ${cnt===0?'empty':''}" onclick="${cnt>0?`usePartnerItem('${key}')`:''}" title="${item.desc}">
@@ -450,8 +454,8 @@ function pRenderInventory(){
       <div class="partner-item-desc">${item.desc}</div>
     </div>`;
   }).join('');
-  return`<div class="partner-box">
-    <div class="partner-box-hdr">🎒 背包道具</div>
+  return`<div class="partner-box partner-inventory-box">
+    <div class="partner-box-hdr"><span><b>背包道具</b><em>Inventory</em></span><i>${total} 件</i></div>
     <div class="partner-bag-grid">${items}</div>
   </div>`;
 }
@@ -464,8 +468,8 @@ function pRenderDiary(){
       <div class="partner-diary-date">${e.date||''}</div>
       <div class="partner-diary-text">${pEsc(e.text||'')}</div>
     </div>`).join(''):`<div style="text-align:center;padding:1rem;color:var(--t3);font-size:.77rem">还没有日记，快去互动吧～</div>`;
-  return`<div class="partner-box">
-    <div class="partner-box-hdr">📔 伙伴日记</div>
+  return`<div class="partner-box partner-diary-box">
+    <div class="partner-box-hdr"><span><b>伙伴日记</b><em>Memory Log</em></span><i>${diary.length}</i></div>
     <div class="partner-diary-list">${rows}</div>
   </div>`;
 }
@@ -489,7 +493,7 @@ function pRenderRoster(){
     <span>还没有历史伙伴</span>
   </div>`;
   return`<div class="partner-box partner-roster-box">
-    <div class="partner-box-hdr">伙伴清单 <span>${roster.length}/12</span></div>
+    <div class="partner-box-hdr"><span><b>伙伴清单</b><em>Roster</em></span><i>${roster.length}/12</i></div>
     <div class="partner-roster-list">${rows}</div>
   </div>`;
 }
@@ -500,8 +504,8 @@ function pRenderProfile(){
   const ic=d.interaction_counts||{};
   const unlocked=(d.achievements||[]);
   const achHTML=unlocked.length?PARTNER_ACHIEVEMENTS.filter(a=>unlocked.includes(a.id)).map(a=>`<span class="partner-badge">${a.icon} ${a.name}</span>`).join(''):`<span style="font-size:.73rem;color:var(--t3)">暂无成就，继续互动解锁</span>`;
-  return`<div class="partner-box">
-    <div class="partner-box-hdr">👤 伙伴档案</div>
+  return`<div class="partner-box partner-profile-box">
+    <div class="partner-box-hdr"><span><b>伙伴档案</b><em>Profile</em></span><i>${stage.name}</i></div>
     <div class="partner-profile-grid">
       <div class="partner-profile-stat"><div class="partner-profile-val">${d.streak_days||1}</div><div class="partner-profile-lbl">连续陪伴天</div></div>
       <div class="partner-profile-stat"><div class="partner-profile-val">${ic.total||0}</div><div class="partner-profile-lbl">总互动次数</div></div>
@@ -511,7 +515,7 @@ function pRenderProfile(){
       <div class="partner-bond-bar-wrap"><div class="partner-bond-fill" style="width:${d.bond}%"></div></div>
       <div class="partner-bond-desc">${stage.desc}</div>
     </div>
-    <div class="partner-box-hdr" style="margin-top:10px">🏅 成就</div>
+    <div class="partner-sub-hdr">成就徽章</div>
     <div class="partner-achievements">${achHTML}</div>
   </div>`;
 }
