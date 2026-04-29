@@ -445,15 +445,16 @@ function pRenderTasks(){
 function pRenderInventory(){
   const inv=partnerData.inventory||{};
   const total=Object.keys(PARTNER_ITEMS).reduce((s,k)=>s+(inv[k]||0),0);
-  const items=Object.entries(PARTNER_ITEMS).map(([key,item])=>{
+  const ownedItems=Object.entries(PARTNER_ITEMS).filter(([key])=>(inv[key]||0)>0);
+  const items=ownedItems.length?ownedItems.map(([key,item])=>{
     const cnt=inv[key]||0;
-    return`<div class="partner-item ${cnt===0?'empty':''}" onclick="${cnt>0?`usePartnerItem('${key}')`:''}" title="${item.desc}">
+    return`<div class="partner-item" onclick="usePartnerItem('${key}')" title="${item.desc}">
       <span class="partner-item-icon">${item.icon}</span>
       <div class="partner-item-name">${item.name}</div>
       <div class="partner-item-count">×${cnt}</div>
       <div class="partner-item-desc">${item.desc}</div>
     </div>`;
-  }).join('');
+  }).join(''):`<div class="partner-empty-line">背包暂时空着，完成每日任务会获得道具。</div>`;
   return`<div class="partner-box partner-inventory-box">
     <div class="partner-box-hdr"><span><b>背包道具</b><em>Inventory</em></span><i>${total} 件</i></div>
     <div class="partner-bag-grid">${items}</div>
