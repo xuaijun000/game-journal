@@ -3074,7 +3074,7 @@ let _trainImmSession=null;
 let _trainImmTimer=null;
 
 function _trainEmptyStats(){
-  return {beats:0,counts:{},evGains:{hp:0,attack:0,defense:0,'special-attack':0,'special-defense':0,speed:0}};
+  return {beats:0,counts:{},evGains:{hp:0,attack:0,defense:0,'special-attack':0,'special-defense':0,speed:0},history:[]};
 }
 function _trainImmFmtTime(sec){
   sec=Math.max(0,Math.floor(sec||0));
@@ -3083,10 +3083,25 @@ function _trainImmFmtTime(sec){
 }
 function _trainImmEnsureSession(){
   if(!_trainImmSession){
-    _trainImmSession={startedAt:Date.now(),ended:false,..._trainEmptyStats()};
+    _trainImmSession={startedAt:Date.now(),status:'active',..._trainEmptyStats()};
   }
   _trainImmStartTimer();
   _trainImmRenderSession();
+}
+function _trainImmIsActive(){
+  return _trainImmSession?.status==='active';
+}
+function _trainImmHasPending(){
+  return !!(_trainImmSession&&_trainImmSession.beats>0&&(_trainImmSession.status==='active'||_trainImmSession.status==='pending'));
+}
+function _trainImmProjectedEVs(){
+  const evs={..._trainEVs};
+  if(_trainImmSession&&(_trainImmSession.status==='active'||_trainImmSession.status==='pending')){
+    Object.entries(_trainImmSession.evGains||{}).forEach(([stat,val])=>{
+      evs[stat]=(evs[stat]||0)+(val||0);
+    });
+  }
+  return evs;
 }
 function _trainImmStartTimer(){
   if(_trainImmTimer)return;
@@ -3097,7 +3112,7 @@ function _trainImmStopTimer(){
 }
 function _trainImmElapsedSec(){
   if(!_trainImmSession)return 0;
-  return Math.floor(((Date.now())-_trainImmSession.startedAt)/1000);
+  return Math.floor(((_trainImmSession.endedAt||Date.now())-_trainImmSession.startedAt)/1000);
 }
 function _trainImmTopCounts(max){
   const counts=_trainImmSession?.counts||{};
@@ -3111,11 +3126,27 @@ function _trainImmRenderSession(){
   const timer=document.getElementById('train-imm-timer');
   const count=document.getElementById('train-imm-beat-count');
   const partner=document.getElementById('train-imm-partner-link');
+  const state=document.getElementById('train-imm-state');
+  const startBtn=document.getElementById('train-imm-start-btn');
+  const undoBtn=document.getElementById('train-imm-undo-btn');
+  const endBtn=document.getElementById('train-imm-end-btn');
   if(timer)timer.textContent=_trainImmFmtTime(_trainImmElapsedSec());
   if(count)count.textContent=String(_trainImmSession?.beats||0);
+  const active=_trainImmIsActive();
+  const pending=_trainImmSession?.status==='pending';
+  if(state){
+    state.textContent=active?'训练记录中':pending?'等待保存':'自由游玩中';
+    state.classList.toggle('active',active);
+    state.classList.toggle('pending',pending);
+  }
+  if(startBtn)startBtn.style.display=active||pending?'none':'';
+  if(undoBtn)undoBtn.style.display=active&&_trainImmSession?.history?.length?'':'none';
+  if(endBtn)endBtn.style.display=active?'':'none';
   if(partner){
     const hasPartner=typeof partnerData!=='undefined'&&!!partnerData;
-    partner.textContent=hasPartner?'伙伴同步中：结束训练后结算经验':'未选择伙伴：仅记录本次训练';
+    partner.textContent=active
+      ? (hasPartner?'伙伴待同步：保存后结算经验':'未选择伙伴：保存后仅记录 EV')
+      : '训练未开始：点击宝可梦不会写入 EV';
   }
 }
 function _trainImmResetSummary(){
@@ -3129,6 +3160,7 @@ function _trainImmRecordBeat(pkm,gains){
   for(const [stat,val] of Object.entries(gains||{})){
     _trainImmSession.evGains[stat]=(_trainImmSession.evGains[stat]||0)+val;
   }
+  _trainImmSession.history.push({name:pkm.name,gains:{...(gains||{})}});
   _trainImmRenderSession();
 }
 function _trainImmBuildSummary(){
@@ -3147,30 +3179,80 @@ function _trainImmShowSummary(summary,partnerMsg){
     <div class="tim-summary-main">${esc(summary.target)} 在 ${esc(summary.loc)} 训练了 ${esc(_trainImmFmtTime(summary.elapsedSec))}，击败 ${summary.beats} 只宝可梦。</div>
     <div class="tim-summary-sub">打过：${esc(topText)}</div>
     <div class="tim-summary-sub">EV 收获：${esc(summary.evText||'暂无')}</div>
-    ${partnerMsg?`<div class="tim-summary-sub">${esc(partnerMsg)}</div>`:''}`;
+    ${partnerMsg?`<div class="tim-summary-sub">${esc(partnerMsg)}</div>`:''}
+    ${_trainImmSession?.status==='pending'?`<div class="tim-summary-actions">
+      <button class="tim-summary-save" onclick="saveTrainImmSession()">保存本次训练</button>
+      <button class="tim-summary-discard" onclick="discardTrainImmSession()">丢弃草稿</button>
+    </div>`:''}`;
   box.style.display='block';
+}
+function startTrainImmSession(){
+  if(!_trainPkmData){showToast('请先选择训练对象');toggleImmPanel('party');return;}
+  if(!_trainLocPkm.length){showToast('请先选择或获取训练地点');return;}
+  _trainImmResetSummary();
+  _trainImmSession={startedAt:Date.now(),status:'active',..._trainEmptyStats()};
+  _trainImmStartTimer();
+  _trainImmRenderSession();
+  renderTrainImmEVs();
+  showToast('训练记录已开始');
 }
 function finishTrainImmSession(){
   const summary=_trainImmBuildSummary();
   if(!summary||summary.beats<=0){showToast('还没有训练记录');return;}
+  _trainImmSession.endedAt=Date.now();
   _trainImmStopTimer();
+  _trainImmSession.status='pending';
+  _trainImmRenderSession();
+  renderTrainImmEVs();
+  _trainImmShowSummary(summary,'确认后才会写入 EV 和伙伴经验');
+}
+function saveTrainImmSession(){
+  const summary=_trainImmBuildSummary();
+  if(!summary||summary.beats<=0){discardTrainImmSession();return;}
+  Object.entries(summary.evGains||{}).forEach(([stat,val])=>{
+    _trainEVs[stat]=(_trainEVs[stat]||0)+(val||0);
+  });
+  if(_trainSid&&_trainPkmData?.id)setTrainEVs(_trainSid,_trainPkmData.id,_trainEVs,{sync:'debounce'});
   let partnerMsg='';
   if(window.partnerTrackTrainingSession){
     partnerMsg=window.partnerTrackTrainingSession(summary)||'伙伴已记录本次训练';
   }
+  _trainImmSession=null;
   _trainImmShowSummary(summary,partnerMsg);
-  _trainImmSession={startedAt:Date.now(),ended:false,..._trainEmptyStats()};
-  _trainImmStartTimer();
   _trainImmRenderSession();
+  renderTrainImmEVs();
+  renderTrainEVs();
+  showToast('本次训练已保存');
+}
+function discardTrainImmSession(){
+  _trainImmStopTimer();
+  _trainImmSession=null;
+  _trainImmResetSummary();
+  _trainImmRenderSession();
+  renderTrainImmEVs();
+  showToast('训练草稿已丢弃');
+}
+function undoTrainImmBeat(){
+  if(!_trainImmIsActive()||!_trainImmSession?.history?.length){showToast('没有可撤销的记录');return;}
+  const last=_trainImmSession.history.pop();
+  _trainImmSession.beats=Math.max(0,(_trainImmSession.beats||0)-1);
+  if(last?.name&&_trainImmSession.counts[last.name]){
+    _trainImmSession.counts[last.name]-=1;
+    if(_trainImmSession.counts[last.name]<=0)delete _trainImmSession.counts[last.name];
+  }
+  Object.entries(last?.gains||{}).forEach(([stat,val])=>{
+    _trainImmSession.evGains[stat]=Math.max(0,(_trainImmSession.evGains[stat]||0)-(val||0));
+  });
+  _trainImmRenderSession();
+  renderTrainImmEVs();
+  showToast(`已撤销 ${last?.name||'上一只'}`);
 }
 function _trainImmFinalizeOnClose(){
   const summary=_trainImmBuildSummary();
   if(!summary||summary.beats<=0){_trainImmStopTimer();_trainImmSession=null;return;}
-  let partnerMsg='';
-  if(window.partnerTrackTrainingSession)partnerMsg=window.partnerTrackTrainingSession(summary)||'伙伴已记录本次训练';
-  _trainImmShowSummary(summary,partnerMsg);
-  _trainImmStopTimer();
-  _trainImmSession=null;
+  const save=confirm('本次训练还没有保存。要写入 EV 和伙伴经验吗？\n\n确定：保存\n取消：丢弃');
+  if(save)saveTrainImmSession();
+  else discardTrainImmSession();
 }
 
 
@@ -3196,13 +3278,14 @@ function renderTrainImmGrid(){
 
 function renderTrainImmEVs(){
   const bars=document.getElementById('train-imm-ev-bars');if(!bars)return;
-  const totalUsed=Object.values(_trainEVs).reduce((a,b)=>a+b,0);
+  const displayEVs=_trainImmProjectedEVs();
+  const totalUsed=Object.values(displayEVs).reduce((a,b)=>a+b,0);
   bars.innerHTML=EV_STATS.map(s=>{
-    const v=_trainEVs[s.key]||0;const pct=Math.min(100,v/EV_MAX_STAT*100);
+    const v=displayEVs[s.key]||0;const pending=(_trainImmSession?.evGains?.[s.key]||0)>0;const pct=Math.min(100,v/EV_MAX_STAT*100);
     return`<div class="tim-ev-row">
       <div class="tim-ev-lbl" style="color:${s.color}">${s.zh}</div>
       <div class="tim-ev-bar-wrap"><div class="tim-ev-bar-fill" style="width:${pct}%;background:${s.color}"></div></div>
-      <div class="tim-ev-val" style="color:${v>=EV_MAX_STAT?s.color:'rgba(255,255,255,.6)'}">${v}</div>
+      <div class="tim-ev-val" style="color:${pending?'var(--acc)':v>=EV_MAX_STAT?s.color:'rgba(255,255,255,.6)'}">${v}</div>
     </div>`;
   }).join('');
   const tot=document.getElementById('train-imm-ev-total');
@@ -3211,26 +3294,26 @@ function renderTrainImmEVs(){
 
 function trainImmBeat(idx){
   const pkm=_trainLocPkm[idx];if(!pkm||!_trainPkmData)return;
-  _trainImmEnsureSession();
+  if(!_trainImmIsActive()){showToast('先点击「开始训练」，本次才会记录 EV');return;}
   const mult=getBoostMultiplier();
-  const totalBefore=Object.values(_trainEVs).reduce((a,b)=>a+b,0);
+  const displayEVs=_trainImmProjectedEVs();
+  const totalBefore=Object.values(displayEVs).reduce((a,b)=>a+b,0);
   if(totalBefore>=EV_MAX_TOTAL){showToast('EV 已满 510！');return;}
   let added=false;
   const actualGains={};
+  const tempEVs={...displayEVs};
   for(const [stat,ev] of Object.entries(pkm.evYields)){
     if(!ev)continue;
     const gain=ev*mult;
-    const curTotal=Object.values(_trainEVs).reduce((a,b)=>a+b,0);
-    const actualGain=Math.min(gain,EV_MAX_TOTAL-curTotal,EV_MAX_STAT-(_trainEVs[stat]||0));
+    const curTotal=Object.values(tempEVs).reduce((a,b)=>a+b,0);
+    const actualGain=Math.min(gain,EV_MAX_TOTAL-curTotal,EV_MAX_STAT-(tempEVs[stat]||0));
     if(actualGain>0){
-      _trainEVs[stat]=(_trainEVs[stat]||0)+actualGain;
+      tempEVs[stat]=(tempEVs[stat]||0)+actualGain;
       actualGains[stat]=(actualGains[stat]||0)+actualGain;
       added=true;
     }
   }
   if(!added){showToast('EV 容量已满');return;}
-  setTrainEVs(_trainSid,_trainPkmData.id,_trainEVs,{sync:'debounce'});
-  renderTrainImmEVs();
   // 精灵抖动
   const sp=document.getElementById('train-imm-sprite');
   if(sp){sp.classList.remove('train-imm-beat');void sp.offsetWidth;sp.classList.add('train-imm-beat');setTimeout(()=>sp.classList.remove('train-imm-beat'),300);}
@@ -3240,6 +3323,7 @@ function trainImmBeat(idx){
   // EV获得提示
   const evText=Object.entries(pkm.evYields).filter(([,v])=>v>0).map(([k,v])=>{const s=EV_STATS.find(x=>x.key===k);return`${s?.zh||k}+${v*mult}`;}).join(' ');
   _trainImmRecordBeat(pkm,actualGains);
+  renderTrainImmEVs();
   showToast(pkm.name+'  '+evText);
 }
 
@@ -3451,6 +3535,7 @@ function updateImmTrainPlaceholder(){
 }
 
 function selectTrainPkmFromImm(idx){
+  if(_trainImmHasPending()){showToast('请先保存或丢弃当前训练草稿');return;}
   const sid=_curSid;
   let party=getSeriesParty(sid);
   const p=party[idx];if(!p)return;
@@ -3501,7 +3586,7 @@ function setImmMode(mode){
   updateImmTrainPlaceholder();
   if(_immMode==='train'){
     _trainImmResetSummary();
-    _trainImmEnsureSession();
+    _trainImmRenderSession();
     if(!_trainPkmData)toggleImmPanel('party');
   }
 }
@@ -3645,6 +3730,7 @@ async function saveCatch(){
 }
 
 function selectTrainPkm(slotIdx){
+  if(_trainImmHasPending()){showToast('请先保存或丢弃当前训练草稿');return;}
   const sid=_trainSid;
   let party=getSeriesParty(sid);
   const filledParty=party.map((p,idx)=>p?{..._immNormalizePartyPkm(p),partyIdx:idx}:null).filter(Boolean);
@@ -3727,7 +3813,7 @@ async function openImm(mode,...args){
     if(_trainLocPkm.length)renderTrainImmGrid();
     renderTrainImmEVs();
     _trainImmResetSummary();
-    _trainImmEnsureSession();
+    _trainImmRenderSession();
     if(_trainPkmData){
       const hd=await _immResolvePkmArt(_trainPkmData);
       if(art&&hd){
@@ -3763,6 +3849,8 @@ async function openImm(mode,...args){
 }
 
 function closeImm(){
+  if(_immMode==='train'&&_trainImmHasPending())_trainImmFinalizeOnClose();
+  else if(_immMode==='train'&&_trainImmSession){_trainImmStopTimer();_trainImmSession=null;}
   stopHuntParticles();
   stopTrainImmParticles();
   closeImmMapFull();
@@ -3775,7 +3863,7 @@ function closeImm(){
   if(minimap)minimap.style.display='none';
   document.body.style.overflow='';
   const encPanel=document.getElementById('frlg-enc-panel');if(encPanel){encPanel.classList.remove('visible');encPanel.style.display='none';}
-  if(_immMode==='train'){_trainImmFinalizeOnClose();renderTrainEVs();}
+  if(_immMode==='train')renderTrainEVs();
   _huntActionsLocked=false;
 }
 

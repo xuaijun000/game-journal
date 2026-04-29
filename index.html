@@ -617,8 +617,8 @@
       </div>
       <!-- 进入沉浸式按钮组 -->
       <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
-        <button class="btn btn-a" style="flex:1;white-space:nowrap;font-size:.78rem" onclick="enterImmersiveFromSeries('train')">💪 沉浸训练</button>
-        <button class="btn btn-a" style="flex:1;white-space:nowrap;font-size:.78rem" onclick="enterImmersiveFromSeries('hunt')">🎯 沉浸捕捉</button>
+        <button class="btn btn-a" style="flex:1;white-space:nowrap;font-size:.78rem" onclick="enterImmersiveFromSeries('hunt')">🎮 打开游戏机</button>
+        <button class="btn btn-a" style="flex:1;white-space:nowrap;font-size:.78rem" onclick="enterImmersiveFromSeries('train')">💪 训练记录</button>
         <button class="btn btn-a" style="flex:1;white-space:nowrap;font-size:.78rem" onclick="enterImmersiveFromSeries('progress')">📋 进度打卡</button>
         <button class="btn btn-a" style="flex:1;white-space:nowrap;font-size:.78rem" onclick="openSeriesCatchRecorder()">📘 记录已捕捉</button>
       </div>
@@ -717,6 +717,7 @@
       <div class="tim-ev-total" id="train-imm-ev-total"></div>
     </div>
     <div class="tim-session">
+      <div class="tim-session-stat tim-session-state" id="train-imm-state">自由游玩中</div>
       <div class="tim-session-stat">
         <span class="tim-session-lbl">TIME</span>
         <span class="tim-session-val" id="train-imm-timer">00:00</span>
@@ -726,7 +727,9 @@
         <span class="tim-session-val" id="train-imm-beat-count">0</span>
       </div>
       <div class="tim-session-stat tim-session-partner" id="train-imm-partner-link">伙伴待命</div>
-      <button class="tim-session-end" onclick="finishTrainImmSession()">结束训练</button>
+      <button class="tim-session-end" id="train-imm-start-btn" onclick="startTrainImmSession()">开始训练</button>
+      <button class="tim-session-end tim-session-undo" id="train-imm-undo-btn" onclick="undoTrainImmBeat()" style="display:none">撤销</button>
+      <button class="tim-session-end" id="train-imm-end-btn" onclick="finishTrainImmSession()" style="display:none">结束并预览</button>
     </div>
     <div class="tim-summary" id="train-imm-summary" style="display:none"></div>
     <div class="tim-grid-section">

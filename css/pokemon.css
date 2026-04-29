@@ -1081,17 +1081,22 @@
 .tim-ev-total{font-size:.75rem;color:rgba(255,255,255,.5);font-family:'DM Mono',monospace;text-align:center;}
 
 .tim-session{
-  position:relative;z-index:2;width:min(680px,calc(100% - 24px));margin:4px auto 8px;
-  display:grid;grid-template-columns:96px 76px minmax(0,1fr) auto;gap:8px;align-items:center;
+  position:relative;z-index:2;width:min(860px,calc(100% - 24px));margin:4px auto 8px;
+  display:grid;grid-template-columns:104px 96px 76px minmax(0,1fr) auto auto auto;gap:8px;align-items:center;
   padding:8px;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.12);border-radius:10px;
   backdrop-filter:blur(10px);
 }
 .tim-session-stat{min-width:0;padding:6px 8px;border-radius:8px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08)}
+.tim-session-state{font-size:.66rem;color:rgba(255,255,255,.62);font-family:'DM Mono',monospace;white-space:nowrap;text-align:center}
+.tim-session-state.active{color:#d9fff1;border-color:rgba(90,184,154,.34);background:rgba(90,184,154,.14)}
+.tim-session-state.pending{color:#ffe3aa;border-color:rgba(200,144,64,.36);background:rgba(200,144,64,.14)}
 .tim-session-lbl{display:block;font-size:.52rem;color:rgba(255,255,255,.38);font-family:'DM Mono',monospace;letter-spacing:.08em}
 .tim-session-val{display:block;margin-top:1px;font-size:.86rem;color:#fff;font-family:'DM Mono',monospace;font-variant-numeric:tabular-nums}
 .tim-session-partner{font-size:.66rem;color:rgba(255,255,255,.62);font-family:'DM Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tim-session-end{height:100%;min-height:38px;padding:0 14px;border:1px solid rgba(90,184,154,.34);border-radius:8px;background:rgba(90,184,154,.16);color:#d9fff1;font-size:.72rem;font-family:'DM Mono',monospace;cursor:pointer;transition:all .15s;white-space:nowrap}
 .tim-session-end:hover{background:rgba(90,184,154,.26);border-color:rgba(90,184,154,.58)}
+.tim-session-undo{border-color:rgba(200,144,64,.34);background:rgba(200,144,64,.14);color:#ffe3aa}
+.tim-session-undo:hover{background:rgba(200,144,64,.24);border-color:rgba(200,144,64,.58)}
 .tim-summary{
   position:relative;z-index:2;width:min(680px,calc(100% - 24px));margin:0 auto 8px;
   padding:10px 12px;border-radius:10px;border:1px solid rgba(200,144,64,.26);
@@ -1101,6 +1106,12 @@
 .tim-summary-title{font-size:.62rem;color:var(--acc);font-family:'DM Mono',monospace;letter-spacing:.08em;margin-bottom:4px}
 .tim-summary-main{color:rgba(255,255,255,.9)}
 .tim-summary-sub{color:rgba(255,255,255,.52);margin-top:2px}
+.tim-summary-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.tim-summary-save,.tim-summary-discard{min-height:34px;padding:0 14px;border-radius:8px;font-size:.72rem;font-family:'DM Mono',monospace;cursor:pointer;transition:all .15s}
+.tim-summary-save{border:1px solid rgba(90,184,154,.4);background:rgba(90,184,154,.16);color:#d9fff1}
+.tim-summary-save:hover{background:rgba(90,184,154,.26);border-color:rgba(90,184,154,.62)}
+.tim-summary-discard{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:rgba(255,255,255,.62)}
+.tim-summary-discard:hover{background:rgba(255,255,255,.11);color:rgba(255,255,255,.82)}
 
 /* 底部精灵分布区 */
 .tim-grid-section{
@@ -1138,6 +1149,7 @@
 
 @media (max-width:720px){
   .tim-session{grid-template-columns:1fr 1fr;gap:6px}
+  .tim-session-state{grid-column:1 / -1}
   .tim-session-partner{grid-column:1 / -1}
   .tim-session-end{grid-column:1 / -1;height:36px}
 }
