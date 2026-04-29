@@ -956,7 +956,7 @@ function getEffectiveSpeed(pkm, activeWeather=''){
   if(!base)return 0;
   let spe=base;
   // 道具速度修正（优先从 ITEMS_BY_NAME 读 spdMul，兜底硬编码）
-  const itemD=ITEMS_BY_NAME[pkm.item||''];
+  const itemD=getBattleItemData(pkm.item||'');
   if(itemD?.damageMul?.spdMul) spe=Math.floor(spe*itemD.damageMul.spdMul);
   else if(pkm.item==='讲究围巾') spe=Math.floor(spe*1.5);
   // 特性速度修正
@@ -1650,7 +1650,7 @@ function hasBattleMegaStone(pkm){
 function getBattleMegaCandidates(teamPkm){
   return (teamPkm||[])
     .map((p,idx)=>({p,slot:p._slotIndex??idx,slug:inferBattlePkmSlug(p)}))
-    .filter(x=>x.p?.name&&(isMegaSlug(x.slug)||hasBattleMegaStone(x.p)||getMegaFormsForBattlePkm(x.p).length));
+    .filter(x=>x.p?.name&&isMegaSlug(x.slug));
 }
 
 function applyBattleDexDataToPkm(pkm,dex,tag){
@@ -1691,7 +1691,7 @@ function cloneBattleTeamForMegaRule(myPkm, selectedMegaKey='none'){
   return (myPkm||[]).map((p,idx)=>{
     const slot=p._slotIndex??idx;
     const isChosen=selectedMegaKey===`slot:${slot}`;
-    const candidate=isMegaSlug(inferBattlePkmSlug(p))||hasBattleMegaStone(p)||getMegaFormsForBattlePkm(p).length;
+    const candidate=isMegaSlug(inferBattlePkmSlug(p));
     if(!candidate)return {...p,_slotIndex:slot,_megaState:''};
     if(isChosen){
       const mega=resolveBattleMegaForm(p);
@@ -2248,11 +2248,49 @@ function getOppBestEff(oppPkm, myPkm){
 // AP_MOD removed — Champions uses PP, not AP action points
 // 兼容旧格式（全局倍率），优先用 calcItemDamageMul
 const ITEM_MOD={'讲究头带':1.5,'讲究眼镜':1.5,'讲究围巾':1.5,'生命球':1.3,'火焰宝珠':1.2,'强化道具':1.1};
+const ITEM_RESIST_BERRY_TYPE={
+  'charti-berry':'rock','草蚕果':'rock',
+  'coba-berry':'flying','棱瓜果':'flying',
+  'colbur-berry':'dark','刺耳果':'dark',
+  'chople-berry':'fighting','莲蒲果':'fighting',
+  'haban-berry':'dragon','莓榴果':'dragon',
+  'kasib-berry':'ghost','佛柑果':'ghost',
+  'kebia-berry':'poison','通通果':'poison',
+  'occa-berry':'fire','巧可果':'fire',
+  'passho-berry':'water','千香果':'water',
+  'payapa-berry':'psychic','福禄果':'psychic',
+  'babiri-berry':'steel','霹霹果':'steel',
+  'chilan-berry':'normal','灯浆果':'normal',
+  'rindo-berry':'grass','罗子果':'grass',
+  'roseli-berry':'fairy','洛玫果':'fairy',
+  'shuca-berry':'ground','腰木果':'ground',
+  'tanga-berry':'bug','扁樱果':'bug',
+  'wacan-berry':'electric','烛木果':'electric',
+  'yache-berry':'ice','番荔果':'ice',
+};
+
+function getBattleItemData(item){
+  if(!item)return null;
+  if(typeof item==='object')return item;
+  const raw=String(item).trim();
+  if(!raw)return null;
+  const lower=raw.toLowerCase();
+  return ITEMS_BY_NAME[raw]||ITEMS_BY_SLUG[raw]||ITEMS_BY_SLUG[lower]||
+    ITEMS_DATA.find(it=>it.nameEn?.toLowerCase()===lower)||null;
+}
+
+function getBattleItemSlug(item){
+  if(!item)return '';
+  if(typeof item==='object')return item.slug||'';
+  const data=getBattleItemData(item);
+  return data?.slug||String(item).trim().toLowerCase();
+}
+
 // 计算持有道具对伤害的倍率（支持属性限定/物理特殊限定）
 function calcItemDamageMul(itemName, moveType, moveCat){
   if(!itemName)return 1.0;
   // 优先从 ITEMS_DATA 查
-  const it=ITEMS_BY_NAME[itemName];
+  const it=getBattleItemData(itemName);
   if(it?.damageMul){
     const m=it.damageMul;
     if(m.typeMul && m.typeMul[moveType]) return m.typeMul[moveType];
@@ -2262,10 +2300,31 @@ function calcItemDamageMul(itemName, moveType, moveCat){
     return 1.0;
   }
   // 回退旧 ITEM_MOD（讲究头带按物理/特殊分类）
-  if(itemName==='讲究头带'  && moveCat==='physical') return 1.5;
-  if(itemName==='讲究眼镜'  && moveCat==='special')  return 1.5;
-  if(itemName==='讲究围巾')  return 1.0; // 仅加速，不加伤害
+  const slug=getBattleItemSlug(itemName);
+  if((itemName==='讲究头带'||slug==='choice-band')  && moveCat==='physical') return 1.5;
+  if((itemName==='讲究眼镜'||slug==='choice-specs') && moveCat==='special')  return 1.5;
+  if(itemName==='讲究围巾'||slug==='choice-scarf')  return 1.0; // 仅加速，不加伤害
+  if(itemName==='生命球'||slug==='life-orb')return 1.3;
   return ITEM_MOD[itemName]||1.0;
+}
+
+function calcDefenderItemDamageMul(defPkm, moveType, moveCat, typeMul=1){
+  const item=defPkm?.predictedItem||defPkm?.item||'';
+  const slug=getBattleItemSlug(item);
+  if(!slug)return{mul:1.0,note:''};
+  if((slug==='assault-vest'||item==='突击背心')&&moveCat==='special')return{mul:1/1.5,note:'突击背心'};
+  if(slug==='eviolite'||item==='进化奇石')return{mul:1/1.5,note:'进化奇石'};
+  const berryType=ITEM_RESIST_BERRY_TYPE[slug]||ITEM_RESIST_BERRY_TYPE[item];
+  if(berryType&&berryType===moveType&&typeMul>=2)return{mul:0.5,note:`${TYPE_ZH[berryType]||berryType}抗性树果`};
+  return{mul:1.0,note:''};
+}
+
+function getSurvivalItemNote(defPkm, pct){
+  const item=defPkm?.item||defPkm?.predictedItem||'';
+  const slug=getBattleItemSlug(item);
+  if((slug==='focus-sash'||item==='气势披带')&&pct>=100)return'气势披带：满血可1HP撑过';
+  if((slug==='focus-band'||item==='气势头带')&&pct>=100)return'气势头带：有概率撑过致命伤';
+  return '';
 }
 
 function calcDamageEst(myPkm, oppPkm, move, activeWeather=''){
@@ -2308,13 +2367,8 @@ function calcDamageEst(myPkm, oppPkm, move, activeWeather=''){
     if(defMod.superEff && typeMul>=2) defAbilMul*=defMod.superEff;
   }
 
-  // ── 对方持有道具的防御修正 ──
-  const oppItemSlug=oppPkm.predictedItem?.slug||'';
-  let oppItemDefMul=1.0;
-  if(oppItemSlug==='assault-vest'&&!isPhys) oppItemDefMul=1/1.5;      // 突击背心：特防×1.5
-  else if(oppItemSlug==='eviolite')         oppItemDefMul=1/1.5;       // 进化奇石：防御特防×1.5
-  else if(oppItemSlug==='rocky-helmet'||oppItemSlug==='iron-barbs') {} // 仅反伤，不影响受伤
-  else if(oppItemSlug==='life-orb'&&false)  {}                         // 攻击方道具，不在此处理
+  // ── 防御方持有道具修正（我方/对方共用） ──
+  const defItem=calcDefenderItemDamageMul(oppPkm, moveType, move.cat, typeMul);
 
   // ── 攻击方道具修正 ──
   const itemMul=calcItemDamageMul(myPkm.item, moveType, move.cat);
@@ -2330,11 +2384,13 @@ function calcDamageEst(myPkm, oppPkm, move, activeWeather=''){
   const finalConvertMul=(atkMod.normalConvert&&move.type==='normal')?convertMul:1.0;
 
   const baseDmg=Math.floor((Math.floor((2*level/5+2)*pwr*rawAtk/defStat/50)+2)
-    *typeMul*stabMul*itemMul*atkAbilMul*finalConvertMul*defAbilMul*oppItemDefMul);
-  const dmgPct=oppHp>0?Math.round(baseDmg/oppHp*100):0;
+    *typeMul*stabMul*itemMul*atkAbilMul*finalConvertMul*defAbilMul*defItem.mul);
+  let dmgPct=oppHp>0?Math.round(baseDmg/oppHp*100):0;
 
   // G类生存标注
-  const surviveNote=ABILITY_SURVIVE[defAbility]||'';
+  const itemSurviveNote=getSurvivalItemNote(oppPkm,dmgPct);
+  const surviveNote=[ABILITY_SURVIVE[defAbility]||'',defItem.note,itemSurviveNote].filter(Boolean).join('；');
+  if(itemSurviveNote&&dmgPct>=100)dmgPct=99;
 
   return{damage:baseDmg,pct:dmgPct,typeMul,surviveNote};
 }
@@ -2624,33 +2680,56 @@ function scorePkmForBattle(myPkm, opp, activeWeather=''){
     // ── 我方携带道具加成 ──
     let myItemBonus=0;
     const myItem=mp.item||'';
-    if(myItem==='突击背心'){
+    const myItemData=getBattleItemData(myItem);
+    const myItemSlug=getBattleItemSlug(myItem);
+    const myItemLabel=myItemData?.name||myItem;
+    const myMoves=[mp.move1,mp.move2,mp.move3,mp.move4].filter(m=>m&&m.power>0&&m.cat!=='status');
+    const bestItemAtkMul=myMoves.reduce((best,m)=>{
+      const {type}=getMoveTypeWithAbility(mp,m);
+      return Math.max(best,calcItemDamageMul(myItem,type,m.cat));
+    },1);
+    if(bestItemAtkMul>1.01){
+      myItemBonus+=(bestItemAtkMul-1)*2;
+      reasons.push(`${myItemLabel}提升有效输出×${bestItemAtkMul.toFixed(1)}`);
+    }
+    let maxIncomingPct=0;
+    oppValid.forEach(op=>{
+      const oppAbility=resolveOppAbility(op);
+      const oppItemSlug=op.predictedItem?.slug||'';
+      const oppAsAtk={name:op.name,type1:op.type1,type2:op.type2,base:op.base||{},ability:oppAbility,item:oppItemSlug,level:50};
+      (op.predictedMoves||[]).forEach(pm=>{
+        const mv=MOVES_BY_SLUG?.[pm.slug];
+        if(!mv||!mv.power||mv.cat==='status')return;
+        const res=calcDamageEst(oppAsAtk,mp,mv,activeWeather);
+        if(res&&res.pct>maxIncomingPct)maxIncomingPct=res.pct;
+      });
+    });
+    if(myItem==='突击背心'||myItemSlug==='assault-vest'){
       // 对方有特殊招式时，特防×1.5相当于降低受伤效率
       const hasOppSpec=oppValid.some(op=>(op.predictedMoves||[]).some(m=>MOVES_BY_SLUG?.[m.slug]?.cat==='special'));
       if(hasOppSpec){myItemBonus+=1.5;reasons.push('突击背心对抗对方特攻');}
-    } else if(myItem==='气势披带'){
-      myItemBonus+=1.0;reasons.push('气势披带可撑过一击');
-    } else if(myItem==='吃剩的东西'){
+    } else if(myItem==='气势披带'||myItemSlug==='focus-sash'){
+      myItemBonus+=maxIncomingPct>=80?1.4:0.8;reasons.push('气势披带可撑过一击');
+    } else if(myItem==='气势头带'||myItemSlug==='focus-band'){
+      myItemBonus+=maxIncomingPct>=80?0.6:0.3;reasons.push('气势头带有概率撑过致命伤');
+    } else if(myItem==='吃剩的东西'||myItemSlug==='leftovers'){
       myItemBonus+=0.5;reasons.push('吃剩的东西持续回血');
-    } else if(myItem==='文柚果'){
-      myItemBonus+=0.3;
-    } else if(myItem==='讲究围巾'){
+    } else if(myItem==='文柚果'||myItemSlug==='sitrus-berry'){
+      myItemBonus+=0.5;reasons.push('文柚果可回复约1/4 HP');
+    } else if(myItem==='讲究围巾'||myItemSlug==='choice-scarf'){
       reasons.push('讲究围巾速度×1.5');
-    } else if(myItem==='讲究头带'){
+    } else if(myItem==='讲究头带'||myItemSlug==='choice-band'){
       reasons.push('讲究头带物攻×1.5');
-    } else if(myItem==='讲究眼镜'){
+    } else if(myItem==='讲究眼镜'||myItemSlug==='choice-specs'){
       reasons.push('讲究眼镜特攻×1.5');
-    } else if(myItem==='生命球'){
+    } else if(myItem==='生命球'||myItemSlug==='life-orb'){
       reasons.push('生命球伤害×1.3');
     }
     // 抗性树果：对方有对应属性招式时额外加分
-    const BERRY_RESIST={'草蚕果':'rock','棱瓜果':'flying','刺耳果':'dark','莲蒲果':'fighting',
-      '莓榴果':'dragon','佛柑果':'ghost','通通果':'poison','巧可果':'fire',
-      '千香果':'water','福禄果':'psychic','霹霹果':'steel','灯浆果':'normal'};
-    if(BERRY_RESIST[myItem]){
-      const rType=BERRY_RESIST[myItem];
+    const rType=ITEM_RESIST_BERRY_TYPE[myItemSlug]||ITEM_RESIST_BERRY_TYPE[myItem];
+    if(rType){
       const threatPct=oppMoveTypes.filter(({type})=>type===rType).reduce((s,{pct})=>s+pct,0);
-      if(threatPct>40){myItemBonus+=1.0;reasons.push(`${myItem}减弱对方${TYPE_ZH[rType]||rType}系招式`);}
+      if(threatPct>40){myItemBonus+=1.0;reasons.push(`${myItemLabel}减弱对方${TYPE_ZH[rType]||rType}系招式`);}
     }
 
     const total=offScore - defScore*0.5 + koScore*3 + defTypeBonus + myItemBonus;
@@ -2882,13 +2961,14 @@ function renderOppDamage(opp, myPkm, activeWeather=''){
     const itemTag=oppItemSlug?`<span class="opp-dmg-item">${oppItemSlug.replace(/-/g,' ')}</span>`:'';
 
     const myPkmCols=myPkm.map(mp=>{
-      let bestPct=0, bestMove='';
+      let bestPct=0, bestMove='', bestNote='';
       moves.forEach(mv=>{
         const res=calcDamageEst(oppAsAtk, mp, mv, activeWeather);
-        if(res&&res.pct>bestPct){ bestPct=res.pct; bestMove=mv.name||mv.nameEn||''; }
+        if(res&&res.pct>bestPct){ bestPct=res.pct; bestMove=mv.name||mv.nameEn||''; bestNote=res.surviveNote||''; }
       });
       const cls=bestPct>=100?'opp-dmg-ohko':bestPct>=50?'opp-dmg-heavy':bestPct>=25?'opp-dmg-mid':'opp-dmg-low';
-      return`<td class="${cls}">${bestPct>0?bestPct+'%':'-'}${bestMove?`<br><span class="opp-dmg-move">${esc(bestMove)}</span>`:''}`;
+      const note=bestNote?`<br><span class="opp-dmg-move">${esc(bestNote)}</span>`:'';
+      return`<td class="${cls}">${bestPct>0?bestPct+'%':'-'}${bestMove?`<br><span class="opp-dmg-move">${esc(bestMove)}</span>`:''}${note}</td>`;
     }).join('');
 
     return`<tr><td class="opp-dmg-name">${esc(op.name||'?')}${roleTag}${abilityTag}${itemTag}</td>${myPkmCols}</tr>`;
@@ -3383,7 +3463,7 @@ function renderBattleRec(scored, opp){
       <div class="battle-rec-sprite">${img}</div>
       <div class="battle-rec-body">
         <div class="battle-rec-name">${esc(pkm.name)}<span class="battle-role-tag ${role.cls}">${role.label}</span>${abilityTag}${megaTag}</div>
-        <div class="battle-rec-score">进攻+${s.offScore.toFixed(1)} 防御-${s.defScore.toFixed(1)} 综合${s.total.toFixed(1)}</div>
+        <div class="battle-rec-score">进攻+${s.offScore.toFixed(1)} 防御-${s.defScore.toFixed(1)}${s.myItemBonus?` 道具+${s.myItemBonus.toFixed(1)}`:''} 综合${s.total.toFixed(1)}</div>
         <div class="battle-rec-reasons">
           ${allReasons.map(r=>`<div class="battle-rec-reason">${r}</div>`).join('')}
           ${surviveWarn}${intimidateWarn}
@@ -3909,7 +3989,7 @@ function renderDoublesRec(top4, leadPairScored, targetOpp) {
       <div class="battle-rec-sprite">${img}</div>
       <div class="battle-rec-body">
         <div class="battle-rec-name">${esc(pkm.name)}<span class="battle-role-tag ${role.cls}">${role.label}</span>${supportTag}${spreadTag}${megaTag}</div>
-        <div class="battle-rec-score">进攻+${s.offScore.toFixed(1)} 防御-${s.defScore.toFixed(1)} 综合${s.total.toFixed(1)}</div>
+        <div class="battle-rec-score">进攻+${s.offScore.toFixed(1)} 防御-${s.defScore.toFixed(1)}${s.myItemBonus?` 道具+${s.myItemBonus.toFixed(1)}`:''} 综合${s.total.toFixed(1)}</div>
         <div class="battle-rec-reasons">${s.reasons.map(r=>`<div class="battle-rec-reason">${r}</div>`).join('')}${intimidateWarn}</div>
       </div>
     </div>`;
