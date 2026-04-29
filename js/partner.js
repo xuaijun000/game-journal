@@ -131,6 +131,7 @@ let partnerData=null;
 let partnerChatHistory=[];
 let partnerChatLoading=false;
 let partnerTypeCache={};
+let partnerConsolePanel='overview';
 
 /* ===== INIT ===== */
 async function initPartner(){
@@ -397,17 +398,12 @@ function renderPartnerPage(){
               </button>`;
             }).join('')}
           </div>
-          <button class="partner-chat-btn" onclick="togglePartnerChat()">⬡ 和${pEsc(name)}聊天</button>
+          <button class="partner-chat-btn" onclick="setPartnerConsolePanel('chat')">⬡ 和${pEsc(name)}聊天</button>
           <button class="partner-change-btn" onclick="openPartnerSelect()">更换伙伴</button>
         </div>
       </div>
       <div class="partner-right">
-        ${pRenderTasks()}
-        ${pRenderInventory()}
-        ${pRenderRoster()}
-        ${pRenderDiary()}
-        ${pRenderProfile()}
-        ${pRenderChatHTML()}
+        ${pRenderPartnerConsole()}
       </div>
     </div>`;
   updatePartnerFloat('partner');
@@ -420,6 +416,57 @@ function pStatBar(label,key,val,color){
     <span class="partner-stat-lbl">${label}</span>
     <div class="partner-stat-bar"><div class="partner-stat-fill" style="width:${val}%;background:${c}"></div></div>
     <span class="partner-stat-val">${val}</span>
+  </div>`;
+}
+
+function setPartnerConsolePanel(panel){
+  partnerConsolePanel=panel||'overview';
+  renderPartnerPage();
+  if(partnerConsolePanel==='chat'&&partnerChatHistory.length===0)setTimeout(autoPartnerGreet,200);
+}
+
+function pRenderPartnerConsole(){
+  const d=partnerData;
+  const di=d.daily_interactions||{};
+  const doneCount=DAILY_TASKS.filter(t=>t.check(di)).length;
+  const inv=d.inventory||{};
+  const itemCount=Object.keys(PARTNER_ITEMS).reduce((s,k)=>s+(inv[k]||0),0);
+  const rosterCount=pPartnerRoster().length;
+  const diaryCount=(d.diary||[]).length;
+  const stage=pGetBondStage();
+  const panels=[
+    {id:'tasks',title:'今日任务',sub:'Daily Route',metric:`${doneCount}/${DAILY_TASKS.length}`,accent:'#7ecdc4',body:pRenderTasks()},
+    {id:'inventory',title:'背包道具',sub:'Inventory',metric:`${itemCount} 件`,accent:'#c89040',body:pRenderInventory()},
+    {id:'roster',title:'伙伴清单',sub:'Roster',metric:`${rosterCount}/12`,accent:'#5ab89a',body:pRenderRoster()},
+    {id:'diary',title:'伙伴日记',sub:'Memory Log',metric:String(diaryCount),accent:'#9b8cff',body:pRenderDiary()},
+    {id:'profile',title:'伙伴档案',sub:'Profile',metric:stage.name,accent:'#ff80ab',body:pRenderProfile()},
+    {id:'chat',title:'伙伴通讯',sub:'Talk',metric:'AI',accent:'#7ecdc4',body:pRenderChatHTML(true)},
+  ];
+  const active=panels.find(p=>p.id===partnerConsolePanel)||panels[0];
+  const isFlipped=partnerConsolePanel!=='overview';
+  const cards=panels.map(p=>`<button class="partner-console-card" style="--pbox-accent:${p.accent}" onclick="setPartnerConsolePanel('${p.id}')">
+    <span class="partner-console-kicker">${p.sub}</span>
+    <b>${p.title}</b>
+    <i>${p.metric}</i>
+  </button>`).join('');
+  return`<div class="partner-console ${isFlipped?'is-flipped':''}">
+    <div class="partner-console-inner">
+      <div class="partner-console-face partner-console-front">
+        <div class="partner-console-head">
+          <span><b>伙伴终端</b><em>选择一个栏目查看详情</em></span>
+          <i>${pEsc(d.nickname||d.pkm_name)}</i>
+        </div>
+        <div class="partner-console-grid">${cards}</div>
+      </div>
+      <div class="partner-console-face partner-console-back">
+        <div class="partner-console-detail-head">
+          <button class="partner-console-back-btn" onclick="setPartnerConsolePanel('overview')">返回</button>
+          <span><b>${active.title}</b><em>${active.sub}</em></span>
+          <i style="--pbox-accent:${active.accent}">${active.metric}</i>
+        </div>
+        <div class="partner-console-detail">${active.body}</div>
+      </div>
+    </div>
   </div>`;
 }
 
@@ -521,12 +568,12 @@ function pRenderProfile(){
   </div>`;
 }
 
-function pRenderChatHTML(){
+function pRenderChatHTML(visible=false){
   const name=partnerData?(partnerData.nickname||partnerData.pkm_name):'伙伴';
-  return`<div class="partner-chat-area partner-box" id="partner-chat-area" style="padding:0;display:none">
+  return`<div class="partner-chat-area partner-box" id="partner-chat-area" style="padding:0;display:${visible?'block':'none'}">
     <div class="partner-chat-hdr">
       <div class="partner-chat-title"><div class="ai-pulse"></div>和${pEsc(name)}聊天</div>
-      <button class="btn btn-sm" onclick="togglePartnerChat()">✕</button>
+      <button class="btn btn-sm" onclick="setPartnerConsolePanel('overview')">✕</button>
     </div>
     <div class="partner-chat-msgs" id="partner-chat-msgs"></div>
     <div class="partner-chat-quick">
@@ -836,11 +883,7 @@ window.partnerTrackTrainingSession=function(summary){
 
 /* ===== AI CHAT ===== */
 function togglePartnerChat(){
-  const area=document.getElementById('partner-chat-area');
-  if(!area)return;
-  const isOn=area.style.display!=='none';
-  area.style.display=isOn?'none':'block';
-  if(!isOn&&partnerChatHistory.length===0) setTimeout(autoPartnerGreet,200);
+  setPartnerConsolePanel(partnerConsolePanel==='chat'?'overview':'chat');
 }
 
 async function autoPartnerGreet(){
