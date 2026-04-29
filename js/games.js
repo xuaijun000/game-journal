@@ -146,6 +146,7 @@ function go(pg,btn){
   if(pg==='battle'&&!window._battleInited){window._battleInited=true;initBattle();}
   if(pg==='partner'&&!window._partnerInited){window._partnerInited=true;initPartner();}
   if(window.updatePartnerFloat)window.updatePartnerFloat(pg);
+  if(window.updateHeaderChromeState)window.updateHeaderChromeState();
 }
 async function syncSteam(){
   const sid=document.getElementById('steam-id-inp').value.trim();

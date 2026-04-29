@@ -4,6 +4,7 @@ async function init(){
   if(session?.user)setUser(session.user);
   db.auth.onAuthStateChange((_,s)=>setUser(s?.user||null));
   await load();
+  if(window.updateHeaderChromeState)window.updateHeaderChromeState();
 }
 function setUser(u){
   const av=document.getElementById('av'),ab=document.getElementById('abtn');

@@ -9,3 +9,17 @@ function showToast(msg){
   setTimeout(()=>document.body.removeChild(t), 2000);
 }
 
+function updateHeaderChromeState(){
+  const header=document.querySelector('header');
+  const activePage=document.querySelector('.pg.on');
+  if(!header||!activePage)return;
+  const banner=activePage.querySelector('.tab-banner');
+  const shouldSolid=!banner||banner.getBoundingClientRect().bottom<=header.offsetHeight+4;
+  header.classList.toggle('header-solid',shouldSolid);
+}
+
+window.updateHeaderChromeState=updateHeaderChromeState;
+
+window.addEventListener('scroll',updateHeaderChromeState,{passive:true});
+window.addEventListener('resize',updateHeaderChromeState);
+
