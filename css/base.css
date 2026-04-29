@@ -79,9 +79,9 @@ header{
   position:sticky;
   top:0;
   z-index:1000;
-  background:linear-gradient(180deg,rgba(15,26,28,.82),rgba(15,26,28,.56));
-  backdrop-filter:blur(14px);
-  border-bottom:1px solid var(--b);
+  background:transparent;
+  backdrop-filter:none;
+  border-bottom:none;
   min-height:var(--header-h);
   display:flex;
   align-items:center;
@@ -92,13 +92,7 @@ header{
 header > *{position:relative;z-index:2}
 
 header::before{
-  content:'';
-  position:absolute;
-  top:0;
-  left:0;
-  right:0;
-  height:2px;
-  background:linear-gradient(90deg,var(--acc) 0%,var(--warn) 100%);
+  content:none;
 }
 
 .logo{display:flex;align-items:center;white-space:nowrap;flex-shrink:0}
