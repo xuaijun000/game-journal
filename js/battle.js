@@ -2621,7 +2621,7 @@ function renderBattleDamage(myPkm, opp, activeWeather=''){
 }
 
 /* ── 评分核心（供多个渲染函数共用） ── */
-function scorePkmForBattle(myPkm, opp, activeWeather=''){
+function scorePkmForBattle(myPkm, opp, activeWeather='', options={}){
   const oppValid=opp.filter(op=>op.name||op.type1);
   const rawScored=myPkm.map(mp=>{
     let offScore=0, defScore=0, koScore=0;
@@ -2735,6 +2735,7 @@ function scorePkmForBattle(myPkm, opp, activeWeather=''){
     const total=offScore - defScore*0.5 + koScore*3 + defTypeBonus + myItemBonus;
     return{pkm:mp,offScore,defScore,koCount:Math.round(koScore),koScore,defTypeBonus:+defTypeBonus.toFixed(2),myItemBonus:+myItemBonus.toFixed(2),total,reasons:[...new Set(reasons)].slice(0,5)};
   }).sort((a,b)=>b.total-a.total);
+  if(options.raw)return rawScored;
   return selectSynergisticTop3(rawScored);
 }
 
@@ -3735,6 +3736,258 @@ function detectDOppSupportRoles(op) {
   return [...roles];
 }
 
+function bdMoveSlugs(pkm) {
+  return [pkm.move1,pkm.move2,pkm.move3,pkm.move4].filter(Boolean).map(m=>m.slug||'').filter(Boolean);
+}
+
+function bdCountBy(list, test) {
+  return list.filter(test).length;
+}
+
+function bdIsAttacker(pkm) {
+  const role=classifyRole(pkm);
+  return role.cls==='role-phys'||role.cls==='role-spec'||role.cls==='role-mixed';
+}
+
+function bdWeatherAbuseScore(pkm, weather) {
+  const slugs=bdMoveSlugs(pkm);
+  const ability=pkm.ability||'';
+  const moves=[pkm.move1,pkm.move2,pkm.move3,pkm.move4].filter(m=>m&&m.power>0&&m.cat!=='status');
+  let score=0;
+  const spdMod=ABILITY_SPD_MOD[ability];
+  if(spdMod?.weather&&(!weather||spdMod.weather===weather))score+=2.5;
+  if(weather==='sun'||slugs.includes('sunny-day')){
+    if(moves.some(m=>getMoveTypeWithAbility(pkm,m).type==='fire'))score+=1;
+    if(ability==='chlorophyll'||ability==='solar-power')score+=2;
+  }
+  if(weather==='rain'||slugs.includes('rain-dance')){
+    if(moves.some(m=>getMoveTypeWithAbility(pkm,m).type==='water'))score+=1;
+    if(ability==='swift-swim')score+=2;
+  }
+  if(weather==='sand'||slugs.includes('sandstorm')){
+    if(['sand-rush','sand-force','sand-veil'].includes(ability))score+=2;
+  }
+  if(weather==='snow'||slugs.includes('snowscape')){
+    if(['slush-rush','snow-cloak'].includes(ability))score+=2;
+    if(pkm.type1==='ice'||pkm.type2==='ice')score+=0.6;
+  }
+  return score;
+}
+
+function bdDetectPlannedWeather(myPkm, activeWeather='') {
+  if(activeWeather)return activeWeather;
+  for(const pkm of myPkm){
+    const abilityWeather=ABILITY_WEATHER_SET[pkm.ability||''];
+    if(abilityWeather)return abilityWeather;
+  }
+  const weatherMoves={rain:'rain-dance',sun:'sunny-day',sand:'sandstorm',snow:'snowscape'};
+  for(const [weather,slug] of Object.entries(weatherMoves)){
+    if(myPkm.some(pkm=>bdMoveSlugs(pkm).includes(slug)))return weather;
+  }
+  return '';
+}
+
+function analyzeDoublesTeamPlan(myPkm, oppValid=[], activeWeather='') {
+  const plannedWeather=bdDetectPlannedWeather(myPkm,activeWeather);
+  const profiles=myPkm.map(pkm=>{
+    const slugs=bdMoveSlugs(pkm);
+    const roles=detectDSupportRoles(pkm);
+    const role=classifyRole(pkm);
+    const speed=getEffectiveSpeed(pkm,activeWeather)||pkm.base?.spe||0;
+    const attacks=[pkm.move1,pkm.move2,pkm.move3,pkm.move4].filter(m=>m&&m.power>0&&m.cat!=='status');
+    return {
+      pkm, slugs, roles, role, speed,
+      attacker:bdIsAttacker(pkm),
+      support:role.cls==='role-support'||roles.length>0,
+      spread:roles.includes('范围技'),
+      protect:slugs.includes('protect')||slugs.includes('detect'),
+      fakeOut:slugs.includes('fake-out'),
+      redirection:slugs.includes('follow-me')||slugs.includes('rage-powder'),
+      tailwind:slugs.includes('tailwind'),
+      trickRoom:slugs.includes('trick-room'),
+      weather:Boolean(ABILITY_WEATHER_SET[pkm.ability||''])||slugs.some(s=>['rain-dance','sunny-day','sandstorm','snowscape'].includes(s)),
+      intimidate:(pkm.ability||'')==='intimidate',
+      slow:speed>0&&speed<=70,
+      fast:speed>=100,
+      weatherAbuse:bdWeatherAbuseScore(pkm,plannedWeather),
+      attackCount:attacks.length,
+    };
+  });
+  const counts={
+    attackers:bdCountBy(profiles,p=>p.attacker),
+    supports:bdCountBy(profiles,p=>p.support),
+    spread:bdCountBy(profiles,p=>p.spread),
+    protect:bdCountBy(profiles,p=>p.protect),
+    fakeOut:bdCountBy(profiles,p=>p.fakeOut),
+    redirection:bdCountBy(profiles,p=>p.redirection),
+    tailwind:bdCountBy(profiles,p=>p.tailwind),
+    trickRoom:bdCountBy(profiles,p=>p.trickRoom),
+    weather:bdCountBy(profiles,p=>p.weather),
+    intimidate:bdCountBy(profiles,p=>p.intimidate),
+    slow:bdCountBy(profiles,p=>p.slow),
+    fast:bdCountBy(profiles,p=>p.fast),
+    weatherAbuse:profiles.reduce((s,p)=>s+p.weatherAbuse,0),
+  };
+  const oppFast=bdCountBy(oppValid,op=>(op.base?.spe||0)>=100);
+  const candidates=[
+    {
+      key:'tailwind',
+      label:'顺风压制',
+      score:counts.tailwind*4+counts.fast*1.1+counts.spread*1.2+counts.fakeOut*.8+oppFast*.25-counts.slow*.25,
+      summary:'用顺风抢先手，搭配范围技或高速输出压低对方血线。',
+      priorities:['先发带顺风或击掌保护顺风','后排保留高速/范围输出','避免把低速核心塞满4选'],
+    },
+    {
+      key:'trick-room',
+      label:'空间展开',
+      score:counts.trickRoom*4+counts.slow*1.25+counts.redirection*1+counts.fakeOut*.8+oppFast*.4-counts.fast*.35,
+      summary:'通过奇异空间反转速度，低速高火力在中盘连续出手。',
+      priorities:['首发空间手需要击掌/引导保护','后排优先低速高压输出','高速手只保留必要补盲'],
+    },
+    {
+      key:'weather',
+      label:'天气轴',
+      score:counts.weather*3.5+counts.weatherAbuse+counts.spread*.7+counts.protect*.25,
+      summary:'围绕天气启动输出或速度优势，选出要保证天气手和受益打手同时在场。',
+      priorities:['4选必须包含天气来源','先发可天气手+受益打手或保护手','后排补抗性和天气外兜底'],
+    },
+    {
+      key:'control-balance',
+      label:'控制平衡',
+      score:counts.fakeOut*1.5+counts.redirection*1.5+counts.intimidate*1.2+counts.protect*.45+counts.supports*.5+counts.attackers*.35,
+      summary:'靠击掌、引导、威吓和守住换节奏，再让核心输出找到安全回合。',
+      priorities:['先发一控一攻最稳','后排保留抗性换入点','不要只选四个输出手'],
+    },
+    {
+      key:'spread-offense',
+      label:'范围压血',
+      score:counts.spread*2+counts.attackers*.8+counts.fast*.55+counts.tailwind*.8-counts.redirection*.25,
+      summary:'用范围技同时压两只，对方换人或守住也会被持续削血。',
+      priorities:['先发至少一只范围输出','搭档要能免疫/吸收队友范围技','后排补单点收割'],
+    },
+  ].sort((a,b)=>b.score-a.score);
+  const best=candidates[0]||candidates.find(c=>c.key==='control-balance');
+  const second=candidates[1];
+  const confidence=second?Math.min(Math.max((best.score-second.score)/Math.max(Math.abs(best.score),1),0),1):1;
+  const tags=[
+    counts.tailwind?`顺风×${counts.tailwind}`:'',
+    counts.trickRoom?`空间×${counts.trickRoom}`:'',
+    counts.fakeOut?`击掌×${counts.fakeOut}`:'',
+    counts.redirection?`引导×${counts.redirection}`:'',
+    counts.spread?`范围技×${counts.spread}`:'',
+    counts.weather?`天气×${counts.weather}`:'',
+    counts.intimidate?`威吓×${counts.intimidate}`:'',
+  ].filter(Boolean);
+  return {...best, confidence, counts, profiles, tags, candidates};
+}
+
+function scoreDoublesComboForPlan(combo, teamPlan, rawScoreMap, oppValid, activeWeather) {
+  const scored=combo.map(p=>rawScoreMap.get(p)||{pkm:p,total:0,offScore:0,defScore:0,reasons:[]});
+  const base=scored.reduce((s,x)=>s+x.total,0);
+  const profiles=combo.map(p=>teamPlan.profiles.find(pr=>pr.pkm===p)).filter(Boolean);
+  const has=pred=>profiles.some(pred);
+  const count=pred=>bdCountBy(profiles,pred);
+  const attackers=count(p=>p.attacker);
+  const supports=count(p=>p.support);
+  const spread=count(p=>p.spread);
+  const protect=count(p=>p.protect);
+  const defensiveCover=bdDoublesCoverScore(combo);
+  let planBonus=0;
+  const reasons=[];
+
+  if(teamPlan.key==='tailwind'){
+    if(has(p=>p.tailwind)){planBonus+=5;reasons.push('保留顺风启动');}
+    planBonus+=count(p=>p.fast||p.spread)*1.2;
+    if(!has(p=>p.tailwind))planBonus-=4;
+  }else if(teamPlan.key==='trick-room'){
+    if(has(p=>p.trickRoom)){planBonus+=5;reasons.push('保留空间启动');}
+    planBonus+=count(p=>p.slow&&p.attacker)*1.6;
+    if(has(p=>p.redirection||p.fakeOut)){planBonus+=1.6;reasons.push('有保护空间展开的手段');}
+    if(!has(p=>p.trickRoom))planBonus-=4;
+  }else if(teamPlan.key==='weather'){
+    if(has(p=>p.weather)){planBonus+=4.5;reasons.push('保留天气来源');}
+    planBonus+=profiles.reduce((s,p)=>s+p.weatherAbuse,0)*1.1;
+    if(!has(p=>p.weather))planBonus-=3.5;
+  }else if(teamPlan.key==='spread-offense'){
+    planBonus+=spread*2+attackers*.7;
+    if(has(p=>p.tailwind||p.fakeOut))planBonus+=1.5;
+    if(spread)reasons.push('范围技压血效率高');
+  }else{
+    planBonus+=count(p=>p.fakeOut||p.redirection||p.intimidate)*1.5+protect*.35;
+    if(attackers>=2&&supports>=1)reasons.push('控制与输出比例稳定');
+  }
+  if(attackers<2)planBonus-=2.5;
+  if(supports>2&&teamPlan.key!=='control-balance')planBonus-=1.5;
+  if(protect>=2)planBonus+=.8;
+  return {
+    combo,
+    scored:scored.sort((a,b)=>b.total-a.total),
+    total:base+planBonus+defensiveCover,
+    planBonus,
+    defensiveCover,
+    reasons,
+  };
+}
+
+function bdDoublesCoverScore(combo) {
+  let score=0;
+  const weakOf=p=>{
+    const immune=ABILITY_TYPE_IMMUNE[p.ability||'']||[];
+    return B_TYPES.filter(t=>getTypeEff(t,p.type1,p.type2)>=2&&!immune.includes(t));
+  };
+  combo.forEach((p,i)=>{
+    weakOf(p).forEach(t=>{
+      const covered=combo.some((other,j)=>j!==i&&getTypeEff(t,other.type1,other.type2)<=0.5);
+      if(covered)score+=.35;
+    });
+  });
+  B_TYPES.forEach(t=>{
+    const hits=combo.filter(p=>getTypeEff(t,p.type1,p.type2)>=2).length;
+    if(hits>=3)score-=1.5;
+  });
+  return score;
+}
+
+function selectBestDoublesFour(rawScored, teamPlan, oppValid, activeWeather) {
+  const valid=rawScored.map(s=>s.pkm).filter(Boolean);
+  if(valid.length<=4){
+    const map=new Map(rawScored.map(s=>[s.pkm,s]));
+    return scoreDoublesComboForPlan(valid,teamPlan,map,oppValid,activeWeather);
+  }
+  const rawScoreMap=new Map(rawScored.map(s=>[s.pkm,s]));
+  const all=[];
+  for(let a=0;a<valid.length-3;a++)
+    for(let b=a+1;b<valid.length-2;b++)
+      for(let c=b+1;c<valid.length-1;c++)
+        for(let d=c+1;d<valid.length;d++)
+          all.push(scoreDoublesComboForPlan([valid[a],valid[b],valid[c],valid[d]],teamPlan,rawScoreMap,oppValid,activeWeather));
+  return all.sort((a,b)=>b.total-a.total)[0];
+}
+
+function renderDTeamPlan(teamPlan, comboResult) {
+  const tags=teamPlan.tags.length?teamPlan.tags.map(t=>`<span class="bd-plan-tag">${esc(t)}</span>`).join(''):'<span class="bd-plan-tag">基础平衡</span>';
+  const picks=comboResult?.combo?.length
+    ?comboResult.combo.map(p=>{
+      const img=p._spriteUrl?`<img src="${esc(p._spriteUrl)}" alt="" onerror="this.style.display='none'">`:'';
+      return `<div class="battle-my-pkm-chip">${img}${esc(p.name||'?')}</div>`;
+    }).join('')
+    :'';
+  const priorities=(teamPlan.priorities||[]).map(x=>`<div class="bd-plan-line">${esc(x)}</div>`).join('');
+  const comboReasons=(comboResult?.reasons||[]).map(x=>`<div class="bd-plan-line is-good">${esc(x)}</div>`).join('');
+  return `<div class="bd-plan-box">
+    <div class="bd-plan-head">
+      <div>
+        <div class="bd-plan-kicker">阵容打法识别</div>
+        <div class="bd-plan-title">${esc(teamPlan.label)} <span>${Math.round(teamPlan.confidence*100)}%</span></div>
+      </div>
+      <div class="bd-plan-tags">${tags}</div>
+    </div>
+    <div class="bd-plan-summary">${esc(teamPlan.summary)}</div>
+    ${picks?`<div class="bd-plan-picks">${picks}</div>`:''}
+    <div class="bd-plan-lines">${priorities}${comboReasons}</div>
+  </div>`;
+}
+
 /* ── 先发2只搭档协同评分 ── */
 function pairSynergyScore(a, b) {
   let score = 0;
@@ -3755,7 +4008,32 @@ function pairSynergyScore(a, b) {
 
 /* ── 从4只中选最佳先发2只 ── */
 /* ── 从top4中选最鲁棒先发2只：对对方所有可能先发搭档求期望威胁 ── */
-function selectBestLeadPair(top4, oppValid) {
+function bdLeadPairPlanBonus(pair, teamPlan) {
+  if(!teamPlan||pair.length<2)return 0;
+  const profiles=pair.map(s=>teamPlan.profiles.find(p=>p.pkm===s.pkm)).filter(Boolean);
+  const has=pred=>profiles.some(pred);
+  const count=pred=>bdCountBy(profiles,pred);
+  let bonus=0;
+  if(teamPlan.key==='tailwind'){
+    if(has(p=>p.tailwind)&&has(p=>p.fakeOut||p.redirection||p.attacker))bonus+=4;
+    if(has(p=>p.tailwind)&&count(p=>p.attacker)>=1)bonus+=1.2;
+  }else if(teamPlan.key==='trick-room'){
+    if(has(p=>p.trickRoom)&&has(p=>p.fakeOut||p.redirection))bonus+=4.5;
+    if(has(p=>p.trickRoom)&&has(p=>p.slow&&p.attacker))bonus+=1.5;
+  }else if(teamPlan.key==='weather'){
+    if(has(p=>p.weather)&&has(p=>p.weatherAbuse>0||p.attacker))bonus+=3.5;
+    bonus+=profiles.reduce((s,p)=>s+p.weatherAbuse,0)*.7;
+  }else if(teamPlan.key==='spread-offense'){
+    if(has(p=>p.spread)&&has(p=>p.tailwind||p.fakeOut||p.redirection||p.protect))bonus+=3;
+    if(count(p=>p.attacker)>=2)bonus+=1;
+  }else{
+    if(count(p=>p.attacker)>=1&&has(p=>p.fakeOut||p.redirection||p.intimidate))bonus+=3;
+    if(count(p=>p.attacker)===1&&count(p=>p.support)>=1)bonus+=1;
+  }
+  return bonus;
+}
+
+function selectBestLeadPair(top4, oppValid, teamPlan=null) {
   if (top4.length <= 2) return top4;
   const oppPool = (oppValid||[]).filter(op => op.name||op.type1);
 
@@ -3764,7 +4042,8 @@ function selectBestLeadPair(top4, oppValid) {
     let best = null, bv = -Infinity;
     for (let a = 0; a < top4.length-1; a++)
       for (let b = a+1; b < top4.length; b++) {
-        const s = pairSynergyScore(top4[a].pkm, top4[b].pkm);
+        const pair=[top4[a],top4[b]];
+        const s = pairSynergyScore(top4[a].pkm, top4[b].pkm)+bdLeadPairPlanBonus(pair,teamPlan);
         if (s > bv) { bv = s; best = [top4[a], top4[b]]; }
       }
     return best || top4.slice(0,2);
@@ -3798,7 +4077,8 @@ function selectBestLeadPair(top4, oppValid) {
       const expectedThreat = oppCandidates.reduce((s, { oa, ob, w }) =>
         s + w * (oppThreatScore(oa, pa) + oppThreatScore(oa, pb) +
                  oppThreatScore(ob, pa) + oppThreatScore(ob, pb)), 0);
-      const total = syn * 1.5 - expectedThreat;
+      const pair=[top4[a],top4[b]];
+      const total = syn * 1.5 - expectedThreat + bdLeadPairPlanBonus(pair,teamPlan);
       if (total > bestScore) { bestScore = total; best = [top4[a], top4[b]]; }
     }
   return best || top4.slice(0,2);
@@ -4115,14 +4395,18 @@ function analyzeDoubles() {
       const megaPrep=prepareBattleTeamForMegaRule(rawMyPkm,analysisOpp,rawWeather,'doubles');
       const myPkm=megaPrep.team;
       const activeWeather=detectMyWeather(myPkm)||rawWeather;
-      const rawScored=scorePkmForBattle(myPkm,analysisOpp,activeWeather);
-      const top4scored=selectSynTop4(rawScored);
-      const top4=top4scored.slice(0,4);
-      // 先发推荐对对方所有可能先发搭档求期望，不依赖单一预测
-      const leadPairScored=selectBestLeadPair(top4,oppValid);
+      const rawScored=scorePkmForBattle(myPkm,analysisOpp,activeWeather,{raw:true});
+      const teamPlan=analyzeDoublesTeamPlan(myPkm,analysisOpp,activeWeather);
+      const comboResult=selectBestDoublesFour(rawScored,teamPlan,oppValid,activeWeather);
+      const top4=comboResult.scored.slice(0,4);
+      const selectedSet=new Set(top4.map(s=>s.pkm));
+      const top4scored=[...top4,...rawScored.filter(s=>!selectedSet.has(s.pkm))];
+      // 先发推荐对对方所有可能先发搭档求期望，并服从我方阵容打法
+      const leadPairScored=selectBestLeadPair(top4,oppValid,teamPlan);
       const oppPredHtml=renderDOppPrediction(oppValid,predResult);
       const myRecHtml=renderDoublesRec(top4,leadPairScored,analysisOpp);
       const megaPlanHtml=describeBattleMegaPlan(myPkm,megaPrep.megaKey);
+      const teamPlanHtml=renderDTeamPlan(teamPlan,comboResult);
       const quickHtml=renderQuickDecisionPanel({scored:top4scored,myPkm,opp:oppValid,targetOpp:analysisOpp,activeWeather,format:'doubles',leadPairScored});
       const fieldCtrlHtml=renderDFieldControl(myPkm, oppValid);
       const spreadRiskHtml=renderDSpreadRisk(top4.map(s=>s.pkm));
@@ -4137,6 +4421,9 @@ function analyzeDoubles() {
         ${oppPredHtml?`<div class="battle-result-section">
           <div class="battle-result-hdr"><span class="battle-result-title">🔮 对方出战预测</span><span class="battle-datasrc-note">协同40%+克制我方60% · 仅作参考，推荐按全队评分${oppValid.length>4?` · 置信度${Math.round(predResult.confidence*100)}%`:''}</span></div>
           ${oppPredHtml}</div>`:''}
+        <div class="battle-result-section">
+          <div class="battle-result-hdr"><span class="battle-result-title">我的阵容打法</span><span class="battle-datasrc-note">先识别打法，再决定4选和先发</span></div>
+          ${teamPlanHtml}</div>
         <div class="battle-result-section">
           <div class="battle-result-hdr"><span class="battle-result-title">推荐出战阵容（双打 6选4）</span><span class="battle-datasrc-note">针对全部已知对方成员</span></div>
           ${megaPlanHtml}
