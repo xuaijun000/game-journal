@@ -2447,7 +2447,7 @@ function analyzeMatchups(){
       const weakHtml=renderTeamWeaknessWarning(scored);
       const speedHtml=renderSpeedAnalysis(scored,opp);
       const oppPredHtml=renderOppTeamPrediction(oppValid,predResult);
-      const quickHtml=renderQuickDecisionPanel({scored,myPkm,opp:oppValid,targetOpp:analysisOpp,activeWeather,format:'singles'});
+      const quickHtml=renderQuickDecisionPanel({scored,myPkm,opp:oppValid,activeWeather,format:'singles'});
       const megaPlanHtml=describeBattleMegaPlan(myPkm,megaPrep.megaKey);
       const recSubtitle='针对对方全部已知成员';
       resultBox.innerHTML=`
@@ -3112,16 +3112,16 @@ function renderQuickDecisionPanel({scored=[],myPkm=[],opp=[],targetOpp=[],active
   const selectedScores=scored.slice(0,pickCount);
   const selected=selectedScores.map(s=>s.pkm).filter(Boolean);
   if(!selected.length)return '';
-  const oppPool=(targetOpp&&targetOpp.length?targetOpp:opp).filter(op=>op.name||op.type1);
+  const globalOppPool=(opp&&opp.length?opp:targetOpp).filter(op=>op.name||op.type1);
   const leadScores=format==='doubles'&&leadPairScored.length
     ?leadPairScored
     :format==='singles'
-      ?[selectSinglesLead(selectedScores,oppPool,activeWeather)].filter(Boolean)
+      ?[selectSinglesLead(selectedScores,globalOppPool,activeWeather)].filter(Boolean)
       :selectedScores.slice(0,2);
   const pickHtml=selectedScores.map((s,i)=>renderQuickPkmChip(s.pkm,`#${i+1}`)).join('');
   const leadHtml=leadScores.map(s=>renderQuickPkmChip(s.pkm,'先发')).join('');
 
-  const threats=getQuickIncomingThreats(selected,oppPool,activeWeather,4);
+  const threats=getQuickIncomingThreats(selected,globalOppPool,activeWeather,4);
   const threatHtml=threats.length?threats.map(t=>{
     const pct=t.pct?`${t.pct}%`:`${quickEffText(t.eff)}`;
     return`<div class="bqd-line bqd-line-danger">
@@ -3130,7 +3130,7 @@ function renderQuickDecisionPanel({scored=[],myPkm=[],opp=[],targetOpp=[],active
     </div>`;
   }).join(''):`<div class="bqd-empty">暂无明显高危打点</div>`;
 
-  const breaks=getQuickBreakthroughs(selectedScores,oppPool,activeWeather,3);
+  const breaks=getQuickBreakthroughs(selectedScores,globalOppPool,activeWeather,3);
   const breakHtml=breaks.length?breaks.map(r=>{
     const value=r.pct?`${r.pct}%`:`${quickEffText(r.typeMul)}`;
     return`<div class="bqd-line bqd-line-good">
@@ -3139,7 +3139,7 @@ function renderQuickDecisionPanel({scored=[],myPkm=[],opp=[],targetOpp=[],active
     </div>`;
   }).join(''):`<div class="bqd-empty">没有稳定高压突破口</div>`;
 
-  const switchRows=getQuickSafeSwitchRows(selected,myPkm,oppPool,3);
+  const switchRows=getQuickSafeSwitchRows(selected,myPkm,globalOppPool,3);
   const switchHtml=switchRows.length?switchRows.map(r=>{
     const typeTag=`<span class="coverage-type-tag type-${r.type}">${TYPE_ZH[r.type]||r.type}</span>`;
     const safeNames=r.safe.length?r.safe.map(p=>esc(p.name)).join('、'):(r.bench.length?`候补 ${r.bench.slice(0,2).map(p=>esc(p.name)).join('、')}`:'无人稳定抗');
@@ -3153,7 +3153,7 @@ function renderQuickDecisionPanel({scored=[],myPkm=[],opp=[],targetOpp=[],active
   return`<div class="battle-result-section bqd-panel">
     <div class="battle-result-hdr">
       <span class="battle-result-title">快速决策看板</span>
-      <span class="battle-datasrc-note">先看这里，长表用于复盘</span>
+      <span class="battle-datasrc-note">全局扫描对方${globalOppPool.length}只；不依赖出战预测</span>
     </div>
     <div class="bqd-grid">
       <div class="bqd-card bqd-card-primary">
@@ -3162,15 +3162,15 @@ function renderQuickDecisionPanel({scored=[],myPkm=[],opp=[],targetOpp=[],active
         ${leadHtml?`<div class="bqd-lead"><span>开局</span>${leadHtml}</div>`:''}
       </div>
       <div class="bqd-card">
-        <div class="bqd-label">最大危险</div>
+        <div class="bqd-label">全局最大危险</div>
         ${threatHtml}
       </div>
       <div class="bqd-card">
-        <div class="bqd-label">优先突破</div>
+        <div class="bqd-label">全局优先突破</div>
         ${breakHtml}
       </div>
       <div class="bqd-card">
-        <div class="bqd-label">安全换入</div>
+        <div class="bqd-label">全局安全换入</div>
         ${switchHtml}
       </div>
     </div>
@@ -4407,7 +4407,7 @@ function analyzeDoubles() {
       const myRecHtml=renderDoublesRec(top4,leadPairScored,analysisOpp);
       const megaPlanHtml=describeBattleMegaPlan(myPkm,megaPrep.megaKey);
       const teamPlanHtml=renderDTeamPlan(teamPlan,comboResult);
-      const quickHtml=renderQuickDecisionPanel({scored:top4scored,myPkm,opp:oppValid,targetOpp:analysisOpp,activeWeather,format:'doubles',leadPairScored});
+      const quickHtml=renderQuickDecisionPanel({scored:top4scored,myPkm,opp:oppValid,activeWeather,format:'doubles',leadPairScored});
       const fieldCtrlHtml=renderDFieldControl(myPkm, oppValid);
       const spreadRiskHtml=renderDSpreadRisk(top4.map(s=>s.pkm));
       const matrixHtml=renderBattleMatrix(myPkm,opp);
