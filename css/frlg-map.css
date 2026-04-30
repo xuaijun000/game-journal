@@ -337,6 +337,22 @@
   flex-wrap:wrap;
 }
 
+.frlg-filter-group{
+  display:flex;
+  align-items:center;
+  gap:5px;
+  flex-wrap:wrap;
+}
+
+.frlg-filter-label{
+  font-size:.55rem;
+  color:var(--t3);
+  font-family:'DM Mono',monospace;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  margin-right:1px;
+}
+
 .frlg-method-badge{
   font-size:.6rem;
   font-family:'DM Mono',monospace;
@@ -353,6 +369,18 @@
   border-color:var(--acc2);
   color:var(--acc2);
   background:rgba(90,184,154,.1);
+}
+
+.frlg-version-badge.ver-fr.on{
+  border-color:#f87171;
+  color:#f87171;
+  background:rgba(239,68,68,.12);
+}
+
+.frlg-version-badge.ver-lg.on{
+  border-color:#4ade80;
+  color:#4ade80;
+  background:rgba(74,222,128,.12);
 }
 
 .frlg-enc-grid{
@@ -449,16 +477,34 @@
 .frlg-enc-rate.rate-md{color:#facc15;}
 .frlg-enc-rate.rate-lo{color:var(--t3);}
 
+.frlg-enc-tags{
+  display:flex;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:3px;
+  margin-top:3px;
+}
+
 .frlg-enc-ver{
   font-size:.45rem;
   border-radius:3px;
   padding:0 3px;
   display:inline-block;
   line-height:1.5;
-  margin-top:2px;
 }
 .ver-fr{background:rgba(239,68,68,.15);color:#f87171;}
 .ver-lg{background:rgba(74,222,128,.15);color:#4ade80;}
+.ver-both{background:rgba(96,165,250,.12);color:#93c5fd;}
+
+.frlg-method-mini{
+  font-size:.45rem;
+  line-height:1.5;
+  border-radius:3px;
+  padding:0 3px;
+  background:rgba(255,255,255,.05);
+  color:var(--t3);
+  font-family:'DM Mono',monospace;
+}
 
 .frlg-empty-note{
   grid-column:1/-1;

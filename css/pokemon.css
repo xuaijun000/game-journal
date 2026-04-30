@@ -556,6 +556,19 @@
 .hunt-dist-name{font-size:.65rem;color:var(--t2);margin-top:3px;line-height:1.2}
 .hunt-dist-rate{font-size:.55rem;font-family:'DM Mono',monospace;margin-top:1px}
 .rate-hi{color:var(--acc)}.rate-md{color:var(--t3)}.rate-lo{color:var(--t3);opacity:.6}
+.dist-meta-tags{display:flex;flex-wrap:wrap;gap:2px;justify-content:center;margin-top:4px}
+.dist-ver-tag,.dist-method-tag{
+  font-size:.48rem;
+  font-family:'DM Mono',monospace;
+  line-height:1.45;
+  padding:0 3px;
+  border-radius:3px;
+  background:rgba(255,255,255,.05);
+  color:var(--t3);
+}
+.dist-ver-tag.ver-fr{background:rgba(239,68,68,.15);color:#f87171}
+.dist-ver-tag.ver-lg{background:rgba(74,222,128,.15);color:#4ade80}
+.dist-method-tag{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* 数据来源徽章 */
 .dist-src-badge{grid-column:1/-1;font-size:.6rem;font-family:'DM Mono',monospace;letter-spacing:.06em;padding:3px 8px;border-radius:2px;display:inline-block;margin-bottom:6px;width:fit-content}
 .dist-src-official{background:rgba(90,184,154,.12);border:1px solid rgba(90,184,154,.3);color:var(--acc2)}

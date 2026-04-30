@@ -104,8 +104,14 @@ const FRLG_METHOD_META = {
   'rock-smash': { label:'🪨破岩', icon:'🪨' },
 };
 
+const FRLG_VERSION_META = {
+  firered  : { label:'火红', short:'火', cls:'ver-fr' },
+  leafgreen: { label:'叶绿', short:'叶', cls:'ver-lg' },
+};
+
 let frlgView = 'kanto';
 let _frlgActiveMethodFilters = new Set();
+let _frlgActiveVersionFilters = new Set();
 let _frlgCurrentEncounters = [];
 let _frlgCurrentLocationKey = '';
 const _frlgPkmCache = {};
@@ -163,6 +169,7 @@ function frlgInitView(view) {
   }
   frlgView = nextView;
   _frlgActiveMethodFilters.clear();
+  _frlgActiveVersionFilters.clear();
   _frlgCurrentEncounters = [];
 
   const breadcrumb = document.getElementById('frlg-breadcrumb');
@@ -291,6 +298,7 @@ async function frlgShowEncounters(locationKey, locationLabel) {
   panel.classList.add('visible');
   _frlgCurrentLocationKey = locationKey;
   _frlgActiveMethodFilters.clear();
+  _frlgActiveVersionFilters.clear();
 
   if (typeof FRLG_ENCOUNTERS === 'undefined') {
     title.textContent = locationLabel;
@@ -322,11 +330,23 @@ function frlgRenderMethodFilters() {
 
   const methods = [...new Set(_frlgCurrentEncounters.flatMap(item => item.methods || []))]
     .filter(Boolean);
-  methodsWrap.innerHTML = methods.map(method => {
+  const versions = [...new Set(_frlgCurrentEncounters.flatMap(item => item.versions || []))]
+    .filter(Boolean);
+  const versionHtml = versions.length > 1
+    ? `<div class="frlg-filter-group"><span class="frlg-filter-label">版本</span>${versions.map(version => {
+        const meta = FRLG_VERSION_META[version] || { label: version, cls: '' };
+        const cls = _frlgActiveVersionFilters.has(version) ? ' on' : '';
+        return `<button class="frlg-method-badge frlg-version-badge ${meta.cls || ''}${cls}" onclick="frlgToggleVersionFilter('${version}')">${meta.label}</button>`;
+      }).join('')}</div>`
+    : '';
+  const methodHtml = methods.length
+    ? `<div class="frlg-filter-group"><span class="frlg-filter-label">方式</span>${methods.map(method => {
     const meta = FRLG_METHOD_META[method] || { label: method, icon: '•' };
     const cls = _frlgActiveMethodFilters.has(method) ? ' on' : '';
     return `<button class="frlg-method-badge${cls}" onclick="frlgToggleMethodFilter('${method}')">${meta.label}</button>`;
-  }).join('');
+      }).join('')}</div>`
+    : '';
+  methodsWrap.innerHTML = versionHtml + methodHtml;
 }
 
 function frlgToggleMethodFilter(method) {
@@ -336,13 +356,41 @@ function frlgToggleMethodFilter(method) {
   frlgRenderEncounterGrid();
 }
 
+function frlgToggleVersionFilter(version) {
+  if (_frlgActiveVersionFilters.has(version)) _frlgActiveVersionFilters.delete(version);
+  else _frlgActiveVersionFilters.add(version);
+  frlgRenderMethodFilters();
+  frlgRenderEncounterGrid();
+}
+
+function frlgRenderVersionTags(versions=[]) {
+  const vers = [...new Set(versions)].filter(Boolean);
+  if (!vers.length) return '';
+  if (vers.includes('firered') && vers.includes('leafgreen')) {
+    return '<div class="frlg-enc-ver ver-both">火红/叶绿</div>';
+  }
+  return vers.map(version => {
+    const meta = FRLG_VERSION_META[version] || { label: version, cls: '' };
+    return `<div class="frlg-enc-ver ${meta.cls || ''}">${frlgEsc(meta.label)}</div>`;
+  }).join('');
+}
+
+function frlgRenderMethodTags(methods=[]) {
+  return [...new Set(methods)].filter(Boolean).map(method => {
+    const meta = FRLG_METHOD_META[method] || { label: method, icon: '•' };
+    return `<span class="frlg-method-mini">${frlgEsc(meta.label)}</span>`;
+  }).join('');
+}
+
 function frlgRenderEncounterGrid() {
   const grid = document.getElementById('frlg-enc-grid');
   if (!grid) return;
 
-  const active = [..._frlgActiveMethodFilters];
+  const activeMethods = [..._frlgActiveMethodFilters];
+  const activeVersions = [..._frlgActiveVersionFilters];
   const items = _frlgCurrentEncounters.filter(item =>
-    !active.length || active.some(method => (item.methods || []).includes(method))
+    (!activeMethods.length || activeMethods.some(method => (item.methods || []).includes(method))) &&
+    (!activeVersions.length || activeVersions.some(version => (item.versions || []).includes(version)))
   );
 
   if (!items.length) {
@@ -352,22 +400,18 @@ function frlgRenderEncounterGrid() {
 
   grid.innerHTML = items.map((item, idx) => {
     const icons = (item.methods || []).map(m => FRLG_METHOD_META[m]?.icon || '•').join(' ');
+    const methodTags = frlgRenderMethodTags(item.methods || []);
     const name = frlgGetPkmName(null, item.slug);
     const lv = item.minLv === item.maxLv ? `Lv.${item.minLv}` : `Lv.${item.minLv}-${item.maxLv}`;
     const rateCls = item.rate >= 20 ? 'rate-hi' : item.rate >= 10 ? 'rate-md' : 'rate-lo';
-    const vers = item.versions || [];
-    const verTag = vers.length === 1 && vers[0] === 'firered'
-      ? '<div class="frlg-enc-ver ver-fr">火红</div>'
-      : vers.length === 1 && vers[0] === 'leafgreen'
-      ? '<div class="frlg-enc-ver ver-lg">叶绿</div>'
-      : '';
+    const verTag = frlgRenderVersionTags(item.versions || []);
     return `<div class="frlg-enc-card" id="frlg-enc-card-${idx}" style="animation-delay:${idx * 40}ms">
       <div class="frlg-enc-sprite"><div class="frlg-enc-placeholder"></div></div>
       <div class="frlg-enc-method-icons">${icons}</div>
       <div class="frlg-enc-name">${frlgEsc(name)}</div>
       <div class="frlg-enc-lv">${frlgEsc(lv)}</div>
       <div class="frlg-enc-rate ${rateCls}">${item.rate || 0}%</div>
-      ${verTag}
+      <div class="frlg-enc-tags">${verTag}${methodTags}</div>
     </div>`;
   }).join('');
 

@@ -2162,13 +2162,30 @@ function renderHuntDist(items,isOfficial,srcLabel){
       const cls=it.rate==='高'?'rate-hi':it.rate==='低'?'rate-lo':'rate-md';
       rateHtml=`<div class="hunt-dist-rate ${cls}">● ${it.rate}</div>`;
     }
+    const metaHtml=renderFRLGDistMeta(it);
     return`<div class="hunt-dist-card" id="hunt-dist-${i}" onclick="selectDistPkm(${i})" style="animation-delay:${i*35}ms">
       <div class="hunt-dist-sel-mark">✓</div>
       <img src="${it.img||''}" alt="" onerror="this.style.display='none'">
       <div class="hunt-dist-name">${esc(it.name)}</div>
       ${rateHtml}
+      ${metaHtml}
     </div>`;
   }).join('');
+}
+
+function renderFRLGDistMeta(item){
+  if(!item?.official)return '';
+  const versionLabels=(item.versions||[]).filter(Boolean).map(v=>{
+    if(v==='firered')return '<span class="dist-ver-tag ver-fr">火红</span>';
+    if(v==='leafgreen')return '<span class="dist-ver-tag ver-lg">叶绿</span>';
+    return `<span class="dist-ver-tag">${esc(v)}</span>`;
+  }).join('');
+  const methodLabels=(item.methods||[]).filter(Boolean).map(m=>{
+    const meta=typeof FRLG_METHOD_META!=='undefined'?FRLG_METHOD_META[m]:null;
+    return `<span class="dist-method-tag">${esc(meta?.label||m)}</span>`;
+  }).join('');
+  if(!versionLabels&&!methodLabels)return '';
+  return `<div class="dist-meta-tags">${versionLabels}${methodLabels}</div>`;
 }
 
 function selectDistPkm(idx){
@@ -3344,11 +3361,13 @@ function renderTrainDist(items,isOfficial,srcLabel){
     }).join('');
     const chanceHtml=it.official&&it.chance!=null
       ?`<div class="train-dist-chance">${it.chance}%</div>`:'';
+    const metaHtml=renderFRLGDistMeta(it);
     return`<div class="train-dist-card" id="train-card-${i}" onclick="beatPokemon(${i})" style="animation-delay:${i*35}ms">
       ${chanceHtml}
       <img src="${it.img||''}" alt="" onerror="this.style.display='none'">
       <div class="train-dist-name">${esc(it.name)}</div>
       <div class="train-ev-chips">${evStr}</div>
+      ${metaHtml}
     </div>`;
   }).join('');
 }
