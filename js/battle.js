@@ -2433,7 +2433,7 @@ function analyzeMatchups(){
       const rawWeather=detectMyWeather(rawMyPkm);
       // ── 预测只作参考；实际推荐和分析按对方全队评分，避免预测错误时信息缺口 ──
       const oppValid=opp.filter(op=>op.name||op.type1);
-      const predResult=predictOppBestCombo(oppValid,rawMyPkm);
+      const predResult=predictOppBestCombo(oppValid,rawMyPkm,rawWeather);
       const analysisOpp=oppValid;
       const megaPrep=prepareBattleTeamForMegaRule(rawMyPkm,analysisOpp,rawWeather,'singles');
       const myPkm=megaPrep.team;
@@ -3153,7 +3153,7 @@ function renderQuickDecisionPanel({scored=[],myPkm=[],opp=[],targetOpp=[],active
   return`<div class="battle-result-section bqd-panel">
     <div class="battle-result-hdr">
       <span class="battle-result-title">快速决策看板</span>
-      <span class="battle-datasrc-note">全局扫描对方${globalOppPool.length}只；不依赖出战预测</span>
+      <span class="battle-datasrc-note">全局扫描对方已填写${globalOppPool.length}只，包含未预测出战成员</span>
     </div>
     <div class="bqd-grid">
       <div class="bqd-card bqd-card-primary">
@@ -3190,19 +3190,28 @@ function classifyOppRole(op){
   return{label:'混合输出',cls:'role-mixed'};
 }
 
-/* ── 对方单只对我方单只的威胁分（基于预测技能属性相克） ── */
-function oppThreatScore(op, mp){
+/* ── 对方单只对我方单只的威胁分（优先用预测技能/特性/道具伤害） ── */
+function oppThreatScore(op, mp, activeWeather=''){
   const myAbility=mp.ability||'';
   const myImmune=ABILITY_TYPE_IMMUNE[myAbility]||[];
   const predMoves=op.predictedMoves||[];
   if(predMoves.length){
+    const oppAsAtk={
+      name:op.name,type1:op.type1,type2:op.type2,base:op.base||{},
+      ability:resolveOppAbility(op),
+      item:getBattleItemSlug(op.predictedItem||op.item||''),
+      level:50,
+    };
     let best=0;
     predMoves.forEach(m=>{
       const mv=MOVES_BY_SLUG?.[m.slug];
       if(!mv||mv.cat==='status'||!mv.type)return;
       if(myImmune.includes(mv.type))return;
       const eff=getTypeEff(mv.type,mp.type1,mp.type2);
-      if(eff>best)best=eff;
+      const res=mv.power?calcDamageEst(oppAsAtk,mp,mv,activeWeather):null;
+      const dmgScore=res?Math.min(4.5,Math.max(0.25,res.pct/25)):0;
+      const score=Math.max(eff,dmgScore);
+      if(score>best)best=score;
     });
     if(best>0)return best;
   }
@@ -3210,9 +3219,9 @@ function oppThreatScore(op, mp){
 }
 
 /* ── 预测对方最优出战3只：队友协同30% + 克制我方70% ── */
-function predictOppBestCombo(valid, myPkm){
+function predictOppBestCombo(valid, myPkm, activeWeather=''){
   if(!valid.length)return{combo:[],synergyScore:0,antiScore:0,threatMap:{}};
-  if(valid.length<=3)return{combo:valid,synergyScore:0,antiScore:0,threatMap:buildThreatMap(valid,myPkm)};
+  if(valid.length<=3)return{combo:valid,synergyScore:0,antiScore:0,threatMap:buildThreatMap(valid,myPkm,activeWeather)};
 
   // 队友协同分：两两共现率之和
   const synergyScore=(combo)=>{
@@ -3235,7 +3244,7 @@ function predictOppBestCombo(valid, myPkm){
     if(!myPkm.length)return 0;
     let total=0;
     combo.forEach(op=>{
-      myPkm.forEach(mp=>{total+=oppThreatScore(op,mp);});
+      myPkm.forEach(mp=>{total+=oppThreatScore(op,mp,activeWeather);});
     });
     return total;
   };
@@ -3263,14 +3272,14 @@ function predictOppBestCombo(valid, myPkm){
     if(blend>bestBlend){bestBlend=blend;best=r;}
   });
 
-  return{combo:best.combo,synergyScore:best.syn,antiScore:best.anti,threatMap:buildThreatMap(best.combo,myPkm)};
+  return{combo:best.combo,synergyScore:best.syn,antiScore:best.anti,threatMap:buildThreatMap(best.combo,myPkm,activeWeather)};
 }
 
-function buildThreatMap(combo,myPkm){
+function buildThreatMap(combo,myPkm,activeWeather=''){
   const map={};
   combo.forEach(op=>{
     const threats=myPkm
-      .map(mp=>({name:mp.name,eff:oppThreatScore(op,mp)}))
+      .map(mp=>({name:mp.name,eff:oppThreatScore(op,mp,activeWeather)}))
       .filter(t=>t.eff>=2)
       .sort((a,b)=>b.eff-a.eff)
       .slice(0,2)
@@ -4033,7 +4042,7 @@ function bdLeadPairPlanBonus(pair, teamPlan) {
   return bonus;
 }
 
-function selectBestLeadPair(top4, oppValid, teamPlan=null) {
+function selectBestLeadPair(top4, oppValid, teamPlan=null, activeWeather='') {
   if (top4.length <= 2) return top4;
   const oppPool = (oppValid||[]).filter(op => op.name||op.type1);
 
@@ -4057,7 +4066,7 @@ function selectBestLeadPair(top4, oppValid, teamPlan=null) {
       const syn = pairSynergyScore(oa, ob);
       // 双打两只同时上场，威胁应累加而非取最高
       const pressure = top4.reduce((s, t) =>
-        s + oppThreatScore(oa, t.pkm) + oppThreatScore(ob, t.pkm), 0);
+        s + oppThreatScore(oa, t.pkm, activeWeather) + oppThreatScore(ob, t.pkm, activeWeather), 0);
       oppCandidates.push({ oa, ob, raw: syn * 1.2 + pressure });
     }
 
@@ -4075,8 +4084,8 @@ function selectBestLeadPair(top4, oppValid, teamPlan=null) {
       const pa = top4[a].pkm, pb = top4[b].pkm;
       const syn = pairSynergyScore(pa, pb);
       const expectedThreat = oppCandidates.reduce((s, { oa, ob, w }) =>
-        s + w * (oppThreatScore(oa, pa) + oppThreatScore(oa, pb) +
-                 oppThreatScore(ob, pa) + oppThreatScore(ob, pb)), 0);
+        s + w * (oppThreatScore(oa, pa, activeWeather) + oppThreatScore(oa, pb, activeWeather) +
+                 oppThreatScore(ob, pa, activeWeather) + oppThreatScore(ob, pb, activeWeather)), 0);
       const pair=[top4[a],top4[b]];
       const total = syn * 1.5 - expectedThreat + bdLeadPairPlanBonus(pair,teamPlan);
       if (total > bestScore) { bestScore = total; best = [top4[a], top4[b]]; }
@@ -4085,7 +4094,7 @@ function selectBestLeadPair(top4, oppValid, teamPlan=null) {
 }
 
 /* ── 预测对方先发2只：对方搭档协同 + 对我方全队压制 ── */
-function selectBestOppLeadPair(combo4, myPkm) {
+function selectBestOppLeadPair(combo4, myPkm, activeWeather='') {
   if (combo4.length <= 2) return combo4;
   let best = null, bestScore = -Infinity;
   for (let a = 0; a < combo4.length-1; a++) {
@@ -4095,7 +4104,7 @@ function selectBestOppLeadPair(combo4, myPkm) {
       let pressure = 0;
       (myPkm||[]).forEach(mp => {
         // 双打两只同时在场，威胁累加
-        pressure += oppThreatScore(pa, mp) + oppThreatScore(pb, mp);
+        pressure += oppThreatScore(pa, mp, activeWeather) + oppThreatScore(pb, mp, activeWeather);
       });
       const total = syn*1.2 + pressure;
       if (total > bestScore) { bestScore=total; best=[pa,pb]; }
@@ -4122,11 +4131,11 @@ function selectSynTop4(scored) {
 }
 
 /* ── 预测对方最优出战4只 + 先发2只（C(n,4) + 角色标签） ── */
-function predictOppDoubles(valid, myPkm) {
+function predictOppDoubles(valid, myPkm, activeWeather='') {
   if (!valid.length) return {combo4:[],leadPair:[],threatMap:{},spreadWarn:[],confidence:0};
   if (valid.length <= 4) {
-    const lp = selectBestOppLeadPair(valid, myPkm);
-    return {combo4:valid, leadPair:lp, threatMap:buildThreatMap(valid,myPkm), spreadWarn:collectSpreadWarn(valid), confidence:1};
+    const lp = selectBestOppLeadPair(valid, myPkm, activeWeather);
+    return {combo4:valid, leadPair:lp, threatMap:buildThreatMap(valid,myPkm,activeWeather), spreadWarn:collectSpreadWarn(valid), confidence:1};
   }
   const synScore = combo => {
     let s=0;
@@ -4140,7 +4149,7 @@ function predictOppDoubles(valid, myPkm) {
     return s;
   };
   // 全体累加：双打4只都会上场，每只对每只我方的威胁全部计入
-  const antiScore = combo => { if(!myPkm.length)return 0; let t=0; combo.forEach(op=>{myPkm.forEach(mp=>{t+=oppThreatScore(op,mp);});}); return t; };
+  const antiScore = combo => { if(!myPkm.length)return 0; let t=0; combo.forEach(op=>{myPkm.forEach(mp=>{t+=oppThreatScore(op,mp,activeWeather);});}); return t; };
   const all=[];
   for(let a=0;a<valid.length-3;a++) for(let b=a+1;b<valid.length-2;b++) for(let c=b+1;c<valid.length-1;c++) for(let d=c+1;d<valid.length;d++) all.push([valid[a],valid[b],valid[c],valid[d]]);
   const raw=all.map(combo=>({combo,syn:synScore(combo),anti:antiScore(combo)}));
@@ -4151,8 +4160,8 @@ function predictOppDoubles(valid, myPkm) {
   const ranked=raw.map(r=>({...r,v:((r.syn-minSyn)/synRange)*0.4+((r.anti-minAnti)/antiRange)*0.6})).sort((a,b)=>b.v-a.v);
   const confidence=ranked.length>=2?Math.min((ranked[0].v-ranked[1].v)/Math.max(ranked[0].v,0.01),1):1;
   const combo4=ranked[0].combo;
-  const leadPair=selectBestOppLeadPair(combo4,myPkm);
-  return {combo4, leadPair, threatMap:buildThreatMap(combo4,myPkm), spreadWarn:collectSpreadWarn(combo4), confidence};
+  const leadPair=selectBestOppLeadPair(combo4,myPkm,activeWeather);
+  return {combo4, leadPair, threatMap:buildThreatMap(combo4,myPkm,activeWeather), spreadWarn:collectSpreadWarn(combo4), confidence};
 }
 
 /* ── 收集对方范围技警告 ── */
@@ -4389,7 +4398,7 @@ function analyzeDoubles() {
     try{
       const rawWeather=detectMyWeather(rawMyPkm);
       const oppValid=opp.filter(op=>op.name||op.type1);
-      const predResult=predictOppDoubles(oppValid,rawMyPkm);
+      const predResult=predictOppDoubles(oppValid,rawMyPkm,rawWeather);
       // 预测只作参考；实际推荐和分析按对方全队评分，避免预测偏差单向传播
       const analysisOpp=oppValid;
       const megaPrep=prepareBattleTeamForMegaRule(rawMyPkm,analysisOpp,rawWeather,'doubles');
@@ -4402,7 +4411,7 @@ function analyzeDoubles() {
       const selectedSet=new Set(top4.map(s=>s.pkm));
       const top4scored=[...top4,...rawScored.filter(s=>!selectedSet.has(s.pkm))];
       // 先发推荐对对方所有可能先发搭档求期望，并服从我方阵容打法
-      const leadPairScored=selectBestLeadPair(top4,oppValid,teamPlan);
+      const leadPairScored=selectBestLeadPair(top4,oppValid,teamPlan,activeWeather);
       const oppPredHtml=renderDOppPrediction(oppValid,predResult);
       const myRecHtml=renderDoublesRec(top4,leadPairScored,analysisOpp);
       const megaPlanHtml=describeBattleMegaPlan(myPkm,megaPrep.megaKey);

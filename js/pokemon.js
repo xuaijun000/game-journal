@@ -1345,7 +1345,7 @@ const SERIES_CHECKPOINTS={
   'gold-silver':['🏅 芙蓉道馆','🏅 藤树道馆','🏅 月桂道馆','🏅 毛利道馆','🏅 麻子道馆','🏅 雷光道馆','🏅 雪诺道馆','🏅 白金道馆','⚔️ 四天王','🏆 冠军','🗺 关都道馆×8','🏆 再战小茂'],
   'crystal':['🏅 芙蓉道馆','🏅 藤树道馆','🏅 月桂道馆','🏅 毛利道馆','🏅 麻子道馆','🏅 雷光道馆','🏅 雪诺道馆','🏅 白金道馆','⚔️ 四天王','🏆 冠军','🗺 关都道馆×8','🏆 再战小茂'],
   'ruby-sapphire':['🏅 楼舟道馆','🏅 月见道馆','🏅 常磐道馆','🏅 水镜道馆','🏅 仙台道馆','🏅 金木道馆','🏅 绿岭道馆','🏅 雄山道馆','🔴 击败水队/炎队','⚔️ 四天王','🏆 冠军'],
-  'firered-leafgreen':['🏅 小刚道馆','🏅 小霞道馆','🏅 苏珊娜道馆','🏅 阿洛道馆','🏅 娜汪道馆','🏅 陈伟道馆','🏅 卡丽娜道馆','🏅 松原道馆','🔴 击败火箭队','⚔️ 四天王','🏆 冠军小茂'],
+  'firered-leafgreen':window.FRLG_STORY_CHECKPOINTS||['从真新镇出发','击败小刚取得灰色徽章','击败小霞取得蓝色徽章','击败马志士取得橙色徽章','击败莉佳取得彩虹徽章','击败阿桔取得粉红徽章','击败娜姿取得金色徽章','击败夏伯取得深红徽章','击败坂木取得绿色徽章','击败冠军劲敌','完成七岛后篇'],
   'emerald':['🏅 楼舟道馆','🏅 月见道馆','🏅 常磐道馆','🏅 水镜道馆','🏅 仙台道馆','🏅 金木道馆','🏅 绿岭道馆','🏅 雄山道馆','🔴 击败水队&炎队','⚔️ 四天王','🏆 冠军'],
   'diamond-pearl':['🏅 随意城道馆','🏅 勾玉道馆','🏅 镜水道馆','🏅 芙蓉道馆','🏅 幸福道馆','🏅 白金道馆','🏅 冰雪道馆','🏅 电光道馆','🔴 击败银河队','⚔️ 四天王','🏆 冠军赤'],
   'platinum':['🏅 随意城道馆','🏅 勾玉道馆','🏅 镜水道馆','🏅 芙蓉道馆','🏅 幸福道馆','🏅 白金道馆','🏅 冰雪道馆','🏅 电光道馆','🔴 击败银河队','⚔️ 四天王','🏆 冠军赤'],
@@ -1362,6 +1362,7 @@ const SERIES_CHECKPOINTS={
   'scarlet-violet':['🗺 南路线探索','🗺 西路线探索','🗺 东路线探索','🗺 北路线探索','🏅 道馆全通','⭐ 传说强者之路','🔴 星队扫荡','🏆 终章通关','💜 零之秘宝'],
   'legends-za':['📖 序章','🏙 卢米奥斯改造','⚔️ 首次大型战斗','🌀 中盘转折','🏆 终章通关'],
 };
+Object.assign(SERIES_CHECKPOINTS,window.PKM_STORY_CHECKPOINTS||{});
 
 const _lsMem={};
 function lsGet(k){try{const v=localStorage.getItem(k);return v!=null?JSON.parse(v):(_lsMem[k]??null);}catch{return _lsMem[k]??null;}}
@@ -1541,12 +1542,14 @@ function addToParty(sid,pkm){
 /* ============================
    🏁 进度打卡
    ============================ */
+function getCheckpointLabel(cp){return typeof cp==='string'?cp:(cp?.label||'');}
+function getCheckpointDetail(cp){return typeof cp==='string'?'':(cp?.detail||'');}
 function renderProgress(sid){
   const list=document.getElementById('progress-list');if(!list)return;
   const checkpoints=SERIES_CHECKPOINTS[sid];
   if(!checkpoints){list.innerHTML='<div style="color:var(--t3);font-size:.82rem;padding:8px 0">该作品暂无预设进度节点</div>';return;}
   const done=getSeriesProgress(sid);
-  const total=checkpoints.length;const doneCount=Object.keys(done).length;
+  const total=checkpoints.length;const doneCount=Object.keys(done).filter(k=>Number(k)>=0&&Number(k)<total).length;
   const pct=Math.round(doneCount/total*100);
   list.innerHTML=`<div class="progress-head">
     <div>
@@ -1560,12 +1563,17 @@ function renderProgress(sid){
   +checkpoints.map((cp,i)=>{
     const isDone=!!done[i];const ts=done[i]?.ts;
     const tsStr=ts?new Date(ts).toLocaleDateString('zh-CN',{month:'numeric',day:'numeric'}):'未记录';
-    return`<div class="progress-item${isDone?' done':''}" onclick="toggleCheckpoint('${sid}',${i})">
+    const prev=checkpoints[i-1];
+    const chapter=typeof cp==='string'?'':(cp?.chapter||'');
+    const prevChapter=typeof prev==='string'?'':(prev?.chapter||'');
+    const chapterHtml=chapter&&chapter!==prevChapter?`<div class="progress-chapter-row">${esc(chapter)}</div>`:'';
+    const detail=getCheckpointDetail(cp);
+    return`${chapterHtml}<div class="progress-item${isDone?' done':''}" onclick="toggleCheckpoint('${sid}',${i})">
       <div class="progress-check">${isDone?'✓':''}</div>
       <div class="progress-main">
-        <span class="progress-label">${cp}</span>
+        <span class="progress-label">${esc(getCheckpointLabel(cp))}</span>
         <div class="progress-subrow">
-          <span class="progress-ts">${tsStr}</span>
+          <span class="progress-ts">${detail?esc(detail)+' · ':''}${tsStr}</span>
           ${!isDone?`<button class="gym-brief-btn" onclick="getBriefing('${sid}',${i});event.stopPropagation()" title="战前动员">⚔️ 战前动员</button>`:'<span class="progress-done-tag">已完成</span>'}
         </div>
       </div>
@@ -3521,7 +3529,9 @@ function showHuntNarration(text){
 /* ── ④ 道馆战前动员 ── */
 async function getBriefing(sid,idx){
   const checkpoints=SERIES_CHECKPOINTS[sid];
-  const cpName=checkpoints?.[idx]||'';if(!cpName)return;
+  const cp=checkpoints?.[idx]||'';
+  const cpName=getCheckpointLabel(cp);if(!cpName)return;
+  const cpDetail=getCheckpointDetail(cp);
   const panel=document.getElementById('gym-briefing-panel');if(!panel)return;
   panel.style.display='block';
   panel.innerHTML=`<div class="gym-brief-hdr">⚔️ BATTLE READY · 加载中…</div>`;
@@ -3529,7 +3539,7 @@ async function getBriefing(sid,idx){
   const hours=document.getElementById('series-hours-inp')?.value||'';
   const ace=document.getElementById('series-ace-inp')?.value||'';
   const prompt=`你是宝可梦训练师的内心旁白专员。
-玩家正在游玩「${s?.name||sid}」，即将挑战：「${cpName}」。
+玩家正在游玩「${s?.name||sid}」，即将推进：「${cpName}${cpDetail?'（'+cpDetail+'）':''}」。
 ${ace?'训练师的王牌是'+ace+'。':''}${hours?'已经历了'+hours+'小时的旅途。':''}
 
 请用第一人称写一段60-80字的战前动员：结合「${s?.name||''}」这部作品的剧情氛围，描写训练师此刻的心情、眼前的场景、以及即将出击的决心。

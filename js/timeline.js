@@ -54,6 +54,28 @@ async function fetchIGDBGameImages(gameId){
 function getSteamHeader(appid){return appid?`https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/header.jpg`:null;}
 function getSteamScreenshots(appid,count=3){if(!appid)return[];return Array.from({length:count},(_,i)=>`https://cdn.cloudflare.steamstatic.com/steam/apps/${appid}/ss_${i+1}.600x338.jpg`);}
 
+function cloneTimelineData(data){
+  return data?JSON.parse(JSON.stringify(data)):null;
+}
+function getCuratedGameTimeline(game){
+  const name=String(game?.name||game?.title||game?.id||'').toLowerCase();
+  const isFRLG=/(fire\s*red|firered|leaf\s*green|leafgreen|火红|葉綠|叶绿)/i.test(name);
+  if(isFRLG&&window.FRLG_STORY_TIMELINE)return cloneTimelineData(window.FRLG_STORY_TIMELINE);
+  const storyId=window.getPokemonStorySeriesId?.(name)||'';
+  const checkpoints=storyId?window.PKM_STORY_CHECKPOINTS?.[storyId]:null;
+  if(checkpoints?.length){
+    const chapters=[];
+    checkpoints.forEach(cp=>{
+      const chapterTitle=cp.chapter||'剧情推进';
+      let chapter=chapters.find(c=>c.title===chapterTitle);
+      if(!chapter){chapter={title:chapterTitle,coverUrl:null,userImages:[],nodes:[]};chapters.push(chapter);}
+      chapter.nodes.push({text:cp.label||'',ep:cp.detail||''});
+    });
+    return {source:`curated-${storyId}-story-v1`,chapters};
+  }
+  return null;
+}
+
 async function generateGameTimeline(gameName){
   const sys=`你是专业游戏攻略作者。根据游戏名称生成【完整】主线剧情时间轴，必须覆盖游戏从序章到最终结局的所有主线章节，绝对不能省略或合并章节。严格输出JSON，不要有任何其他文字或代码块标记。
 
@@ -144,6 +166,7 @@ async function renderGameTimeline(containerId,game,userId){
   const root=document.getElementById(containerId);if(!root)return;
   root.innerHTML=`<div class="gtl-panel"><div class="gtl-header"><h3>📅 进度时间轴</h3><span class="gtl-prog-pill" id="gtl-pct-${containerId}">0%</span><button class="gtl-gen-btn" id="gtl-gen-${containerId}">↻ 重新生成</button></div><div class="gtl-loading" id="gtl-body-${containerId}">加载中…</div></div>`;
   const gameId=String(game.id||game._id||game.name);
+  const curatedTimeline=getCuratedGameTimeline(game);
   const bodyEl=document.getElementById(`gtl-body-${containerId}`);
   const genBtn=document.getElementById(`gtl-gen-${containerId}`);
   const pctEl=document.getElementById(`gtl-pct-${containerId}`);
@@ -156,11 +179,19 @@ async function renderGameTimeline(containerId,game,userId){
 
   let saved=null;
   if(userId){try{const r=await db.from('game_timelines').select('*').eq('user_id',userId).eq('game_id',gameId).maybeSingle();saved=r.data;}catch(e){}}
-  let tlData=saved?.timeline_json||null;
+  let tlData=curatedTimeline||saved?.timeline_json||null;
   let chIdx=saved?.current_chapter_index??0;
   let nodeIdx=saved?.current_node_index??0;
 
   const doGenerate=async()=>{
+    if(curatedTimeline){
+      bodyEl.innerHTML='<div class="gtl-loading">正在载入本地校订剧情节点…</div>';
+      tlData=cloneTimelineData(curatedTimeline);
+      chIdx=0;nodeIdx=0;
+      await silentSave({user_id:userId,game_id:gameId,game_name:game.name,timeline_json:tlData,current_chapter_index:0,current_node_index:0,updated_at:new Date().toISOString()});
+      doRender();
+      return;
+    }
     bodyEl.innerHTML='<div class="gtl-loading">🤖 AI 正在分析游戏，生成时间轴…</div>';
     try{
       tlData=await generateGameTimeline(game.name);
@@ -182,6 +213,9 @@ async function renderGameTimeline(containerId,game,userId){
 
   const doRender=()=>{
     const{chapters}=tlData;
+    if(!chapters?.length){bodyEl.innerHTML='<div class="gtl-loading">暂无时间轴数据</div>';return;}
+    chIdx=Math.min(Math.max(chIdx,0),chapters.length-1);
+    nodeIdx=Math.min(Math.max(nodeIdx,0),(chapters[chIdx]?.nodes?.length||1)-1);
     let totalNodes=0,doneNodes=0;
     chapters.forEach((c,ci)=>c.nodes.forEach((_,ni)=>{totalNodes++;if(ci<chIdx||(ci===chIdx&&ni<=nodeIdx))doneNodes++;}));
     const pct=Math.round((doneNodes/totalNodes)*100);
@@ -240,8 +274,9 @@ async function renderGameTimeline(containerId,game,userId){
     window._gtlProgressContext=buildProgressContext(tlData,chIdx,nodeIdx);
   };
 
+  if(curatedTimeline&&genBtn)genBtn.textContent='↻ 恢复校订节点';
   if(!tlData)await doGenerate();else doRender();
-  genBtn.addEventListener('click',async()=>{genBtn.disabled=true;genBtn.textContent='生成中…';await doGenerate();genBtn.disabled=false;genBtn.textContent='↻ 重新生成';});
+  genBtn.addEventListener('click',async()=>{genBtn.disabled=true;genBtn.textContent=curatedTimeline?'恢复中…':'生成中…';await doGenerate();genBtn.disabled=false;genBtn.textContent=curatedTimeline?'↻ 恢复校订节点':'↻ 重新生成';});
 }
 
 async function renderMediaTimeline(containerId,mediaItem,mediaType,userId){
