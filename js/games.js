@@ -180,9 +180,17 @@ function go(pg,btn){
   if(window.updatePartnerFloat)window.updatePartnerFloat(pg);
   if(window.updateHeaderChromeState)window.updateHeaderChromeState();
 }
+function openSteamModal(){
+  const saved=localStorage.getItem('steamId');
+  const inp=document.getElementById('steam-modal-inp');
+  if(saved)inp.value=saved;
+  document.getElementById('steam-modal-msg').textContent='';
+  document.getElementById('ov-steam').classList.add('on');
+  setTimeout(()=>inp.focus(),80);
+}
 async function syncSteam(){
-  const sid=document.getElementById('steam-id-inp').value.trim();
-  const msg=document.getElementById('steam-msg'),btn=document.getElementById('steam-sync-btn');
+  const sid=document.getElementById('steam-modal-inp').value.trim();
+  const msg=document.getElementById('steam-modal-msg'),btn=document.getElementById('steam-modal-btn');
   if(!sid){msg.style.color='var(--danger)';msg.textContent='请先填写 Steam ID';return;}
   localStorage.setItem('steamId',sid);btn.disabled=true;btn.textContent='同步中…';
   msg.style.color='var(--t3)';msg.textContent='正在读取 Steam 库…';
@@ -203,8 +211,9 @@ async function syncSteam(){
         added++;
       }
     }
-    msg.style.color='var(--acc2)';msg.textContent=`✓ 新增 ${added} 款，更新 ${updated} 款时长`;render();refreshStatsIfVisible();
+    msg.style.color='var(--acc2)';msg.textContent=`✓ 新增 ${added} 款，更新 ${updated} 款时长`;
+    render();refreshStatsIfVisible();
   }catch(e){msg.style.color='var(--danger)';msg.textContent=`同步失败：${e.message}`;}
-  finally{btn.disabled=false;btn.textContent='↓ 同步 Steam 库';}
+  finally{btn.disabled=false;btn.textContent='↓ 开始同步';}
 }
 

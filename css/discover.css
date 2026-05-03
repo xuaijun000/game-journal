@@ -1,9 +1,6 @@
-/* === 发现页 / 排行榜 / Steam同步 === */
-.steam-bar{display:flex;gap:8px;align-items:center;margin-bottom:1rem;padding:10px 14px;background:var(--bg2);border:1px solid var(--b);border-radius:var(--rl);flex-wrap:wrap}
-.steam-bar-label{display:flex;align-items:center;gap:6px;font-size:.72rem;color:var(--t2);font-family:'DM Mono',monospace;white-space:nowrap}
-.steam-bar input{flex:1;min-width:180px;background:var(--bg3);border:1px solid var(--b);border-radius:var(--r);padding:6px 12px;color:var(--t);font-family:'DM Mono',monospace;font-size:.82rem;outline:none}
-.steam-bar input::placeholder{color:var(--t2)}
-.steam-msg{font-size:.72rem;font-family:'DM Mono',monospace;white-space:nowrap}
+/* === 发现页 / 排行榜 === */
+.btn-steam{display:inline-flex;align-items:center;gap:6px;padding:5px 13px;border-radius:999px;border:1px solid rgba(102,192,244,.32);color:#66c0f4;background:rgba(102,192,244,.06);font-size:.72rem;font-family:'DM Mono',monospace;cursor:pointer;transition:all .15s;letter-spacing:.03em}
+.btn-steam:hover{border-color:rgba(102,192,244,.6);background:rgba(102,192,244,.12);color:#8dd4f8}
 
 .disc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.4rem;flex-wrap:wrap;gap:12px}
 .disc-tabs{display:flex;gap:0;background:var(--bg2);border:1px solid var(--b2);border-radius:999px;overflow:hidden;padding:0}

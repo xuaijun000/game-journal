@@ -1,5 +1,4 @@
 async function init(){
-  const s=localStorage.getItem('steamId');if(s)document.getElementById('steam-id-inp').value=s;
   const{data:{session}}=await db.auth.getSession();
   if(session?.user)setUser(session.user);
   db.auth.onAuthStateChange((_,s)=>setUser(s?.user||null));

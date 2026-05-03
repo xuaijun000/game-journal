@@ -78,16 +78,11 @@
       <input type="text" id="q" placeholder="搜索游戏名称…" oninput="render()" autocomplete="off">
       <select id="fst" onchange="render()"><option value="">全部状态</option><option value="playing">游玩中</option><option value="done">已通关</option><option value="wishlist">想玩</option><option value="dropped">放弃</option></select>
       <select id="fso" onchange="render()"><option value="date">最新添加</option><option value="rating">评分最高</option><option value="hours">游玩时长</option><option value="name">名称排序</option></select>
+      <button class="btn btn-steam" onclick="openSteamModal()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658c.545-.371 1.203-.59 1.912-.59.063 0 .125.004.188.006l2.861-4.142V8.91c0-2.495 2.028-4.524 4.524-4.524 2.494 0 4.524 2.029 4.524 4.524s-2.03 4.525-4.524 4.525h-.105l-4.076 2.911c0 .052.004.105.004.159 0 1.875-1.515 3.396-3.39 3.396-1.635 0-3.016-1.173-3.331-2.718L.436 15.27C1.862 20.307 6.486 24 11.979 24c6.627 0 11.999-5.373 11.999-12S18.605 0 11.979 0z"/></svg>
+        Steam 同步
+      </button>
       <button class="btn btn-a" onclick="openAdd()">＋ 添加游戏</button>
-    </div>
-    <div class="steam-bar">
-      <div class="steam-bar-label">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="#66c0f4"><path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658c.545-.371 1.203-.59 1.912-.59.063 0 .125.004.188.006l2.861-4.142V8.91c0-2.495 2.028-4.524 4.524-4.524 2.494 0 4.524 2.029 4.524 4.524s-2.03 4.525-4.524 4.525h-.105l-4.076 2.911c0 .052.004.105.004.159 0 1.875-1.515 3.396-3.39 3.396-1.635 0-3.016-1.173-3.331-2.718L.436 15.27C1.862 20.307 6.486 24 11.979 24c6.627 0 11.999-5.373 11.999-12S18.605 0 11.979 0zM7.54 18.21l-1.473-.61c.262.543.714.999 1.314 1.25 1.297.539 2.793-.076 3.332-1.375.263-.63.264-1.319.005-1.949s-.75-1.121-1.377-1.383c-.624-.26-1.29-.249-1.878-.03l1.523.63c.956.4 1.409 1.5 1.009 2.455-.397.957-1.497 1.41-2.454 1.012H7.54zm11.415-9.303c0-1.662-1.353-3.015-3.015-3.015-1.665 0-3.015 1.353-3.015 3.015 0 1.665 1.35 3.015 3.015 3.015 1.663 0 3.015-1.35 3.015-3.015zm-5.273-.005c0-1.252 1.013-2.266 2.265-2.266 1.249 0 2.266 1.014 2.266 2.266 0 1.251-1.017 2.265-2.266 2.265-1.252 0-2.265-1.014-2.265-2.265z"/></svg>
-        Steam ID
-      </div>
-      <input type="text" id="steam-id-inp" placeholder="76561198xxxxxxxxx" autocomplete="off">
-      <button class="btn btn-sm" onclick="syncSteam()" id="steam-sync-btn" style="border-color:rgba(102,192,244,.3);color:#66c0f4">↓ 同步 Steam 库</button>
-      <span id="steam-msg" class="steam-msg"></span>
     </div>
     <div class="filter-bar">
       <div class="filter-row">
@@ -1029,6 +1024,30 @@
   </div>
 </div>
 <!-- 编辑/添加弹窗 -->
+<!-- Steam 同步弹窗 -->
+<div class="ov" id="ov-steam" onclick="if(event.target===this)closeOv('ov-steam')">
+  <div class="modal" style="max-width:380px">
+    <div class="mh">
+      <h2 style="display:flex;align-items:center;gap:8px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="#66c0f4"><path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658c.545-.371 1.203-.59 1.912-.59.063 0 .125.004.188.006l2.861-4.142V8.91c0-2.495 2.028-4.524 4.524-4.524 2.494 0 4.524 2.029 4.524 4.524s-2.03 4.525-4.524 4.525h-.105l-4.076 2.911c0 .052.004.105.004.159 0 1.875-1.515 3.396-3.39 3.396-1.635 0-3.016-1.173-3.331-2.718L.436 15.27C1.862 20.307 6.486 24 11.979 24c6.627 0 11.999-5.373 11.999-12S18.605 0 11.979 0z"/></svg>
+        Steam 库同步
+      </h2>
+      <button class="btn btn-sm" onclick="closeOv('ov-steam')">✕</button>
+    </div>
+    <div class="mc" style="padding-top:.8rem">
+      <p style="font-size:.78rem;color:var(--t2);line-height:1.7;margin-bottom:1rem">输入你的 Steam 数字 ID，游戏库需设为<strong style="color:var(--t)">公开</strong>才能同步。</p>
+      <div class="field">
+        <label>Steam ID</label>
+        <input type="password" id="steam-modal-inp" placeholder="76561198xxxxxxxxx" autocomplete="off" onkeydown="if(event.key==='Enter')syncSteam()">
+      </div>
+      <div id="steam-modal-msg" style="font-size:.75rem;font-family:'DM Mono',monospace;min-height:1.4em;margin-top:4px"></div>
+    </div>
+    <div class="mfoot">
+      <button class="btn" onclick="closeOv('ov-steam')">取消</button>
+      <button class="btn" id="steam-modal-btn" onclick="syncSteam()" style="border-color:rgba(102,192,244,.35);color:#66c0f4">↓ 开始同步</button>
+    </div>
+  </div>
+</div>
 <div class="ov" id="ov-edit" onclick="if(event.target===this)closeOv('ov-edit')">
   <div class="modal">
     <div class="mh"><h2 id="m-title">添加游戏</h2><button class="btn btn-sm" onclick="closeOv('ov-edit')">✕</button></div>
