@@ -759,7 +759,7 @@ async function sendPlayAI(){
     if(item.developer) contextLines.push(`开发商：${item.developer}`);
     if(item.year) contextLines.push(`发行年份：${item.year}`);
     if(item.platforms?.length) contextLines.push(`平台：${(item.platforms).map(p=>PFMAP[p]||p).join('、')}`);
-    if(item.genres?.length) contextLines.push(`类型：${item.genres.join('、')}`);
+    if(item.genres?.length) contextLines.push(`类型：${normalizeGameGenres(item.genres).map(genreLabel).join('、')}`);
     if(item.styles?.length) contextLines.push(`风格：${item.styles.join('、')}`);
     if(item.status) contextLines.push(`游玩状态：${{playing:'游玩中',done:'已通关',wishlist:'想玩',dropped:'放弃'}[item.status]||item.status}`);
     if(item.hours) contextLines.push(`已游玩时长：${item.hours}h`);

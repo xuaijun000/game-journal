@@ -4,7 +4,7 @@ function drawCharts(){
   games.forEach(g=>{
     if(stC[g.status]!==undefined)stC[g.status]++;
     (g.platforms||[]).forEach(p=>{const k=PFMAP[p]||p;pfC[k]=(pfC[k]||0)+1;});
-    (g.genres||[]).forEach(gn=>{gnC[gn]=(gnC[gn]||0)+1;});
+    normalizeGameGenres(g.genres||[]).forEach(gn=>{const k=genreLabel(gn);gnC[k]=(gnC[k]||0)+1;});
     (g.styles||[]).forEach(s=>{styC[s]=(styC[s]||0)+1;});
     if(g.rating>=1&&g.rating<=5)rtC[g.rating-1]++;
   });
@@ -56,7 +56,7 @@ function renderStatsDashboard(){
 
   renderGameList('stats-top-hours',games.filter(g=>(g.hours||0)>0).sort((a,b)=>(b.hours||0)-(a.hours||0)).slice(0,5),g=>`${g.hours||0}h`,g=>[STMAP[g.status],ratingText(g)].filter(Boolean).join(' · '));
   renderGameList('stats-top-rated',games.filter(g=>g.rating>0).sort((a,b)=>(b.rating||0)-(a.rating||0)||(b.hours||0)-(a.hours||0)).slice(0,5),g=>ratingText(g),g=>`${g.hours||0}h · ${STMAP[g.status]||'未标记'}`);
-  renderGameList('stats-next-up',games.filter(g=>g.status==='playing'||g.status==='wishlist').sort((a,b)=>statusRank(a)-statusRank(b)||(b.hours||0)-(a.hours||0)).slice(0,5),g=>STMAP[g.status]||'待定',g=>`${g.hours||0}h · ${(g.genres||[]).slice(0,2).join(' / ')||'未标类型'}`);
+  renderGameList('stats-next-up',games.filter(g=>g.status==='playing'||g.status==='wishlist').sort((a,b)=>statusRank(a)-statusRank(b)||(b.hours||0)-(a.hours||0)).slice(0,5),g=>STMAP[g.status]||'待定',g=>`${g.hours||0}h · ${normalizeGameGenres(g.genres||[]).slice(0,2).map(genreLabel).join(' / ')||'未标类型'}`);
   renderCleanup();
   renderStatRows('stats-platform-hours',platformHours().slice(0,6),x=>x[0],x=>`${x[1]}h`,x=>`${x[2]} 款`);
   renderStatRows('stats-genre-score',genreScores().slice(0,6),x=>x[0],x=>x[1]?x[1].toFixed(1):'—',x=>`${x[2]} 款 · ${x[3]}h`);
@@ -109,10 +109,11 @@ function platformHours(){
 }
 function genreScores(){
   const map={};
-  games.forEach(g=>(g.genres||[]).forEach(gn=>{
-    if(!map[gn])map[gn]={sum:0,rated:0,count:0,hours:0};
-    map[gn].count++;map[gn].hours+=g.hours||0;
-    if(g.rating>0){map[gn].sum+=g.rating;map[gn].rated++;}
+  games.forEach(g=>normalizeGameGenres(g.genres||[]).forEach(gn=>{
+    const k=genreLabel(gn);
+    if(!map[k])map[k]={sum:0,rated:0,count:0,hours:0};
+    map[k].count++;map[k].hours+=g.hours||0;
+    if(g.rating>0){map[k].sum+=g.rating;map[k].rated++;}
   }));
   return Object.entries(map).map(([k,v])=>[k,v.rated?v.sum/v.rated:0,v.count,v.hours]).sort((a,b)=>b[1]-a[1]||b[3]-a[3]);
 }

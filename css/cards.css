@@ -125,39 +125,6 @@
 }
 .library-command .btn{height:38px;display:inline-flex;align-items:center;justify-content:center}
 
-.library-stats{
-  display:grid;
-  grid-template-columns:repeat(5,minmax(0,1fr));
-  gap:1px;
-  margin-bottom:14px;
-  border:1px solid rgba(126,205,196,.16);
-  border-radius:10px;
-  overflow:hidden;
-  background:rgba(126,205,196,.12);
-}
-.library-stat{
-  min-width:0;
-  padding:14px 16px 13px;
-  background:rgba(22,32,34,.82);
-}
-.library-stat strong{
-  display:block;
-  margin-bottom:5px;
-  color:var(--t);
-  font-family:'DM Mono',monospace;
-  font-size:1.55rem;
-  font-weight:500;
-  line-height:1;
-  overflow-wrap:anywhere;
-}
-.library-stat span{
-  color:var(--t3);
-  font-family:'DM Mono',monospace;
-  font-size:.62rem;
-  letter-spacing:.1em;
-  text-transform:uppercase;
-}
-
 .library-filter{
   padding:12px;
   margin-bottom:20px;
@@ -565,7 +532,6 @@
   .library-hero-cover{width:150px}
   .library-command{grid-template-columns:1fr 1fr;top:calc(var(--header-h) + 6px)}
   .library-search{grid-column:1/-1}
-  .library-stats{grid-template-columns:repeat(3,minmax(0,1fr))}
   .gg{grid-template-columns:repeat(auto-fill,minmax(165px,1fr))}
 }
 
@@ -579,7 +545,6 @@
   .library-hero-main h1,.library-hero-empty h1{font-size:2.1rem;line-height:1.04}
   .library-command{position:relative;top:auto;grid-template-columns:1fr}
   .library-command .btn,.library-command select{width:100%}
-  .library-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
   .library-saved-views{grid-template-columns:1fr 1fr}
   .library-saved-views select,.library-view-modes{grid-column:1/-1}
   .library-view-modes{justify-content:flex-start;width:max-content}

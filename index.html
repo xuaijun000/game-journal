@@ -87,13 +87,6 @@
       </button>
       <button class="btn btn-a" onclick="openAdd()">＋ 添加游戏</button>
     </section>
-    <section class="library-stats" id="library-stats">
-      <div class="library-stat"><strong id="lib-total">0</strong><span>总收录</span></div>
-      <div class="library-stat"><strong id="lib-playing">0</strong><span>游玩中</span></div>
-      <div class="library-stat"><strong id="lib-done">0</strong><span>已通关</span></div>
-      <div class="library-stat"><strong id="lib-hours">0</strong><span>总时长</span></div>
-      <div class="library-stat"><strong id="lib-rating">—</strong><span>平均评分</span></div>
-    </section>
     <div class="filter-bar library-filter">
       <div class="library-status-tabs" id="library-status-tabs">
         <button class="on" data-status-tab="" onclick="setStatusFilter('',this)">全部</button>
@@ -167,29 +160,7 @@
         </div>
         <div class="filter-row" style="margin-bottom:0">
           <span class="filter-row-label">类型</span>
-          <div class="filter-chips">
-            <div class="pfchip on" data-gn="all" onclick="setGnFilter('all',this)">全部</div>
-            <div class="pfchip" data-gn="action" onclick="setGnFilter('action',this)">动作</div>
-            <div class="pfchip" data-gn="adventure" onclick="setGnFilter('adventure',this)">冒险</div>
-            <div class="pfchip" data-gn="rpg" onclick="setGnFilter('rpg',this)">RPG</div>
-            <div class="pfchip" data-gn="strategy" onclick="setGnFilter('strategy',this)">策略</div>
-            <div class="pfchip" data-gn="shooter" onclick="setGnFilter('shooter',this)">射击</div>
-            <div class="pfchip" data-gn="puzzle" onclick="setGnFilter('puzzle',this)">解谜</div>
-            <div class="pfchip" data-gn="sim" onclick="setGnFilter('sim',this)">模拟经营</div>
-            <div class="pfchip" data-gn="sports" onclick="setGnFilter('sports',this)">运动</div>
-            <div class="pfchip" data-gn="fighting" onclick="setGnFilter('fighting',this)">格斗</div>
-            <div class="pfchip" data-gn="horror" onclick="setGnFilter('horror',this)">恐怖</div>
-            <div class="pfchip" data-gn="indie" onclick="setGnFilter('indie',this)">独立</div>
-            <div class="pfchip" data-gn="music" onclick="setGnFilter('music',this)">音乐节奏</div>
-            <div class="pfchip" data-gn="visual" onclick="setGnFilter('visual',this)">视觉小说</div>
-            <div class="pfchip" data-gn="racing" onclick="setGnFilter('racing',this)">竞速</div>
-            <div class="pfchip" data-gn="moba" onclick="setGnFilter('moba',this)">MOBA</div>
-            <div class="pfchip" data-gn="mmorpg" onclick="setGnFilter('mmorpg',this)">MMORPG</div>
-            <div class="pfchip" data-gn="open" onclick="setGnFilter('open',this)">开放世界</div>
-            <div class="pfchip" data-gn="souls" onclick="setGnFilter('souls',this)">魂类</div>
-            <div class="pfchip" data-gn="metroid" onclick="setGnFilter('metroid',this)">银河城</div>
-            <div class="pfchip" data-gn="roguelike" onclick="setGnFilter('roguelike',this)">Roguelike</div>
-          </div>
+          <div class="filter-chips genre-filter-chips" id="game-filter-genres"></div>
         </div>
         <div class="filter-row" style="margin-bottom:0">
           <span class="filter-row-label">评分</span>
@@ -1134,9 +1105,7 @@
         <div class="chips-grp-label">中古 · Sega &amp; 其他</div>
         <div class="chip" data-v="md" onclick="tc(this,'sg')">MD/Genesis</div><div class="chip" data-v="ss" onclick="tc(this,'sg')">Saturn</div><div class="chip" data-v="dc" onclick="tc(this,'sg')">Dreamcast</div><div class="chip" data-v="xbox_orig" onclick="tc(this,'x')">Xbox 原版</div>
       </div></div>
-      <div class="field"><label>游戏类型（可多选）</label><div class="chips" id="gc">
-        <div class="chip" data-v="action" onclick="tc(this)">动作</div><div class="chip" data-v="adventure" onclick="tc(this)">冒险</div><div class="chip" data-v="rpg" onclick="tc(this)">RPG</div><div class="chip" data-v="strategy" onclick="tc(this)">策略</div><div class="chip" data-v="shooter" onclick="tc(this)">射击</div><div class="chip" data-v="puzzle" onclick="tc(this)">解谜</div><div class="chip" data-v="sim" onclick="tc(this)">模拟经营</div><div class="chip" data-v="sports" onclick="tc(this)">运动</div><div class="chip" data-v="fighting" onclick="tc(this)">格斗</div><div class="chip" data-v="horror" onclick="tc(this)">恐怖</div><div class="chip" data-v="indie" onclick="tc(this)">独立游戏</div><div class="chip" data-v="music" onclick="tc(this)">音乐节奏</div><div class="chip" data-v="visual" onclick="tc(this)">视觉小说</div><div class="chip" data-v="racing" onclick="tc(this)">竞速</div><div class="chip" data-v="moba" onclick="tc(this)">MOBA</div><div class="chip" data-v="mmorpg" onclick="tc(this)">MMORPG</div><div class="chip" data-v="open" onclick="tc(this)">开放世界</div><div class="chip" data-v="souls" onclick="tc(this)">魂类</div><div class="chip" data-v="metroid" onclick="tc(this)">银河城</div><div class="chip" data-v="roguelike" onclick="tc(this)">Roguelike</div>
-      </div></div>
+      <div class="field"><label>游戏类型（可多选）</label><div class="chips" id="gc"></div></div>
       <div class="field"><label>风格 / 氛围（可多选）</label><div class="chips" id="sc">
         <div class="chip" data-v="dark" onclick="tc(this)">黑暗沉重</div><div class="chip" data-v="lighthearted" onclick="tc(this)">轻松愉快</div><div class="chip" data-v="fantasy" onclick="tc(this)">奇幻</div><div class="chip" data-v="scifi" onclick="tc(this)">科幻</div><div class="chip" data-v="historical" onclick="tc(this)">历史</div><div class="chip" data-v="modern" onclick="tc(this)">现代都市</div><div class="chip" data-v="postapoc" onclick="tc(this)">末日废土</div><div class="chip" data-v="cyberpunk" onclick="tc(this)">赛博朋克</div><div class="chip" data-v="pixel" onclick="tc(this)">像素风</div><div class="chip" data-v="anime" onclick="tc(this)">二次元</div><div class="chip" data-v="realistic" onclick="tc(this)">写实风格</div><div class="chip" data-v="cartoon" onclick="tc(this)">卡通风格</div><div class="chip" data-v="narrative" onclick="tc(this)">剧情驱动</div><div class="chip" data-v="casual" onclick="tc(this)">休闲向</div><div class="chip" data-v="hard" onclick="tc(this)">高难度挑战</div>
       </div></div>

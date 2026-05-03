@@ -1,4 +1,4 @@
-let discMode='rating',discPF='all',discBoardGroup='modern',discBusy=false,discBoardToken=0;
+let discMode='rating',discPF='all',discLoadToken=0,discBoardGroup='modern',discBoardToken=0;
 window._gtlProgressContext='';
 window._mtlProgressContext='';
 
@@ -11,27 +11,29 @@ function setDiscBoardGroup(group,el){
   loadDiscPlatformBoards();
 }
 async function loadDisc(){
-  if(discBusy)return;discBusy=true;
+  const token=++discLoadToken;
   const rl=document.getElementById('rank-list');
   rl.innerHTML='<div class="disc-loading">加载中<span class="disc-loading-dots"><span></span><span></span><span></span></span></div>';
-  loadDiscPlatformBoards();
+  syncDiscPlatformBoardsVisibility();
+  if(discPF==='all')loadDiscPlatformBoards();
   try{
     const res=await fetch(IGDB_PROXY,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({igdbRaw:buildDiscQuery(discMode,discPF,30)})});
+    if(token!==discLoadToken)return;
     if(!res.ok)throw new Error(`HTTP ${res.status}`);
     const data=await res.json();
+    if(token!==discLoadToken)return;
     if(!Array.isArray(data)||!data.length){rl.innerHTML='<div class="disc-loading">暂无数据</div>';return;}
     renderRankList(data);
-  }catch(e){rl.innerHTML=`<div class="disc-loading" style="color:var(--danger)">加载失败：${e.message}</div>`;}
-  finally{discBusy=false;}
+  }catch(e){if(token===discLoadToken)rl.innerHTML=`<div class="disc-loading" style="color:var(--danger)">加载失败：${e.message}</div>`;}
 }
 function buildDiscQuery(mode,pfId='all',limit=30){
   const now=Math.floor(Date.now()/1000);
   const pf=pfId!=='all'?`& platforms = (${pfId})`:'';
-  const fields='fields name,cover.url,total_rating,total_rating_count,platforms.name,first_release_date,involved_companies.company.name,involved_companies.developer,summary,storyline,genres.name,url;';
+  const fields='fields name,cover.url,total_rating,total_rating_count,platforms.id,platforms.name,first_release_date,involved_companies.company.name,involved_companies.developer,summary,storyline,genres.name,url;';
   const queries={
     rating:`${fields}where total_rating_count > 200 & total_rating != null ${pf};sort total_rating desc; limit ${limit};`,
     recent:`${fields}where first_release_date > ${now-365*24*3600} & first_release_date < ${now} & total_rating_count > 20 ${pf};sort first_release_date desc; limit ${limit};`,
-    hype:`fields name,cover.url,hypes,platforms.name,first_release_date,involved_companies.company.name,involved_companies.developer,summary,storyline,genres.name,url;where first_release_date > ${now} & hypes != null ${pf};sort hypes desc; limit ${limit};`,
+    hype:`fields name,cover.url,hypes,platforms.id,platforms.name,first_release_date,involved_companies.company.name,involved_companies.developer,summary,storyline,genres.name,url;where first_release_date > ${now} & hypes != null ${pf};sort hypes desc; limit ${limit};`,
     popular:`${fields}where total_rating_count > 50 ${pf};sort total_rating_count desc; limit ${limit};`
   };
   return queries[mode]||queries.rating;
@@ -58,11 +60,15 @@ const DISC_PLATFORM_BOARD_GROUPS={
 };
 const DISC_MODE_LABEL={rating:'综合评分',recent:'近期新游',hype:'期待新作',popular:'人气热榜'};
 function currentDiscBoards(){return DISC_PLATFORM_BOARD_GROUPS[discBoardGroup]||DISC_PLATFORM_BOARD_GROUPS.modern;}
+function syncDiscPlatformBoardsVisibility(){
+  const wrap=document.querySelector('.disc-platform-wrap');
+  if(wrap)wrap.style.display=discPF==='all'?'':'none';
+}
 function normalizeDiscGame(g){
   const cover=g.cover?.url?g.cover.url.replace('t_thumb','t_cover_big'):null;
   const dev=(g.involved_companies||[]).find(c=>c.developer)?.company?.name||'';
   const year=g.first_release_date?new Date(g.first_release_date*1000).getFullYear():'';
-  return{name:g.name,cover,developer:dev,year:year||null,rating:g.total_rating||null,ratingCount:g.total_rating_count||null,hypes:g.hypes||null,platforms:g.platforms||[],summary:g.summary||'',storyline:g.storyline||'',url:g.url||''};
+  return{name:g.name,cover,developer:dev,year:year||null,rating:g.total_rating||null,ratingCount:g.total_rating_count||null,hypes:g.hypes||null,platforms:g.platforms||[],genres:normalizeGameGenres(g.genres||[]),summary:g.summary||'',storyline:g.storyline||'',url:g.url||''};
 }
 function renderRankList(data){
   const rl=document.getElementById('rank-list');
@@ -144,7 +150,7 @@ function openDiscBoardDetail(key,idx){const g=discBoardCache[key]?.[idx];if(g)op
 async function addFromDisc(g,bid){
   const btn=document.getElementById(bid);if(!btn||btn.classList.contains('added'))return;
   btn.textContent='添加中…';btn.disabled=true;
-  const ng={name:g.name,platforms:[],genres:[],styles:[],developer:g.developer||'',year:g.year||null,status:'wishlist',hours:0,completion:'',rating:0,review:'',cover:g.cover||''};
+  const ng={name:g.name,platforms:[],genres:g.genres||[],styles:[],developer:g.developer||'',year:g.year||null,status:'wishlist',hours:0,completion:'',rating:0,review:'',cover:g.cover||''};
   const{data:{session}}=await db.auth.getSession();const user=session?.user;
   if(user){const{data,error}=await db.from('games').insert({...ng,user_id:user.id}).select().single();if(!error&&data)games.unshift(data);}
   else{games.unshift({_id:Date.now().toString(36)+Math.random().toString(36).slice(2),created_at:new Date().toISOString(),...ng});localStorage.setItem('gj',JSON.stringify(games));}
@@ -224,7 +230,7 @@ function openDiscDetail(g){
 async function discAddGame(){
   const g=discCurrentGame;if(!g)return;
   const btn=document.getElementById('disc-add-btn');btn.textContent='添加中…';btn.disabled=true;
-  const ng={name:g.name,platforms:[],genres:[],styles:[],developer:g.developer||'',year:g.year||null,status:'wishlist',hours:0,completion:'',rating:0,review:'',cover:g.cover||''};
+  const ng={name:g.name,platforms:[],genres:g.genres||[],styles:[],developer:g.developer||'',year:g.year||null,status:'wishlist',hours:0,completion:'',rating:0,review:'',cover:g.cover||''};
   const{data:{session}}=await db.auth.getSession();const user=session?.user;
   if(user){const{data,error}=await db.from('games').insert({...ng,user_id:user.id}).select().single();if(!error&&data)games.unshift(data);}
   else{games.unshift({_id:Date.now().toString(36)+Math.random().toString(36).slice(2),created_at:new Date().toISOString(),...ng});localStorage.setItem('gj',JSON.stringify(games));}

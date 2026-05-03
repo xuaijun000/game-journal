@@ -40,6 +40,21 @@ function updateFilterBadge(){
   if(clearBtn)clearBtn.style.display=count?'':'none';
 }
 function refreshStatsIfVisible(){if(document.getElementById('pg-stats')?.classList.contains('on')&&typeof drawCharts==='function')drawCharts();}
+function renderGameGenreControls(){
+  const filter=document.getElementById('game-filter-genres');
+  if(filter&&!filter.dataset.rendered){
+    filter.innerHTML='<div class="pfchip on" data-gn="all" onclick="setGnFilter(\'all\',this)">全部</div>'+
+      GAME_GENRE_GROUPS.map(group=>`<span class="chips-grp-label">${esc(group.label)}</span>`+
+        group.items.map(([value,label])=>`<div class="pfchip" data-gn="${value}" onclick="setGnFilter('${value}',this)">${esc(label)}</div>`).join('')).join('');
+    filter.dataset.rendered='1';
+  }
+  const edit=document.getElementById('gc');
+  if(edit&&!edit.dataset.rendered){
+    edit.innerHTML=GAME_GENRE_GROUPS.map(group=>`<div class="chips-grp-label">${esc(group.label)}</div>`+
+      group.items.map(([value,label])=>`<div class="chip" data-v="${value}" onclick="tc(this)">${esc(label)}</div>`).join('')).join('');
+    edit.dataset.rendered='1';
+  }
+}
 function currentLibraryViewConfig(){
   return {
     q:document.getElementById('q')?.value||'',
@@ -176,7 +191,7 @@ function updateGameStats(){
   const hours=games.reduce((s,g)=>s+(g.hours||0),0);
   const rated=games.filter(g=>g.rating>0);
   const avg=rated.length?(rated.reduce((s,g)=>s+g.rating,0)/rated.length).toFixed(1):'—';
-  [['s-total',total],['s-pl',playing],['s-dn',done],['s-hr',hours],['s-av',avg],['lib-total',total],['lib-playing',playing],['lib-done',done],['lib-hours',`${hours}h`],['lib-rating',avg]].forEach(([id,val])=>{
+  [['s-total',total],['s-pl',playing],['s-dn',done],['s-hr',hours],['s-av',avg]].forEach(([id,val])=>{
     const el=document.getElementById(id);
     if(el)el.textContent=val;
   });
@@ -222,12 +237,10 @@ function renderShelves(){
   const wrap=document.getElementById('library-shelves');
   if(!wrap)return;
   if(!games.length){wrap.innerHTML='';return;}
-  const byHours=[...games].sort((a,b)=>(b.hours||0)-(a.hours||0));
   const shelves=[
     ['继续玩','最近正在推进的游戏',newestFirst(games.filter(g=>g.status==='playing')).slice(0,8)],
     ['高分收藏','你给过高评价的作品',[...games].filter(g=>(g.rating||0)>=4).sort((a,b)=>(b.rating||0)-(a.rating||0)).slice(0,8)],
     ['想玩清单','未来准备打开的世界',newestFirst(games.filter(g=>g.status==='wishlist')).slice(0,8)],
-    ['时长排行','最能占据你时间的游戏',byHours.filter(g=>g.hours>0).slice(0,8)],
     ['复古主机','老机器和掌机记忆',newestFirst(games.filter(g=>platformMatches(g,'retro'))).slice(0,8)]
   ].filter(s=>s[2].length);
   wrap.innerHTML=shelves.map(([title,sub,items])=>`<section class="game-shelf">
@@ -237,7 +250,7 @@ function renderShelves(){
 }
 function renderGameCard(g,i){
   const pft=(g.platforms||[]).slice(0,3).map(p=>`<span class="tag ${PTAG[p]||''}">${PFMAP[p]||p}</span>`).join('');
-  const gnt=(g.genres||[]).slice(0,2).map(gn=>`<span class="tag">${gn}</span>`).join('');
+  const gnt=normalizeGameGenres(g.genres||[]).slice(0,2).map(gn=>`<span class="tag">${esc(genreLabel(gn))}</span>`).join('');
   return`<div class="gc" data-status="${g.status||''}" style="animation-delay:${Math.min(i*.025,.18)}s" onclick="openDetail('${gameId(g)}')">
     <div class="gc-art">
       ${g.cover?`<div class="gc-cover-bg" style="background-image:url('${esc(g.cover)}')"></div><img class="gc-cover" src="${esc(g.cover)}" alt="" loading="lazy" onerror="this.parentElement.classList.add('no-cover')">`:'<div class="gc-ph">🎮</div>'}
@@ -259,6 +272,7 @@ function renderGameCard(g,i){
   </div>`;
 }
 function render(){
+  renderGameGenreControls();
   const q=document.getElementById('q').value.toLowerCase();
   const fs=document.getElementById('fst').value,so=document.getElementById('fso').value;
   syncStatusTabs();
@@ -266,7 +280,7 @@ function render(){
     if(q&&!g.name.toLowerCase().includes(q))return false;
     if(fs&&g.status!==fs)return false;
     if(!platformMatches(g,pff))return false;
-    if(fGenre!=='all'&&!(g.genres||[]).includes(fGenre))return false;
+    if(fGenre!=='all'&&!normalizeGameGenres(g.genres||[]).includes(fGenre))return false;
     if(fRating>0&&(g.rating||0)<fRating)return false;
     if(fCompletion&&g.completion!==fCompletion)return false;
     return true;
@@ -289,6 +303,7 @@ function render(){
 
 /* 发现页 */
 function openAdd(){
+  renderGameGenreControls();
   editId=null;star=0;
   document.getElementById('m-title').textContent='添加游戏';
   document.getElementById('bdel').style.display='none';
@@ -300,6 +315,7 @@ function openAdd(){
   document.getElementById('ov-edit').classList.add('on');
 }
 function openEdit(id){
+  renderGameGenreControls();
   const g=games.find(x=>(x.id||x._id)==id);if(!g)return;
   editId=id;star=g.rating||0;
   document.getElementById('m-title').textContent='编辑记录';
@@ -311,7 +327,7 @@ function openEdit(id){
   document.getElementById('fcv').value=g.cover||'';document.getElementById('gs').value='';
   document.getElementById('sr').style.display='none';
   rcl('pc');(g.platforms||[]).forEach(p=>{const c=document.querySelector(`#pc [data-v="${p}"]`);if(c){const m={x:'onx',p:'onp',sw:'onsw',st:'onst',sg:'onsg'};const pm={xbox:'x',xbox360:'x',ps5:'p',ps4:'p',ps1:'p',ps2:'p',ps3:'p',psp:'p',vita:'p',switch:'sw',switch2:'sw',fc:'sw',sfc:'sw',n64:'sw',gc:'sw',wii:'sw',wiiu:'sw',gb:'sw',gba:'sw',nds:'sw','3ds':'sw',steam:'st',md:'sg',ss:'sg',dc:'sg',xbox_orig:'x'};c.classList.add(m[pm[p]]||'on');}});
-  rcl('gc');(g.genres||[]).forEach(gn=>{const c=document.querySelector(`#gc [data-v="${gn}"]`);if(c)c.classList.add('on');});
+  rcl('gc');normalizeGameGenres(g.genres||[]).forEach(gn=>{const c=document.querySelector(`#gc [data-v="${gn}"]`);if(c)c.classList.add('on');});
   rcl('sc');(g.styles||[]).forEach(s=>{const c=document.querySelector(`#sc [data-v="${s}"]`);if(c)c.classList.add('on');});
   setStar(g.rating||0);document.getElementById('ov-edit').classList.add('on');
 }
@@ -345,7 +361,7 @@ function fillG(g){
   document.getElementById('fn').value=g.name||'';document.getElementById('fdev').value=g.developer||'';
   document.getElementById('fyr').value=g.year||'';document.getElementById('fcv').value=g.cover||'';
   rcl('pc');(g.platforms||[]).forEach(p=>{const pv=p.toLowerCase().includes('xbox')?'xbox':p.toLowerCase().includes('playstation')||p.includes('PS')?'ps5':p.toLowerCase().includes('switch')?'switch':p.toLowerCase().includes('pc')||p.toLowerCase().includes('windows')?'steam':null;if(pv){const c=document.querySelector(`#pc [data-v="${pv}"]`);if(c){const m={xbox:'onx',ps5:'onp',switch:'onsw',steam:'onst'};c.classList.add(m[pv]||'on');}}});
-  rcl('gc');(g.genres||[]).forEach(gn=>{const c=document.querySelector(`#gc [data-v="${gn}"]`);if(c)c.classList.add('on');});
+  rcl('gc');normalizeGameGenres(g.genres||[]).forEach(gn=>{const c=document.querySelector(`#gc [data-v="${gn}"]`);if(c)c.classList.add('on');});
   document.getElementById('sr').style.display='none';document.getElementById('gs').value='';
 }
 async function saveGame(){

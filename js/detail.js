@@ -6,7 +6,7 @@ function openDetail(id){
   document.getElementById('d-cover').style.display=g.cover?'block':'none';
   document.getElementById('d-name').textContent=g.name||'';
   document.getElementById('d-meta').textContent=[g.developer,g.year].filter(Boolean).join(' · ');
-  document.getElementById('d-tags').innerHTML=(g.platforms||[]).map(p=>`<span class="tag ${PTAG[p]||''}">${PFMAP[p]||p}</span>`).join('')+(g.genres||[]).slice(0,4).map(gn=>`<span class="tag">${gn}</span>`).join('');
+  document.getElementById('d-tags').innerHTML=(g.platforms||[]).map(p=>`<span class="tag ${PTAG[p]||''}">${PFMAP[p]||p}</span>`).join('')+normalizeGameGenres(g.genres||[]).slice(0,4).map(gn=>`<span class="tag">${genreLabel(gn)}</span>`).join('');
   const dc={playing:'var(--acc)',done:'var(--acc2)',wishlist:'var(--warn)',dropped:'var(--t3)'}[g.status]||'var(--t3)';
   document.getElementById('d-st-val').innerHTML=`<span style="color:${dc}">${STMAP[g.status]||'—'}</span>`;
   document.getElementById('d-hr-val').textContent=(g.hours||0)+'h';
@@ -114,7 +114,7 @@ function initAIChat(){
   const g=aiCurrentGame;if(!g)return;
   document.getElementById('chat-game-name').textContent=g.name;
   aiChatHistory=[];
-  const genres=g.genres||[];const styles=g.styles||[];
+  const genres=normalizeGameGenres(g.genres||[]);const styles=g.styles||[];
   const isSouls=genres.includes('souls')||styles.includes('dark')||styles.includes('hard');
   const isLight=styles.includes('lighthearted')||styles.includes('casual')||genres.includes('puzzle');
   const isHorror=genres.includes('horror');
@@ -161,7 +161,7 @@ async function sendAIMsg(){
   inp.value='';addAIBubble(v,'user',false);aiChatHistory.push({role:'user',parts:[{text:v}]});
   const snd=document.getElementById('chat-snd');snd.disabled=true;showTyping();
   const g=aiCurrentGame;
-  const genres=g.genres||[];const styles=g.styles||[];
+  const genres=normalizeGameGenres(g.genres||[]);const styles=g.styles||[];
   const isSouls=genres.includes('souls')||styles.includes('dark')||styles.includes('hard');
   const isLight=styles.includes('lighthearted')||styles.includes('casual')||genres.includes('puzzle');
   const isHorror=genres.includes('horror');
@@ -180,7 +180,7 @@ ${persona}
 
 【游戏基础信息】
 开发商「${g.developer||'未知'}」，${g.year||'未知'}年。
-类型：${genres.join('、')||'未标记'}，风格：${styles.join('、')||'未标记'}
+类型：${genres.map(genreLabel).join('、')||'未标记'}，风格：${styles.join('、')||'未标记'}
 玩家数据：${g.hours||0}小时，${g.rating?g.rating+'星':'未评分'}
 玩家评测："${g.review||'无'}"
 
