@@ -42,71 +42,75 @@
 .pfe-body{
   position:relative;z-index:2;
   display:flex;flex-direction:column;align-items:center;gap:0;
-  text-align:center;padding:2.5rem;
+  text-align:center;padding:3rem 2.5rem;
+  background:rgba(10,17,18,.55);
+  border:1px solid rgba(126,205,196,.12);
+  border-radius:20px;
+  backdrop-filter:blur(18px);
+  box-shadow:0 24px 64px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.05);
 }
 
 .pfe-logo-wrap{margin-bottom:20px;animation:pfeDown .7s cubic-bezier(.2,.8,.4,1) both}
-.pfe-logo{height:52px;width:auto;filter:drop-shadow(0 0 18px rgba(126,205,196,.5)) brightness(1.08)}
+.pfe-logo{height:54px;width:auto;filter:drop-shadow(0 0 20px rgba(126,205,196,.6)) brightness(1.1)}
 
 .pfe-tagline{
   font-family:'Noto Serif SC',serif;
-  font-size:.88rem;
-  color:var(--t2);
-  letter-spacing:.22em;
-  margin-bottom:22px;
+  font-size:.92rem;
+  color:var(--t);
+  letter-spacing:.2em;
+  margin-bottom:24px;
   animation:pfeFade .6s .25s ease both;
+  text-shadow:0 1px 8px rgba(0,0,0,.5);
 }
 
 /* 分隔线 */
 .pfe-sep{display:flex;align-items:center;gap:10px;margin-bottom:28px;animation:pfeFade .6s .35s ease both}
 .pfe-sep span:first-child,.pfe-sep span:last-child{
   display:block;width:60px;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(126,205,196,.45),transparent);
+  background:linear-gradient(90deg,transparent,rgba(126,205,196,.6),transparent);
 }
-.pfe-sep span:last-child{background:linear-gradient(270deg,transparent,rgba(126,205,196,.45),transparent)}
+.pfe-sep span:last-child{background:linear-gradient(270deg,transparent,rgba(126,205,196,.6),transparent)}
 .pfe-sep-diamond{
-  width:6px;height:6px;border:1px solid var(--acc);
-  transform:rotate(45deg);opacity:.7;flex-shrink:0;
+  width:6px;height:6px;border:1px solid rgba(126,205,196,.8);
+  transform:rotate(45deg);flex-shrink:0;
 }
 
 /* 进入按钮 */
 .pfe-btn{
   display:flex;align-items:center;gap:10px;
-  padding:13px 42px;border-radius:999px;
-  background:linear-gradient(135deg,rgba(126,205,196,.18),rgba(126,205,196,.08));
-  border:1px solid rgba(126,205,196,.45);
-  color:var(--acc);
-  font-size:.9rem;font-weight:700;letter-spacing:.2em;
+  padding:13px 44px;border-radius:999px;
+  background:var(--acc);
+  border:none;
+  color:#0b1a1c;
+  font-size:.88rem;font-weight:700;letter-spacing:.18em;
   font-family:'Space Grotesk',sans-serif;
   cursor:pointer;
-  box-shadow:0 0 28px rgba(126,205,196,.18),inset 0 1px 0 rgba(255,255,255,.06);
+  box-shadow:0 0 32px rgba(126,205,196,.35),0 4px 16px rgba(0,0,0,.3);
   transition:all .22s ease;
   animation:pfeFade .6s .5s ease both;
-  margin-bottom:14px;
+  margin-bottom:16px;
 }
 .pfe-btn:hover{
-  background:linear-gradient(135deg,rgba(126,205,196,.3),rgba(126,205,196,.14));
-  border-color:rgba(126,205,196,.75);
-  box-shadow:0 0 40px rgba(126,205,196,.32),inset 0 1px 0 rgba(255,255,255,.1);
+  background:#9ee0d9;
+  box-shadow:0 0 48px rgba(126,205,196,.55),0 6px 20px rgba(0,0,0,.35);
   transform:translateY(-2px);
-  color:var(--t);
 }
 .pfe-btn:active{transform:translateY(0) scale(.97)}
 .pfe-btn-label{font-size:.82rem}
 .pfe-btn-arrow{font-size:.7rem;animation:pfeArrow 1.4s ease-in-out infinite}
-@keyframes pfeArrow{0%,100%{transform:translateX(0);opacity:.7}50%{transform:translateX(4px);opacity:1}}
+@keyframes pfeArrow{0%,100%{transform:translateX(0);opacity:.8}50%{transform:translateX(5px);opacity:1}}
 
 .pfe-hint{
-  font-size:.62rem;color:var(--t3);
+  font-size:.65rem;color:var(--t2);
   font-family:'DM Mono',monospace;letter-spacing:.12em;text-transform:uppercase;
   animation:pfePulse 2.4s 1.2s ease-in-out infinite;
 }
-@keyframes pfePulse{0%,100%{opacity:.4}50%{opacity:.8}}
+@keyframes pfePulse{0%,100%{opacity:.55}50%{opacity:1}}
 
 .pfe-ver{
   position:absolute;bottom:20px;
-  font-size:.6rem;color:var(--t3);
-  font-family:'DM Mono',monospace;letter-spacing:.1em;opacity:.5;
+  font-size:.6rem;color:var(--t2);
+  font-family:'DM Mono',monospace;letter-spacing:.1em;opacity:.6;
 }
 
 /* 入场动画 */
