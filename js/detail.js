@@ -31,10 +31,76 @@ function openDetail(id){
   document.getElementById('ov-detail').classList.add('on');
   // 加载游戏时刻
   loadGameMoments(g.name);
+  loadGameDossierData(g);
   // 悬浮面板默认选中当前游戏
   const mSel=document.getElementById('moment-game-select');if(mSel&&g.name)mSel.value=g.name;
 }
 function openEditFromDetail(){closeOv('ov-detail');openEdit(editId);}
+function dossierEmpty(text){return `<div class="dossier-empty">${text}</div>`;}
+function dossierDate(ts){try{return new Date(ts).toLocaleDateString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});}catch{return '—';}}
+function parseDossierLog(raw){
+  if(!raw)return {text:'',imgUrl:''};
+  const sep=raw.indexOf('\n__IMG__:');
+  if(sep<0)return {text:raw,imgUrl:''};
+  return {text:raw.slice(0,sep),imgUrl:raw.slice(sep+9)};
+}
+async function loadGameDossierData(g){
+  const metrics=document.getElementById('dossier-metrics');
+  const logsEl=document.getElementById('dossier-play-logs');
+  if(metrics)metrics.innerHTML='<div class="dossier-loading">读取档案数据…</div>';
+  if(logsEl)logsEl.innerHTML='<div class="dossier-loading">读取日志…</div>';
+  try{
+    const{data:{session}}=await db.auth.getSession();
+    if(!session?.user){
+      if(metrics)metrics.innerHTML=dossierEmpty('登录后可同步游玩档案');
+      if(logsEl)logsEl.innerHTML=dossierEmpty('登录后可查看历史日志');
+      return;
+    }
+    const uid=session.user.id;
+    const gid=String(gameId(g));
+    const [sessionsRes,logsRes,snapsRes,momentsRes,summariesRes]=await Promise.all([
+      db.from('play_sessions').select('started_at,ended_at,duration_hours').eq('user_id',uid).eq('ref_type','game').eq('ref_id',gid).order('started_at',{ascending:false}).limit(20),
+      db.from('play_logs').select('id,log_text,created_at').eq('user_id',uid).eq('ref_type','game').eq('ref_id',gid).order('created_at',{ascending:false}).limit(8),
+      db.from('play_snapshots').select('snapshot_text,image_url,created_at').eq('user_id',uid).eq('ref_type','game').eq('ref_id',gid).order('created_at',{ascending:false}).limit(3),
+      db.from('game_moments').select('id',{count:'exact',head:true}).eq('user_id',uid).eq('game_name',g.name),
+      db.from('chat_summaries').select('id',{count:'exact',head:true}).eq('user_id',uid).eq('game_id',gid)
+    ]);
+    const sessions=sessionsRes.data||[];
+    const logs=logsRes.data||[];
+    const snaps=snapsRes.data||[];
+    const sessionHours=sessions.reduce((s,x)=>s+(parseFloat(x.duration_hours)||0),0);
+    const lastSession=sessions[0]?.started_at;
+    if(metrics){
+      metrics.innerHTML=[
+        ['游玩会话',sessions.length||0],
+        ['会话时长',sessionHours?`${sessionHours.toFixed(1)}h`:'—'],
+        ['日志',logs.length?`${logs.length}+`:'0'],
+        ['时刻',momentsRes.count||0],
+        ['AI 存档',summariesRes.count||0],
+        ['最近打开',lastSession?dossierDate(lastSession):'—']
+      ].map(([label,val])=>`<div class="dossier-metric"><strong>${val}</strong><span>${label}</span></div>`).join('');
+      if(snaps.length){
+        metrics.insertAdjacentHTML('beforeend',`<div class="dossier-snapshots">${snaps.map(s=>`<div class="dossier-snapshot">
+          ${s.image_url?`<img src="${esc(s.image_url)}" alt="" loading="lazy" onerror="this.style.display='none'">`:''}
+          <div><span>${dossierDate(s.created_at)}</span><p>${esc(s.snapshot_text||'游玩快照')}</p></div>
+        </div>`).join('')}</div>`);
+      }
+    }
+    if(logsEl){
+      logsEl.innerHTML=logs.length?logs.map(l=>{
+        const parsed=parseDossierLog(l.log_text);
+        return `<div class="dossier-log-item">
+          <div class="dossier-log-date">${dossierDate(l.created_at)}</div>
+          ${parsed.text?`<div class="dossier-log-text">${esc(parsed.text)}</div>`:''}
+          ${parsed.imgUrl?`<img class="dossier-log-img" src="${esc(parsed.imgUrl)}" alt="" loading="lazy" onerror="this.style.display='none'">`:''}
+        </div>`;
+      }).join(''):dossierEmpty('还没有游玩日志，从沉浸模式里记录第一条吧');
+    }
+  }catch(e){
+    if(metrics)metrics.innerHTML=dossierEmpty('档案读取失败');
+    if(logsEl)logsEl.innerHTML=dossierEmpty('日志读取失败');
+  }
+}
 /* ===== AI 聊天室 ===== */
 let aiChatOpen=false,aiChatHistory=[],aiCurrentGame=null;
 function toggleAIChat(){

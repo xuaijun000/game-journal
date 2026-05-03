@@ -1,6 +1,15 @@
-let fGenre='all',fRating=0,fCompletion='';
+let fGenre='all',fRating=0,fCompletion='',libraryViewMode='grid',libraryViews=[];
+const RETRO_PLATFORMS=['fc','sfc','n64','gc','wii','wiiu','gb','gba','nds','3ds','ps1','ps2','ps3','psp','vita','md','ss','dc','xbox_orig'];
+const LIBRARY_VIEWS_KEY='gj_library_views';
 
-function setPF(p,el){pff=p;document.querySelectorAll('.pfchip[data-p]').forEach(c=>c.classList.remove('on'));el.classList.add('on');updateFilterBadge();render();}
+function setPF(p,el){pff=p;document.querySelectorAll('.pfchip[data-p]').forEach(c=>c.classList.remove('on'));if(el)el.classList.add('on');else setActivePlatformChip(p);updateFilterBadge();render();}
+function setStatusFilter(status,el){
+  const sel=document.getElementById('fst');
+  if(sel)sel.value=status;
+  document.querySelectorAll('[data-status-tab]').forEach(b=>b.classList.remove('on'));
+  if(el)el.classList.add('on');
+  render();
+}
 function setGnFilter(gn,el){fGenre=gn;document.querySelectorAll('[data-gn]').forEach(c=>c.classList.remove('on'));el.classList.add('on');updateFilterBadge();render();}
 function setRtFilter(r,el){fRating=r;document.querySelectorAll('[data-rt]').forEach(c=>c.classList.remove('on'));el.classList.add('on');updateFilterBadge();render();}
 function setCpFilter(c,el){fCompletion=c;document.querySelectorAll('[data-cp]').forEach(c=>c.classList.remove('on'));el.classList.add('on');updateFilterBadge();render();}
@@ -10,10 +19,13 @@ function toggleFilterPanel(){
   const isOpen=panel.style.display!=='none';
   panel.style.display=isOpen?'none':'flex';
   btn.classList.toggle('open',!isOpen);
-  document.getElementById('filter-toggle-txt').textContent=isOpen?'＋ 更多筛选':'－ 收起筛选';
+  document.getElementById('filter-toggle-txt').textContent=isOpen?'＋ 高级筛选':'－ 收起筛选';
 }
 function clearFilters(){
   pff='all';fGenre='all';fRating=0;fCompletion='';
+  const sel=document.getElementById('fst');
+  if(sel)sel.value='';
+  document.querySelectorAll('[data-status-tab]').forEach(b=>b.classList.toggle('on',b.dataset.statusTab===''));
   document.querySelectorAll('.pfchip[data-p]').forEach(c=>c.classList.toggle('on',c.dataset.p==='all'));
   document.querySelectorAll('[data-gn]').forEach(c=>c.classList.toggle('on',c.dataset.gn==='all'));
   document.querySelectorAll('[data-rt]').forEach(c=>c.classList.toggle('on',c.dataset.rt==='0'));
@@ -28,13 +40,232 @@ function updateFilterBadge(){
   if(clearBtn)clearBtn.style.display=count?'':'none';
 }
 function refreshStatsIfVisible(){if(document.getElementById('pg-stats')?.classList.contains('on')&&typeof drawCharts==='function')drawCharts();}
+function currentLibraryViewConfig(){
+  return {
+    q:document.getElementById('q')?.value||'',
+    status:document.getElementById('fst')?.value||'',
+    sort:document.getElementById('fso')?.value||'date',
+    platform:pff,
+    genre:fGenre,
+    rating:fRating,
+    completion:fCompletion,
+    mode:libraryViewMode
+  };
+}
+function setActivePlatformChip(platform){
+  document.querySelectorAll('.pfchip[data-p]').forEach(c=>c.classList.toggle('on',c.dataset.p===platform));
+}
+function restoreLibraryViewConfig(config){
+  if(!config)return;
+  const q=document.getElementById('q'),status=document.getElementById('fst'),sort=document.getElementById('fso');
+  if(q)q.value=config.q||'';
+  if(status)status.value=config.status||'';
+  if(sort)sort.value=config.sort||'date';
+  pff=config.platform||'all';
+  fGenre=config.genre||'all';
+  fRating=parseInt(config.rating)||0;
+  fCompletion=config.completion||'';
+  setActivePlatformChip(pff);
+  document.querySelectorAll('[data-gn]').forEach(c=>c.classList.toggle('on',c.dataset.gn===fGenre));
+  document.querySelectorAll('[data-rt]').forEach(c=>c.classList.toggle('on',String(c.dataset.rt)===String(fRating)));
+  document.querySelectorAll('[data-cp]').forEach(c=>c.classList.toggle('on',c.dataset.cp===fCompletion));
+  updateFilterBadge();
+  setLibraryViewMode(config.mode||'grid');
+}
+function renderLibrarySavedViews(){
+  const sel=document.getElementById('library-view-select');
+  if(!sel)return;
+  const active=sel.value;
+  sel.innerHTML='<option value="">我的视图…</option>'+libraryViews.map(v=>`<option value="${v.id}">${esc(v.name)}</option>`).join('');
+  if(libraryViews.some(v=>String(v.id)===String(active)))sel.value=active;
+}
+async function loadLibraryViews(){
+  const{data:{session}}=await db.auth.getSession();
+  const user=session?.user;
+  if(user){
+    try{
+      const{data,error}=await db.from('game_library_views').select('*').eq('user_id',user.id).order('updated_at',{ascending:false});
+      if(error)throw error;
+      libraryViews=(data||[]).map(v=>({...v,config:v.config||{}}));
+      renderLibrarySavedViews();
+      return;
+    }catch(e){
+      console.warn('game_library_views load failed',e.message);
+    }
+  }
+  try{libraryViews=JSON.parse(localStorage.getItem(LIBRARY_VIEWS_KEY)||'[]');}catch{libraryViews=[];}
+  renderLibrarySavedViews();
+}
+async function saveLibraryView(){
+  const sel=document.getElementById('library-view-select');
+  const activeId=sel?.value||'';
+  const existing=libraryViews.find(v=>String(v.id)===String(activeId));
+  const name=prompt(existing?'更新当前视图名称':'给当前筛选视图起个名字',existing?.name||'');
+  if(!name||!name.trim())return;
+  const config=currentLibraryViewConfig();
+  const{data:{session}}=await db.auth.getSession();
+  const user=session?.user;
+  if(user){
+    const payload={name:name.trim(),config,updated_at:new Date().toISOString()};
+    const req=existing
+      ?db.from('game_library_views').update(payload).eq('id',existing.id).eq('user_id',user.id).select().single()
+      :db.from('game_library_views').insert({...payload,user_id:user.id}).select().single();
+    const{data,error}=await req;
+    if(error){alert('保存失败：请确认 Supabase 已创建 game_library_views 表。\n'+error.message);return;}
+    if(existing){
+      const idx=libraryViews.findIndex(v=>String(v.id)===String(existing.id));
+      if(idx>-1)libraryViews[idx]=data;
+    }else libraryViews.unshift(data);
+  }else{
+    if(existing){
+      existing.name=name.trim();existing.config=config;existing.updated_at=new Date().toISOString();
+    }else libraryViews.unshift({id:Date.now().toString(36),name:name.trim(),config,created_at:new Date().toISOString(),updated_at:new Date().toISOString()});
+    localStorage.setItem(LIBRARY_VIEWS_KEY,JSON.stringify(libraryViews));
+  }
+  renderLibrarySavedViews();
+  if(sel)sel.value=String(existing?.id||libraryViews[0].id);
+}
+function applyLibraryView(id){
+  if(!id)return;
+  const view=libraryViews.find(v=>String(v.id)===String(id));
+  if(!view)return;
+  restoreLibraryViewConfig(view.config);
+  render();
+}
+async function deleteLibraryView(){
+  const sel=document.getElementById('library-view-select');
+  const id=sel?.value;
+  if(!id)return;
+  const view=libraryViews.find(v=>String(v.id)===String(id));
+  if(!view||!confirm(`删除视图「${view.name}」？`))return;
+  const{data:{session}}=await db.auth.getSession();
+  if(session?.user)await db.from('game_library_views').delete().eq('id',id).eq('user_id',session.user.id);
+  libraryViews=libraryViews.filter(v=>String(v.id)!==String(id));
+  if(!session?.user)localStorage.setItem(LIBRARY_VIEWS_KEY,JSON.stringify(libraryViews));
+  renderLibrarySavedViews();
+}
+function setLibraryViewMode(mode,el){
+  libraryViewMode=mode||'grid';
+  document.querySelectorAll('[data-view-mode]').forEach(b=>b.classList.toggle('on',b.dataset.viewMode===libraryViewMode));
+  const gg=document.getElementById('gg');
+  if(gg){
+    gg.classList.toggle('view-dense',libraryViewMode==='dense');
+    gg.classList.toggle('view-list',libraryViewMode==='list');
+  }
+  if(el)el.classList.add('on');
+}
+function gameId(g){return g.id||g._id;}
+function fmtHours(h){return h?`${h}h`:'0h';}
+function fmtRating(r){return r?`${'★'.repeat(r)}${'☆'.repeat(5-r)}`:'未评分';}
+function firstPlatform(g){const p=(g.platforms||[])[0];return p?PFMAP[p]||p:'未标平台';}
+function newestFirst(list){return [...list].sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));}
+function syncStatusTabs(){
+  const status=document.getElementById('fst')?.value||'';
+  document.querySelectorAll('[data-status-tab]').forEach(b=>b.classList.toggle('on',b.dataset.statusTab===status));
+}
+function platformMatches(g,platform){
+  const platforms=g.platforms||[];
+  if(platform==='all')return true;
+  if(platform==='retro')return platforms.some(p=>RETRO_PLATFORMS.includes(p));
+  return platforms.includes(platform);
+}
+function updateGameStats(){
+  const total=games.length;
+  const playing=games.filter(g=>g.status==='playing').length;
+  const done=games.filter(g=>g.status==='done').length;
+  const hours=games.reduce((s,g)=>s+(g.hours||0),0);
+  const rated=games.filter(g=>g.rating>0);
+  const avg=rated.length?(rated.reduce((s,g)=>s+g.rating,0)/rated.length).toFixed(1):'—';
+  [['s-total',total],['s-pl',playing],['s-dn',done],['s-hr',hours],['s-av',avg],['lib-total',total],['lib-playing',playing],['lib-done',done],['lib-hours',`${hours}h`],['lib-rating',avg]].forEach(([id,val])=>{
+    const el=document.getElementById(id);
+    if(el)el.textContent=val;
+  });
+}
+function renderHero(){
+  const hero=document.getElementById('library-hero');
+  if(!hero)return;
+  const featured=newestFirst(games.filter(g=>g.status==='playing'))[0]||newestFirst(games)[0];
+  if(!featured){
+    hero.innerHTML=`<div class="library-hero-empty">
+      <div class="library-kicker">PIXELFISH LIBRARY</div>
+      <h1>把你的游戏经历放进同一个收藏馆</h1>
+      <p>记录封面、平台、时长、评分和游玩时刻，第一款游戏从这里开始。</p>
+      <button class="btn btn-a" onclick="openAdd()">＋ 添加游戏</button>
+    </div>`;
+    hero.style.removeProperty('--hero-cover');
+    return;
+  }
+  const cover=featured.cover?`url('${esc(featured.cover)}')`:'none';
+  hero.style.setProperty('--hero-cover',cover);
+  const platforms=(featured.platforms||[]).slice(0,3).map(p=>PFMAP[p]||p).join(' / ')||'未标平台';
+  hero.innerHTML=`<div class="library-hero-main">
+    <div class="library-kicker">CONTINUE PLAYING</div>
+    <h1>${esc(featured.name)}</h1>
+    <p>${[STMAP[featured.status],platforms,featured.hours?`${featured.hours} 小时`:null].filter(Boolean).join(' · ')}</p>
+    <div class="library-hero-actions">
+      <button class="btn btn-a" onclick="openPlayMode('game','${gameId(featured)}')">▶ 开始游玩</button>
+      <button class="btn" onclick="openDetail('${gameId(featured)}')">查看档案</button>
+    </div>
+  </div>
+  <button class="library-hero-cover" onclick="openDetail('${gameId(featured)}')" aria-label="查看游戏档案">
+    ${featured.cover?`<img src="${esc(featured.cover)}" alt="" loading="lazy">`:'<span>🎮</span>'}
+  </button>`;
+}
+function shelfItem(g){
+  return `<button class="shelf-game" onclick="openDetail('${gameId(g)}')" title="${esc(g.name)}">
+    <span class="shelf-cover">${g.cover?`<img src="${esc(g.cover)}" alt="" loading="lazy">`:'<em>🎮</em>'}</span>
+    <span class="shelf-name">${esc(g.name)}</span>
+    <span class="shelf-meta">${[firstPlatform(g),g.hours?`${g.hours}h`:STMAP[g.status]].filter(Boolean).join(' · ')}</span>
+  </button>`;
+}
+function renderShelves(){
+  const wrap=document.getElementById('library-shelves');
+  if(!wrap)return;
+  if(!games.length){wrap.innerHTML='';return;}
+  const byHours=[...games].sort((a,b)=>(b.hours||0)-(a.hours||0));
+  const shelves=[
+    ['继续玩','最近正在推进的游戏',newestFirst(games.filter(g=>g.status==='playing')).slice(0,8)],
+    ['高分收藏','你给过高评价的作品',[...games].filter(g=>(g.rating||0)>=4).sort((a,b)=>(b.rating||0)-(a.rating||0)).slice(0,8)],
+    ['想玩清单','未来准备打开的世界',newestFirst(games.filter(g=>g.status==='wishlist')).slice(0,8)],
+    ['时长排行','最能占据你时间的游戏',byHours.filter(g=>g.hours>0).slice(0,8)],
+    ['复古主机','老机器和掌机记忆',newestFirst(games.filter(g=>platformMatches(g,'retro'))).slice(0,8)]
+  ].filter(s=>s[2].length);
+  wrap.innerHTML=shelves.map(([title,sub,items])=>`<section class="game-shelf">
+    <div class="shelf-head"><div><span class="library-kicker">SHELF</span><h2>${title}</h2></div><p>${sub}</p></div>
+    <div class="shelf-row">${items.map(shelfItem).join('')}</div>
+  </section>`).join('');
+}
+function renderGameCard(g,i){
+  const pft=(g.platforms||[]).slice(0,3).map(p=>`<span class="tag ${PTAG[p]||''}">${PFMAP[p]||p}</span>`).join('');
+  const gnt=(g.genres||[]).slice(0,2).map(gn=>`<span class="tag">${gn}</span>`).join('');
+  return`<div class="gc" data-status="${g.status||''}" style="animation-delay:${Math.min(i*.025,.18)}s" onclick="openDetail('${gameId(g)}')">
+    <div class="gc-art">
+      ${g.cover?`<div class="gc-cover-bg" style="background-image:url('${esc(g.cover)}')"></div><img class="gc-cover" src="${esc(g.cover)}" alt="" loading="lazy" onerror="this.parentElement.classList.add('no-cover')">`:'<div class="gc-ph">🎮</div>'}
+      <span class="gc-status ${STCLS[g.status]||''}">${STMAP[g.status]||'未记录'}</span>
+      <button class="gc-play-btn" onclick="event.stopPropagation();openPlayMode('game','${gameId(g)}')" aria-label="开始游玩">▶</button>
+    </div>
+    <div class="gc-body">
+      <div class="gc-title-row">
+        <h3>${esc(g.name)}</h3>
+        <span>${g.year||''}</span>
+      </div>
+      <div class="gc-tags">${pft}${gnt}</div>
+      ${g.review?`<p class="gc-rev">${esc(g.review)}</p>`:''}
+      <div class="gc-foot">
+        <span class="stars">${fmtRating(g.rating||0)}</span>
+        <span class="htxt">${fmtHours(g.hours||0)}</span>
+      </div>
+    </div>
+  </div>`;
+}
 function render(){
   const q=document.getElementById('q').value.toLowerCase();
   const fs=document.getElementById('fst').value,so=document.getElementById('fso').value;
+  syncStatusTabs();
   let list=games.filter(g=>{
     if(q&&!g.name.toLowerCase().includes(q))return false;
     if(fs&&g.status!==fs)return false;
-    if(pff!=='all'&&!(g.platforms||[]).includes(pff))return false;
+    if(!platformMatches(g,pff))return false;
     if(fGenre!=='all'&&!(g.genres||[]).includes(fGenre))return false;
     if(fRating>0&&(g.rating||0)<fRating)return false;
     if(fCompletion&&g.completion!==fCompletion)return false;
@@ -44,35 +275,16 @@ function render(){
   else if(so==='hours')list.sort((a,b)=>(b.hours||0)-(a.hours||0));
   else if(so==='name')list.sort((a,b)=>a.name.localeCompare(b.name,'zh'));
   else list.sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
-  document.getElementById('s-total').textContent=games.length;
-  document.getElementById('s-pl').textContent=games.filter(g=>g.status==='playing').length;
-  document.getElementById('s-dn').textContent=games.filter(g=>g.status==='done').length;
-  document.getElementById('s-hr').textContent=games.reduce((s,g)=>s+(g.hours||0),0);
-  const rated=games.filter(g=>g.rating>0);
-  document.getElementById('s-av').textContent=rated.length?(rated.reduce((s,g)=>s+g.rating,0)/rated.length).toFixed(1):'—';
+  updateGameStats();
+  renderHero();
+  renderShelves();
   const gg=document.getElementById('gg');
+  setLibraryViewMode(libraryViewMode);
   const hasFilter=q||fs||pff!=='all'||fGenre!=='all'||fRating>0||fCompletion;
+  const count=document.getElementById('library-count');
+  if(count)count.textContent=`${list.length} 款${hasFilter?' · 已筛选':''}`;
   if(!list.length){gg.innerHTML=`<div class="empty"><img src="css/可达鸭空状态.png" class="empty-psyduck" alt=""><div>${hasFilter?'没有符合条件的游戏':'还没有记录，点击「添加游戏」开始吧！'}</div></div>`;return;}
-  gg.innerHTML=list.map((g,i)=>{
-    const pft=(g.platforms||[]).map(p=>`<span class="tag ${PTAG[p]||''}">${PFMAP[p]||p}</span>`).join('');
-    const gnt=(g.genres||[]).slice(0,2).map(gn=>`<span class="tag">${gn}</span>`).join('');
-    const dc={playing:'var(--acc)',done:'var(--acc2)',wishlist:'var(--warn)',dropped:'var(--t3)'}[g.status]||'var(--t3)';
-    return`<div class="gc" data-status="${g.status||''}" style="animation-delay:${Math.min(i*.03,.2)}s;display:flex;flex-direction:column" onclick="openDetail('${g.id||g._id}')">
-      ${g.cover?`<div class="gc-cover-wrap"><div class="gc-cover-bg" style="background-image:url('${esc(g.cover)}')"></div><img class="gc-cover" src="${esc(g.cover)}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'"></div>`:''}
-      <div class="gc-ph" style="${g.cover?'display:none':''}">🎮</div>
-      <div style="padding:.9rem;flex:1;display:flex;flex-direction:column">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px">
-          <div style="font-size:.92rem;font-weight:500;line-height:1.3;flex:1">${esc(g.name)}</div>
-          <div style="width:7px;height:7px;border-radius:50%;background:${dc};margin-top:5px;flex-shrink:0;margin-left:8px"></div>
-        </div>
-        <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">${pft}${gnt}</div>
-        ${g.review?`<div class="gc-rev">${esc(g.review)}</div>`:''}
-        <div style="flex:1"></div>
-        <div class="gc-foot"><div class="stars">${'★'.repeat(g.rating||0)}${'☆'.repeat(5-(g.rating||0))}</div><div style="display:flex;align-items:center;gap:10px">${g.hours?`<span class="htxt">${g.hours}h</span>`:''}<span class="stxt ${STCLS[g.status]||''}">${STMAP[g.status]||''}</span></div></div>
-      </div>
-      <button class="gc-play-btn" onclick="event.stopPropagation();openPlayMode('game','${g.id||g._id}')">▶ 开始游玩</button>
-    </div>`;
-  }).join('');
+  gg.innerHTML=list.map(renderGameCard).join('');
 }
 
 /* 发现页 */

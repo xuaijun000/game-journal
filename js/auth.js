@@ -17,6 +17,7 @@ async function load(){
   const{data:{session}}=await db.auth.getSession();const user=session?.user;
   if(user){const{data}=await db.from('games').select('*').eq('user_id',user.id).order('created_at',{ascending:false});games=data||[];}
   else{try{games=JSON.parse(localStorage.getItem('gj')||'[]');}catch{games=[];}}
+  if(window.loadLibraryViews)await loadLibraryViews();
   render();
 }
 function am(m){amd=m;document.getElementById('t-in').classList.toggle('on',m==='login');document.getElementById('t-up').classList.toggle('on',m==='signup');document.getElementById('asub').textContent=m==='login'?'登录':'注册';document.getElementById('amsg').textContent='';}

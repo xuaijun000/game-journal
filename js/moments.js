@@ -94,18 +94,20 @@ async function submitMoment(){
 async function loadGameMoments(gameName){
   const slot = document.getElementById('game-moments-slot');
   if(!slot) return;
+  const emptyHtml = '<div class="dossier-empty">还没有记录游戏时刻</div>';
   try{
     const {data:{session}} = await db.auth.getSession();
-    if(!session?.user){slot.innerHTML='';return;}
+    if(!session?.user){slot.innerHTML='<div class="dossier-empty">登录后可同步游戏时刻</div>';return;}
     const {data,error} = await db.from('game_moments')
       .select('*')
       .eq('user_id', session.user.id)
       .eq('game_name', gameName)
       .order('created_at', {ascending:false});
-    if(error||!data?.length){slot.innerHTML='';return;}
+    if(error||!data?.length){slot.innerHTML=emptyHtml;return;}
 
     const typeLabel = {highlight:'🌟 高光',rant:'💢 吐槽',idea:'💡 想法',stuck:'🧱 卡关'};
     const typeClass = {highlight:'highlight',rant:'rant',idea:'idea',stuck:'stuck'};
+    const safeGameName = JSON.stringify(gameName).replace(/</g,'\\u003c');
 
     slot.innerHTML = `<div style="font-size:.8rem;font-weight:600;color:var(--t2);margin:12px 0 6px">📸 游戏时刻 <span style="color:var(--t3);font-weight:400">(${data.length})</span></div>
     <div class="moments-list">${data.map(m=>`
@@ -114,14 +116,14 @@ async function loadGameMoments(gameName){
           <span class="moment-item-type ${typeClass[m.type]||'idea'}">${typeLabel[m.type]||'💡 想法'}</span>
           <div style="display:flex;align-items:center;gap:4px">
             <span class="moment-item-date">${new Date(m.created_at).toLocaleDateString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}</span>
-            <button class="moment-item-del" onclick="deleteMoment('${m.id}','${gameName}')" title="删除">✕</button>
+            <button class="moment-item-del" onclick='deleteMoment("${m.id}",${safeGameName})' title="删除">✕</button>
           </div>
         </div>
-        ${m.content?`<div class="moment-item-text">${m.content}</div>`:''}
-        ${m.image_url?`<img class="moment-item-img" src="${m.image_url}" alt="" onclick="viewMomentImg('${m.image_url}')">`:''}
+        ${m.content?`<div class="moment-item-text">${esc(m.content)}</div>`:''}
+        ${m.image_url?`<img class="moment-item-img" src="${esc(m.image_url)}" alt="" onclick="viewMomentImg('${esc(m.image_url)}')">`:''}
       </div>`).join('')}
     </div>`;
-  }catch(e){slot.innerHTML='';}
+  }catch(e){slot.innerHTML=emptyHtml;}
 }
 
 async function deleteMoment(id, gameName){
