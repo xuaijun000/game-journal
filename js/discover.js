@@ -153,9 +153,44 @@ async function addFromDisc(g,bid){
 
 /* 详情弹窗 */
 let discCurrentGame=null,discChatOpen=false,discChatHistory=[];
+const _discZhCache={};
+async function translateDiscDesc(g){
+  const key=g.name;
+  const sumEl=document.getElementById('disc-summary');
+  const stEl=document.getElementById('disc-storyline');
+  if(_discZhCache[key]){
+    const c=_discZhCache[key];
+    if(discCurrentGame?.name!==key)return;
+    if(c.summary)sumEl.textContent=c.summary;
+    if(c.storyline&&stEl){stEl.textContent=c.storyline;stEl.style.display='block';}
+    return;
+  }
+  if(!g.summary&&!g.storyline)return;
+  const hint=document.createElement('div');
+  hint.id='disc-trans-hint';
+  hint.style.cssText='font-size:.66rem;color:var(--t3);margin-top:6px;font-family:"DM Mono",monospace;letter-spacing:.04em';
+  hint.textContent='⟳ 翻译中…';
+  sumEl.after(hint);
+  try{
+    let prompt='将以下游戏描述翻译为简体中文，保持原有游戏氛围与语气，直接输出译文：\n\n'+(g.summary||'');
+    if(g.storyline)prompt+='\n\n====\n\n'+g.storyline;
+    const res=await fetch(`${SB_URL}/functions/v1/gemini-proxy`,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:800,temperature:0.2}})});
+    if(!res.ok)throw new Error(`HTTP ${res.status}`);
+    const data=await res.json();
+    const translated=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'';
+    if(!translated)throw new Error('empty');
+    const parts=translated.split(/={3,}/).map(s=>s.trim());
+    _discZhCache[key]={summary:parts[0]||'',storyline:parts[1]||''};
+    document.getElementById('disc-trans-hint')?.remove();
+    if(discCurrentGame?.name!==key)return;
+    if(parts[0])sumEl.textContent=parts[0];
+    if(parts[1]&&stEl){stEl.textContent=parts[1];stEl.style.display='block';}
+  }catch{document.getElementById('disc-trans-hint')?.remove();}
+}
 function openDiscDetailByIdx(idx){if(discDataCache[idx])openDiscDetail(discDataCache[idx]);}
 function openDiscDetail(g){
   discCurrentGame=g;discChatOpen=false;discChatHistory=[];
+  document.getElementById('disc-trans-hint')?.remove();
   const cover=g.cover;
   document.getElementById('disc-hero-bg').style.backgroundImage=cover?`url(${cover})`:'none';
   const img=document.getElementById('disc-cover');
@@ -167,8 +202,12 @@ function openDiscDetail(g){
   document.getElementById('disc-rcount').textContent=g.ratingCount?(g.ratingCount>999?(g.ratingCount/1000).toFixed(1)+'k':g.ratingCount)+' 人评分':'';
   const pft=(g.platforms||[]).slice(0,5).map(p=>{const pid=String(p.id||'');const cls=pid==='6'?'tst':pid==='49'||pid==='169'?'tx':pid==='130'?'tsw':pid==='48'||pid==='167'?'tp':'';return`<span class="tag ${cls}" style="font-size:.68rem">${p.name}</span>`;}).join('');
   document.getElementById('disc-ptags').innerHTML=pft;
-  const sumEl=document.getElementById('disc-summary');sumEl.textContent=g.summary||'暂无简介';
-  const stEl=document.getElementById('disc-storyline');if(g.storyline){stEl.textContent=g.storyline;stEl.style.display='block';}else stEl.style.display='none';
+  const sumEl=document.getElementById('disc-summary');
+  const stEl=document.getElementById('disc-storyline');
+  const cached=_discZhCache[g.name];
+  sumEl.textContent=(cached?.summary)||g.summary||'暂无简介';
+  if((cached?.storyline)||g.storyline){stEl.textContent=(cached?.storyline)||g.storyline;stEl.style.display='block';}else stEl.style.display='none';
+  if(!cached&&(g.summary||g.storyline))translateDiscDesc(g);
   const link=document.getElementById('disc-igdb-link');link.href=g.url||`https://www.igdb.com/search?utf8=✓&q=${encodeURIComponent(g.name)}`;link.textContent='↗ IGDB';
   const myNames=new Set(games.map(x=>x.name.toLowerCase().trim()));
   const addBtn=document.getElementById('disc-add-btn');
