@@ -112,7 +112,7 @@ header.header-solid::before{
 }
 
 .logo{display:flex;align-items:center;white-space:nowrap;flex-shrink:0}
-.logo img{height:36px;width:auto;display:block;filter:drop-shadow(0 0 10px rgba(126,205,196,.2))}
+.logo img{height:36px;width:auto;display:block;filter:drop-shadow(0 0 12px rgba(126,205,196,.45)) brightness(1.08)}
 
 nav{display:flex;align-items:center;gap:4px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none}
 nav::-webkit-scrollbar{display:none}
@@ -120,7 +120,7 @@ nav button{
   background:none;
   border:none;
   cursor:pointer;
-  color:#1c3f50;
+  color:rgba(232,244,243,.78);
   font-size:.75rem;
   padding:6px 13px;
   border-radius:999px;
@@ -129,14 +129,14 @@ nav button{
   letter-spacing:.03em;
   font-weight:500;
   white-space:nowrap;
-  text-shadow:0 1px 2px rgba(255,255,255,.45),0 0 8px rgba(255,255,255,.24);
+  text-shadow:0 1px 6px rgba(0,0,0,.7);
 }
-nav button:hover{color:#0f2b38}
-nav button.on{color:#082d3f;text-shadow:0 1px 2px rgba(255,255,255,.58),0 0 10px rgba(255,255,255,.28)}
+nav button:hover{color:var(--t);background:rgba(255,255,255,.08);text-shadow:none}
+nav button.on{color:var(--acc);background:rgba(126,205,196,.15);text-shadow:0 0 12px rgba(126,205,196,.35);font-weight:600}
 header.header-solid nav button{color:var(--t2);text-shadow:none}
 header.header-solid nav button:hover{color:var(--t);background:rgba(126,205,196,.1)}
-header.header-solid nav button.on{color:var(--t);text-shadow:none;background:rgba(126,205,196,.18);box-shadow:inset 0 0 0 1px rgba(126,205,196,.2)}
-.nav-sep{width:1px;height:15px;background:rgba(232,244,243,.12);margin:0 6px;flex-shrink:0}
+header.header-solid nav button.on{color:var(--acc);text-shadow:none;background:rgba(126,205,196,.18);box-shadow:inset 0 0 0 1px rgba(126,205,196,.2);font-weight:600}
+.nav-sep{width:1px;height:15px;background:rgba(232,244,243,.25);margin:0 6px;flex-shrink:0}
 header.header-solid .nav-sep{background:var(--b2)}
 
 .hdr-r{display:flex;align-items:center;gap:8px;margin-left:auto;flex-shrink:0}
