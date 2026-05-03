@@ -21,7 +21,6 @@
   <link rel="stylesheet" href="css/battle.css">
   <link rel="stylesheet" href="css/frlg-map.css">
   <link rel="stylesheet" href="css/partner.css">
-  <script src="js/protect.js" defer></script>
   <script src="js/data/battle_registry.js"></script>
   <script src="js/data/pkm_champions_data.js"></script>
   <script src="js/data/moves_champions_data.js"></script>
@@ -32,6 +31,27 @@
   <script>/* pkm_champions_teams.js 可选 — 运行 scripts/browser-scrape-teams.js 后放入 js/data/ */</script>
 </head>
 <body>
+<!-- 入场屏 -->
+<div id="pf-entry">
+  <div class="pfe-deco pfe-deco-tl"></div>
+  <div class="pfe-deco pfe-deco-br"></div>
+  <div class="pfe-grid"></div>
+  <div class="pfe-body">
+    <div class="pfe-logo-wrap">
+      <img src="css/logo_final.png" alt="PIXELFISH" class="pfe-logo">
+    </div>
+    <div class="pfe-tagline">游戏 · 动漫 · 我的记录</div>
+    <div class="pfe-sep">
+      <span></span><span class="pfe-sep-diamond"></span><span></span>
+    </div>
+    <button class="pfe-btn" id="pfe-btn" onclick="pfEnter()">
+      <span class="pfe-btn-label">ENTER</span>
+      <span class="pfe-btn-arrow">▶</span>
+    </button>
+    <div class="pfe-hint">按任意键进入</div>
+  </div>
+  <div class="pfe-ver">PIXELFISH · v2026</div>
+</div>
 <canvas id="pkm-canvas"></canvas>
 <header>
   <div class="logo"><img src="css/logo_final.png" alt="PIXELFISH"></div>
@@ -1112,6 +1132,20 @@
 <script src="js/battle.js"></script>
 <script src="js/partner.js"></script>
 <script>init();</script>
+<script>
+(function(){
+  function pfEnter(){
+    var el=document.getElementById('pf-entry');
+    if(!el||el.classList.contains('leaving'))return;
+    el.classList.add('leaving');
+    setTimeout(function(){el.remove();},700);
+    document.removeEventListener('keydown',onKey);
+  }
+  function onKey(e){if(e.key!=='Tab')pfEnter();}
+  window.pfEnter=pfEnter;
+  document.addEventListener('keydown',onKey);
+})();
+</script>
 
 
 <!-- 游戏时刻记录悬浮按钮 -->
