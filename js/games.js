@@ -1,4 +1,32 @@
-function setPF(p,el){pff=p;document.querySelectorAll('.pfchip').forEach(c=>c.classList.remove('on'));el.classList.add('on');render();}
+let fGenre='all',fRating=0,fCompletion='';
+
+function setPF(p,el){pff=p;document.querySelectorAll('.pfchip[data-p]').forEach(c=>c.classList.remove('on'));el.classList.add('on');updateFilterBadge();render();}
+function setGnFilter(gn,el){fGenre=gn;document.querySelectorAll('[data-gn]').forEach(c=>c.classList.remove('on'));el.classList.add('on');updateFilterBadge();render();}
+function setRtFilter(r,el){fRating=r;document.querySelectorAll('[data-rt]').forEach(c=>c.classList.remove('on'));el.classList.add('on');updateFilterBadge();render();}
+function setCpFilter(c,el){fCompletion=c;document.querySelectorAll('[data-cp]').forEach(c=>c.classList.remove('on'));el.classList.add('on');updateFilterBadge();render();}
+function toggleFilterPanel(){
+  const panel=document.getElementById('filter-panel');
+  const btn=document.getElementById('filter-toggle-btn');
+  const isOpen=panel.style.display!=='none';
+  panel.style.display=isOpen?'none':'flex';
+  btn.classList.toggle('open',!isOpen);
+  document.getElementById('filter-toggle-txt').textContent=isOpen?'＋ 更多筛选':'－ 收起筛选';
+}
+function clearFilters(){
+  pff='all';fGenre='all';fRating=0;fCompletion='';
+  document.querySelectorAll('.pfchip[data-p]').forEach(c=>c.classList.toggle('on',c.dataset.p==='all'));
+  document.querySelectorAll('[data-gn]').forEach(c=>c.classList.toggle('on',c.dataset.gn==='all'));
+  document.querySelectorAll('[data-rt]').forEach(c=>c.classList.toggle('on',c.dataset.rt==='0'));
+  document.querySelectorAll('[data-cp]').forEach(c=>c.classList.toggle('on',c.dataset.cp===''));
+  updateFilterBadge();render();
+}
+function updateFilterBadge(){
+  const count=(pff!=='all'?1:0)+(fGenre!=='all'?1:0)+(fRating>0?1:0)+(fCompletion?1:0);
+  const badge=document.getElementById('filter-active-badge');
+  const clearBtn=document.getElementById('filter-clear-btn');
+  if(badge){badge.textContent=count;badge.style.display=count?'inline-flex':'none';}
+  if(clearBtn)clearBtn.style.display=count?'':'none';
+}
 function refreshStatsIfVisible(){if(document.getElementById('pg-stats')?.classList.contains('on')&&typeof drawCharts==='function')drawCharts();}
 function render(){
   const q=document.getElementById('q').value.toLowerCase();
@@ -6,7 +34,10 @@ function render(){
   let list=games.filter(g=>{
     if(q&&!g.name.toLowerCase().includes(q))return false;
     if(fs&&g.status!==fs)return false;
-    if(pff!=='all'&&!(g.platforms||[]).some(p=>PFG[p]===pff))return false;
+    if(pff!=='all'&&!(g.platforms||[]).includes(pff))return false;
+    if(fGenre!=='all'&&!(g.genres||[]).includes(fGenre))return false;
+    if(fRating>0&&(g.rating||0)<fRating)return false;
+    if(fCompletion&&g.completion!==fCompletion)return false;
     return true;
   });
   if(so==='rating')list.sort((a,b)=>(b.rating||0)-(a.rating||0));
@@ -20,7 +51,8 @@ function render(){
   const rated=games.filter(g=>g.rating>0);
   document.getElementById('s-av').textContent=rated.length?(rated.reduce((s,g)=>s+g.rating,0)/rated.length).toFixed(1):'—';
   const gg=document.getElementById('gg');
-  if(!list.length){gg.innerHTML=`<div class="empty"><img src="css/可达鸭空状态.png" class="empty-psyduck" alt=""><div>${q||fs||pff!=='all'?'没有符合条件的游戏':'还没有记录，点击「添加游戏」开始吧！'}</div></div>`;return;}
+  const hasFilter=q||fs||pff!=='all'||fGenre!=='all'||fRating>0||fCompletion;
+  if(!list.length){gg.innerHTML=`<div class="empty"><img src="css/可达鸭空状态.png" class="empty-psyduck" alt=""><div>${hasFilter?'没有符合条件的游戏':'还没有记录，点击「添加游戏」开始吧！'}</div></div>`;return;}
   gg.innerHTML=list.map((g,i)=>{
     const pft=(g.platforms||[]).map(p=>`<span class="tag ${PTAG[p]||''}">${PFMAP[p]||p}</span>`).join('');
     const gnt=(g.genres||[]).slice(0,2).map(gn=>`<span class="tag">${gn}</span>`).join('');
@@ -66,13 +98,13 @@ function openEdit(id){
   document.getElementById('fcp').value=g.completion||'';document.getElementById('frev').value=g.review||'';
   document.getElementById('fcv').value=g.cover||'';document.getElementById('gs').value='';
   document.getElementById('sr').style.display='none';
-  rcl('pc');(g.platforms||[]).forEach(p=>{const c=document.querySelector(`#pc [data-v="${p}"]`);if(c){const m={x:'onx',p:'onp',sw:'onsw',st:'onst'};const pm={xbox:'x',xbox360:'x',ps5:'p',ps4:'p',switch:'sw',switch2:'sw',steam:'st'};c.classList.add(m[pm[p]]||'on');}});
+  rcl('pc');(g.platforms||[]).forEach(p=>{const c=document.querySelector(`#pc [data-v="${p}"]`);if(c){const m={x:'onx',p:'onp',sw:'onsw',st:'onst',sg:'onsg'};const pm={xbox:'x',xbox360:'x',ps5:'p',ps4:'p',ps1:'p',ps2:'p',ps3:'p',psp:'p',vita:'p',switch:'sw',switch2:'sw',fc:'sw',sfc:'sw',n64:'sw',gc:'sw',wii:'sw',wiiu:'sw',gb:'sw',gba:'sw',nds:'sw','3ds':'sw',steam:'st',md:'sg',ss:'sg',dc:'sg',xbox_orig:'x'};c.classList.add(m[pm[p]]||'on');}});
   rcl('gc');(g.genres||[]).forEach(gn=>{const c=document.querySelector(`#gc [data-v="${gn}"]`);if(c)c.classList.add('on');});
   rcl('sc');(g.styles||[]).forEach(s=>{const c=document.querySelector(`#sc [data-v="${s}"]`);if(c)c.classList.add('on');});
   setStar(g.rating||0);document.getElementById('ov-edit').classList.add('on');
 }
 function rcl(id){document.querySelectorAll(`#${id} .chip`).forEach(c=>{c.className='chip';});}
-function tc(el,pfx){const cls=pfx?{'x':'onx','p':'onp','sw':'onsw','st':'onst'}[pfx]||'on':'on';if([...el.classList].some(c=>c.startsWith('on'))){el.className='chip';}else el.classList.add(cls);}
+function tc(el,pfx){const cls=pfx?{'x':'onx','p':'onp','sw':'onsw','st':'onst','sg':'onsg'}[pfx]||'on':'on';if([...el.classList].some(c=>c.startsWith('on'))){el.className='chip';}else el.classList.add(cls);}
 function setStar(n){star=n;document.querySelectorAll('.sb').forEach((b,i)=>b.classList.toggle('on',i<n));document.getElementById('shint').textContent=HINT[n]||'未评分';}
 function onSrch(v){
   clearTimeout(srT);const sr=document.getElementById('sr');

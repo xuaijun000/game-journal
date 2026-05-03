@@ -212,13 +212,27 @@ main{max-width:1080px;margin:0 auto;padding:2.1rem 1.5rem 4.5rem}
 .btn-sm{padding:5px 10px;font-size:.76rem}
 .btn-d{border-color:rgba(139,158,160,.45);color:var(--t2)}
 
-.pf-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.2rem}
 .pfchip{padding:5px 12px;border-radius:999px;font-size:.69rem;font-family:'DM Mono',monospace;border:1px solid var(--b2);cursor:pointer;transition:all .15s;background:var(--bg2);color:var(--t2);letter-spacing:.05em}
 .pfchip.on{border-color:var(--acc);color:var(--acc);background:rgba(126,205,196,.14)}
-.pfchip[data-p='xbox'].on{border-color:#6ccf8c;color:#6ccf8c;background:rgba(108,207,140,.1)}
-.pfchip[data-p='ps'].on{border-color:#8aa9ee;color:#8aa9ee;background:rgba(138,169,238,.12)}
-.pfchip[data-p='switch'].on{border-color:var(--warn);color:var(--warn);background:rgba(255,179,163,.13)}
+.pfchip[data-p='xbox'].on,.pfchip[data-p='xbox360'].on,.pfchip[data-p='xbox_orig'].on{border-color:#6ccf8c;color:#6ccf8c;background:rgba(108,207,140,.1)}
+.pfchip[data-p='ps5'].on,.pfchip[data-p='ps4'].on,.pfchip[data-p='ps1'].on,.pfchip[data-p='ps2'].on,.pfchip[data-p='ps3'].on,.pfchip[data-p='psp'].on,.pfchip[data-p='vita'].on{border-color:#8aa9ee;color:#8aa9ee;background:rgba(138,169,238,.12)}
+.pfchip[data-p='switch'].on,.pfchip[data-p='switch2'].on,.pfchip[data-p='fc'].on,.pfchip[data-p='sfc'].on,.pfchip[data-p='n64'].on,.pfchip[data-p='gc'].on,.pfchip[data-p='wii'].on,.pfchip[data-p='wiiu'].on,.pfchip[data-p='gb'].on,.pfchip[data-p='gba'].on,.pfchip[data-p='nds'].on,.pfchip[data-p='3ds'].on{border-color:var(--warn);color:var(--warn);background:rgba(255,179,163,.13)}
 .pfchip[data-p='steam'].on{border-color:#7fbfe8;color:#7fbfe8;background:rgba(127,191,232,.12)}
+.pfchip[data-p='md'].on,.pfchip[data-p='ss'].on,.pfchip[data-p='dc'].on{border-color:#e8c84a;color:#e8c84a;background:rgba(232,200,74,.1)}
+.filter-chips-sep{width:1px;height:16px;background:var(--b2);align-self:center;flex-shrink:0;border-radius:1px}
+
+/* 筛选栏 */
+.filter-bar{margin-bottom:1.2rem}
+.filter-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
+.filter-row-label{font-size:.6rem;font-family:'DM Mono',monospace;color:var(--t3);letter-spacing:.08em;text-transform:uppercase;padding:6px 0;white-space:nowrap;min-width:38px;flex-shrink:0;line-height:1}
+.filter-chips{display:flex;gap:5px;flex-wrap:wrap}
+.filter-expand-row{display:flex;align-items:center;gap:8px;margin-top:4px}
+.filter-toggle-btn{display:inline-flex;align-items:center;gap:5px;background:none;border:1px solid var(--b2);border-radius:999px;color:var(--t3);font-size:.67rem;font-family:'DM Mono',monospace;padding:4px 12px;cursor:pointer;transition:all .15s;letter-spacing:.04em}
+.filter-toggle-btn:hover,.filter-toggle-btn.open{border-color:rgba(126,205,196,.45);color:var(--acc);background:rgba(126,205,196,.06)}
+.filter-badge{background:var(--acc);color:#0f1a1c;border-radius:999px;font-size:.58rem;padding:1px 6px;font-family:'DM Mono',monospace;font-weight:700;line-height:1.4}
+.filter-clear-btn{background:none;border:1px solid rgba(255,100,100,.28);border-radius:999px;color:rgba(255,130,130,.75);font-size:.67rem;font-family:'DM Mono',monospace;padding:4px 11px;cursor:pointer;transition:all .15s}
+.filter-clear-btn:hover{border-color:rgba(255,100,100,.6);color:rgba(255,140,140,1)}
+.filter-panel{border:1px solid var(--b2);border-radius:var(--r);background:var(--bg2);padding:12px 14px;margin-top:8px;display:flex;flex-direction:column;gap:10px;animation:fu .18s ease both}
 
 .empty{position:relative}
 .empty::before,

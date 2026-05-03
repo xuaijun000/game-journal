@@ -69,13 +69,105 @@
       <button class="btn btn-sm" onclick="syncSteam()" id="steam-sync-btn" style="border-color:rgba(102,192,244,.3);color:#66c0f4">↓ 同步 Steam 库</button>
       <span id="steam-msg" class="steam-msg"></span>
     </div>
-    <div class="pf-row">
-      <div class="pfchip on" data-p="all" onclick="setPF('all',this)">全部平台</div>
-      <div class="pfchip" data-p="xbox" onclick="setPF('xbox',this)">Xbox</div>
-      <div class="pfchip" data-p="ps" onclick="setPF('ps',this)">PlayStation</div>
-      <div class="pfchip" data-p="switch" onclick="setPF('switch',this)">Nintendo Switch</div>
-      <div class="pfchip" data-p="steam" onclick="setPF('steam',this)">Steam / PC</div>
-      <div class="pfchip" data-p="other" onclick="setPF('other',this)">其他</div>
+    <div class="filter-bar">
+      <div class="filter-row">
+        <span class="filter-row-label">平台</span>
+        <div class="filter-chips">
+          <div class="pfchip on" data-p="all" onclick="setPF('all',this)">全部</div>
+          <div class="pfchip" data-p="xbox" onclick="setPF('xbox',this)">Xbox Series X|S</div>
+          <div class="pfchip" data-p="xbox360" onclick="setPF('xbox360',this)">Xbox 360/One</div>
+          <div class="pfchip" data-p="ps5" onclick="setPF('ps5',this)">PS5</div>
+          <div class="pfchip" data-p="ps4" onclick="setPF('ps4',this)">PS4</div>
+          <div class="pfchip" data-p="switch" onclick="setPF('switch',this)">Switch</div>
+          <div class="pfchip" data-p="switch2" onclick="setPF('switch2',this)">Switch 2</div>
+          <div class="pfchip" data-p="steam" onclick="setPF('steam',this)">Steam / PC</div>
+          <div class="pfchip" data-p="mobile" onclick="setPF('mobile',this)">手机</div>
+          <div class="pfchip" data-p="other" onclick="setPF('other',this)">其他</div>
+        </div>
+      </div>
+      <div class="filter-row">
+        <span class="filter-row-label">中古</span>
+        <div class="filter-chips">
+          <div class="pfchip" data-p="fc" onclick="setPF('fc',this)">FC</div>
+          <div class="pfchip" data-p="sfc" onclick="setPF('sfc',this)">SFC</div>
+          <div class="pfchip" data-p="n64" onclick="setPF('n64',this)">N64</div>
+          <div class="pfchip" data-p="gc" onclick="setPF('gc',this)">GameCube</div>
+          <div class="pfchip" data-p="wii" onclick="setPF('wii',this)">Wii</div>
+          <div class="pfchip" data-p="wiiu" onclick="setPF('wiiu',this)">Wii U</div>
+          <div class="pfchip" data-p="gb" onclick="setPF('gb',this)">GB/GBC</div>
+          <div class="pfchip" data-p="gba" onclick="setPF('gba',this)">GBA</div>
+          <div class="pfchip" data-p="nds" onclick="setPF('nds',this)">NDS</div>
+          <div class="pfchip" data-p="3ds" onclick="setPF('3ds',this)">3DS</div>
+          <span class="filter-chips-sep"></span>
+          <div class="pfchip" data-p="ps1" onclick="setPF('ps1',this)">PS1</div>
+          <div class="pfchip" data-p="ps2" onclick="setPF('ps2',this)">PS2</div>
+          <div class="pfchip" data-p="ps3" onclick="setPF('ps3',this)">PS3</div>
+          <div class="pfchip" data-p="psp" onclick="setPF('psp',this)">PSP</div>
+          <div class="pfchip" data-p="vita" onclick="setPF('vita',this)">PS Vita</div>
+          <span class="filter-chips-sep"></span>
+          <div class="pfchip" data-p="md" onclick="setPF('md',this)">MD/Genesis</div>
+          <div class="pfchip" data-p="ss" onclick="setPF('ss',this)">Saturn</div>
+          <div class="pfchip" data-p="dc" onclick="setPF('dc',this)">Dreamcast</div>
+          <div class="pfchip" data-p="xbox_orig" onclick="setPF('xbox_orig',this)">Xbox 原版</div>
+        </div>
+      </div>
+      <div class="filter-expand-row">
+        <button class="filter-toggle-btn" id="filter-toggle-btn" onclick="toggleFilterPanel()">
+          <span id="filter-toggle-txt">＋ 更多筛选</span>
+          <span id="filter-active-badge" class="filter-badge" style="display:none">0</span>
+        </button>
+        <button class="filter-clear-btn" id="filter-clear-btn" onclick="clearFilters()" style="display:none">✕ 清空</button>
+      </div>
+      <div class="filter-panel" id="filter-panel" style="display:none">
+        <div class="filter-row" style="margin-bottom:0">
+          <span class="filter-row-label">类型</span>
+          <div class="filter-chips">
+            <div class="pfchip on" data-gn="all" onclick="setGnFilter('all',this)">全部</div>
+            <div class="pfchip" data-gn="action" onclick="setGnFilter('action',this)">动作</div>
+            <div class="pfchip" data-gn="adventure" onclick="setGnFilter('adventure',this)">冒险</div>
+            <div class="pfchip" data-gn="rpg" onclick="setGnFilter('rpg',this)">RPG</div>
+            <div class="pfchip" data-gn="strategy" onclick="setGnFilter('strategy',this)">策略</div>
+            <div class="pfchip" data-gn="shooter" onclick="setGnFilter('shooter',this)">射击</div>
+            <div class="pfchip" data-gn="puzzle" onclick="setGnFilter('puzzle',this)">解谜</div>
+            <div class="pfchip" data-gn="sim" onclick="setGnFilter('sim',this)">模拟经营</div>
+            <div class="pfchip" data-gn="sports" onclick="setGnFilter('sports',this)">运动</div>
+            <div class="pfchip" data-gn="fighting" onclick="setGnFilter('fighting',this)">格斗</div>
+            <div class="pfchip" data-gn="horror" onclick="setGnFilter('horror',this)">恐怖</div>
+            <div class="pfchip" data-gn="indie" onclick="setGnFilter('indie',this)">独立</div>
+            <div class="pfchip" data-gn="music" onclick="setGnFilter('music',this)">音乐节奏</div>
+            <div class="pfchip" data-gn="visual" onclick="setGnFilter('visual',this)">视觉小说</div>
+            <div class="pfchip" data-gn="racing" onclick="setGnFilter('racing',this)">竞速</div>
+            <div class="pfchip" data-gn="moba" onclick="setGnFilter('moba',this)">MOBA</div>
+            <div class="pfchip" data-gn="mmorpg" onclick="setGnFilter('mmorpg',this)">MMORPG</div>
+            <div class="pfchip" data-gn="open" onclick="setGnFilter('open',this)">开放世界</div>
+            <div class="pfchip" data-gn="souls" onclick="setGnFilter('souls',this)">魂类</div>
+            <div class="pfchip" data-gn="metroid" onclick="setGnFilter('metroid',this)">银河城</div>
+            <div class="pfchip" data-gn="roguelike" onclick="setGnFilter('roguelike',this)">Roguelike</div>
+          </div>
+        </div>
+        <div class="filter-row" style="margin-bottom:0">
+          <span class="filter-row-label">评分</span>
+          <div class="filter-chips">
+            <div class="pfchip on" data-rt="0" onclick="setRtFilter(0,this)">全部</div>
+            <div class="pfchip" data-rt="1" onclick="setRtFilter(1,this)">1★+</div>
+            <div class="pfchip" data-rt="2" onclick="setRtFilter(2,this)">2★+</div>
+            <div class="pfchip" data-rt="3" onclick="setRtFilter(3,this)">3★+</div>
+            <div class="pfchip" data-rt="4" onclick="setRtFilter(4,this)">4★+</div>
+            <div class="pfchip" data-rt="5" onclick="setRtFilter(5,this)">5★ 神作</div>
+          </div>
+        </div>
+        <div class="filter-row" style="margin-bottom:0">
+          <span class="filter-row-label">完成度</span>
+          <div class="filter-chips">
+            <div class="pfchip on" data-cp="" onclick="setCpFilter('',this)">全部</div>
+            <div class="pfchip" data-cp="main" onclick="setCpFilter('main',this)">主线通关</div>
+            <div class="pfchip" data-cp="side" onclick="setCpFilter('side',this)">主线+支线</div>
+            <div class="pfchip" data-cp="full" onclick="setCpFilter('full',this)">全收集</div>
+            <div class="pfchip" data-cp="partial" onclick="setCpFilter('partial',this)">部分完成</div>
+            <div class="pfchip" data-cp="dropped" onclick="setCpFilter('dropped',this)">中途放弃</div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="gg" id="gg"><div style="text-align:center;padding:3rem;color:var(--t3)">加载中…</div></div>
   </div>
@@ -927,7 +1019,14 @@
         <div class="field"><label>开发商 / 发行商</label><input type="text" id="fdev" placeholder="例：Game Science" autocomplete="off"></div>
       </div>
       <div class="field"><label>游玩平台（可多选）</label><div class="chips" id="pc">
+        <div class="chips-grp-label">现代主机</div>
         <div class="chip" data-v="xbox" onclick="tc(this,'x')">Xbox Series X|S</div><div class="chip" data-v="xbox360" onclick="tc(this,'x')">Xbox 360/One</div><div class="chip" data-v="ps5" onclick="tc(this,'p')">PS5</div><div class="chip" data-v="ps4" onclick="tc(this,'p')">PS4</div><div class="chip" data-v="switch" onclick="tc(this,'sw')">Nintendo Switch</div><div class="chip" data-v="switch2" onclick="tc(this,'sw')">Switch 2</div><div class="chip" data-v="steam" onclick="tc(this,'st')">Steam / PC</div><div class="chip" data-v="mobile" onclick="tc(this)">手机</div><div class="chip" data-v="other" onclick="tc(this)">其他</div>
+        <div class="chips-grp-label">中古 · Nintendo</div>
+        <div class="chip" data-v="fc" onclick="tc(this,'sw')">FC/红白机</div><div class="chip" data-v="sfc" onclick="tc(this,'sw')">SFC/超任</div><div class="chip" data-v="n64" onclick="tc(this,'sw')">N64</div><div class="chip" data-v="gc" onclick="tc(this,'sw')">GameCube</div><div class="chip" data-v="wii" onclick="tc(this,'sw')">Wii</div><div class="chip" data-v="wiiu" onclick="tc(this,'sw')">Wii U</div><div class="chip" data-v="gb" onclick="tc(this,'sw')">GB/GBC</div><div class="chip" data-v="gba" onclick="tc(this,'sw')">GBA</div><div class="chip" data-v="nds" onclick="tc(this,'sw')">NDS</div><div class="chip" data-v="3ds" onclick="tc(this,'sw')">3DS</div>
+        <div class="chips-grp-label">中古 · Sony</div>
+        <div class="chip" data-v="ps1" onclick="tc(this,'p')">PS1</div><div class="chip" data-v="ps2" onclick="tc(this,'p')">PS2</div><div class="chip" data-v="ps3" onclick="tc(this,'p')">PS3</div><div class="chip" data-v="psp" onclick="tc(this,'p')">PSP</div><div class="chip" data-v="vita" onclick="tc(this,'p')">PS Vita</div>
+        <div class="chips-grp-label">中古 · Sega &amp; 其他</div>
+        <div class="chip" data-v="md" onclick="tc(this,'sg')">MD/Genesis</div><div class="chip" data-v="ss" onclick="tc(this,'sg')">Saturn</div><div class="chip" data-v="dc" onclick="tc(this,'sg')">Dreamcast</div><div class="chip" data-v="xbox_orig" onclick="tc(this,'x')">Xbox 原版</div>
       </div></div>
       <div class="field"><label>游戏类型（可多选）</label><div class="chips" id="gc">
         <div class="chip" data-v="action" onclick="tc(this)">动作</div><div class="chip" data-v="adventure" onclick="tc(this)">冒险</div><div class="chip" data-v="rpg" onclick="tc(this)">RPG</div><div class="chip" data-v="strategy" onclick="tc(this)">策略</div><div class="chip" data-v="shooter" onclick="tc(this)">射击</div><div class="chip" data-v="puzzle" onclick="tc(this)">解谜</div><div class="chip" data-v="sim" onclick="tc(this)">模拟经营</div><div class="chip" data-v="sports" onclick="tc(this)">运动</div><div class="chip" data-v="fighting" onclick="tc(this)">格斗</div><div class="chip" data-v="horror" onclick="tc(this)">恐怖</div><div class="chip" data-v="indie" onclick="tc(this)">独立游戏</div><div class="chip" data-v="music" onclick="tc(this)">音乐节奏</div><div class="chip" data-v="visual" onclick="tc(this)">视觉小说</div><div class="chip" data-v="racing" onclick="tc(this)">竞速</div><div class="chip" data-v="moba" onclick="tc(this)">MOBA</div><div class="chip" data-v="mmorpg" onclick="tc(this)">MMORPG</div><div class="chip" data-v="open" onclick="tc(this)">开放世界</div><div class="chip" data-v="souls" onclick="tc(this)">魂类</div><div class="chip" data-v="metroid" onclick="tc(this)">银河城</div><div class="chip" data-v="roguelike" onclick="tc(this)">Roguelike</div>

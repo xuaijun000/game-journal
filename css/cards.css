@@ -29,6 +29,7 @@
 .tp{border-color:rgba(138,169,238,.4);color:#8aa9ee;background:rgba(138,169,238,.11)}
 .tsw{border-color:rgba(255,179,163,.42);color:var(--warn);background:rgba(255,179,163,.12)}
 .tst{border-color:rgba(127,191,232,.38);color:#7fbfe8;background:rgba(127,191,232,.11)}
+.tsg{border-color:rgba(232,200,74,.42);color:#e8c84a;background:rgba(232,200,74,.1)}
 
 .gc-rev{font-size:.8rem;color:var(--t2);line-height:1.7;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:8px}
 .gc-foot{display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1px solid var(--b)}
