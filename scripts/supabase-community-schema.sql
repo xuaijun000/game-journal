@@ -150,6 +150,7 @@ create index if not exists pkm_partner_public_idx on public.pkm_partner (is_publ
 -- 覆盖原有全量策略，加入公开伙伴可供所有人查看
 drop policy if exists "Users manage own partner" on public.pkm_partner;
 drop policy if exists "pkm_partner_public_select" on public.pkm_partner;
+drop policy if exists "pkm_partner_manage_own" on public.pkm_partner;
 create policy "pkm_partner_public_select" on public.pkm_partner
   for select using (auth.uid() = user_id or is_public = true);
 create policy "pkm_partner_manage_own" on public.pkm_partner
