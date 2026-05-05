@@ -183,3 +183,40 @@ create policy "battle_records_insert_own" on public.battle_records
 drop policy if exists "battle_records_delete_own" on public.battle_records;
 create policy "battle_records_delete_own" on public.battle_records
   for delete using (auth.uid() = user_id);
+
+
+-- ── 9. Champions 约战广场 ─────────────────────────────────
+create table if not exists public.community_match_posts (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  username text not null,
+  avatar text not null default '🎮',
+  room_code text not null check (char_length(room_code) <= 24),
+  format text not null default 'singles' check (format in ('singles', 'doubles')),
+  rank_label text,
+  note text check (char_length(note) <= 80),
+  status text not null default 'open' check (status in ('open', 'closed')),
+  expires_at timestamptz not null default (now() + interval '3 hours'),
+  created_at timestamptz not null default now()
+);
+
+create index if not exists community_match_posts_open_idx
+  on public.community_match_posts (status, expires_at desc, created_at desc);
+
+alter table public.community_match_posts enable row level security;
+
+drop policy if exists "community_match_posts_select_open" on public.community_match_posts;
+create policy "community_match_posts_select_open" on public.community_match_posts
+  for select using (status = 'open' and expires_at > now());
+
+drop policy if exists "community_match_posts_insert_own" on public.community_match_posts;
+create policy "community_match_posts_insert_own" on public.community_match_posts
+  for insert with check (auth.uid() = user_id);
+
+drop policy if exists "community_match_posts_update_own" on public.community_match_posts;
+create policy "community_match_posts_update_own" on public.community_match_posts
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+drop policy if exists "community_match_posts_delete_own" on public.community_match_posts;
+create policy "community_match_posts_delete_own" on public.community_match_posts
+  for delete using (auth.uid() = user_id);

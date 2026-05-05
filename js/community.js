@@ -10,11 +10,30 @@ let commFeedCategory = 'all'; // 'all' | 'team' | 'catch' | 'series'
 let commFeedHasMore = false;
 let commCurrentCommentTeamId = null;
 let commLikedSet = new Set();
+let commBattleRecords = [];
+let commMatchPosts = [];
+
+const COMM_BEGINNER_STEPS = [
+  { id: 'profile', text: '设置社区主页，准备公开身份' },
+  { id: 'borrow', text: '从队伍库借用 1 支参考阵容' },
+  { id: 'analysis', text: '完成 1 次赛前分析，记录常见威胁' },
+  { id: 'battle_log', text: '保存 3 场战报，观察胜负原因' },
+  { id: 'scrim', text: '发布或加入 1 次约战' },
+  { id: 'share_team', text: '分享一支改良后的冠军队伍' }
+];
+
+const COMM_SEASON_RULES = [
+  { k: '定位', v: '7 月国服备战期：先沉淀队伍、战报和常见对局。' },
+  { k: '格式', v: '单打 / 双打并行，社区内容都保留格式标签。' },
+  { k: '目标', v: '上线前完成租借队、环境热榜、上分路线和约战链路。' }
+];
 
 /* ──────── 路由钩子 ──────── */
 async function onEnterCommunity() {
   await loadUserProfile();
   updateCommProfileBtn();
+  renderChampionCommunityHub();
+  await Promise.all([loadCommBattleRecords(), loadCommMatchPosts()]);
   await loadLikedSet();
   commFeed = [];
   commFeedOffset = 0;
@@ -103,6 +122,253 @@ async function _requireProfile() {
   return true;
 }
 
+/* ──────── Champions 社区作战台 ──────── */
+function commEsc(s) {
+  if (typeof esc === 'function') return esc(s || '');
+  return String(s || '').replace(/[&<>"']/g, m => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[m]));
+}
+
+function commGetTeams() {
+  const cloud = Array.isArray(window.battleTeams) ? window.battleTeams : [];
+  let local = [];
+  try { local = JSON.parse(localStorage.getItem('battle_teams') || '[]'); } catch(e) {}
+  const map = new Map();
+  [...cloud, ...local].forEach(t => { if (t?.id && !map.has(t.id)) map.set(t.id, t); });
+  return [...map.values()];
+}
+
+function renderChampionCommunityHub() {
+  renderCommSeasonPanel();
+  renderCommRecordPanel();
+  renderCommMetaPanel();
+  renderCommOnboardingPanel();
+  renderCommMatchPanel();
+  renderCommPartnerPanel();
+}
+
+function renderCommSeasonPanel() {
+  const el = document.getElementById('comm-season-panel');
+  if (!el) return;
+  el.innerHTML = `<div class="comm-panel-head">
+    <span><b>赛季规则专区</b><em>Launch Route</em></span>
+    <i>国服 7 月备战</i>
+  </div>
+  <div class="comm-rule-list">${COMM_SEASON_RULES.map(r => `<div class="comm-rule-row">
+    <span>${commEsc(r.k)}</span><p>${commEsc(r.v)}</p>
+  </div>`).join('')}</div>
+  <div class="comm-action-row">
+    <button class="comm-mini-btn" onclick="setCommCategory('team',document.querySelector('.comm-cat-btn[data-cat=team]'))">看队伍库</button>
+    <button class="comm-mini-btn" onclick="window.switchBTab?.('analysis',document.querySelector('.btab[onclick*=analysis]'))">做赛前分析</button>
+  </div>`;
+}
+
+async function loadCommBattleRecords() {
+  const el = document.getElementById('comm-record-panel');
+  try {
+    const { data: { session } } = await db.auth.getSession();
+    if (!session?.user) { commBattleRecords = []; renderCommRecordPanel('登录后记录你的 Champions 战报'); return; }
+    const { data, error } = await db.from('battle_records')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .order('created_at', { ascending: false })
+      .limit(20);
+    if (error) throw error;
+    commBattleRecords = data || [];
+    renderCommRecordPanel();
+  } catch(e) {
+    commBattleRecords = [];
+    renderCommRecordPanel('战报表未就绪，请先执行社区 SQL 迁移');
+  }
+}
+
+function renderCommRecordPanel(msg = '') {
+  const el = document.getElementById('comm-record-panel');
+  if (!el) return;
+  const teams = commGetTeams();
+  const options = teams.map(t => {
+    const id = String(t.id || '');
+    const disabled = id.startsWith('local_') ? ' disabled' : '';
+    return `<option value="${commEsc(id)}"${disabled}>${commEsc(t.team_name || '未命名队伍')}${disabled ? '（需先云端保存）' : ''}</option>`;
+  }).join('');
+  const total = commBattleRecords.length;
+  const wins = commBattleRecords.filter(r => r.result === 'win').length;
+  const losses = commBattleRecords.filter(r => r.result === 'lose').length;
+  const draws = commBattleRecords.filter(r => r.result === 'draw').length;
+  const rate = total ? Math.round(wins / total * 100) : 0;
+  const rows = commBattleRecords.slice(0, 4).map(r => `<div class="comm-record-row ${r.result}">
+    <span>${r.result === 'win' ? '胜' : r.result === 'lose' ? '负' : '平'}</span>
+    <b>${r.format === 'doubles' ? '双打' : '单打'}</b>
+    <p>${commEsc(r.note || '无备注')}</p>
+  </div>`).join('') || `<div class="comm-soft-empty">${msg || '还没有战报，保存第一场后会生成胜率。'}</div>`;
+  el.innerHTML = `<div class="comm-panel-head">
+    <span><b>战报与天梯日志</b><em>Battle Records</em></span>
+    <i>${rate}% 胜率</i>
+  </div>
+  <div class="comm-stat-strip">
+    <span><b>${total}</b><em>总场次</em></span>
+    <span><b>${wins}</b><em>胜</em></span>
+    <span><b>${losses}</b><em>负</em></span>
+    <span><b>${draws}</b><em>平</em></span>
+  </div>
+  <div class="comm-record-form">
+    <select id="comm-br-result"><option value="win">胜利</option><option value="lose">失败</option><option value="draw">平局</option></select>
+    <select id="comm-br-format"><option value="singles">单打</option><option value="doubles">双打</option></select>
+    <select id="comm-br-team"><option value="">不绑定队伍</option>${options}</select>
+    <input id="comm-br-note" maxlength="120" placeholder="一句复盘：输给了什么轴？赢点是什么？">
+    <button class="comm-mini-btn primary" onclick="saveCommBattleRecord()">保存战报</button>
+  </div>
+  <div class="comm-record-list">${rows}</div>`;
+}
+
+async function saveCommBattleRecord() {
+  const { data: { session } } = await db.auth.getSession();
+  if (!session?.user) { showToast('请先登录后记录战报', 'warn'); return; }
+  const teamId = document.getElementById('comm-br-team')?.value || null;
+  const payload = {
+    user_id: session.user.id,
+    team_id: teamId || null,
+    result: document.getElementById('comm-br-result')?.value || 'win',
+    format: document.getElementById('comm-br-format')?.value || 'singles',
+    note: document.getElementById('comm-br-note')?.value.trim() || null
+  };
+  const { error } = await db.from('battle_records').insert(payload);
+  if (error) { showToast('保存失败：' + error.message, 'danger'); return; }
+  if (window.partnerTrackEvent) window.partnerTrackEvent('battle_analysis');
+  if (window.addAffinityProgress) window.addAffinityProgress('battle_analysis');
+  showToast('战报已保存 ✓', 'ok');
+  await loadCommBattleRecords();
+}
+
+function renderCommMetaPanel() {
+  const el = document.getElementById('comm-meta-panel');
+  if (!el) return;
+  const dex = new Map((window.PKM_CHAMPIONS_DATA || []).map(p => [p.slug, p]));
+  const builds = window.PKM_CHAMPIONS_BUILDS || {};
+  const rows = Object.entries(builds).map(([slug, b]) => {
+    const p = dex.get(slug) || { name: slug, slug };
+    const lead = b.teammates?.[0];
+    const item = b.item?.slug || 'unknown';
+    const score = Math.round(((b.ability?.pct || 0) + (b.moves?.[0]?.pct || 0) + (lead?.pct || 0)) / 3);
+    return { slug, p, lead, item, score };
+  }).sort((a, b) => b.score - a.score).slice(0, 8);
+  el.innerHTML = `<div class="comm-panel-head">
+    <span><b>环境热榜</b><em>Meta Watch</em></span>
+    <i>${rows.length} 个核心</i>
+  </div>
+  <div class="comm-meta-list">${rows.map((r, i) => {
+    const mate = dex.get(r.lead?.slug);
+    return `<div class="comm-meta-row">
+      <span class="comm-rank">${i + 1}</span>
+      ${r.p.spriteUrl ? `<img src="${commEsc(r.p.spriteUrl)}" alt="${commEsc(r.p.name)}" onerror="this.style.display='none'">` : ''}
+      <div><b>${commEsc(r.p.name)}</b><em>${mate ? '搭档 ' + commEsc(mate.name) : '核心候选'} · ${commEsc(r.item)}</em></div>
+      <i>${r.score}</i>
+    </div>`;
+  }).join('') || '<div class="comm-soft-empty">暂无热榜数据</div>'}</div>`;
+}
+
+function getCommBeginnerDone() {
+  try { return JSON.parse(localStorage.getItem('comm_beginner_done') || '{}'); } catch(e) { return {}; }
+}
+
+function renderCommOnboardingPanel() {
+  const el = document.getElementById('comm-onboard-panel');
+  if (!el) return;
+  const done = getCommBeginnerDone();
+  const count = COMM_BEGINNER_STEPS.filter(s => done[s.id]).length;
+  el.innerHTML = `<div class="comm-panel-head">
+    <span><b>新手上分路径</b><em>First Week</em></span>
+    <i>${count}/${COMM_BEGINNER_STEPS.length}</i>
+  </div>
+  <div class="comm-progress"><div style="width:${Math.round(count / COMM_BEGINNER_STEPS.length * 100)}%"></div></div>
+  <div class="comm-step-list">${COMM_BEGINNER_STEPS.map(s => `<button class="comm-step ${done[s.id] ? 'done' : ''}" onclick="toggleCommBeginnerStep('${s.id}')">
+    <span>${done[s.id] ? '✓' : '○'}</span>${commEsc(s.text)}
+  </button>`).join('')}</div>`;
+}
+
+function toggleCommBeginnerStep(id) {
+  const done = getCommBeginnerDone();
+  done[id] = !done[id];
+  localStorage.setItem('comm_beginner_done', JSON.stringify(done));
+  renderCommOnboardingPanel();
+}
+
+async function loadCommMatchPosts() {
+  try {
+    const { data, error } = await db.from('community_match_posts')
+      .select('*')
+      .eq('status', 'open')
+      .gt('expires_at', new Date().toISOString())
+      .order('created_at', { ascending: false })
+      .limit(12);
+    if (error) throw error;
+    commMatchPosts = data || [];
+    renderCommMatchPanel();
+  } catch(e) {
+    commMatchPosts = [];
+    renderCommMatchPanel('约战表未就绪，执行社区 SQL 后即可公开发码。');
+  }
+}
+
+function renderCommMatchPanel(msg = '') {
+  const el = document.getElementById('comm-match-panel');
+  if (!el) return;
+  const rows = commMatchPosts.map(p => `<div class="comm-match-row">
+    <div><b>${commEsc(p.room_code)}</b><em>@${commEsc(p.username || '训练师')} · ${p.format === 'doubles' ? '双打' : '单打'} · ${commEsc(p.rank_label || '自由练习')}</em></div>
+    <p>${commEsc(p.note || '欢迎来战')}</p>
+  </div>`).join('') || `<div class="comm-soft-empty">${msg || '暂无公开约战，发一个房间码吧。'}</div>`;
+  el.innerHTML = `<div class="comm-panel-head">
+    <span><b>约战广场</b><em>Private Match</em></span>
+    <i>${commMatchPosts.length} 开放</i>
+  </div>
+  <div class="comm-match-form">
+    <input id="comm-match-code" maxlength="24" placeholder="房间码 / 私房码">
+    <select id="comm-match-format"><option value="singles">单打</option><option value="doubles">双打</option></select>
+    <input id="comm-match-rank" maxlength="18" placeholder="段位/目标">
+    <input id="comm-match-note" maxlength="80" placeholder="备注：练队、复盘、娱乐局">
+    <button class="comm-mini-btn primary" onclick="saveCommMatchPost()">发布</button>
+  </div>
+  <div class="comm-match-list">${rows}</div>`;
+}
+
+async function saveCommMatchPost() {
+  if (!await _requireProfile()) return;
+  const { data: { session } } = await db.auth.getSession();
+  const roomCode = document.getElementById('comm-match-code')?.value.trim();
+  if (!roomCode) { showToast('请输入房间码', 'warn'); return; }
+  const expires = new Date(Date.now() + 1000 * 60 * 60 * 3).toISOString();
+  const payload = {
+    user_id: session.user.id,
+    username: communityProfile.username,
+    avatar: communityProfile.avatar || '🎮',
+    room_code: roomCode,
+    format: document.getElementById('comm-match-format')?.value || 'singles',
+    rank_label: document.getElementById('comm-match-rank')?.value.trim() || null,
+    note: document.getElementById('comm-match-note')?.value.trim() || null,
+    expires_at: expires,
+    status: 'open'
+  };
+  const { error } = await db.from('community_match_posts').insert(payload);
+  if (error) { showToast('发布失败：' + error.message, 'danger'); return; }
+  if (window.addAffinityProgress) window.addAffinityProgress('interact');
+  showToast('约战已发布，3 小时后自动过期 ✓', 'ok');
+  await loadCommMatchPosts();
+}
+
+function renderCommPartnerPanel() {
+  const el = document.getElementById('comm-partner-panel');
+  if (!el) return;
+  el.innerHTML = `<div class="comm-panel-head">
+    <span><b>伙伴联动任务</b><em>Bond Loop</em></span>
+    <i>社区行为加成</i>
+  </div>
+  <div class="comm-partner-list">
+    <div><b>战报</b><span>保存战报会同步一次对战分析亲密度。</span></div>
+    <div><b>约战</b><span>发布约战会计入一次社区互动。</span></div>
+    <div><b>队伍</b><span>分享阵容、被借用、被评论都能形成社区资产。</span></div>
+  </div>
+  <button class="comm-mini-btn" onclick="go('partner',document.querySelector('nav button[onclick*=partner]'))">查看我的伙伴</button>`;
+}
+
 /* ──────── 点赞集合（battle_teams） ──────── */
 async function loadLikedSet() {
   commLikedSet = new Set();
@@ -182,7 +448,7 @@ async function loadCommunityFeed(reset = false) {
 function setCommCategory(cat, btn) {
   commFeedCategory = cat;
   document.querySelectorAll('.comm-cat-btn').forEach(b => b.classList.remove('on'));
-  btn.classList.add('on');
+  (btn || document.querySelector(`.comm-cat-btn[data-cat="${cat}"]`))?.classList.add('on');
   loadCommunityFeed(true);
 }
 
