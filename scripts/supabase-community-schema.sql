@@ -112,7 +112,39 @@ create policy "team_comments_delete_own" on public.team_comments
   for delete using (auth.uid() = user_id);
 
 
--- ── 5. 对战记录表 ─────────────────────────────────────────
+-- ── 5. 扩展 pkm_catch_log — 捕捉/闪光分享 ───────────────────
+alter table public.pkm_catch_log add column if not exists is_public boolean not null default false;
+alter table public.pkm_catch_log add column if not exists author_username text;
+alter table public.pkm_catch_log add column if not exists author_avatar text;
+alter table public.pkm_catch_log add column if not exists likes_count integer not null default 0;
+
+create index if not exists pkm_catch_log_public_idx
+  on public.pkm_catch_log (is_public, created_at desc)
+  where is_public = true;
+
+-- 覆盖原有只读自己的策略，允许公开记录所有人查看
+drop policy if exists "pkm_catch_log_select_own" on public.pkm_catch_log;
+create policy "pkm_catch_log_select_public" on public.pkm_catch_log
+  for select using (auth.uid() = user_id or is_public = true);
+
+
+-- ── 6. 扩展 pkm_series_log — 通关记录分享 ───────────────────
+alter table public.pkm_series_log add column if not exists is_public boolean not null default false;
+alter table public.pkm_series_log add column if not exists author_username text;
+alter table public.pkm_series_log add column if not exists author_avatar text;
+alter table public.pkm_series_log add column if not exists likes_count integer not null default 0;
+alter table public.pkm_series_log add column if not exists series_name text;
+
+create index if not exists pkm_series_log_public_idx
+  on public.pkm_series_log (is_public, created_at desc)
+  where is_public = true;
+
+drop policy if exists "pkm_series_log_select_own" on public.pkm_series_log;
+create policy "pkm_series_log_select_public" on public.pkm_series_log
+  for select using (auth.uid() = user_id or is_public = true);
+
+
+-- ── 7. 对战记录表 ─────────────────────────────────────────
 create table if not exists public.battle_records (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references auth.users(id) on delete cascade,

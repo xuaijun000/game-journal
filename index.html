@@ -571,10 +571,10 @@
     </div>
 
     <div class="comm-filter-bar">
-      <button class="comm-fmt-btn on" data-fmt="all" onclick="setCommFormat('all',this)">全部</button>
-      <button class="comm-fmt-btn" data-fmt="singles" onclick="setCommFormat('singles',this)">单打</button>
-      <button class="comm-fmt-btn" data-fmt="doubles" onclick="setCommFormat('doubles',this)">双打</button>
-      <button class="btn btn-sm btn-a" style="margin-left:auto" onclick="go('battle',document.querySelector('nav button[onclick*=\'battle\']'))">+ 分享我的阵容</button>
+      <button class="comm-cat-btn on" data-cat="all" onclick="setCommCategory('all',this)">全部</button>
+      <button class="comm-cat-btn" data-cat="team" onclick="setCommCategory('team',this)">阵容</button>
+      <button class="comm-cat-btn" data-cat="catch" onclick="setCommCategory('catch',this)">捕捉</button>
+      <button class="comm-cat-btn" data-cat="series" onclick="setCommCategory('series',this)">通关</button>
     </div>
 
     <div id="comm-feed" class="comm-feed"></div>
@@ -809,6 +809,7 @@
       </div>
       <div style="display:flex;gap:8px;margin-top:8px">
         <button class="series-ai-btn" id="series-ai-btn" onclick="toggleSeriesChat()">⬡ 和 AI 聊聊这部作品</button>
+        <button class="btn" id="series-share-btn" data-public="0" onclick="toggleShareSeries()" style="white-space:nowrap">分享到社区</button>
         <button class="btn btn-a" id="series-save-btn" onclick="saveSeriesDetail()" style="white-space:nowrap">保存记录</button>
       </div>
     </div>

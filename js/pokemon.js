@@ -1133,6 +1133,8 @@ function openSeriesDetail(el){
   document.getElementById('series-start-inp').value=log.start_date||'';document.getElementById('series-end-inp').value=log.end_date||'';
   document.getElementById('series-hours-inp').value=log.play_hours||'';document.getElementById('series-ace-inp').value=log.ace_pokemon||'';
   document.getElementById('series-save-btn').dataset.sid=seriesId;
+  const _ssb=document.getElementById('series-share-btn');
+  if(_ssb){const _pub=!!(log.is_public);_ssb.dataset.public=_pub?'1':'0';_ssb.classList.toggle('shared',_pub);_ssb.textContent=_pub?'已分享':'分享到社区';}
   seriesChatHistory=[];seriesChatOpen=false;
   const sw=document.getElementById('series-chat-wrap');if(sw)sw.style.display='none';
   const sab=document.getElementById('series-ai-btn');if(sab)sab.textContent='⬡ 和 AI 聊聊这部作品';
@@ -2503,6 +2505,7 @@ function renderCatchList(records){
         <div class="catch-card-meta">EV产出 ${evStr} · ${ts}${extra.location?` · ${esc(extra.location)}`:''}</div>
         ${extra.note?`<div class="catch-card-note">${esc(extra.note)}</div>`:''}
         ${c.ai_rec?`<details style="margin-top:4px"><summary style="font-size:.7rem;color:var(--t3);cursor:pointer;font-family:'DM Mono',monospace">查看AI推荐方案</summary><div style="font-size:.75rem;color:var(--t2);white-space:pre-wrap;margin-top:4px;padding:6px;background:var(--bg);border-radius:3px;line-height:1.7">${esc(c.ai_rec)}</div></details>`:''}
+        <button class="catch-share-btn${c.is_public?' shared':''}" data-id="${c.id}" data-public="${c.is_public?'1':'0'}" onclick="toggleShareCatch('${c.id}',${!!c.is_public})">${c.is_public?'已分享':'分享'}</button>
       </div>
       <button class="catch-card-del" onclick="delCatch('${c.id}')">✕</button>
     </div>`;
