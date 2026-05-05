@@ -49,8 +49,7 @@ alter table public.battle_teams add column if not exists author_username text;
 alter table public.battle_teams add column if not exists author_avatar text;
 
 create index if not exists battle_teams_public_created_idx
-  on public.battle_teams (is_public, created_at desc)
-  where is_public = true;
+  on public.battle_teams (is_public, created_at desc);
 
 -- 公开队伍允许所有人查看（覆盖原有只读自己的策略）
 drop policy if exists "battle_teams_select_public" on public.battle_teams;
@@ -119,8 +118,7 @@ alter table public.pkm_catch_log add column if not exists author_avatar text;
 alter table public.pkm_catch_log add column if not exists likes_count integer not null default 0;
 
 create index if not exists pkm_catch_log_public_idx
-  on public.pkm_catch_log (is_public, created_at desc)
-  where is_public = true;
+  on public.pkm_catch_log (is_public, created_at desc);
 
 -- 覆盖原有只读自己的策略，允许公开记录所有人查看
 drop policy if exists "pkm_catch_log_select_own" on public.pkm_catch_log;
@@ -136,8 +134,7 @@ alter table public.pkm_series_log add column if not exists likes_count integer n
 alter table public.pkm_series_log add column if not exists series_name text;
 
 create index if not exists pkm_series_log_public_idx
-  on public.pkm_series_log (is_public, created_at desc)
-  where is_public = true;
+  on public.pkm_series_log (is_public, created_at desc);
 
 drop policy if exists "pkm_series_log_select_own" on public.pkm_series_log;
 create policy "pkm_series_log_select_public" on public.pkm_series_log
