@@ -19,6 +19,7 @@
   <link rel="stylesheet" href="css/play.css">
   <link rel="stylesheet" href="css/misc.css">
   <link rel="stylesheet" href="css/battle.css">
+  <link rel="stylesheet" href="css/community.css">
   <link rel="stylesheet" href="css/frlg-map.css">
   <link rel="stylesheet" href="css/partner.css">
   <script src="js/data/battle_registry.js"></script>
@@ -65,6 +66,7 @@
     <button onclick="go('anime',this)">动漫</button>
     <button onclick="go('manga',this)">漫画</button>
     <button onclick="go('battle',this)">对战</button>
+    <button onclick="go('community',this)">社区</button>
   </nav>
   <div class="hdr-r">
     <div class="av" id="av">?</div>
@@ -283,6 +285,17 @@
         <div class="field"><label>密码</label><input type="password" id="ap" placeholder="至少 6 位" autocomplete="current-password"></div>
         <button class="btn btn-a" style="width:100%" id="asub" onclick="doAuth()">登录</button>
         <div class="amsg" id="amsg"></div>
+      </div>
+      <div class="abox data-vault">
+        <div class="data-vault-kicker">DATA VAULT</div>
+        <h2>数据保险箱</h2>
+        <p>导出完整备份，或把备份导入当前账号。本地模式也可以使用。</p>
+        <div class="data-vault-actions">
+          <button class="btn btn-a" onclick="exportAllData()">导出全部数据</button>
+          <button class="btn" onclick="openDataImport()">导入 JSON</button>
+          <input type="file" id="data-import-file" accept="application/json" hidden onchange="importAllData(this)">
+        </div>
+        <div class="data-vault-note">截图文件会保留公开 URL；原始图片请继续放在 Supabase Storage。</div>
       </div>
     </div>
   </div>
@@ -543,6 +556,33 @@
       </div>
 
       <div class="btab-panel" id="bdtab-calc" style="padding-top:1rem"></div>
+    </div>
+  </div>
+
+  <!-- ── 社区页面 ── -->
+  <div class="pg" id="pg-community">
+    <div class="comm-hero">
+      <div>
+        <div class="comm-hero-eyebrow">Pokemon Champions · 国服社区</div>
+        <div class="comm-hero-title">对战广场</div>
+        <div class="comm-hero-sub">发现最强阵容 · 分享你的战术</div>
+      </div>
+      <button class="btn btn-sm" onclick="openProfileModal()" id="comm-profile-btn">设置主页</button>
+    </div>
+
+    <div class="comm-filter-bar">
+      <button class="comm-fmt-btn on" data-fmt="all" onclick="setCommFormat('all',this)">全部</button>
+      <button class="comm-fmt-btn" data-fmt="singles" onclick="setCommFormat('singles',this)">单打</button>
+      <button class="comm-fmt-btn" data-fmt="doubles" onclick="setCommFormat('doubles',this)">双打</button>
+      <button class="btn btn-sm btn-a" style="margin-left:auto" onclick="go('battle',document.querySelector('nav button[onclick*=\'battle\']'))">+ 分享我的阵容</button>
+    </div>
+
+    <div id="comm-feed" class="comm-feed"></div>
+    <div id="comm-feed-empty" class="comm-empty" style="display:none">
+      还没有人分享阵容，成为第一个！
+    </div>
+    <div id="comm-load-more-wrap" style="display:none">
+      <button class="btn" onclick="loadCommunityFeed(false)">加载更多</button>
     </div>
   </div>
 </main>
@@ -1171,6 +1211,7 @@
 <!-- JS Modules (按依赖顺序加载) -->
 <script src="js/config.js"></script>
 <script src="js/utils.js"></script>
+<script src="js/data-tools.js"></script>
 <script src="js/auth.js"></script>
 <script src="js/games.js"></script>
 <script src="js/charts.js"></script>
@@ -1185,7 +1226,65 @@
 <script src="js/moments.js"></script>
 <script src="js/play.js"></script>
 <script src="js/battle.js"></script>
+<!-- ── 个人资料弹窗 ── -->
+<div class="ov" id="ov-profile" onclick="if(event.target===this)closeProfileModal()">
+  <div class="modal" style="max-width:420px">
+    <div class="mh">
+      <h2 style="font-family:'Noto Serif SC',serif">我的主页</h2>
+      <button class="btn btn-sm" onclick="closeProfileModal()">✕</button>
+    </div>
+    <div class="mc" style="padding-top:.8rem">
+      <div class="prof-field">
+        <label>选择头像</label>
+        <div class="prof-avatar-row">
+          <div class="prof-avatar-opt on" data-av="🎮" onclick="document.querySelectorAll('.prof-avatar-opt').forEach(e=>e.classList.remove('on'));this.classList.add('on')">🎮</div>
+          <div class="prof-avatar-opt" data-av="⚔️" onclick="document.querySelectorAll('.prof-avatar-opt').forEach(e=>e.classList.remove('on'));this.classList.add('on')">⚔️</div>
+          <div class="prof-avatar-opt" data-av="🏆" onclick="document.querySelectorAll('.prof-avatar-opt').forEach(e=>e.classList.remove('on'));this.classList.add('on')">🏆</div>
+          <div class="prof-avatar-opt" data-av="🌟" onclick="document.querySelectorAll('.prof-avatar-opt').forEach(e=>e.classList.remove('on'));this.classList.add('on')">🌟</div>
+          <div class="prof-avatar-opt" data-av="🔥" onclick="document.querySelectorAll('.prof-avatar-opt').forEach(e=>e.classList.remove('on'));this.classList.add('on')">🔥</div>
+          <div class="prof-avatar-opt" data-av="💎" onclick="document.querySelectorAll('.prof-avatar-opt').forEach(e=>e.classList.remove('on'));this.classList.add('on')">💎</div>
+          <div class="prof-avatar-opt" data-av="🐉" onclick="document.querySelectorAll('.prof-avatar-opt').forEach(e=>e.classList.remove('on'));this.classList.add('on')">🐉</div>
+          <div class="prof-avatar-opt" data-av="🎯" onclick="document.querySelectorAll('.prof-avatar-opt').forEach(e=>e.classList.remove('on'));this.classList.add('on')">🎯</div>
+          <div class="prof-avatar-opt" data-av="🌊" onclick="document.querySelectorAll('.prof-avatar-opt').forEach(e=>e.classList.remove('on'));this.classList.add('on')">🌊</div>
+          <div class="prof-avatar-opt" data-av="⚡" onclick="document.querySelectorAll('.prof-avatar-opt').forEach(e=>e.classList.remove('on'));this.classList.add('on')">⚡</div>
+        </div>
+      </div>
+      <div class="prof-field">
+        <label>用户名 <span style="color:var(--t3);font-size:.65rem;text-transform:none">（2-16字符，全局唯一）</span></label>
+        <input type="text" id="prof-username-inp" placeholder="例：神奥冠军" maxlength="16" autocomplete="off">
+      </div>
+      <div class="prof-field">
+        <label>一句话介绍 <span style="color:var(--t3);font-size:.65rem;text-transform:none">（可选）</span></label>
+        <textarea id="prof-bio-inp" placeholder="例：专注单打超级球，欢迎切磋…" maxlength="80"></textarea>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn" onclick="closeProfileModal()">取消</button>
+      <button class="btn btn-a" id="prof-save-btn" onclick="saveProfile()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── 评论弹窗 ── -->
+<div class="ov" id="ov-comments" onclick="if(event.target===this)closeCommentsModal()">
+  <div class="modal" style="max-width:480px">
+    <div class="mh">
+      <h2 id="comm-comments-title" style="font-size:.95rem;font-family:'Noto Serif SC',serif">队伍评论</h2>
+      <button class="btn btn-sm" onclick="closeCommentsModal()">✕</button>
+    </div>
+    <div class="mc" style="padding-top:.5rem">
+      <div class="comm-comments-list" id="comm-comments-list"></div>
+      <div class="comm-comment-inp-row">
+        <input type="text" id="comm-comment-inp" placeholder="说说你的看法…" maxlength="200"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();submitComment();}">
+        <button class="btn btn-a btn-sm" onclick="submitComment()">发送</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="js/partner.js"></script>
+<script src="js/community.js"></script>
 <script>init();</script>
 <script>
 (function(){

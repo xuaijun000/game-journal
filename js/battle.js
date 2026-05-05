@@ -1140,6 +1140,7 @@ function renderTeamList(){
         <div class="btc-meta">${pkm.filter(p=>p.name).length}/6 已录入</div>
         <div class="btc-actions">
           <button class="btn btn-sm" onclick="openBattleTeamEdit('${t.id}',0)">✏️ 编辑</button>
+          <button class="btc-share-btn${t.is_public?' shared':''}" onclick="event.stopPropagation();toggleShareTeam('${t.id}','singles')" title="${t.is_public?'取消分享':'分享到社区'}">${t.is_public?'已分享':'分享'}</button>
           <button class="btn btn-sm btn-d" onclick="confirmDeleteBattleTeam('${t.id}')">删除</button>
         </div>
       </div>
@@ -3600,7 +3601,7 @@ function renderDTeamList() {
       return `<div class="btc-pkm" onclick="event.stopPropagation();openBattleTeamEdit('${t.id}',${i})" title="${esc(p.name||'空位')}">${img}<div class="btc-pkm-name">${esc(p.name||'—')}</div><div class="btc-pkm-types">${dots}</div></div>`;
     });
     while (sprites.length < 6) sprites.push(`<div class="btc-pkm"><span style="font-size:1.4rem;color:var(--b2)">+</span><div class="btc-pkm-name" style="color:var(--t3)">空</div></div>`);
-    return `<div class="battle-team-card"><div class="btc-header"><div class="btc-name">${esc(t.team_name||'我的队伍')}</div><div class="btc-meta">${pkm.filter(p=>p.name).length}/6 已录入</div><div class="btc-actions"><button class="btn btn-sm" onclick="openBattleTeamEdit('${t.id}',0)">✏️ 编辑</button><button class="btn btn-sm btn-d" onclick="confirmDeleteBattleTeam('${t.id}')">删除</button></div></div><div class="btc-sprites">${sprites.join('')}</div></div>`;
+    return `<div class="battle-team-card"><div class="btc-header"><div class="btc-name">${esc(t.team_name||'我的队伍')}</div><div class="btc-meta">${pkm.filter(p=>p.name).length}/6 已录入</div><div class="btc-actions"><button class="btn btn-sm" onclick="openBattleTeamEdit('${t.id}',0)">✏️ 编辑</button><button class="btc-share-btn${t.is_public?' shared':''}" onclick="event.stopPropagation();toggleShareTeam('${t.id}','doubles')" title="${t.is_public?'取消分享':'分享到社区'}">${t.is_public?'已分享':'分享'}</button><button class="btn btn-sm btn-d" onclick="confirmDeleteBattleTeam('${t.id}')">删除</button></div></div><div class="btc-sprites">${sprites.join('')}</div></div>`;
   }).join('');
 }
 

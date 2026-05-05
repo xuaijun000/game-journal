@@ -1,0 +1,403 @@
+/* ═══════════════════════════════════════════════
+   COMMUNITY.CSS — 对战社区样式
+   ═══════════════════════════════════════════════ */
+
+/* ── 社区页面整体 ── */
+#pg-community {
+  padding-bottom: 3rem;
+}
+
+/* ── Hero 横幅 ── */
+.comm-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.4rem 0 1rem;
+  gap: 1rem;
+}
+.comm-hero-eyebrow {
+  font-size: .6rem;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--acc);
+  font-family: 'DM Mono', monospace;
+  margin-bottom: .3rem;
+}
+.comm-hero-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-family: 'Noto Serif SC', serif;
+  color: var(--t);
+}
+.comm-hero-sub {
+  font-size: .75rem;
+  color: var(--t3);
+  margin-top: .2rem;
+}
+
+/* ── 筛选栏 ── */
+.comm-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .6rem 0 1rem;
+  border-bottom: 1px solid var(--b);
+  margin-bottom: 1.2rem;
+  flex-wrap: wrap;
+}
+.comm-fmt-btn {
+  padding: .28rem .75rem;
+  border-radius: 20px;
+  border: 1px solid var(--b2);
+  background: var(--bg2);
+  color: var(--t2);
+  font-size: .75rem;
+  cursor: pointer;
+  font-family: 'DM Mono', monospace;
+  transition: all .15s;
+}
+.comm-fmt-btn:hover { border-color: var(--acc); color: var(--acc); }
+.comm-fmt-btn.on {
+  background: var(--acc);
+  border-color: var(--acc);
+  color: #fff;
+}
+
+/* ── 动态卡片网格 ── */
+.comm-feed {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+/* ── 单张卡片 ── */
+.comm-card {
+  background: var(--bg2);
+  border: 1px solid var(--b);
+  border-radius: var(--rl);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+  transition: border-color .2s, transform .15s;
+}
+.comm-card:hover {
+  border-color: rgba(96, 165, 250, .3);
+  transform: translateY(-2px);
+}
+
+/* 卡片头部 */
+.cc-head {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+.cc-author {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  flex: 1;
+  min-width: 0;
+}
+.cc-avatar {
+  font-size: 1.1rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.cc-uname {
+  font-size: .72rem;
+  font-family: 'DM Mono', monospace;
+  color: var(--t2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cc-fmt {
+  font-size: .6rem;
+  font-family: 'DM Mono', monospace;
+  padding: .15rem .45rem;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.cc-fmt-singles {
+  background: rgba(96, 165, 250, .12);
+  color: #60a5fa;
+  border: 1px solid rgba(96, 165, 250, .25);
+}
+.cc-fmt-doubles {
+  background: rgba(167, 139, 250, .12);
+  color: #a78bfa;
+  border: 1px solid rgba(167, 139, 250, .25);
+}
+.cc-time {
+  font-size: .62rem;
+  color: var(--t3);
+  flex-shrink: 0;
+  font-family: 'DM Mono', monospace;
+}
+
+/* 队伍名 */
+.cc-name {
+  font-size: .9rem;
+  font-weight: 600;
+  color: var(--t);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 精灵图行 */
+.cc-sprites {
+  display: flex;
+  gap: 4px;
+}
+.cc-slot {
+  flex: 1;
+  aspect-ratio: 1;
+  min-width: 0;
+  background: var(--bg3);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.cc-slot img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.cc-slot-empty {
+  color: var(--b2);
+  font-size: 1.2rem;
+}
+.cc-slot-name {
+  font-size: .55rem;
+  color: var(--t3);
+  text-align: center;
+  padding: 2px;
+  line-height: 1.2;
+}
+
+/* 操作按钮行 */
+.cc-actions {
+  display: flex;
+  gap: .4rem;
+  margin-top: .2rem;
+}
+.cc-btn {
+  padding: .3rem .6rem;
+  border-radius: 8px;
+  border: 1px solid var(--b2);
+  background: var(--bg3);
+  color: var(--t2);
+  font-size: .72rem;
+  cursor: pointer;
+  transition: all .15s;
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+  white-space: nowrap;
+}
+.cc-btn:hover {
+  border-color: var(--acc);
+  color: var(--acc);
+}
+.cc-like.liked {
+  color: #f87171;
+  border-color: rgba(248, 113, 113, .4);
+  background: rgba(248, 113, 113, .08);
+}
+.cc-like.liked:hover {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, .5);
+}
+.cc-import {
+  margin-left: auto;
+  border-color: rgba(96, 165, 250, .3);
+  color: var(--acc);
+}
+.cc-import:hover {
+  background: rgba(96, 165, 250, .1);
+}
+
+/* 加载 / 空状态 */
+.comm-loading {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 2rem;
+  color: var(--t3);
+  font-size: .8rem;
+  font-family: 'DM Mono', monospace;
+}
+.comm-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--t3);
+  font-size: .85rem;
+}
+#comm-load-more-wrap {
+  padding: 1.5rem 0;
+  text-align: center;
+}
+
+/* ── 个人资料弹窗 ── */
+.prof-avatar-row {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+  margin-bottom: .75rem;
+}
+.prof-avatar-opt {
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  border: 2px solid var(--b2);
+  background: var(--bg3);
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color .15s;
+}
+.prof-avatar-opt:hover { border-color: var(--acc); }
+.prof-avatar-opt.on {
+  border-color: var(--acc);
+  background: rgba(96, 165, 250, .12);
+}
+.prof-field {
+  margin-bottom: .75rem;
+}
+.prof-field label {
+  display: block;
+  font-size: .68rem;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--t3);
+  font-family: 'DM Mono', monospace;
+  margin-bottom: .3rem;
+}
+.prof-field input,
+.prof-field textarea {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--b2);
+  border-radius: 8px;
+  padding: .5rem .7rem;
+  color: var(--t);
+  font-family: inherit;
+  font-size: .82rem;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color .15s;
+}
+.prof-field input:focus,
+.prof-field textarea:focus {
+  border-color: var(--acc);
+}
+.prof-field textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+/* ── 评论弹窗 ── */
+.comm-comments-list {
+  max-height: 320px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+  padding: .5rem 0;
+}
+.comm-comment {
+  background: var(--bg3);
+  border-radius: 8px;
+  padding: .6rem .8rem;
+}
+.comm-comment-meta {
+  display: flex;
+  align-items: baseline;
+  gap: .5rem;
+  margin-bottom: .25rem;
+}
+.comm-comment-author {
+  font-size: .72rem;
+  font-family: 'DM Mono', monospace;
+  color: var(--acc);
+  font-weight: 600;
+}
+.comm-comment-time {
+  font-size: .62rem;
+  color: var(--t3);
+  font-family: 'DM Mono', monospace;
+}
+.comm-comment-text {
+  font-size: .8rem;
+  color: var(--t2);
+  line-height: 1.55;
+  word-break: break-word;
+}
+.comm-comment-inp-row {
+  display: flex;
+  gap: .5rem;
+  margin-top: .75rem;
+  border-top: 1px solid var(--b);
+  padding-top: .75rem;
+}
+.comm-comment-inp-row input {
+  flex: 1;
+  background: var(--bg3);
+  border: 1px solid var(--b2);
+  border-radius: 8px;
+  padding: .45rem .7rem;
+  color: var(--t);
+  font-family: inherit;
+  font-size: .82rem;
+  outline: none;
+  transition: border-color .15s;
+}
+.comm-comment-inp-row input:focus { border-color: var(--acc); }
+
+/* ── 分享按钮（战队卡片中） ── */
+.btc-share-btn {
+  font-size: .65rem;
+  padding: .2rem .5rem;
+  border-radius: 6px;
+  border: 1px solid var(--b2);
+  background: transparent;
+  color: var(--t3);
+  cursor: pointer;
+  transition: all .15s;
+  font-family: 'DM Mono', monospace;
+  white-space: nowrap;
+}
+.btc-share-btn:hover {
+  border-color: var(--acc);
+  color: var(--acc);
+}
+.btc-share-btn.shared {
+  border-color: rgba(74, 222, 128, .4);
+  color: #4ade80;
+  background: rgba(74, 222, 128, .07);
+}
+
+/* ── 社区快捷入口（对战页面内） ── */
+.battle-comm-link {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .6rem .9rem;
+  background: rgba(96, 165, 250, .06);
+  border: 1px solid rgba(96, 165, 250, .18);
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  transition: background .15s;
+}
+.battle-comm-link:hover { background: rgba(96, 165, 250, .12); }
+.battle-comm-link-ico { font-size: 1rem; }
+.battle-comm-link-txt { font-size: .78rem; color: var(--t2); flex: 1; }
+.battle-comm-link-arr { font-size: .75rem; color: var(--acc); font-family: 'DM Mono', monospace; }

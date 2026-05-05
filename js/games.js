@@ -126,7 +126,7 @@ async function saveLibraryView(){
       ?db.from('game_library_views').update(payload).eq('id',existing.id).eq('user_id',user.id).select().single()
       :db.from('game_library_views').insert({...payload,user_id:user.id}).select().single();
     const{data,error}=await req;
-    if(error){alert('保存失败：请确认 Supabase 已创建 game_library_views 表。\n'+error.message);return;}
+    if(error){showToast('保存失败：请确认已运行 Supabase schema','danger');console.warn(error);return;}
     if(existing){
       const idx=libraryViews.findIndex(v=>String(v.id)===String(existing.id));
       if(idx>-1)libraryViews[idx]=data;
@@ -372,8 +372,8 @@ async function saveGame(){
   const p={name,platforms:pls,genres:gns,styles:sts,developer:document.getElementById('fdev').value.trim(),year:parseInt(document.getElementById('fyr').value)||null,status:document.getElementById('fst2').value,hours:parseInt(document.getElementById('fhr').value)||0,completion:document.getElementById('fcp').value,rating:star,review:document.getElementById('frev').value.trim(),cover:document.getElementById('fcv').value.trim()};
   const{data:{session}}=await db.auth.getSession();const user=session?.user;
   if(user){
-    if(editId){const{error}=await db.from('games').update(p).eq('id',editId).eq('user_id',user.id);if(error){alert('更新失败：'+error.message);return;}const i=games.findIndex(g=>g.id==editId);if(i>-1)games[i]={...games[i],...p};}
-    else{const{data,error}=await db.from('games').insert({...p,user_id:user.id}).select().single();if(error){alert('添加失败：'+error.message);return;}if(data)games.unshift(data);}
+    if(editId){const{error}=await db.from('games').update(p).eq('id',editId).eq('user_id',user.id);if(error){notifyError('更新失败',error);return;}const i=games.findIndex(g=>g.id==editId);if(i>-1)games[i]={...games[i],...p};}
+    else{const{data,error}=await db.from('games').insert({...p,user_id:user.id}).select().single();if(error){notifyError('添加失败',error);return;}if(data)games.unshift(data);}
   }else{
     if(editId){const i=games.findIndex(g=>g._id==editId);if(i>-1)games[i]={...games[i],...p};}
     else games.unshift({_id:Date.now().toString(36)+Math.random().toString(36).slice(2),created_at:new Date().toISOString(),...p});
@@ -405,6 +405,7 @@ function go(pg,btn){
   if(pg==='manga'&&!window._mangaInited){window._mangaInited=true;initMediaList('manga');}
   if(pg==='battle'&&!window._battleInited){window._battleInited=true;initBattle();}
   if(pg==='partner'&&!window._partnerInited){window._partnerInited=true;initPartner();}
+  if(pg==='community'&&window.onEnterCommunity)onEnterCommunity();
   if(window.updatePartnerFloat)window.updatePartnerFloat(pg);
   if(window.updateHeaderChromeState)window.updateHeaderChromeState();
 }
