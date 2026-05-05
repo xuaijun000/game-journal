@@ -132,6 +132,8 @@ let partnerChatHistory=[];
 let partnerChatLoading=false;
 let partnerTypeCache={};
 let partnerConsolePanel='overview';
+let _partnerUserId=null;
+let _partnerLbDim='level';
 
 /* ===== INIT ===== */
 async function initPartner(){
@@ -154,6 +156,7 @@ async function initPartner(){
 }
 
 async function loadPartnerData(userId){
+  _partnerUserId=userId;
   const{data,error}=await db.from('pkm_partner').select('*').eq('user_id',userId).single();
   if(error){partnerData=null;renderPartnerSelectPrompt();updatePartnerFloat();return;}
   if(data){partnerData=data;checkPartnerDailyReset();await pEnsurePartnerMeta();renderPartnerPage();updatePartnerFloat();}
@@ -185,6 +188,7 @@ function checkPartnerDailyReset(){
   partnerData.daily_interactions={date:today,total:0};
   partnerData.inventory=partnerData.inventory||{};
   partnerData.inventory.berry=(partnerData.inventory.berry||0)+1;
+  if(window.addAffinityProgress)window.addAffinityProgress('daily_login');
 }
 
 function pToday(){return new Date().toISOString().slice(0,10);}
@@ -315,15 +319,8 @@ function pPartnerRoster(){
 
 /* ===== RENDER ===== */
 function renderPartnerSelectPrompt(){
-  document.getElementById('partner-container').innerHTML=`
-    <div class="partner-empty-prompt">
-      <span class="partner-empty-icon">🥚</span>
-      <div class="partner-empty">
-        <h3>选择你的第一只伙伴</h3>
-        <p>从你捕获或喜欢的宝可梦中，选择一只作为你专属的旅行伙伴。它会陪你记录每一次冒险。</p>
-        <button class="btn btn-a" onclick="openPartnerSelect()" style="padding:10px 32px;margin:0 auto;display:block;font-size:.92rem">选择伙伴</button>
-      </div>
-    </div>`;
+  const container=document.getElementById('partner-container');
+  if(container)_renderEncounterPrompt(container,_partnerUserId);
 }
 
 function renderPartnerPage(){
@@ -423,6 +420,7 @@ function setPartnerConsolePanel(panel){
   partnerConsolePanel=panel||'overview';
   renderPartnerPage();
   if(partnerConsolePanel==='chat'&&partnerChatHistory.length===0)setTimeout(autoPartnerGreet,200);
+  if(partnerConsolePanel==='encounter')setTimeout(_fillEncounterPanelName,80);
 }
 
 function pRenderPartnerConsole(){
@@ -441,6 +439,7 @@ function pRenderPartnerConsole(){
     {id:'diary',title:'伙伴日记',sub:'Memory Log',metric:String(diaryCount),accent:'#9b8cff',body:pRenderDiary()},
     {id:'profile',title:'伙伴档案',sub:'Profile',metric:stage.name,accent:'#ff80ab',body:pRenderProfile()},
     {id:'chat',title:'伙伴通讯',sub:'Talk',metric:'AI',accent:'#7ecdc4',body:pRenderChatHTML(true)},
+    {id:'encounter',title:'缘遇探索',sub:'Wild Encounter',metric:'每日邂逅',accent:'#56c97a',body:pRenderEncounterPanel()},
   ];
   const active=panels.find(p=>p.id===partnerConsolePanel)||panels[0];
   const isFlipped=partnerConsolePanel!=='overview';
@@ -609,6 +608,7 @@ async function doPartnerInteraction(type){
   partnerData.interaction_counts={...ic,[type]:(ic[type]||0)+1,total:(ic.total||0)+1};
   partnerData.last_interaction_at=new Date().toISOString();
   partnerData.last_action=type;
+  if(window.addAffinityProgress)window.addAffinityProgress('interact');
 
   const newLv=pLevelFromExp(partnerData.exp);
   const oldLv=pLevelFromExp(prevExp);
@@ -1095,6 +1095,292 @@ window.updatePartnerFloat=updatePartnerFloat;
 window.clearPartnerSession=function(){
   partnerData=null;
   partnerChatHistory=[];
+  _partnerUserId=null;
   const w=document.getElementById('pflt');
   if(w)w.classList.add('hidden');
 };
+
+/* ===== ENCOUNTER SYSTEM ===== */
+
+const ENCOUNTER_POOLS={
+  common:   [25,133,52,54,143,94,37,58,63,66,74,79,81,92,95,100,104,109,116,118,125,126,128,129],
+  rare:     [1,4,7,16,19,23,27,35,39,41,43,46,48,50,60,72,77,83,84,86,88,90,113,115,123,131,132,137,138,140],
+  ultra:    [3,6,9,26,34,36,45,62,65,68,76,78,80,82,93,97,101,103,106,107,110,112,130,134,135,136,139,141,142,148],
+  legendary:[144,145,146,149,150,151,243,244,245,249,250,251]
+};
+const AFFINITY_THRESHOLD=300;
+const AFFINITY_ACTIONS={
+  game_log:       {gain:30,dailyLimit:1, label:'游戏日志',icon:'📝'},
+  battle_analysis:{gain:25,dailyLimit:2, label:'对战分析',icon:'⚔️'},
+  catch_log:      {gain:20,dailyLimit:3, label:'捕捉记录',icon:'🎣'},
+  interact:       {gain:10,dailyLimit:5, label:'伙伴互动',icon:'🤝'},
+  daily_login:    {gain:50,dailyLimit:1, label:'每日登录', icon:'🌅'}
+};
+const RARITY_ZH={common:'普通',rare:'稀有',ultra:'超稀有',legendary:'传说'};
+const RARITY_CLR={common:'var(--t3)',rare:'#7ecdc4',ultra:'#c89040',legendary:'#ff80ab'};
+
+function _encHash(s){let h=0;for(let i=0;i<s.length;i++){h=(h<<5)-h+s.charCodeAt(i);h|=0;}return Math.abs(h);}
+function _encRarity(n){const r=n%100;if(r<60)return'common';if(r<88)return'rare';if(r<98)return'ultra';return'legendary';}
+function _getWeekStr(){const d=new Date(),day=d.getDay()||7;d.setDate(d.getDate()+4-day);const y=d.getFullYear(),wk=Math.ceil((((d-new Date(y,0,1))/864e5)+1)/7);return`${y}-W${wk}`;}
+function _encK(uid){return`enc_${uid}`;}
+function _affK(uid){return`aff_${uid}`;}
+function _rerollK(uid){return`enc_reroll_${uid}`;}
+
+function getOrGenerateEncounter(uid){
+  const today=pToday(),k=_encK(uid);
+  let enc=null;try{enc=JSON.parse(localStorage.getItem(k));}catch{}
+  if(enc?.generated_date===today)return enc;
+  const seed=_encHash(uid+today);
+  const rarity=_encRarity(seed);
+  const pool=ENCOUNTER_POOLS[rarity];
+  const pkmId=pool[Math.abs((seed>>4)%pool.length)];
+  enc={pkm_id:pkmId,rarity,generated_date:today,week:_getWeekStr(),pkm_name:null};
+  try{localStorage.setItem(k,JSON.stringify(enc));}catch{}
+  return enc;
+}
+
+function getAffinityData(uid){
+  const today=pToday(),k=_affK(uid);
+  let aff=null;try{aff=JSON.parse(localStorage.getItem(k));}catch{}
+  if(aff?.date===today)return aff;
+  const fresh={date:today,total:aff?.total||0,daily:{}};
+  try{localStorage.setItem(k,JSON.stringify(fresh));}catch{}
+  return fresh;
+}
+
+window.addAffinityProgress=async function(actionType){
+  let uid=_partnerUserId;
+  if(!uid){const{data:{session}}=await db.auth.getSession().catch(()=>({data:{session:null}}));if(!session?.user)return;uid=session.user.id;}
+  const cfg=AFFINITY_ACTIONS[actionType];if(!cfg)return;
+  const k=_affK(uid);const aff=getAffinityData(uid);
+  const used=aff.daily[actionType]||0;if(used>=cfg.dailyLimit)return;
+  aff.daily[actionType]=used+1;aff.total=(aff.total||0)+cfg.gain;
+  try{localStorage.setItem(k,JSON.stringify(aff));}catch{}
+  showPartnerToast(`💫 邂逅亲密度 +${cfg.gain}（${cfg.label}）`);
+  const sec=document.getElementById('encounter-section');
+  if(sec){const enc=getOrGenerateEncounter(uid);_fillEncSec(sec,uid,aff,enc);}
+};
+
+async function contractEncounterPartner(pkmId,pkmName){
+  let uid=_partnerUserId;
+  if(!uid){const{data:{session}}=await db.auth.getSession().catch(()=>({data:{session:null}}));if(!session?.user)return;uid=session.user.id;}
+  const aff=getAffinityData(uid);
+  if((aff.total||0)<AFFINITY_THRESHOLD){showPartnerToast(`亲密度不足 ${AFFINITY_THRESHOLD}，继续活跃吧～`);return;}
+  try{localStorage.removeItem(_encK(uid));localStorage.removeItem(_affK(uid));}catch{}
+  await selectPartner(pkmId,pkmName||`#${pkmId}`);
+}
+
+async function rerollEncounter(){
+  let uid=_partnerUserId;
+  if(!uid){const{data:{session}}=await db.auth.getSession().catch(()=>({data:{session:null}}));if(!session?.user){showPartnerToast('请先登录');return;}uid=session.user.id;}
+  const week=_getWeekStr();
+  if(localStorage.getItem(_rerollK(uid))===week){showPartnerToast('本周重置次数已用完，下周再来吧～');return;}
+  try{localStorage.setItem(_rerollK(uid),week);localStorage.removeItem(_encK(uid));}catch{}
+  showPartnerToast('已重新生成今日遭遇宝可梦！');
+  const container=document.getElementById('partner-container');
+  if(container&&!partnerData)_renderEncounterPrompt(container,uid);
+  const sec=document.getElementById('encounter-section');
+  if(sec){const enc=getOrGenerateEncounter(uid);_fillEncSec(sec,uid,getAffinityData(uid),enc);}
+  setTimeout(_fillEncounterPanelName,80);
+}
+
+async function _renderEncounterPrompt(container,uid){
+  if(!uid){
+    const{data:{session}}=await db.auth.getSession().catch(()=>({data:{session:null}}));
+    if(!session?.user){
+      container.innerHTML=`<div class="partner-empty-prompt"><span class="partner-empty-icon">🥚</span><div class="partner-empty"><h3>登录后遇见宝可梦</h3><p>每天会出现随机宝可梦，在应用内活跃可提升亲密度，达到阈值后缔结契约！</p><button class="btn btn-a" onclick="go('auth',null)" style="padding:10px 32px;margin:0 auto;display:block">前往登录</button></div></div>`;
+      return;
+    }
+    uid=session.user.id;
+  }
+  const enc=getOrGenerateEncounter(uid);
+  const aff=getAffinityData(uid);
+  const total=aff.total||0,pct=Math.min(100,Math.round(total/AFFINITY_THRESHOLD*100));
+  const ready=total>=AFFINITY_THRESHOLD;
+  const rerollUsed=localStorage.getItem(_rerollK(uid))===_getWeekStr();
+  const rc=RARITY_CLR[enc.rarity];
+  const actRows=Object.entries(AFFINITY_ACTIONS).map(([t,c])=>{
+    const used=aff.daily[t]||0,done=used>=c.dailyLimit;
+    return`<div class="enc-act-row ${done?'done':''}">
+      <span class="enc-act-icon">${c.icon}</span>
+      <span class="enc-act-label">${c.label} <em>+${c.gain}×${c.dailyLimit}</em></span>
+      <span class="enc-act-badge">${done?'✓':used+'/'+c.dailyLimit}</span>
+    </div>`;
+  }).join('');
+  container.innerHTML=`<div class="enc-prompt">
+    <div class="enc-header"><span class="enc-header-kicker">Wild Encounter</span><h3>今日遭遇宝可梦</h3></div>
+    <div class="enc-pkm-card">
+      <div class="enc-pkm-sprite-wrap"><img class="enc-pkm-sprite" src="${partnerSpriteUrl(enc.pkm_id)}" alt="" onerror="this.onerror=null;this.src='${partnerSpriteFallbackUrl(enc.pkm_id)}'"></div>
+      <div class="enc-pkm-info">
+        <div class="enc-pkm-num">#${String(enc.pkm_id).padStart(4,'0')}</div>
+        <div class="enc-pkm-name" id="enc-pkm-name">${enc.pkm_name||'…'}</div>
+        <div class="enc-rarity-badge" style="--enc-rarity-c:${rc}">✦ ${RARITY_ZH[enc.rarity]}</div>
+      </div>
+    </div>
+    <div class="enc-affinity-section">
+      <div class="enc-affinity-label"><span>邂逅亲密度</span><span class="enc-affinity-val">${total} / ${AFFINITY_THRESHOLD}</span></div>
+      <div class="enc-affinity-bar"><div class="enc-affinity-fill" style="width:${pct}%"></div></div>
+      ${ready?'<div class="enc-ready-hint">✨ 亲密度已满，可以缔结契约了！</div>':''}
+    </div>
+    <div class="enc-actions-list">${actRows}</div>
+    <div class="enc-btns">
+      <button class="enc-contract-btn ${ready?'':'locked'}" onclick="contractEncounterPartner(${enc.pkm_id},document.getElementById('enc-pkm-name')?.textContent)" ${ready?'':'disabled'}>${ready?'🤝 缔结契约':'🔒 亲密度不足'}</button>
+      <button class="enc-reroll-btn" onclick="rerollEncounter()" ${rerollUsed?'disabled':''}>${rerollUsed?'本周已重置':'🎲 重新邂逅（每周1次）'}</button>
+    </div>
+  </div>`;
+  setTimeout(_fillEncounterPanelName,80);
+}
+
+function _fillEncSec(el,uid,aff,enc){
+  const total=aff.total||0,pct=Math.min(100,Math.round(total/AFFINITY_THRESHOLD*100));
+  const ready=total>=AFFINITY_THRESHOLD;
+  const rerollUsed=localStorage.getItem(_rerollK(uid))===_getWeekStr();
+  const rc=RARITY_CLR[enc.rarity];
+  el.innerHTML=`<div class="partner-box" id="encounter-section" style="--pbox-accent:#56c97a">
+    <div class="partner-box-hdr"><span><b>缘遇探索</b><em>Wild Encounter</em></span><i style="color:#56c97a">${RARITY_ZH[enc.rarity]}</i></div>
+    <div class="enc-sec-row">
+      <img class="enc-sec-sprite" src="${partnerSpriteUrl(enc.pkm_id)}" alt="" onerror="this.onerror=null;this.src='${partnerSpriteFallbackUrl(enc.pkm_id)}'">
+      <div class="enc-sec-info">
+        <div class="enc-pkm-num">#${String(enc.pkm_id).padStart(4,'0')}</div>
+        <div class="enc-pkm-name" id="enc-pkm-name">${enc.pkm_name||'…'}</div>
+        <div class="enc-rarity-badge" style="--enc-rarity-c:${rc}">✦ ${RARITY_ZH[enc.rarity]}</div>
+      </div>
+    </div>
+    <div class="enc-affinity-section" style="margin:8px 0">
+      <div class="enc-affinity-label"><span style="font-size:.68rem;color:var(--t3)">邂逅亲密度</span><span class="enc-affinity-val">${total}/${AFFINITY_THRESHOLD}</span></div>
+      <div class="enc-affinity-bar"><div class="enc-affinity-fill" style="width:${pct}%"></div></div>
+      ${ready?'<div class="enc-ready-hint">✨ 亲密度已满！</div>':''}
+    </div>
+    <div class="enc-btns" style="gap:6px">
+      <button class="enc-contract-btn ${ready?'':'locked'}" style="font-size:.7rem;padding:6px 12px" onclick="contractEncounterPartner(${enc.pkm_id},document.getElementById('enc-pkm-name')?.textContent)" ${ready?'':'disabled'}>${ready?'🤝 缔结':'🔒 未达阈值'}</button>
+      <button class="enc-reroll-btn" style="font-size:.7rem;padding:6px 12px" onclick="rerollEncounter()" ${rerollUsed?'disabled':''}>${rerollUsed?'本周已重置':'🎲 重邂逅'}</button>
+    </div>
+  </div>`;
+}
+
+function pRenderEncounterPanel(){
+  const uid=_partnerUserId;
+  if(!uid)return'<div class="partner-empty-line">请先登录</div>';
+  const enc=getOrGenerateEncounter(uid);
+  const aff=getAffinityData(uid);
+  const total=aff.total||0,pct=Math.min(100,Math.round(total/AFFINITY_THRESHOLD*100));
+  const ready=total>=AFFINITY_THRESHOLD;
+  const rerollUsed=localStorage.getItem(_rerollK(uid))===_getWeekStr();
+  const rc=RARITY_CLR[enc.rarity];
+  const actRows=Object.entries(AFFINITY_ACTIONS).map(([t,c])=>{
+    const used=aff.daily[t]||0,done=used>=c.dailyLimit;
+    return`<div class="enc-act-row ${done?'done':''}">
+      <span class="enc-act-icon">${c.icon}</span>
+      <span class="enc-act-label">${c.label} <em>+${c.gain}×${c.dailyLimit}</em></span>
+      <span class="enc-act-badge">${done?'✓':used+'/'+c.dailyLimit}</span>
+    </div>`;
+  }).join('');
+  return`<div id="encounter-section">
+    <div class="enc-sec-row" style="margin-bottom:10px">
+      <img class="enc-sec-sprite" src="${partnerSpriteUrl(enc.pkm_id)}" alt="" onerror="this.onerror=null;this.src='${partnerSpriteFallbackUrl(enc.pkm_id)}'">
+      <div class="enc-sec-info">
+        <div class="enc-pkm-num">#${String(enc.pkm_id).padStart(4,'0')}</div>
+        <div class="enc-pkm-name" id="enc-pkm-name">${enc.pkm_name||'…'}</div>
+        <div class="enc-rarity-badge" style="--enc-rarity-c:${rc}">✦ ${RARITY_ZH[enc.rarity]}</div>
+      </div>
+    </div>
+    <div class="enc-affinity-section" style="margin-bottom:8px">
+      <div class="enc-affinity-label"><span>邂逅亲密度</span><span class="enc-affinity-val">${total} / ${AFFINITY_THRESHOLD}</span></div>
+      <div class="enc-affinity-bar"><div class="enc-affinity-fill" style="width:${pct}%"></div></div>
+      ${ready?'<div class="enc-ready-hint">✨ 亲密度已满！</div>':''}
+    </div>
+    <div class="enc-actions-list" style="margin-bottom:10px">${actRows}</div>
+    <div class="enc-btns">
+      <button class="enc-contract-btn ${ready?'':'locked'}" onclick="contractEncounterPartner(${enc.pkm_id},document.getElementById('enc-pkm-name')?.textContent)" ${ready?'':'disabled'}>${ready?'🤝 缔结契约':'🔒 亲密度不足'}</button>
+      <button class="enc-reroll-btn" onclick="rerollEncounter()" ${rerollUsed?'disabled':''}>${rerollUsed?'本周已重置':'🎲 重新邂逅'}</button>
+    </div>
+  </div>`;
+}
+
+async function _fillEncounterPanelName(){
+  const uid=_partnerUserId;if(!uid)return;
+  const k=_encK(uid);
+  let enc=null;try{enc=JSON.parse(localStorage.getItem(k));}catch{}
+  if(!enc)return;
+  if(!enc.pkm_name){
+    const n=await pFetchChineseName(enc.pkm_id,`#${enc.pkm_id}`);
+    enc.pkm_name=n;
+    try{localStorage.setItem(k,JSON.stringify(enc));}catch{}
+  }
+  const el=document.getElementById('enc-pkm-name');
+  if(el)el.textContent=enc.pkm_name;
+}
+
+/* ===== PARTNER LEADERBOARD ===== */
+
+function switchPartnerTab(tab,btn){
+  document.querySelectorAll('.partner-tab-btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  const main=document.getElementById('partner-main-view');
+  const lb=document.getElementById('partner-lb-view');
+  if(tab==='leaderboard'){
+    if(main)main.style.display='none';
+    if(lb){lb.style.display='block';loadPartnerLeaderboard(_partnerLbDim);}
+    _syncPartnerPublicBtn();
+  }else{
+    if(main)main.style.display='';
+    if(lb)lb.style.display='none';
+  }
+}
+
+async function loadPartnerLeaderboard(dim){
+  _partnerLbDim=dim||'level';
+  document.querySelectorAll('.partner-lb-dim-btn').forEach(b=>b.classList.toggle('active',b.dataset.dim===_partnerLbDim));
+  const tbody=document.getElementById('partner-lb-rows');
+  if(!tbody)return;
+  tbody.innerHTML='<tr><td colspan="5" class="partner-lb-loading">加载中…</td></tr>';
+  let q=db.from('pkm_partner').select('pkm_id,pkm_name,nickname,exp,streak_days,bond,interaction_counts').eq('is_public',true).limit(20);
+  if(dim==='streak')q=q.order('streak_days',{ascending:false});
+  else if(dim==='bond')q=q.order('bond',{ascending:false});
+  else q=q.order('exp',{ascending:false});
+  const{data,error}=await q;
+  if(error||!data){tbody.innerHTML=`<tr><td colspan="5" class="partner-lb-loading">${error?'加载失败':'暂无数据'}</td></tr>`;return;}
+  const sorted=dim==='active'?[...data].sort((a,b)=>((b.interaction_counts?.total||0)-(a.interaction_counts?.total||0))):data;
+  tbody.innerHTML=sorted.map((p,i)=>{
+    const lv=pLevelFromExp(p.exp||0);
+    const ic=p.interaction_counts||{};
+    const title=_getPartnerTitle(p,lv,ic);
+    const name=pEsc(p.nickname||p.pkm_name);
+    const metric=dim==='level'?`Lv.${lv}`:dim==='streak'?`${p.streak_days||0}天`:dim==='bond'?`${p.bond||0}/100`:`${ic.total||0}次`;
+    return`<tr class="partner-lb-row">
+      <td class="partner-lb-rank">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td>
+      <td><img class="partner-lb-sprite" src="${partnerSpriteUrl(p.pkm_id)}" onerror="this.onerror=null;this.src='${partnerSpriteFallbackUrl(p.pkm_id)}'"></td>
+      <td class="partner-lb-name"><div>${name}</div>${title?`<div class="partner-title-badge">${title.icon} ${title.name}</div>`:''}</td>
+      <td style="font-size:.62rem;color:var(--t3);font-family:'DM Mono',monospace">#${String(p.pkm_id).padStart(4,'0')}</td>
+      <td class="partner-lb-metric">${metric}</td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="5" class="partner-lb-loading">还没有公开数据，成为第一个？</td></tr>';
+}
+
+function _getPartnerTitle(p,lv,ic){
+  if((lv||pLevelFromExp(p.exp||0))>=100)return{icon:'💎',name:'传说训练家'};
+  if((p.bond||0)>=100)return{icon:'👑',name:'羁绊之主'};
+  if((p.streak_days||0)>=100)return{icon:'🔥',name:'永不断签'};
+  if(((ic||p.interaction_counts||{}).total||0)>=1000)return{icon:'⚡',name:'互动狂人'};
+  return null;
+}
+
+async function togglePartnerPublic(){
+  if(!partnerData)return;
+  const{data:{session}}=await db.auth.getSession().catch(()=>({data:{session:null}}));
+  if(!session?.user)return;
+  const next=!partnerData.is_public;
+  const{error}=await db.from('pkm_partner').update({is_public:next}).eq('user_id',session.user.id);
+  if(error){showPartnerToast('操作失败：'+error.message);return;}
+  partnerData.is_public=next;
+  _syncPartnerPublicBtn();
+  showPartnerToast(next?'伙伴信息已公开到排行榜！':'已从排行榜隐藏伙伴信息。');
+}
+
+function _syncPartnerPublicBtn(){
+  const btn=document.getElementById('partner-public-btn');
+  if(!btn)return;
+  const pub=partnerData?.is_public;
+  btn.textContent=pub?'🌐 公开中（点击隐藏）':'🔒 隐藏中（点击公开排行榜）';
+  btn.className='btn partner-public-btn'+(pub?' active':'');
+}

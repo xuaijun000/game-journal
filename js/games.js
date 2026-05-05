@@ -380,6 +380,7 @@ async function saveGame(){
     localStorage.setItem('gj',JSON.stringify(games));
   }
   if(window.partnerTrackEvent)window.partnerTrackEvent('game_log');
+  if(window.addAffinityProgress)window.addAffinityProgress('game_log');
   closeOv('ov-edit');render();refreshStatsIfVisible();
 }
 async function delGame(){
@@ -405,7 +406,6 @@ function go(pg,btn){
   if(pg==='manga'&&!window._mangaInited){window._mangaInited=true;initMediaList('manga');}
   if(pg==='battle'&&!window._battleInited){window._battleInited=true;initBattle();}
   if(pg==='partner'&&!window._partnerInited){window._partnerInited=true;initPartner();}
-  if(pg==='community'&&window.onEnterCommunity)onEnterCommunity();
   if(window.updatePartnerFloat)window.updatePartnerFloat(pg);
   if(window.updateHeaderChromeState)window.updateHeaderChromeState();
 }

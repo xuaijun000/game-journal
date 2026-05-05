@@ -2441,6 +2441,7 @@ async function persistCatchRecord(){
   await loadCatchList(sid);
   await renderActiveCatches();
   showToast('已保存到图鉴录入');
+  if(window.addAffinityProgress)window.addAffinityProgress('catch_log');
   return true;
 }
 

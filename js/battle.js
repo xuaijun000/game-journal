@@ -1046,6 +1046,7 @@ function switchBattleTab(tab,btn){
   document.querySelectorAll('#battle-pkmc .btab-panel').forEach(p=>p.classList.remove('on'));
   document.getElementById('btab-'+tab).classList.add('on');
   btn.classList.add('on');
+  if(tab==='plaza'&&window.onEnterCommunity)onEnterCommunity();
 }
 
 /* ──────── Supabase ──────── */
@@ -2399,6 +2400,7 @@ function calcDamageEst(myPkm, oppPkm, move, activeWeather=''){
 /* ──────── 主分析入口 ──────── */
 function analyzeMatchups(){
   if(window.partnerTrackEvent)window.partnerTrackEvent('battle_analysis');
+  if(window.addAffinityProgress)window.addAffinityProgress('battle_analysis');
   // 收集对方数据（含种族值，用于速度对比）
   [0,1,2,3,4,5].forEach(i=>{
     const name=document.getElementById(`bopp-name-${i}`)?.value.trim()||'';

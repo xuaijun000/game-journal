@@ -66,7 +66,6 @@
     <button onclick="go('anime',this)">动漫</button>
     <button onclick="go('manga',this)">漫画</button>
     <button onclick="go('battle',this)">对战</button>
-    <button onclick="go('community',this)">社区</button>
   </nav>
   <div class="hdr-r">
     <div class="av" id="av">?</div>
@@ -364,7 +363,27 @@
   </div>
   <div class="pg" id="pg-partner">
     <div class="tab-banner"><img src="css/伙伴 Tab Banner.jpg" alt="" loading="lazy" decoding="async" onerror="this.style.display='none'"></div>
-    <div id="partner-container"><div style="text-align:center;padding:3rem;color:var(--t3)">加载中…</div></div>
+    <div class="partner-tab-bar">
+      <button class="partner-tab-btn active" data-tab="partner" onclick="switchPartnerTab('partner',this)">我的伙伴</button>
+      <button class="partner-tab-btn" data-tab="leaderboard" onclick="switchPartnerTab('leaderboard',this)">🏆 排行榜</button>
+    </div>
+    <div id="partner-main-view">
+      <div id="partner-container"><div style="text-align:center;padding:3rem;color:var(--t3)">加载中…</div></div>
+    </div>
+    <div id="partner-lb-view" style="display:none">
+      <div class="partner-lb-dim-bar">
+        <button class="partner-lb-dim-btn active" data-dim="level" onclick="loadPartnerLeaderboard('level')">等级榜</button>
+        <button class="partner-lb-dim-btn" data-dim="streak" onclick="loadPartnerLeaderboard('streak')">连签榜</button>
+        <button class="partner-lb-dim-btn" data-dim="bond" onclick="loadPartnerLeaderboard('bond')">羁绊榜</button>
+        <button class="partner-lb-dim-btn" data-dim="active" onclick="loadPartnerLeaderboard('active')">本周活跃</button>
+      </div>
+      <table class="partner-lb-table">
+        <tbody id="partner-lb-rows"><tr><td colspan="5" class="partner-lb-loading">切换到排行榜加载…</td></tr></tbody>
+      </table>
+      <div style="text-align:center;padding:1.25rem 0">
+        <button id="partner-public-btn" class="btn partner-public-btn" onclick="togglePartnerPublic()">🔒 隐藏中（点击公开排行榜）</button>
+      </div>
+    </div>
   </div>
   <div class="pg" id="pg-anime">
     <div class="tab-banner"><img src="css/动漫 Tab Banner.jpg" alt="" loading="lazy" decoding="async"></div>
@@ -461,6 +480,7 @@
           <button class="btab on" onclick="switchBattleTab('team',this)">🎮 我的阵容</button>
           <button class="btab" onclick="switchBattleTab('analysis',this)">⚔️ 赛前分析</button>
           <button class="btab" onclick="switchBattleTab('calc',this)">📊 数值工具</button>
+          <button class="btab" onclick="switchBattleTab('plaza',this)">🌐 广场</button>
         </div>
       </div>
       <div class="btab-panel on" id="btab-team">
@@ -502,6 +522,27 @@
         <div id="battle-analysis-result"></div>
       </div>
       <div class="btab-panel" id="btab-calc" style="padding-top:1rem"></div>
+      <div class="btab-panel" id="btab-plaza">
+        <div class="comm-hero" style="margin-top:.75rem">
+          <div>
+            <div class="comm-hero-eyebrow">Pokemon Champions · 国服社区</div>
+            <div class="comm-hero-title">对战广场</div>
+            <div class="comm-hero-sub">发现最强阵容 · 分享你的战术 · 晒出你的收藏</div>
+          </div>
+          <button class="btn btn-sm" onclick="openProfileModal()" id="comm-profile-btn">设置主页</button>
+        </div>
+        <div class="comm-filter-bar">
+          <button class="comm-cat-btn on" data-cat="all" onclick="setCommCategory('all',this)">全部</button>
+          <button class="comm-cat-btn" data-cat="team" onclick="setCommCategory('team',this)">阵容</button>
+          <button class="comm-cat-btn" data-cat="catch" onclick="setCommCategory('catch',this)">捕捉</button>
+          <button class="comm-cat-btn" data-cat="series" onclick="setCommCategory('series',this)">通关</button>
+        </div>
+        <div id="comm-feed" class="comm-feed"></div>
+        <div id="comm-feed-empty" class="comm-empty" style="display:none">还没有人分享内容，成为第一个！</div>
+        <div id="comm-load-more-wrap" style="display:none">
+          <button class="btn" onclick="loadCommunityFeed(false)">加载更多</button>
+        </div>
+      </div>
     </div>
 
     <div id="battle-doubles" class="battle-subview">
@@ -559,32 +600,6 @@
     </div>
   </div>
 
-  <!-- ── 社区页面 ── -->
-  <div class="pg" id="pg-community">
-    <div class="comm-hero">
-      <div>
-        <div class="comm-hero-eyebrow">Pokemon Champions · 国服社区</div>
-        <div class="comm-hero-title">对战广场</div>
-        <div class="comm-hero-sub">发现最强阵容 · 分享你的战术</div>
-      </div>
-      <button class="btn btn-sm" onclick="openProfileModal()" id="comm-profile-btn">设置主页</button>
-    </div>
-
-    <div class="comm-filter-bar">
-      <button class="comm-cat-btn on" data-cat="all" onclick="setCommCategory('all',this)">全部</button>
-      <button class="comm-cat-btn" data-cat="team" onclick="setCommCategory('team',this)">阵容</button>
-      <button class="comm-cat-btn" data-cat="catch" onclick="setCommCategory('catch',this)">捕捉</button>
-      <button class="comm-cat-btn" data-cat="series" onclick="setCommCategory('series',this)">通关</button>
-    </div>
-
-    <div id="comm-feed" class="comm-feed"></div>
-    <div id="comm-feed-empty" class="comm-empty" style="display:none">
-      还没有人分享阵容，成为第一个！
-    </div>
-    <div id="comm-load-more-wrap" style="display:none">
-      <button class="btn" onclick="loadCommunityFeed(false)">加载更多</button>
-    </div>
-  </div>
 </main>
   <footer class="site-footer">
     <p>© 2024-2026 PIXELFISH 版权所有，未经授权禁止转载</p>
