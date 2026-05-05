@@ -1236,9 +1236,7 @@ function _fillEncSec(el,uid,aff,enc){
   const ready=total>=AFFINITY_THRESHOLD;
   const rerollUsed=localStorage.getItem(_rerollK(uid))===_getWeekStr();
   const rc=RARITY_CLR[enc.rarity];
-  el.innerHTML=`<div class="partner-box" id="encounter-section" style="--pbox-accent:#56c97a">
-    <div class="partner-box-hdr"><span><b>缘遇探索</b><em>Wild Encounter</em></span><i style="color:#56c97a">${RARITY_ZH[enc.rarity]}</i></div>
-    <div class="enc-sec-row">
+  el.innerHTML=`<div class="enc-sec-row" style="margin-bottom:10px">
       <img class="enc-sec-sprite" src="${partnerSpriteUrl(enc.pkm_id)}" alt="" onerror="this.onerror=null;this.src='${partnerSpriteFallbackUrl(enc.pkm_id)}'">
       <div class="enc-sec-info">
         <div class="enc-pkm-num">#${String(enc.pkm_id).padStart(4,'0')}</div>
@@ -1254,8 +1252,7 @@ function _fillEncSec(el,uid,aff,enc){
     <div class="enc-btns" style="gap:6px">
       <button class="enc-contract-btn ${ready?'':'locked'}" style="font-size:.7rem;padding:6px 12px" onclick="contractEncounterPartner(${enc.pkm_id},document.getElementById('enc-pkm-name')?.textContent)" ${ready?'':'disabled'}>${ready?'🤝 缔结':'🔒 未达阈值'}</button>
       <button class="enc-reroll-btn" style="font-size:.7rem;padding:6px 12px" onclick="rerollEncounter()" ${rerollUsed?'disabled':''}>${rerollUsed?'本周已重置':'🎲 重邂逅'}</button>
-    </div>
-  </div>`;
+    </div>`;
 }
 
 function pRenderEncounterPanel(){
