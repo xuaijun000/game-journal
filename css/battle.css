@@ -434,9 +434,10 @@
 .bhub-card--disabled{opacity:.45;pointer-events:none}
 .bhub-card-name{font-size:.92rem;font-weight:600;color:var(--t);margin-bottom:.2rem}
 .bhub-card-desc{font-size:.72rem;color:var(--t3);font-family:'DM Mono',monospace;margin-bottom:.75rem}
-.bhub-formats{display:flex;gap:.5rem}
-.bhub-fmt-btn{flex:1;padding:.55rem 0;background:var(--bg3,var(--bg));border:1px solid var(--b2);border-radius:calc(var(--rl) - 2px);color:var(--t);font-size:.78rem;font-weight:500;cursor:pointer;transition:background .15s,border-color .15s}
+.bhub-formats{display:flex;gap:.5rem;flex-wrap:wrap}
+.bhub-fmt-btn{flex:1 1 160px;padding:.55rem 0;background:var(--bg3,var(--bg));border:1px solid var(--b2);border-radius:calc(var(--rl) - 2px);color:var(--t);font-size:.78rem;font-weight:500;cursor:pointer;transition:background .15s,border-color .15s}
 .bhub-fmt-btn:hover{background:var(--acc);color:#fff;border-color:var(--acc)}
+.bhub-fmt-community{border-color:rgba(126,205,196,.4);color:var(--acc);background:rgba(126,205,196,.08)}
 .bhub-back-btn{background:none;border:none;color:var(--t3);font-size:.78rem;cursor:pointer;padding:.6rem 0 .4rem;font-family:'DM Mono',monospace;letter-spacing:.03em}
 .bhub-back-btn:hover{color:var(--t)}
 

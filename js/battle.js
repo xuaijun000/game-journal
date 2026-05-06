@@ -1035,6 +1035,12 @@ function enterBattleFormat(version, format) {
   }
 }
 
+function openChampionsCommunity() {
+  enterBattleFormat('pkmc', 'singles');
+  const btn = document.querySelector('#battle-pkmc .btab[onclick*="plaza"]');
+  if (btn) switchBattleTab('plaza', btn);
+}
+
 /* ──────── 初始化 ──────── */
 async function initBattle(){
   showBattleHub();
