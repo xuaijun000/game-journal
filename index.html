@@ -526,28 +526,26 @@
       <div class="btab-panel" id="btab-plaza">
         <div class="comm-hero" style="margin-top:.75rem">
           <div>
-            <div class="comm-hero-eyebrow">Pokemon Champions · 国服社区</div>
-            <div class="comm-hero-title">冠军社区作战台</div>
-            <div class="comm-hero-sub">队伍库 · 战报日志 · 赛季规则 · 约战广场 · 环境热榜</div>
+            <div class="comm-hero-eyebrow">Pokemon Champions · 对战社区</div>
+            <div class="comm-hero-title">Champions 广场</div>
+            <div class="comm-hero-sub">阵容分享 · 战报复盘 · 约战广场 · 环境热榜</div>
           </div>
           <button class="btn btn-sm" onclick="openProfileModal()" id="comm-profile-btn">设置主页</button>
         </div>
         <div class="comm-ops-grid">
-          <section class="comm-panel comm-season-panel" id="comm-season-panel"></section>
-          <section class="comm-panel comm-record-panel" id="comm-record-panel"></section>
           <section class="comm-panel comm-meta-panel" id="comm-meta-panel"></section>
-          <section class="comm-panel comm-onboard-panel" id="comm-onboard-panel"></section>
+          <section class="comm-panel comm-record-panel" id="comm-record-panel"></section>
           <section class="comm-panel comm-match-panel" id="comm-match-panel"></section>
-          <section class="comm-panel comm-partner-panel" id="comm-partner-panel"></section>
         </div>
-        <div class="comm-filter-bar">
-          <button class="comm-cat-btn on" data-cat="all" onclick="setCommCategory('all',this)">全部</button>
-          <button class="comm-cat-btn" data-cat="team" onclick="setCommCategory('team',this)">阵容</button>
-          <button class="comm-cat-btn" data-cat="catch" onclick="setCommCategory('catch',this)">捕捉</button>
-          <button class="comm-cat-btn" data-cat="series" onclick="setCommCategory('series',this)">通关</button>
+        <div class="comm-feed-head">
+          <div>
+            <b>公开阵容</b>
+            <span>借用、评论或点赞其他训练师分享的 Champions 队伍。</span>
+          </div>
+          <button class="comm-mini-btn" onclick="loadCommunityFeed(true)">刷新</button>
         </div>
         <div id="comm-feed" class="comm-feed"></div>
-        <div id="comm-feed-empty" class="comm-empty" style="display:none">还没有人分享内容，成为第一个！</div>
+        <div id="comm-feed-empty" class="comm-empty" style="display:none">还没有公开阵容，先分享一支队伍吧。</div>
         <div id="comm-load-more-wrap" style="display:none">
           <button class="btn" onclick="loadCommunityFeed(false)">加载更多</button>
         </div>
@@ -595,6 +593,7 @@
               <option value="">选择阵容…</option>
             </select>
             <div id="bd-my-preview" class="battle-my-preview"></div>
+            <div id="bd-plan-controls" class="bd-plan-controls"></div>
           </div>
           <div class="battle-side-card">
             <div class="battle-side-hdr">对方阵容（填属性自动分析）</div>

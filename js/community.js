@@ -6,27 +6,12 @@ let communityProfile = null;
 let commFeed = [];
 let commFeedOffset = 0;
 const COMM_PAGE_SIZE = 10;
-let commFeedCategory = 'all'; // 'all' | 'team' | 'catch' | 'series'
+let commFeedCategory = 'team'; // 'team' | 'catch' | 'series'
 let commFeedHasMore = false;
 let commCurrentCommentTeamId = null;
 let commLikedSet = new Set();
 let commBattleRecords = [];
 let commMatchPosts = [];
-
-const COMM_BEGINNER_STEPS = [
-  { id: 'profile', text: '设置社区主页，准备公开身份' },
-  { id: 'borrow', text: '从队伍库借用 1 支参考阵容' },
-  { id: 'analysis', text: '完成 1 次赛前分析，记录常见威胁' },
-  { id: 'battle_log', text: '保存 3 场战报，观察胜负原因' },
-  { id: 'scrim', text: '发布或加入 1 次约战' },
-  { id: 'share_team', text: '分享一支改良后的冠军队伍' }
-];
-
-const COMM_SEASON_RULES = [
-  { k: '定位', v: '7 月国服备战期：先沉淀队伍、战报和常见对局。' },
-  { k: '格式', v: '单打 / 双打并行，社区内容都保留格式标签。' },
-  { k: '目标', v: '上线前完成租借队、环境热榜、上分路线和约战链路。' }
-];
 
 /* ──────── 路由钩子 ──────── */
 async function onEnterCommunity() {
@@ -37,8 +22,8 @@ async function onEnterCommunity() {
   await loadLikedSet();
   commFeed = [];
   commFeedOffset = 0;
-  commFeedCategory = 'all';
-  document.querySelectorAll('.comm-cat-btn').forEach(b => b.classList.toggle('on', b.dataset.cat === 'all'));
+  commFeedCategory = 'team';
+  document.querySelectorAll('.comm-cat-btn').forEach(b => b.classList.toggle('on', b.dataset.cat === 'team'));
   await loadCommunityFeed(true);
 }
 
@@ -138,28 +123,9 @@ function commGetTeams() {
 }
 
 function renderChampionCommunityHub() {
-  renderCommSeasonPanel();
-  renderCommRecordPanel();
   renderCommMetaPanel();
-  renderCommOnboardingPanel();
+  renderCommRecordPanel();
   renderCommMatchPanel();
-  renderCommPartnerPanel();
-}
-
-function renderCommSeasonPanel() {
-  const el = document.getElementById('comm-season-panel');
-  if (!el) return;
-  el.innerHTML = `<div class="comm-panel-head">
-    <span><b>赛季规则专区</b><em>Launch Route</em></span>
-    <i>国服 7 月备战</i>
-  </div>
-  <div class="comm-rule-list">${COMM_SEASON_RULES.map(r => `<div class="comm-rule-row">
-    <span>${commEsc(r.k)}</span><p>${commEsc(r.v)}</p>
-  </div>`).join('')}</div>
-  <div class="comm-action-row">
-    <button class="comm-mini-btn" onclick="setCommCategory('team',document.querySelector('.comm-cat-btn[data-cat=team]'))">看队伍库</button>
-    <button class="comm-mini-btn" onclick="window.switchBTab?.('analysis',document.querySelector('.btab[onclick*=analysis]'))">做赛前分析</button>
-  </div>`;
 }
 
 async function loadCommBattleRecords() {
@@ -177,7 +143,7 @@ async function loadCommBattleRecords() {
     renderCommRecordPanel();
   } catch(e) {
     commBattleRecords = [];
-    renderCommRecordPanel('战报表未就绪，请先执行社区 SQL 迁移');
+    renderCommRecordPanel('战报暂时不可用，稍后再试。');
   }
 }
 
@@ -188,7 +154,7 @@ function renderCommRecordPanel(msg = '') {
   const options = teams.map(t => {
     const id = String(t.id || '');
     const disabled = id.startsWith('local_') ? ' disabled' : '';
-    return `<option value="${commEsc(id)}"${disabled}>${commEsc(t.team_name || '未命名队伍')}${disabled ? '（需先云端保存）' : ''}</option>`;
+    return `<option value="${commEsc(id)}"${disabled}>${commEsc(t.team_name || '未命名队伍')}${disabled ? '（保存后可绑定）' : ''}</option>`;
   }).join('');
   const total = commBattleRecords.length;
   const wins = commBattleRecords.filter(r => r.result === 'win').length;
@@ -266,32 +232,6 @@ function renderCommMetaPanel() {
   }).join('') || '<div class="comm-soft-empty">暂无热榜数据</div>'}</div>`;
 }
 
-function getCommBeginnerDone() {
-  try { return JSON.parse(localStorage.getItem('comm_beginner_done') || '{}'); } catch(e) { return {}; }
-}
-
-function renderCommOnboardingPanel() {
-  const el = document.getElementById('comm-onboard-panel');
-  if (!el) return;
-  const done = getCommBeginnerDone();
-  const count = COMM_BEGINNER_STEPS.filter(s => done[s.id]).length;
-  el.innerHTML = `<div class="comm-panel-head">
-    <span><b>新手上分路径</b><em>First Week</em></span>
-    <i>${count}/${COMM_BEGINNER_STEPS.length}</i>
-  </div>
-  <div class="comm-progress"><div style="width:${Math.round(count / COMM_BEGINNER_STEPS.length * 100)}%"></div></div>
-  <div class="comm-step-list">${COMM_BEGINNER_STEPS.map(s => `<button class="comm-step ${done[s.id] ? 'done' : ''}" onclick="toggleCommBeginnerStep('${s.id}')">
-    <span>${done[s.id] ? '✓' : '○'}</span>${commEsc(s.text)}
-  </button>`).join('')}</div>`;
-}
-
-function toggleCommBeginnerStep(id) {
-  const done = getCommBeginnerDone();
-  done[id] = !done[id];
-  localStorage.setItem('comm_beginner_done', JSON.stringify(done));
-  renderCommOnboardingPanel();
-}
-
 async function loadCommMatchPosts() {
   try {
     const { data, error } = await db.from('community_match_posts')
@@ -305,7 +245,7 @@ async function loadCommMatchPosts() {
     renderCommMatchPanel();
   } catch(e) {
     commMatchPosts = [];
-    renderCommMatchPanel('约战表未就绪，执行社区 SQL 后即可公开发码。');
+    renderCommMatchPanel('约战暂时不可用，稍后再试。');
   }
 }
 
@@ -352,21 +292,6 @@ async function saveCommMatchPost() {
   if (window.addAffinityProgress) window.addAffinityProgress('interact');
   showToast('约战已发布，3 小时后自动过期 ✓', 'ok');
   await loadCommMatchPosts();
-}
-
-function renderCommPartnerPanel() {
-  const el = document.getElementById('comm-partner-panel');
-  if (!el) return;
-  el.innerHTML = `<div class="comm-panel-head">
-    <span><b>伙伴联动任务</b><em>Bond Loop</em></span>
-    <i>社区行为加成</i>
-  </div>
-  <div class="comm-partner-list">
-    <div><b>战报</b><span>保存战报会同步一次对战分析亲密度。</span></div>
-    <div><b>约战</b><span>发布约战会计入一次社区互动。</span></div>
-    <div><b>队伍</b><span>分享阵容、被借用、被评论都能形成社区资产。</span></div>
-  </div>
-  <button class="comm-mini-btn" onclick="go('partner',document.querySelector('nav button[onclick*=partner]'))">查看我的伙伴</button>`;
 }
 
 /* ──────── 点赞集合（battle_teams） ──────── */

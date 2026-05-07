@@ -441,7 +441,21 @@
 .bhub-back-btn{background:none;border:none;color:var(--t3);font-size:.78rem;cursor:pointer;padding:.6rem 0 .4rem;font-family:'DM Mono',monospace;letter-spacing:.03em}
 .bhub-back-btn:hover{color:var(--t)}
 
-/* 双打先发搭档 */
+/* 双打打法录入与先发搭档 */
+.bd-plan-controls{width:100%;margin-top:10px}
+.bd-plan-editor{background:rgba(126,205,196,.06);border:1px solid rgba(126,205,196,.2);border-radius:var(--rl);padding:10px;display:flex;flex-direction:column;gap:8px}
+.bd-plan-editor-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.bd-plan-editor-head b{font-size:.78rem;color:var(--t);font-family:'Noto Serif SC',serif}
+.bd-plan-editor-head span{font-size:.62rem;color:var(--t3);line-height:1.4;text-align:right}
+.bd-plan-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.bd-plan-grid label{display:flex;flex-direction:column;gap:4px;min-width:0}
+.bd-plan-grid label>span{font-size:.6rem;color:var(--t3);font-family:'DM Mono',monospace;letter-spacing:.08em;text-transform:uppercase}
+.bd-plan-grid select,.bd-plan-editor textarea{width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--b2);border-radius:var(--r);color:var(--t);font-family:inherit;font-size:.74rem;outline:none}
+.bd-plan-grid select{padding:6px 7px}
+.bd-plan-editor textarea{min-height:58px;resize:vertical;padding:7px 8px;line-height:1.45}
+.bd-plan-lock{flex-direction:row!important;align-items:center;grid-column:1 / -1;color:var(--t2);font-size:.72rem}
+.bd-plan-lock input{width:14px;height:14px;accent-color:var(--acc)}
+.bd-plan-lock span{font-family:inherit!important;letter-spacing:0!important;text-transform:none!important;color:var(--t2)!important}
 .bd-lead-pair-card{background:var(--bg2);border:1px solid var(--acc);border-radius:var(--rl);padding:.9rem 1rem;margin-bottom:.75rem}
 .bd-lead-pair-label{font-size:.65rem;color:var(--acc);font-family:'DM Mono',monospace;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.6rem}
 .bd-lead-pair-row{display:flex;align-items:center;gap:.5rem}
@@ -450,6 +464,8 @@
 .bd-lead-name{font-size:.8rem;font-weight:600;color:var(--t);text-align:center}
 .bd-lead-roles{display:flex;flex-wrap:wrap;gap:.2rem;justify-content:center}
 .bd-lead-plus{font-size:1.2rem;color:var(--t3);font-weight:300;padding:0 .2rem}
+.bd-lead-notes{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:6px;margin-top:10px}
+.bd-lead-notes div{font-size:.72rem;color:var(--t2);background:var(--bg3);border:1px solid var(--b);border-radius:4px;padding:6px 8px;line-height:1.45}
 .bd-lead-badge{font-size:.58rem;background:var(--acc);color:#fff;border-radius:3px;padding:1px 5px;margin-left:.3rem;font-family:'DM Mono',monospace;vertical-align:middle}
 .bd-lead-tag{font-size:.58rem;background:var(--acc);color:#fff;border-radius:3px;padding:1px 4px;font-family:'DM Mono',monospace}
 .bd-role-tag{font-size:.58rem;background:color-mix(in srgb,var(--acc) 15%,transparent);color:var(--acc);border-radius:3px;padding:1px 5px;font-family:'DM Mono',monospace}
@@ -477,6 +493,9 @@
 .bd-plan-line.is-good{color:var(--acc2);border-color:rgba(90,184,154,.25);background:rgba(90,184,154,.06)}
 
 @media(max-width:620px){
+  .bd-plan-editor-head{flex-direction:column;align-items:flex-start}
+  .bd-plan-editor-head span{text-align:left}
+  .bd-plan-grid{grid-template-columns:1fr}
   .bd-plan-head{flex-direction:column}
   .bd-plan-tags{justify-content:flex-start}
   .bd-plan-lines{grid-template-columns:1fr}
