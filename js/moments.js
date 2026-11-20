@@ -41,15 +41,15 @@ function onMomentImgSelect(input){
 async function submitMoment(){
   const gameName = document.getElementById('moment-game-select').value;
   const text = document.getElementById('moment-text').value.trim();
-  if(!gameName){alert('请选择游戏');return;}
-  if(!text && !momentImgFile){alert('请写点内容或上传截图');return;}
+  if(!gameName){showToast('请选择游戏','warn');return;}
+  if(!text && !momentImgFile){showToast('请写点内容或上传截图','warn');return;}
 
   const btn = document.getElementById('moment-submit');
   btn.disabled = true; btn.textContent = '发布中…';
 
   try{
     const {data:{session}} = await db.auth.getSession();
-    if(!session?.user){alert('请先登录');return;}
+    if(!session?.user){showToast('请先登录','warn');return;}
 
     let imageUrl = null;
     if(momentImgFile){
@@ -82,9 +82,9 @@ async function submitMoment(){
     const detailName = document.getElementById('d-name')?.textContent;
     if(detailName === gameName) loadGameMoments(gameName);
 
-    showToast('时刻已记录 ✓');
+    showToast('时刻已记录 ✓','ok');
   }catch(e){
-    alert('发布失败：'+e.message);
+    notifyError('发布失败',e);
   }finally{
     btn.disabled = false; btn.textContent = '发布时刻';
   }
@@ -138,7 +138,7 @@ async function deleteMoment(id, gameName){
       if(path) await db.storage.from('game-screenshots').remove([path]);
     }
     loadGameMoments(gameName);
-  }catch(e){alert('删除失败');}
+  }catch(e){notifyError('删除失败',e);}
 }
 
 function viewMomentImg(url){

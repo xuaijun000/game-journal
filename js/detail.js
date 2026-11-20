@@ -191,7 +191,7 @@ ${window._gtlProgressContext||''}
 ${reinject?`【人格提醒】回想《${g.name}》的世界。你从那个世界说话，不是在介绍它。`:''}
 回答要求：中文，400字左右，详细丰富，纯文字不用Markdown符号。`;
   try{
-    const res=await fetch(`${SB_URL}/functions/v1/gemini-proxy`,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`},body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:aiChatHistory,generationConfig:{maxOutputTokens:1200,temperature:1.15}})});
+    const res=await fetch(GEMINI_PROXY,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`},body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:aiChatHistory,generationConfig:{maxOutputTokens:1200,temperature:1.15}})});
     if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err?.error?.message||`HTTP ${res.status}`);}
     const data=await res.json();
     const reply=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'（AI 暂时离线）';
@@ -234,26 +234,26 @@ async function deleteSummary(id){
 }
 function toggleOldSums(){const list=document.getElementById('sum-old-list');const btn=document.getElementById('sum-old-toggle');const isOpen=list.classList.toggle('open');const oldCount=currentSummaries.length-1;btn.textContent=isOpen?'收起 ▴':`查看更早的 ${oldCount} 条笔记 ▾`;}
 async function generateSummary(){
-  if(aiChatHistory.length<2){alert('至少聊几句再生成总结吧～');return;}
+  if(aiChatHistory.length<2){showToast('至少聊几句再生成总结吧','warn');return;}
   const btn=document.getElementById('chat-sum-btn');btn.disabled=true;btn.textContent='生成中…';
   const g=aiCurrentGame;
   const historyText=aiChatHistory.map(m=>`${m.role==='user'?'冒险者':'向导'}：${m.parts[0].text}`).join('\n');
   const prompt=`以下是一段关于《${g.name}》的对话记录：\n\n${historyText}\n\n请将这段对话的核心内容写成一则100-150字的"游戏手记"，完全用《${g.name}》的世界观气质来写，像在这个游戏世界里写下的笔记或日志，纯文字不用Markdown。`;
   try{
-    const res=await fetch(`${SB_URL}/functions/v1/gemini-proxy`,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:300,temperature:0.7}})});
+    const res=await fetch(GEMINI_PROXY,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:300,temperature:0.7}})});
     if(!res.ok)throw new Error(`HTTP ${res.status}`);
     const data=await res.json();
     const summary=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
     if(!summary)throw new Error('AI 返回为空');
     const{data:{session}}=await db.auth.getSession();const user=session?.user;
-    if(!user){alert('请先登录才能保存总结');btn.disabled=false;btn.textContent='⬡ 封存本次情报';return;}
+    if(!user){showToast('请先登录才能保存总结','warn');btn.disabled=false;btn.textContent='⬡ 封存本次情报';return;}
     const gameId=String(editId);
     const{error}=await db.from('chat_summaries').insert({user_id:user.id,game_id:gameId,summary});
     if(error)throw new Error(error.message);
     currentSummaries.unshift({summary,created_at:new Date().toISOString(),game_id:gameId,user_id:user.id});
     renderSummaries();btn.textContent='✓ 情报已封存';
     setTimeout(()=>{btn.disabled=false;btn.textContent='⬡ 封存本次情报';},2000);
-  }catch(e){alert('生成失败：'+e.message);btn.disabled=false;btn.textContent='⬡ 封存本次情报';}
+  }catch(e){notifyError('生成失败',e);btn.disabled=false;btn.textContent='⬡ 封存本次情报';}
 }
 
 /* 发现页详情弹窗 */

@@ -1,0 +1,85 @@
+/* Recorder controls stay ahead of optional scenery. */
+#ov-imm{--t3:#a1b4b7;font-size:16px}
+#ov-imm button,#ov-imm input,#ov-imm select,#ov-imm textarea{font-size:14px;min-height:40px}
+.adventure-statusbar,.adventure-location-toolbar,.adventure-training-toolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:relative;z-index:3;padding:8px 14px;flex-shrink:0}
+.adventure-statusbar{border-bottom:1px solid var(--b);background:rgba(9,24,28,.94)}
+#adventure-sync-status{margin-right:auto;color:var(--t2);font-size:14px}
+#adventure-sync-status[data-state="error"]{color:#ffd28a}
+#adventure-sync-status[data-state="synced"]{color:#94e4bf}
+.adventure-location-toolbar{background:rgba(9,24,28,.9);padding-right:180px}
+.adventure-location-toolbar label,.adventure-training-toolbar label{display:flex;gap:7px;align-items:center;font-size:14px;color:var(--t2)}
+#ov-imm select,#ov-imm input[type="number"]{background:var(--bg2);color:var(--t);border:1px solid var(--b2);border-radius:8px;padding:7px 9px;max-width:100%}
+#train-batch-count{width:80px}
+#adventure-location-status,.adventure-help{font-size:14px;color:var(--t2);line-height:1.6}
+.adventure-help{padding:0 14px;margin:4px 0 12px}
+#ov-imm .imm-party-stage{display:none}
+#ov-imm .tim-hero{padding:14px;gap:5px}
+#ov-imm .tim-sprite{width:100px;height:100px;margin:0;object-fit:contain}
+#ov-imm .tim-ev-compact{width:min(100%,560px)}
+#ov-imm .tim-ev-lbl{font-size:14px;width:42px;flex-shrink:0}
+#ov-imm .tim-ev-val{font-size:14px;min-width:145px;white-space:nowrap;text-align:right}
+#ov-imm .tim-ev-row{gap:10px;margin-bottom:7px}
+.adventure-remaining{font-size:13px;color:#b6d4cc}
+.adventure-training-hint{font-size:14px;color:#b0f0cd;line-height:1.5;min-height:21px;margin-top:4px}
+#ov-imm .tim-pkm-name,#ov-imm .tim-ev-label{font-size:14px}
+#ov-imm .tim-pkm-card{min-height:160px}
+#ov-imm .tim-grid-section{padding:14px}
+#ov-imm .tim-session{margin:10px 14px;flex-wrap:wrap}
+#ov-imm .tim-session-partner{font-size:14px}
+.adventure-empty{font-size:16px;color:var(--t2);padding:16px;line-height:1.6}
+.adventure-record-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+#ov-imm .catch-card-name,#ov-imm .catch-card-nature,#ov-imm .party-slot-name{font-size:16px}
+#ov-imm .catch-card-meta,#ov-imm .catch-card-note{font-size:14px;line-height:1.7}
+.adventure-shiny{display:flex;gap:8px;align-items:center;padding:12px;font-size:14px}
+.training-plan-editor{margin:10px 14px;padding:12px;border:1px solid var(--b2);border-radius:10px;background:rgba(12,29,33,.9);font-size:14px}
+.training-plan-editor summary{cursor:pointer;font-size:16px;min-height:30px}
+.training-plan-editor p{color:var(--t2);line-height:1.7;margin:10px 0}
+.training-plan-row,.training-plan-head{display:grid;grid-template-columns:70px minmax(80px,1fr) minmax(80px,1fr);align-items:center;gap:10px;max-width:550px;margin-bottom:8px}
+.training-plan-head{color:var(--t2);margin:12px 0}
+.adventure-map-layout{display:grid;grid-template-columns:260px minmax(0,1fr);flex:1;min-height:0}
+.adventure-map-directory{overflow-y:auto;padding:16px;border-right:1px solid var(--b);background:var(--bg2)}
+.adventure-map-directory label{display:block;margin-bottom:8px}
+#frlg-location-list{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+#frlg-location-list button{text-align:left;color:var(--t);background:var(--bg3);border:1px solid var(--b2);padding:10px;border-radius:8px;cursor:pointer}
+#frlg-location-list button:hover{border-color:var(--acc)}
+.adventure-map-scroll{overflow:auto;min-width:0}
+#ov-imm .frlg-map-root{max-width:1100px;margin:auto}
+.frlg-hotspot{border:2px solid #9be8d2;background:rgba(5,32,36,.94);color:#fff;border-radius:8px;padding:3px 7px;box-shadow:0 2px 6px #0008}
+.frlg-hotspot-label{font-size:14px}
+.frlg-hotspot-dot{display:none}
+.frlg-poly-overlay:not(:has(polygon)){pointer-events:none}
+#ov-imm .imm-loc-section{padding:10px 14px}
+#ov-imm:not([data-series="frlg"]) .adventure-location-toolbar{display:none}
+#ov-imm .frlg-calib-btn{display:none}
+#ov-imm .frlg-poly-calib-btn,#ov-imm .frlg-poly-export-btn,#ov-imm .frlg-newview-btn{display:none}
+.adventure-catch-details{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:12px}
+.adventure-catch-details label{display:flex;flex-direction:column;gap:6px;color:var(--t2)}
+.adventure-history-row{display:flex;flex-wrap:wrap;gap:8px;padding:10px 0;border-bottom:1px solid var(--b);line-height:1.7}
+.adventure-history-row time{color:var(--t2)}
+#ov-imm .hunt-imm-hero{padding:20px 14px;min-height:unset}
+#ov-imm .hunt-imm-sprite{width:120px;height:120px}
+#ov-imm .hunt-imm-num{font-size:2.5rem}
+#ov-imm .hunt-area-label,#ov-imm .hunt-card-count{font-size:14px}
+#ov-imm .hunt-imm-narration{font-size:14px}
+#ov-imm .hunt-imm-nature-pick{background:var(--bg)}
+@media(max-width:900px){
+  #imm-minimap{display:none!important}
+  .adventure-location-toolbar{padding-right:14px}
+  .adventure-map-layout{grid-template-columns:210px minmax(0,1fr)}
+  .frlg-hotspot-label{font-size:12px}
+}
+@media(max-width:600px){
+  #ov-imm .adventure-statusbar,#ov-imm .adventure-location-toolbar{gap:7px;padding:7px 10px}
+  #adventure-sync-status{flex-basis:100%}
+  #adventure-location-status{flex-basis:100%;font-size:13px}
+  #ov-imm #imm-panel-train,#ov-imm #imm-panel-hunt{padding-right:0!important;padding-bottom:65px!important}
+  #ov-imm .tim-hero{align-items:center}
+  #ov-imm .tim-ev-val{min-width:126px;font-size:13px}
+  #ov-imm .tim-sprite{width:72px;height:72px}
+  .adventure-map-layout{display:flex;flex-direction:column}
+  .adventure-map-directory{max-height:45vh;border-right:0;border-bottom:1px solid var(--b)}
+  #frlg-location-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .adventure-map-scroll{flex:1;min-height:150px}
+  #ov-imm .imm-sub-panel,#imm-sub-catches{max-height:65vh!important}
+  .training-plan-row,.training-plan-head{grid-template-columns:50px minmax(70px,1fr) minmax(70px,1fr);gap:6px}
+}

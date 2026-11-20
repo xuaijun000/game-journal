@@ -194,7 +194,7 @@ async function endPlaySession(){
 
   const m = Math.round(secs/60);
   const msg = secs<60 ? '本次游玩时间太短，未记录时长。' : `本次游玩 ${_playFmtMin(secs)} 已记录！${playState.type==='game'&&hrs>0?'\n时长已自动累加到游戏记录。':''}`;
-  alert(msg);
+  showToast(msg,'ok');
   closePlayMode();
   render(); // 刷新卡片
 }
@@ -453,7 +453,7 @@ async function snapAISummary(){
 
   _snapAiHistory = [{role:'user',parts:[{text:prompt}]}];
   try{
-    const res = await fetch(SB_URL+'/functions/v1/gemini-proxy',{
+    const res = await fetch(GEMINI_PROXY,{
       method:'POST',
       headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},
       body:JSON.stringify({contents:_snapAiHistory,generationConfig:{maxOutputTokens:400,temperature:0.9}})
@@ -488,7 +488,7 @@ async function snapAIChat(){
   if(_snapAiHistory.length>12) _snapAiHistory=_snapAiHistory.slice(-12);
 
   try{
-    const res = await fetch(SB_URL+'/functions/v1/gemini-proxy',{
+    const res = await fetch(GEMINI_PROXY,{
       method:'POST',
       headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},
       body:JSON.stringify({contents:_snapAiHistory,generationConfig:{maxOutputTokens:500,temperature:1.0}})
@@ -503,12 +503,12 @@ async function snapAIChat(){
 
 async function savePlaySnapshot(){
   const text = document.getElementById('play-snap-inp').value.trim();
-  if(!text && !_snapImgFile){alert('请输入进度文字或选择截图');return;}
+  if(!text && !_snapImgFile){showToast('请输入进度文字或选择截图','warn');return;}
   const btn = document.querySelector('.play-btn-save');
   btn.textContent='保存中…'; btn.disabled=true;
   try{
     const {data:{session}} = await db.auth.getSession();
-    if(!session?.user){alert('请先登录');btn.textContent='保存快照';btn.disabled=false;return;}
+    if(!session?.user){showToast('请先登录','warn');btn.textContent='保存快照';btn.disabled=false;return;}
     const uid = session.user.id;
     let imgUrl = null;
 
@@ -519,7 +519,7 @@ async function savePlaySnapshot(){
       const ext = _snapImgFile.name.split('.').pop();
       const path = `${uid}/snap-${playState.type}-${playState.id}-${Date.now()}.${ext}`;
       const {data:upData, error:upErr} = await db.storage.from('game-screenshots').upload(path, _snapImgFile, {upsert:true});
-      if(upErr){alert('图片上传失败：'+upErr.message);btn.textContent='保存快照';btn.disabled=false;uploadBtn.classList.remove('uploading');return;}
+      if(upErr){notifyError('图片上传失败',upErr);btn.textContent='保存快照';btn.disabled=false;uploadBtn.classList.remove('uploading');return;}
       const {data:{publicUrl}} = db.storage.from('game-screenshots').getPublicUrl(path);
       imgUrl = publicUrl;
       _snapImgUrl = imgUrl;
@@ -544,7 +544,7 @@ async function savePlaySnapshot(){
     document.getElementById('play-snap-hint').textContent = imgUrl ? '截图已上传 ✓' : '快照已保存 ✓';
     setTimeout(()=>{btn.textContent='保存快照';btn.disabled=false;},1800);
   }catch(e){
-    alert('保存失败：'+e.message);
+    notifyError('保存失败',e);
     btn.textContent='保存快照'; btn.disabled=false;
   }
 }
@@ -633,7 +633,7 @@ async function addPlayLog(){
   inp.value='';
   try{
     const {data:{session}} = await db.auth.getSession();
-    if(!session?.user){alert('请先登录');return;}
+    if(!session?.user){showToast('请先登录','warn');return;}
     const uid=session.user.id;
     let logText=text;
 
@@ -660,7 +660,7 @@ async function addPlayLog(){
       playState.logs.unshift(data);
       _renderPlayLogs();
     }
-  }catch(e){inp.value=text;alert('记录失败：'+e.message);}
+  }catch(e){inp.value=text;notifyError('记录失败',e);}
 }
 
 async function _deletePlayLog(lid){
@@ -789,7 +789,7 @@ async function sendPlayAI(){
   if(_playAiHistory.length > 10) _playAiHistory = _playAiHistory.slice(-10);
 
   try{
-    const res = await fetch(SB_URL+'/functions/v1/gemini-proxy',{
+    const res = await fetch(GEMINI_PROXY,{
       method:'POST',
       headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},
       body:JSON.stringify({

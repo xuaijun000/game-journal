@@ -77,8 +77,11 @@ function getZaMegaImage(form){
 
 function typeTag(t){const c=TYPE_COLOR[t]||'#888';return`<span class="pkm-type" style="background:${c}22;color:${c};border:1px solid ${c}44">${TYPE_ZH[t]||t}</span>`;}
 function statBar(name,val){const pct=Math.min(100,Math.round(val/255*100));const c=val>=100?'var(--acc2)':val>=60?'var(--acc)':'var(--warn)';return`<div class="pkm-stat-row"><span class="pkm-stat-lbl">${STAT_ZH[name]||name}</span><div class="pkm-stat-bar"><div class="pkm-stat-fill" style="width:${pct}%;background:${c}"></div></div><span class="pkm-stat-val">${val}</span></div>`;}
-async function fetchPkm(idOrName){const r=await fetch(`${POKEAPI}/pokemon/${idOrName}`);if(!r.ok)throw new Error('未找到');return r.json();}
-async function fetchPkmSpecies(idOrName){const r=await fetch(`${POKEAPI}/pokemon-species/${idOrName}`);if(!r.ok)return null;return r.json();}
+async function fetchPkm(idOrName){
+  try{const local=await getAdventurePokemonSnapshot();const p=local[idOrName]||Object.values(local).find(row=>row.name===idOrName);if(p)return cloneJson(p);}catch{}
+  const r=await fetch(`${POKEAPI}/pokemon/${encodeURIComponent(idOrName)}`,{signal:AbortSignal.timeout(12000)});if(!r.ok)throw new Error('未找到');return r.json();
+}
+async function fetchPkmSpecies(idOrName){const r=await fetch(`${POKEAPI}/pokemon-species/${encodeURIComponent(idOrName)}`,{signal:AbortSignal.timeout(12000)});if(!r.ok)return null;return r.json();}
 function uniqNonEmpty(arr){
   return [...new Set((arr||[]).filter(Boolean))];
 }
@@ -414,6 +417,9 @@ function buildSearchCandidates(){
     const officialName=getCachedOfficialDexName(dexId)||name;
     seen.set(`base-${dexId}`,{key:`base-${dexId}`,label:officialName,searchText:[officialName,name].filter(Boolean).join(' '),target:dexId});
   });
+  Object.values(pkmOfficialDexCache||{}).forEach(row=>{
+    const dexId=Number(row.id);if(!seen.has(`base-${dexId}`))seen.set(`base-${dexId}`,{key:`base-${dexId}`,label:row.zhName,searchText:row.zhName,target:dexId});
+  });
   const variantsMap=pkmOfficialVariantDataCache||{};
   Object.entries(variantsMap).forEach(([dexId,items])=>{
     const baseName=getCachedOfficialDexName(Number(dexId))||PKM_CN_TABLE[Number(dexId)]||'';
@@ -712,7 +718,7 @@ async function translatePkmDesc(pkmId,engText,btnEl,targetEl){
   if(pkmDescTransCache[pkmId]){targetEl.innerHTML=pkmDescTransCache[pkmId];btnEl.style.display='none';return;}
   btnEl.classList.add('loading');btnEl.textContent='翻译中…';
   try{
-    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{
+    const res=await fetch(GEMINI_PROXY,{
       method:'POST',
       headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},
       body:JSON.stringify({contents:[{role:'user',parts:[{text:'请将以下宝可梦图鉴文字翻译成简体中文，只输出翻译结果，不要加任何解释或符号：\n'+engText}]}],generationConfig:{maxOutputTokens:200,temperature:0.3}})
@@ -792,7 +798,7 @@ async function loadTodayPkm(random=false){
     await loadPkmCollection();
     updateTodayBtns();
     loadPkmEncounters(p.id,p.name);
-  }catch(e){console.error('宝可梦加载失败',e);}
+  }catch(e){console.error('宝可梦加载失败',e);document.getElementById('pkm-today-name').textContent='资料暂不可用';document.getElementById('pkm-today-desc').textContent='仍可使用图鉴检索，或点击“换一只”重试。';}
 }
 
 // 各世代游戏名称映射（英文->中文）
@@ -994,11 +1000,17 @@ async function openPkmDetail(idOrName){
   if(window.partnerTrackEvent)window.partnerTrackEvent('pokedex_view');
   document.getElementById('ov-pkm').classList.add('on');
   document.getElementById('pkm-detail-name').textContent='加载中…';
+  document.getElementById('pkm-detail-add-team').disabled=true;
+  document.getElementById('pkm-detail-copy-link').disabled=true;
   try{
     const zaForm=String(idOrName||'').startsWith('za:')?ZA_MEGA_BY_SLUG[String(idOrName).slice(3)]:null;
     const detailTarget=zaForm?zaForm.dexId:idOrName;
     currentDetailFormKey=zaForm?`za:${zaForm.slug}`:'';
     const p=await fetchPkm(detailTarget);const sp=await fetchPkmSpecies(p.species.url.split('/').slice(-2)[0]);
+    const addBtn=document.getElementById('pkm-detail-add-team');addBtn.disabled=false;
+    addBtn.onclick=()=>addPokedexPokemonToTeam(p).catch(error=>notifyError('未能加入队伍',error));
+    const copyBtn=document.getElementById('pkm-detail-copy-link');copyBtn.disabled=false;
+    copyBtn.onclick=async()=>{try{const link=new URL(location.href);link.hash=`pkm/${p.id}`;await navigator.clipboard.writeText(link.href);showToast('图鉴链接已复制','ok');}catch{showToast('复制失败，可在地址栏使用 #pkm/'+p.id,'warn');}};
     currentDetailPkmId=p.id;
     const dexId=getSpeciesDexId(p,sp)||Number(p.id);
     const baseCnName=await getPreferredBaseName(p,sp);
@@ -1046,77 +1058,52 @@ async function openPkmDetail(idOrName){
 
   }catch(e){document.getElementById('pkm-detail-name').textContent='加载失败';}
 }
-function onPkmSearch(v){
+let pkmSearchVersion=0;
+function onPkmSearch(v,limit=24){
+  const version=++pkmSearchVersion;
   clearTimeout(pkmSearchT);const res=document.getElementById('pkm-search-results');
-  if(!v.trim()){res.innerHTML='';return;}
+  if(!v.trim()){res.replaceChildren();return;}
   pkmSearchT=setTimeout(async()=>{
-    res.innerHTML='<div style="color:var(--t3);font-size:.8rem;padding:8px">搜索中…</div>';
+    res.textContent='搜索中…';
     try{
       const q=v.trim().toLowerCase();
-      await loadOfficialPkmDex().catch(()=>null);
-      await loadOfficialPkmVariants().catch(()=>null);
-      const localMatches=buildSearchCandidates()
-        .filter(item=>item.searchText.toLowerCase().includes(q))
-        .slice(0,16);
-      if(localMatches.length){
-        const items=await Promise.all(localMatches.map(async item=>{
-          const target=await resolveSearchCandidateTarget(item);
-          const zaForm=String(target||'').startsWith('za:')?ZA_MEGA_BY_SLUG[String(target).slice(3)]:null;
-          const p=zaForm?null:await fetchPkm(target);
-          const img=zaForm?getZaMegaImage(zaForm):(p.sprites?.front_default||'');
-          const openArg=typeof target==='number'?target:`'${String(target).replace(/'/g,'\\\'')}'`;
-          return`<div class="pkm-mini" onclick="openPkmDetail(${openArg})"><img src="${img}" alt=""><div class="pkm-mini-name">${esc(item.label)}</div></div>`;
-        }));
-        res.innerHTML=items.join('');
-        return;
+      await Promise.all([loadOfficialPkmDex(),loadOfficialPkmVariants()]);
+      let matches=buildSearchCandidates().filter(item=>item.searchText.toLowerCase().includes(q)||/^\d+$/.test(q)&&Number(item.target)===Number(q));
+      if(!matches.length&&/^[a-z0-9-]+$/.test(q)){
+        const response=await fetch(`${POKEAPI}/pokemon?limit=2000`,{cache:'force-cache',signal:AbortSignal.timeout(12000)});
+        if(!response.ok)throw new Error('资料服务暂不可用');
+        const data=await response.json();
+        matches=data.results.filter(item=>item.name.includes(q)).map(item=>({label:item.name,target:Number(item.url.split('/').filter(Boolean).at(-1))}));
       }
-      const r=await fetch(`${POKEAPI}/pokemon?limit=2000`);const d=await r.json();
-      const matches=d.results.filter(x=>x.name.includes(q)||x.url.split('/').slice(-2)[0]===q).slice(0,16);
-      if(!matches.length){res.innerHTML='<div style="color:var(--t3);font-size:.8rem;padding:8px">未找到</div>';return;}
-      const items=await Promise.all(matches.map(async m=>{
-        const p=await fetchPkm(m.name);
-        const sp=await fetchPkmSpecies(p.species?.name||p.id).catch(()=>null);
-        const baseName=await getPreferredBaseName(p,sp);
-        const variant=await resolveOfficialDexVariant(p,sp).catch(()=>null);
-        const cn=getDisplayNameWithVariant(baseName,variant);
-        const img=p.sprites?.front_default||'';
-        return`<div class="pkm-mini" onclick="openPkmDetail('${m.name}')"><img src="${img}" alt=""><div class="pkm-mini-name">${esc(cn)}</div></div>`;
-      }));
-      res.innerHTML=items.join('');
-    }catch(e){res.innerHTML='<div style="color:var(--danger);font-size:.8rem;padding:8px">搜索失败</div>';}
-  },500);
+      if(version!==pkmSearchVersion)return;
+      res.replaceChildren();
+      for(const item of matches.slice(0,limit)){
+        const button=document.createElement('button');button.type='button';button.className='pkm-mini';
+        const image=document.createElement('img');image.alt='';image.loading='lazy';image.src=item.zaForm?getZaMegaImage(item.zaForm):`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${item.target}.png`;
+        const label=document.createElement('span');label.className='pkm-mini-name';label.textContent=item.label;
+        button.append(image,label);button.addEventListener('click',async()=>{button.disabled=true;try{await openPkmDetail(await resolveSearchCandidateTarget(item));}finally{button.disabled=false;}});res.appendChild(button);
+      }
+      const info=document.createElement('p');info.textContent=matches.length?`显示 ${Math.min(limit,matches.length)} / ${matches.length} 条`:'未找到匹配的宝可梦';res.appendChild(info);
+      if(matches.length>limit){const more=document.createElement('button');more.type='button';more.className='btn';more.textContent='加载更多';more.onclick=()=>onPkmSearch(v,limit+24);res.appendChild(more);}
+    }catch(error){if(version===pkmSearchVersion){res.textContent='搜索失败，请重试或稍后再试。';}}
+  },250);
 }
 async function loadGen(gen,el){
-  document.querySelectorAll('.pkm-gen-tab').forEach(t=>t.classList.remove('on'));el.classList.add('on');
+  document.querySelectorAll('.pkm-gen-tab').forEach(t=>t.classList.remove('on'));el?.classList.add('on');
   const grid=document.getElementById('pkm-gen-grid');grid.innerHTML='<div class="pkm-empty">加载中…</div>';
-  if(genCache[gen]){grid.innerHTML=genCache[gen];return;}
-  const[start,end]=GEN_RANGE[gen];const ids=Array.from({length:end-start+1},(_,i)=>start+i);
-  grid.innerHTML='';const BATCH=10;let allHtml=''; // 减小批次，让中文名能及时拿到
-  for(let b=0;b<ids.length;b+=BATCH){
-    const batch=ids.slice(b,b+BATCH);
-    const items=await Promise.all(batch.map(async id=>{
-      try{
-        const p=await fetchPkm(id);
-        const speciesName=p.species?.name||p.name;
-        // getPkmCNName 内部会查 species，直接用它
-        const cn=await getPkmCNName(p.id,speciesName);
-        const img=p.sprites?.front_default||'';
-        const col=pkmCollection[p.id]||{};
-        const mark=col.caught?'✓':col.liked?'♥':col.wanted?'★':'';
-        return'<div class="pkm-mini" onclick="openPkmDetail('+p.id+')" style="position:relative">'
-          +(mark?'<div style="position:absolute;top:3px;right:3px;font-size:.6rem;color:var(--acc2)">'+mark+'</div>':'')
-          +'<img src="'+img+'" alt="" loading="lazy">'
-          +'<div class="pkm-mini-name">'+cn+'</div></div>';
-      }catch{return'';}
-    }));
-    allHtml+=items.join('');grid.innerHTML=allHtml;
-  }
-  genCache[gen]=allHtml;
+  const local=await loadOfficialPkmDex();
+  if(!el?.classList.contains('on'))return;
+  const [start,configuredEnd]=GEN_RANGE[gen];
+  const end=gen===9?Math.max(configuredEnd,...Object.keys(local).map(Number)):configuredEnd;
+  grid.innerHTML=Array.from({length:end-start+1},(_,i)=>start+i).map(id=>{
+    const col=pkmCollection[id]||{},mark=col.caught?'✓':col.liked?'♥':col.wanted?'★':'';
+    return `<button type="button" class="pkm-mini" onclick="openPkmDetail(${id})"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png" alt="" loading="lazy"><span class="pkm-mini-name">${esc(local[id]?.zhName||PKM_CN_TABLE[id]||'#'+id)} ${mark}</span></button>`;
+  }).join('');
 }
 
 let pkmSeriesLogs={};
 async function loadSeriesData(){
-  const{data:{session}}=await db.auth.getSession();if(!session?.user)return;
+  const{data:{session}}=await db.auth.getSession();if(!session?.user){pkmSeriesLogs={};renderSeries();return;}
   const{data}=await db.from('pkm_series_log').select('*').eq('user_id',session.user.id);
   pkmSeriesLogs={};(data||[]).forEach(r=>pkmSeriesLogs[r.series_id]=r);renderSeries();renderActiveCatches();
 }
@@ -1146,15 +1133,12 @@ function openSeriesDetail(el){
   document.getElementById('ov-series').classList.add('on');
   // 从 Supabase 数据填充本地内存
   if(log.notes!=null)       lsSet('pkm_notes_'+seriesId,    Array.isArray(log.notes)?log.notes:[]);
-  if(log.party!=null)       setSeriesParty(seriesId,log.party,{sync:false});
-  if(log.progress!=null)    setSeriesProgress(seriesId,log.progress,{sync:false});
-  if(log.hunts!=null)       setSeriesHunts(seriesId,log.hunts,{sync:false});
-  // 训练 EV：{pkmId: {hp,attack,...}} → 逐只写入内存
-  if(log.training_evs!=null){
-    Object.entries(log.training_evs).forEach(([pkmId,evs])=>{
-      setTrainEVs(seriesId,pkmId,evs,{sync:false});
-    });
-  }
+  if(log.training_evs!=null&&canHydrateAdventureField(seriesId,'training_evs'))hydrateAdventureTraining(seriesId,log.training_evs);
+  if(log.party!=null&&canHydrateAdventureField(seriesId,'party'))setSeriesParty(seriesId,log.party,{sync:false});
+  if(log.progress!=null&&canHydrateAdventureField(seriesId,'progress'))setSeriesProgress(seriesId,log.progress,{sync:false});
+  if(log.hunts!=null&&canHydrateAdventureField(seriesId,'hunts'))setSeriesHunts(seriesId,log.hunts,{sync:false});
+  _trainPkmData=null;_trainSid=seriesId;_trainSelLoc='';_trainLocPkm=[];
+  _huntSelLoc='';_huntLocPkm=[];
   renderQuickNotes(seriesId);
   initFRLGMapTab(seriesId);
   // 清理上一个版本的冒险日记，避免串号
@@ -1170,7 +1154,7 @@ async function saveSeriesDetail(){
   const payload={user_id:session.user.id,series_id:sid,status:btn.dataset.status||'none',start_date:document.getElementById('series-start-inp').value||null,end_date:document.getElementById('series-end-inp').value||null,play_hours:parseInt(document.getElementById('series-hours-inp').value)||0,ace_pokemon:document.getElementById('series-ace-inp').value.trim()||null,updated_at:new Date().toISOString()};
   const{error}=await db.from('pkm_series_log').upsert(payload,{onConflict:'user_id,series_id'});
   if(error){alert('保存失败：'+error.message);btn.textContent='保存';btn.disabled=false;return;}
-  pkmSeriesLogs[sid]={...payload};renderSeries();btn.textContent='✓ 已保存';
+  pkmSeriesLogs[sid]={...pkmSeriesLogs[sid],...payload};renderSeries();btn.textContent='✓ 已保存';
   setTimeout(()=>{btn.textContent='保存记录';btn.disabled=false;closeOv('ov-series');},800);
 }
 
@@ -1206,7 +1190,7 @@ async function sendPkmAIMsg(){
   const g=currentChatPkm;const series=document.getElementById('pkm-series-inp').value.trim();
   const sys=`你是一位精通宝可梦世界的博士级情报员，专精于${g.name}（#${String(g.id).padStart(3,'0')}，${g.types.map(t=>TYPE_ZH[t]||t).join('/')}属性）。你对这只宝可梦了如指掌：进化方式、对战技能、个性搭配、各作品出场方式、相关剧情和冷知识。${series?`玩家当前游玩的系列：${series}，请优先结合该作品中的相关内容来回答。`:''}\n回答要求：中文，400字左右，详细丰富，纯文字不用Markdown符号。`;
   try{
-    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:pkmChatHistory,generationConfig:{maxOutputTokens:1000,temperature:1.0}})});
+    const res=await fetch(GEMINI_PROXY,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:pkmChatHistory,generationConfig:{maxOutputTokens:1000,temperature:1.0}})});
     if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err?.error?.message||'HTTP '+res.status);}
     const data=await res.json();const reply=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'（AI 暂时离线）';
     const t=document.getElementById('pkm-typing');if(t)t.remove();
@@ -1221,7 +1205,7 @@ async function generatePkmLog(){
   const histText=pkmChatHistory.map(m=>(m.role==='user'?'训练师':'博士')+':'+m.parts[0].text).join('\n');
   const prompt='以下是关于宝可梦'+g.name+'的对话记录：\n\n'+histText+'\n\n请将这段对话中有价值的内容写成一则100-150字的训练师日志。用第一人称，像宝可梦训练师在记录探索日记一样，融入宝可梦世界的氛围。提炼关键信息，纯文字不用Markdown。';
   try{
-    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:300,temperature:0.8}})});
+    const res=await fetch(GEMINI_PROXY,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:300,temperature:0.8}})});
     if(!res.ok)throw new Error('HTTP '+res.status);
     const data=await res.json();const summary=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
     if(!summary)throw new Error('AI 返回为空');
@@ -1282,7 +1266,7 @@ async function sendSeriesAIMsg(){
   const status=document.getElementById('series-save-btn')?.dataset?.status||'none';const hours=document.getElementById('series-hours-inp')?.value||'';const ace=document.getElementById('series-ace-inp')?.value||'';
   const sys='你是宝可梦系列「'+s.name+'」（'+s.year+'年）的专属攻略顾问。玩家状态：'+(status==='cleared'?'已通关':status==='played'?'游玩中':'未游玩')+(hours?'，约'+hours+'小时':'')+(ace?'，王牌：'+ace:'')+'。用中文详细回答（400字左右），纯文字不用Markdown。';
   try{
-    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:seriesChatHistory,generationConfig:{maxOutputTokens:1000,temperature:1.0}})});
+    const res=await fetch(GEMINI_PROXY,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:seriesChatHistory,generationConfig:{maxOutputTokens:1000,temperature:1.0}})});
     if(!res.ok)throw new Error('HTTP '+res.status);const data=await res.json();const reply=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'（AI 暂时离线）';
     const t=document.getElementById('series-typing');if(t)t.remove();addSeriesBubble(reply,'ai',true);
     seriesChatHistory.push({role:'model',parts:[{text:reply}]});if(seriesChatHistory.length>20)seriesChatHistory=seriesChatHistory.slice(-20);
@@ -1296,14 +1280,18 @@ async function genSeriesLogFromChat(){
   const histText=seriesChatHistory.map(m=>(m.role==='user'?'训练师':'顾问')+':'+m.parts[0].text).join('\n');
   const prompt='以下是关于宝可梦「'+s.name+'」的对话：\n\n'+histText+'\n\n请用第一人称训练师日记口吻，写一段100-130字的游玩日志，提炼有价值的内容，融入游戏氛围，纯文字不用Markdown。';
   try{
-    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:300,temperature:0.9}})});
+    const res=await fetch(GEMINI_PROXY,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:300,temperature:0.9}})});
     if(!res.ok)throw new Error('HTTP '+res.status);const data=await res.json();const text=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();if(!text)throw new Error('返回为空');
     const ta=document.getElementById('series-notes-inp');if(ta){const prev=ta.value.trim();ta.value=(prev?prev+'\n\n':'')+'[AI 日志]\n'+text;}
     const{data:{session}}=await db.auth.getSession();if(session?.user){await db.from('pkm_logs').insert({user_id:session.user.id,pkm_id:0,pkm_name:'📝 '+s.name,summary:text,game_series:s.name});loadPkmLogs();}
     if(btn){btn.textContent='✓ 已保存到日志';setTimeout(()=>{btn.disabled=false;btn.textContent='📋 生成游玩日志';},2000);}
   }catch(e){alert('生成失败：'+e.message);if(btn){btn.disabled=false;btn.textContent='📋 生成游玩日志';}}
 }
-async function initPkm(){Object.keys(genCache).forEach(k=>delete genCache[k]);await loadSeriesData();await loadTodayPkm();await loadPkmCollection();updateTodayBtns();loadGen(1,document.querySelector('.pkm-gen-tab'));await loadPkmLogs();renderActiveCatches();}
+async function initPkm(){
+  Object.keys(genCache).forEach(k=>delete genCache[k]);
+  await Promise.allSettled([loadSeriesData(),loadTodayPkm(),loadPkmCollection().then(updateTodayBtns),loadGen(1,document.querySelector('.pkm-gen-tab')),loadPkmLogs()]);
+  renderActiveCatches();
+}
 
 
 /* ================================================================
@@ -1338,7 +1326,7 @@ const NATURES=[
   {id:'quirky',zh:'浮躁',up:null,down:null},
   {id:'bashful',zh:'害羞',up:null,down:null},
 ];
-function getNatureZh(id){return NATURES.find(n=>n.id===id)?.zh||id;}
+function getNatureZh(id){return id==='unknown'?'未确认':id==='any'?'不限':NATURES.find(n=>n.id===id)?.zh||id;}
 
 /* ── 常量：各作品进度节点 ── */
 const SERIES_CHECKPOINTS={
@@ -1367,8 +1355,8 @@ const SERIES_CHECKPOINTS={
 Object.assign(SERIES_CHECKPOINTS,window.PKM_STORY_CHECKPOINTS||{});
 
 const _lsMem={};
-function lsGet(k){try{const v=localStorage.getItem(k);return v!=null?JSON.parse(v):(_lsMem[k]??null);}catch{return _lsMem[k]??null;}}
-function lsSet(k,v){_lsMem[k]=v;try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
+function lsGet(k){const key=adventureStorageKey(k);try{const v=localStorage.getItem(key)??(key!==k?readLegacyAdventureValue(k):null);return v!=null?JSON.parse(v):(_lsMem[key]??null);}catch{return _lsMem[key]??null;}}
+function lsSet(k,v){const key=adventureStorageKey(k);_lsMem[key]=v;try{localStorage.setItem(key,JSON.stringify(v));}catch{showToast('设备存储写入失败，请先导出备份，刷新可能丢失未同步记录');}}
 
 function cloneJson(v){
   try{return JSON.parse(JSON.stringify(v));}catch{return v;}
@@ -1382,7 +1370,7 @@ function normalizePartyList(party){
 
 function getSeriesPlayState(sid){
   return {
-    party:normalizePartyList(lsGet('pkm_party_'+sid)||[]),
+    party:normalizeAdventureParty(sid,normalizePartyList(lsGet('pkm_party_'+sid)||[])),
     progress:lsGet('pkm_progress_'+sid)||{},
     hunts:lsGet('pkm_hunt_'+sid)||[],
     trainingEvs:collectSeriesTrainingEVs(sid),
@@ -1391,9 +1379,9 @@ function getSeriesPlayState(sid){
 
 function getSeriesParty(sid){return getSeriesPlayState(sid).party;}
 function setSeriesParty(sid,party,{sync=true}={}){
-  const list=normalizePartyList(party);
+  const list=normalizeAdventureParty(sid,normalizePartyList(party));
   lsSet('pkm_party_'+sid,list);
-  if(sync)syncSeriesField(sid,'party',list);
+  if(sync){syncSeriesField(sid,'party',list);debounceSyncTrainEVs(sid);}
   return list;
 }
 function getSeriesProgress(sid){return getSeriesPlayState(sid).progress;}
@@ -1411,8 +1399,8 @@ function setSeriesHunts(sid,hunts,{sync='immediate'}={}){
   else if(sync)syncSeriesField(sid,'hunts',list);
   return list;
 }
-function getTrainEVs(sid,pkmId){
-  return lsGet('pkm_train_ev_'+sid+'_'+pkmId)||{hp:0,attack:0,defense:0,'special-attack':0,'special-defense':0,speed:0};
+function getTrainEVs(sid,individualId){
+  return cleanAdventureEVs(lsGet('pkm_train_ev_'+sid+'_'+individualId));
 }
 function setTrainEVs(sid,pkmId,evs,{sync='debounce'}={}){
   const value=evs&&typeof evs==='object'?evs:{};
@@ -1422,7 +1410,7 @@ function setTrainEVs(sid,pkmId,evs,{sync='debounce'}={}){
   return value;
 }
 function collectSeriesTrainingEVs(sid){
-  const prefix='pkm_train_ev_'+sid+'_';
+  const prefix=adventureStorageKey('pkm_train_ev_'+sid+'_');
   const evObj={};
   Object.entries(_lsMem).forEach(([k,v])=>{if(k.startsWith(prefix))evObj[k.slice(prefix.length)]=v;});
   try{
@@ -1431,25 +1419,22 @@ function collectSeriesTrainingEVs(sid){
       if(k&&k.startsWith(prefix)&&!(k.slice(prefix.length) in evObj))evObj[k.slice(prefix.length)]=JSON.parse(localStorage.getItem(k));
     }
   }catch{}
-  return evObj;
+  return {...evObj,...adventureTrainingMetadata(sid)};
 }
 
 /* 把单个 jsonb 字段写回 pkm_series_log（fire-and-forget） */
 async function syncSeriesField(sid,field,value){
-  const{data:{session}}=await db.auth.getSession();if(!session?.user)return;
-  if(pkmSeriesLogs[sid]){
-    await db.from('pkm_series_log').update({[field]:value}).eq('user_id',session.user.id).eq('series_id',sid);
-  }else{
-    await db.from('pkm_series_log').upsert({user_id:session.user.id,series_id:sid,status:'none',[field]:value},{onConflict:'user_id,series_id'});
-    if(!pkmSeriesLogs[sid])pkmSeriesLogs[sid]={status:'none'};
-  }
-  if(pkmSeriesLogs[sid])pkmSeriesLogs[sid][field]=value;
+  return persistAdventureField(sid,field,value);
 }
 const _seriesSyncTimers={};
 function queueSeriesFieldSync(sid,field,value,delay=1500){
   const key=sid+'|'+field;
   clearTimeout(_seriesSyncTimers[key]);
   const snapshot=cloneJson(value);
+  const pending=adventurePending(sid);
+  pending[field]={owner:typeof authUserId==='undefined'?null:authUserId,value:snapshot,ticket:newAdventureId()};
+  lsSet('pkm_sync_pending_'+sid,pending);
+  setAdventureSyncStatus(sid,'pending','已保存在此设备 · 等待同步');
   _seriesSyncTimers[key]=setTimeout(()=>{
     delete _seriesSyncTimers[key];
     syncSeriesField(sid,field,snapshot);
@@ -1532,7 +1517,7 @@ function addToParty(sid,pkm){
   const nick=prompt(`给 ${pkm.name} 起个昵称？（回车跳过）`,'')||'';
   const lv=prompt('当前等级？（回车跳过）','')||'';
   const cleanLv=lv?String(Math.max(1,Math.min(100,parseInt(lv,10)||1))):'';
-  party[emptyIdx]={pkmId:pkm.id,name:pkm.name,img:pkm.img,nick,lv:cleanLv};
+  party[emptyIdx]={individualId:newAdventureId(),pkmId:pkm.id,name:pkm.name,img:pkm.img,nick,lv:cleanLv};
   setSeriesParty(sid,party);
   ['party-search-inp','imm-party-search-inp'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   ['party-search-results','imm-party-search-results'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('open');});
@@ -1551,15 +1536,17 @@ function renderProgress(sid){
   const checkpoints=SERIES_CHECKPOINTS[sid];
   if(!checkpoints){list.innerHTML='<div style="color:var(--t3);font-size:.82rem;padding:8px 0">该作品暂无预设进度节点</div>';return;}
   const done=getSeriesProgress(sid);
+  const nextCheckpoint=checkpoints.find((cp,index)=>!done[index]);
   const total=checkpoints.length;const doneCount=Object.keys(done).filter(k=>Number(k)>=0&&Number(k)<total).length;
   const pct=Math.round(doneCount/total*100);
   list.innerHTML=`<div class="progress-head">
     <div>
-      <div class="progress-head-title">路线推进</div>
+      <div class="progress-head-title">冒险路线清单</div>
       <div class="progress-head-meta">${doneCount}/${total} 节点完成</div>
     </div>
     <div class="progress-head-pct">${pct}%</div>
   </div>
+  <p class="adventure-help">${nextCheckpoint?'接下来：'+esc(getCheckpointLabel(nextCheckpoint)):'路线清单已完成'} · 百分比仅表示清单勾选比例</p>
   <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
   <div class="progress-items-wrap">`
   +checkpoints.map((cp,i)=>{
@@ -1576,7 +1563,7 @@ function renderProgress(sid){
         <span class="progress-label">${esc(getCheckpointLabel(cp))}</span>
         <div class="progress-subrow">
           <span class="progress-ts">${detail?esc(detail)+' · ':''}${tsStr}</span>
-          ${!isDone?`<button class="gym-brief-btn" onclick="getBriefing('${sid}',${i});event.stopPropagation()" title="战前动员">⚔️ 战前动员</button>`:'<span class="progress-done-tag">已完成</span>'}
+          ${!isDone?`<button class="gym-brief-btn" onclick="getBriefing('${sid}',${i});event.stopPropagation()" title="可选的AI氛围旁白">可选旁白</button>`:'<span class="progress-done-tag">已完成</span>'}
         </div>
       </div>
     </div>`;
@@ -1654,7 +1641,7 @@ async function exploreLocation(){
   if(_exploreImgData)parts.push({inline_data:{mime_type:_exploreImgMime||'image/jpeg',data:_exploreImgData}});
   parts.push({text:promptText});
   try{
-    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts}],generationConfig:{maxOutputTokens:800,temperature:0.85}})});
+    const res=await fetch(GEMINI_PROXY,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts}],generationConfig:{maxOutputTokens:800,temperature:0.85}})});
     if(!res.ok)throw new Error('HTTP '+res.status);
     const data=await res.json();const reply=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'（AI暂时无法响应）';
     const displayLoc=loc||(_exploreImgData?'截图位置':'未知位置');
@@ -1761,13 +1748,13 @@ async function renderActiveCatches(){
   const gameEl=document.getElementById('pkm-active-game');
   const countEl=document.getElementById('pkm-active-count');
   if(!box||!row)return;
-  const playingEntry=Object.entries(pkmSeriesLogs).find(([,v])=>v.status==='played');
+  const playingEntry=Object.entries(pkmSeriesLogs).find(([,v])=>v.status==='played')||(_curSid?[_curSid,{}]:null);
   if(!playingEntry){box.style.display='none';return;}
   const[sid]=playingEntry;
   const s=PKM_SERIES.find(x=>x.id===sid);
   const{data:{session}}=await db.auth.getSession();
-  if(!session?.user){box.style.display='none';return;}
-  const{data:catches}=await db.from('pkm_catch_log').select('*').eq('user_id',session.user.id).eq('series_id',sid).order('created_at',{ascending:false});
+  const result=session?.user?await db.from('pkm_catch_log').select('*').eq('user_id',session.user.id).eq('series_id',sid).order('created_at',{ascending:false}):{data:[]};
+  const catches=mergeAdventureCatches(sid,result.data||[]);
   if(!catches?.length){box.style.display='none';return;}
   box.style.display='block';
   if(gameEl)gameEl.textContent=s?.name||sid;
@@ -2047,7 +2034,7 @@ async function loadCustomLocDist(type){
 function selectHuntLoc(loc){
   const sid=_curSid;
   _huntSelEncounterKey='';
-  _huntSelLoc=sid+'|'+loc;
+  _huntSelLoc=frlgDistributionKey(sid,loc);
   document.querySelectorAll('.hunt-loc-chip').forEach(c=>c.classList.toggle('on',c.dataset.loc===loc));
   const distSection=document.getElementById('hunt-phase-dist');
   const distTitle=document.getElementById('hunt-dist-title');
@@ -2066,8 +2053,8 @@ function selectHuntLoc(loc){
   }
 }
 function selectHuntLocFromMap(loc,encounterKey){
-  _huntSelEncounterKey=encounterKey||'';
   selectHuntLoc(loc);
+  _huntSelEncounterKey=encounterKey||'';
 }
 
 async function loadHuntDistribution(){
@@ -2080,27 +2067,16 @@ async function loadHuntDistribution(){
   // FRLG：直接用本地 PokeAPI 静态数据
   if(sid==='firered-leafgreen'&&typeof FRLG_ENCOUNTERS!=='undefined'){
     const entry=(_huntSelEncounterKey&&FRLG_ENCOUNTERS[_huntSelEncounterKey])||Object.values(FRLG_ENCOUNTERS).find(e=>e.zh===loc);
-    if(entry&&entry.encounters?.length){
-      if(grid)grid.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:8px 0;font-family:\'DM Mono\',monospace">加载精灵数据…</div>';
-      const items=[];
-      for(const enc of [...entry.encounters].sort((a,b)=>b.rate-a.rate).slice(0,16)){
-        try{
-          const p=await fetchPkm(enc.slug);
-          const id=p.id;
-          const cnName=PKM_CN_TABLE[id]||p.name;
-          const img=p.sprites?.other?.['official-artwork']?.front_default||p.sprites?.front_default||'';
-          const evYields={};for(const st of(p.stats||[])){if(st.effort>0)evYields[st.stat.name]=st.effort;}
-          if(!Object.keys(evYields).length)evYields['hp']=1;
-          items.push({id,name:cnName,img,chance:enc.rate,rate:enc.rate>=30?'高':enc.rate>=10?'中':'低',evYields,official:true,versions:enc.versions,methods:enc.methods});
-        }catch(e){}
-      }
-      if(items.length){
-        _huntDistCache[cacheKey]=items;
-        renderHuntDist(items,true,'PokeAPI');
-        if(btn)btn.style.display='none';
-        return;
-      }
-    }
+    try{
+      const key=_huntSelEncounterKey||Object.keys(FRLG_ENCOUNTERS).find(k=>FRLG_ENCOUNTERS[k]===entry);
+      const items=await loadAdventureFRLGDistribution(key,loc);
+      if(_huntSelLoc!==cacheKey)return;
+      _huntDistCache[cacheKey]=items;_huntLocPkm=items;
+      renderHuntDist(items,true,'PokeAPI 本地资料');renderHuntAreaGrid(getSeriesHunts(sid)[_immIdx]);
+      const status=document.getElementById('adventure-location-status');if(status)status.textContent=items.length?`${loc} · ${items.length} 种可记录遭遇`:'当前版本及方式没有遭遇数据，请更换条件';
+    }catch(error){showToast('地点资料加载失败，请重新选择地点重试');}
+    if(btn){btn.disabled=false;btn.textContent='重新加载';}
+    return;
   }
   if(grid)grid.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:8px 0;font-family:\'DM Mono\',monospace">正在从 52poke 读取「'+loc+'」精灵分布…</div>';
   // 优先 52poke
@@ -2119,7 +2095,7 @@ async function loadHuntDistribution(){
 （遭遇率：高=常见，中=偶见，低=稀有）
 只输出列表，不要编号不要其他内容。`;
   try{
-    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:200,temperature:0.6}})});
+    const res=await fetch(GEMINI_PROXY,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:200,temperature:0.6}})});
     const data=await res.json();
     const txt=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'';
     const rev=getPkmCnRev();
@@ -2220,7 +2196,7 @@ function selectDistPkm(idx){
 function renderHuntList(sid){
   const el=document.getElementById('hunt-list');if(!el)return;
   const list=getSeriesHunts(sid);
-  const active=list.filter(t=>!t.done);const done=list.filter(t=>t.done);
+  const active=list.filter(t=>!t.done&&!t.cancelled);const done=list.filter(t=>t.done);
   if(!list.length){el.innerHTML='<div style="font-size:.78rem;color:var(--t3);text-align:center;padding:20px 0;font-family:\'DM Mono\',monospace">选择地点后点击宝可梦开始自由捕捉</div>';return;}
   const renderCard=(t,i)=>{
     const realIdx=list.indexOf(t);
@@ -2232,7 +2208,7 @@ function renderHuntList(sid){
         <div class="hunt-card-count">${t.done?`共遭遇 ${t.count} 次后捕捉`:`已遭遇 <b>${t.count}</b> 次`}</div>
       </div>
       <div class="hunt-card-actions">
-        ${!t.done?`<button class="hunt-enter-btn" onclick="openImmHunt('${sid}',${realIdx})">进入捕捉</button>`:`<span class="hunt-done-badge">已捕捉</span>`}
+        ${!t.done?`<button class="hunt-enter-btn" onclick="openImmHunt('${sid}',${realIdx})">进入捕捉</button>`:`<button class="hunt-enter-btn" onclick="toggleImmPanel('catches')">查看档案</button>`}
         <button class="hunt-del-btn" onclick="huntDel('${sid}',${realIdx})">✕</button>
       </div>
     </div>`;
@@ -2248,15 +2224,15 @@ function huntDel(sid,idx){
 /* ============================
    📖 图鉴录入：种族值 + 性格 + 努力值AI推荐
    ============================ */
-let _catchSelectedPkm=null,_catchSearchT=null,_catchBaseStats=null,_catchEvYields=null;
+let _catchSelectedPkm=null,_catchSearchT=null,_catchBaseStats=null,_catchEvYields=null,_catchEditingId=null;
 
 function initNatureSelect(id){
   const sel=document.getElementById(id);if(!sel||sel.options.length>1)return;
-  sel.innerHTML=NATURES.map(n=>{
+  sel.innerHTML='<option value="unknown">未确认</option><option value="any">不限性格（捕捉目标）</option>'+NATURES.map(n=>{
     const hint=n.up?`+${STAT_ZH[n.up]||n.up}/-${STAT_ZH[n.down]||n.down}`:'中性';
     return`<option value="${n.id}">${n.zh}（${hint}）</option>`;
   }).join('');
-  sel.value='timid';
+  sel.value=id==='hgs-nature'?'any':'unknown';
 }
 
 function searchCatchPkm(v){
@@ -2277,6 +2253,9 @@ function getCatchLocationPrefill(){
 }
 
 function resetCatchForm(prefillLocation=''){
+  resetAdventureCatchFields();
+  _catchEditingId=null;
+  const saveBtn=document.getElementById('catch-save-btn');if(saveBtn)saveBtn.textContent='保存记录';
   const searchInp=document.getElementById('catch-search-inp');
   const nickInp=document.getElementById('catch-nickname');
   const locInp=document.getElementById('catch-location');
@@ -2333,6 +2312,8 @@ function isCatchSchemaCompatError(error){
 }
 
 async function selectCatchPkm(pkm){
+  resetAdventureCatchFields();
+  _catchEditingId=null;
   _catchSelectedPkm=pkm;
   document.getElementById('catch-search-inp').value=pkm.name;
   document.getElementById('catch-search-results').classList.remove('open');
@@ -2361,15 +2342,8 @@ async function selectCatchPkm(pkm){
 }
 
 function renderCatchBaseStats(stats,nature){
-  const n=NATURES.find(x=>x.id===nature);
   document.getElementById('catch-basestats').innerHTML=
-    `<div class="catch-stats-title">种族值（含性格修正）</div>`+
-    stats.map(s=>{
-      const val=s.base_stat;
-      const isUp=n&&n.up===s.stat.name;const isDown=n&&n.down===s.stat.name;
-      const eff=isUp?Math.floor(val*1.1):isDown?Math.floor(val*0.9):val;
-      return statBar(s.stat.name,val)+(isUp||isDown?`<div style="font-size:.62rem;color:${isUp?'var(--acc2)':'var(--danger)'};font-family:'DM Mono',monospace;margin:-3px 0 3px 40px">${isUp?'▲':'▼'} 实际约${eff}</div>`:'');
-    }).join('');
+    `<div class="catch-stats-title">物种种族值 · 性格不改变种族值</div>`+stats.map(s=>statBar(s.stat.name,s.base_stat)).join('');
 }
 
 function updateCatchNatureHint(){
@@ -2388,10 +2362,9 @@ function updateCatchNatureHint(){
 
 async function persistCatchRecord(){
   if(!_catchSelectedPkm){showToast('请先选择宝可梦');return false;}
-  const{data:{session}}=await db.auth.getSession();
-  if(!session?.user){showToast('请先登录');return false;}
+  const details=readAdventureCatchFields();if(!details)return false;
   const sid=_curSid;
-  const nature=document.getElementById('catch-nature')?.value||'serious';
+  const nature=document.getElementById('catch-nature')?.value||'unknown';
   const nick=document.getElementById('catch-nickname')?.value?.trim()||'';
   const location=document.getElementById('catch-location')?.value?.trim()||'';
   const note=document.getElementById('catch-note')?.value?.trim()||'';
@@ -2399,48 +2372,19 @@ async function persistCatchRecord(){
   const aiRec=(aiBox&&aiBox.style.display!=='none')?aiBox.textContent:'';
   const saveBtn=document.getElementById('catch-save-btn')||document.querySelector('#ov-imm .btn-a');
   if(saveBtn){saveBtn.disabled=true;saveBtn.textContent='保存中…';}
-  const payload={
-    user_id:session.user.id,series_id:sid,
-    pkm_id:_catchSelectedPkm.id,pkm_name:_catchSelectedPkm.name,
-    img:_catchSelectedPkm.img||null,nickname:nick||null,nature,
-    base_stats:_catchBaseStats||null,ev_yields:_catchEvYields||null,
-    ai_rec:aiRec||null,
-    catch_location:location||null,
-    manual_note:note||null
-  };
-  let row=null;
-  let insertError=null;
-  const insertRes=await db.from('pkm_catch_log').insert(payload).select().single();
-  insertError=insertRes.error||null;
-  row=insertRes.data||null;
-  if(insertError&&isCatchSchemaCompatError(insertError)){
-    const fallbackPayload={
-      user_id:payload.user_id,series_id:payload.series_id,
-      pkm_id:payload.pkm_id,pkm_name:payload.pkm_name,
-      img:payload.img,nickname:payload.nickname,nature:payload.nature,
-      base_stats:payload.base_stats,ev_yields:payload.ev_yields,ai_rec:payload.ai_rec
-    };
-    const fallbackRes=await db.from('pkm_catch_log').insert(fallbackPayload).select().single();
-    insertError=fallbackRes.error||null;
-    row=fallbackRes.data||null;
-    if(row&&(location||note)){
-      const localMeta=getCatchLocalMeta(sid);
-      localMeta[row.id]={location,note};
-      setCatchLocalMeta(sid,localMeta);
-    }
-  }else if(row){
-    const localMeta=getCatchLocalMeta(sid);
-    if(localMeta[row.id]){
-      delete localMeta[row.id];
-      setCatchLocalMeta(sid,localMeta);
-    }
-  }
+  const individualId=_catchEditingId||newAdventureId();
+  const old=individualProfiles(sid)[individualId];
+  const profile=saveIndividualProfile(sid,{...old,individualId,pkmId:_catchSelectedPkm.id,name:_catchSelectedPkm.name,img:_catchSelectedPkm.img,
+    ...details,nick,nature:nature==='any'?'unknown':nature,location,note,baseStats:_catchBaseStats,evYields:_catchEvYields,aiRec,
+    caughtAt:old?.caughtAt||new Date().toISOString(),catchPending:true});
+  const party=getSeriesParty(sid).map(p=>p?.individualId===individualId?{...p,...details,nick,nature:profile.nature}:p);
+  setSeriesParty(sid,party);
+  const result=await syncIndividualCatch(sid,profile);
   if(saveBtn){saveBtn.disabled=false;saveBtn.textContent='保存记录';}
-  if(insertError){showToast('保存失败：'+insertError.message);return false;}
   resetCatchForm(getCatchLocationPrefill());
   await loadCatchList(sid);
   await renderActiveCatches();
-  showToast('已保存到图鉴录入');
+  showToast(result.error?'档案已保存在此设备，云端同步可重试':'捕获档案已保存，可直接入队或训练');
   if(window.addAffinityProgress)window.addAffinityProgress('catch_log');
   return true;
 }
@@ -2471,7 +2415,7 @@ async function getCatchAIRec(){
   const box=document.getElementById('catch-ai-result');
   box.style.display='block';box.textContent='AI 分析中，请稍候…';
   try{
-    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:900,temperature:0.7}})});
+    const res=await fetch(GEMINI_PROXY,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:900,temperature:0.7}})});
     if(!res.ok)throw new Error('HTTP '+res.status);
     const data=await res.json();const reply=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'（AI暂时无法响应）';
     box.textContent=reply;
@@ -2484,16 +2428,18 @@ async function loadCatchList(sid){
   const el=document.getElementById('catch-list');if(!el)return;
   el.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:8px 0">加载中…</div>';
   const{data:{session}}=await db.auth.getSession();
-  if(!session?.user){el.innerHTML='';return;}
+  if(!session?.user){renderCatchList(mergeAdventureCatches(sid,[]));return;}
   const{data,error}=await db.from('pkm_catch_log').select('*').eq('user_id',session.user.id).eq('series_id',sid).order('created_at',{ascending:false});
-  if(error||!data){el.innerHTML='';return;}
-  renderCatchList(data);
+  if(error||!data){renderCatchList(mergeAdventureCatches(sid,[]));setAdventureSyncStatus(sid,'error','正在显示本机档案 · 云端读取失败，可重试');return;}
+  if(sid!==_curSid)return;
+  renderCatchList(mergeAdventureCatches(sid,data));
 }
 
 function renderCatchList(records){
+  _adventureCatchRows=records;
   const el=document.getElementById('catch-list');if(!el)return;
   if(!records.length){el.innerHTML='<div style="font-size:.8rem;color:var(--t3);text-align:center;padding:16px 0">还没有录入记录，抓到好精灵快来记录吧</div>';return;}
-  el.innerHTML=records.map(c=>{
+  el.innerHTML=records.map((c,index)=>{
     const natZh=getNatureZh(c.nature);
     const extra=getCatchExtra(c);
     const d=new Date(c.created_at);const ts=`${d.getMonth()+1}/${d.getDate()}`;
@@ -2506,7 +2452,7 @@ function renderCatchList(records){
         <div class="catch-card-meta">EV产出 ${evStr} · ${ts}${extra.location?` · ${esc(extra.location)}`:''}</div>
         ${extra.note?`<div class="catch-card-note">${esc(extra.note)}</div>`:''}
         ${c.ai_rec?`<details style="margin-top:4px"><summary style="font-size:.7rem;color:var(--t3);cursor:pointer;font-family:'DM Mono',monospace">查看AI推荐方案</summary><div style="font-size:.75rem;color:var(--t2);white-space:pre-wrap;margin-top:4px;padding:6px;background:var(--bg);border-radius:3px;line-height:1.7">${esc(c.ai_rec)}</div></details>`:''}
-        <button class="catch-share-btn${c.is_public?' shared':''}" data-id="${c.id}" data-public="${c.is_public?'1':'0'}" onclick="toggleShareCatch('${c.id}',${!!c.is_public})">${c.is_public?'已分享':'分享'}</button>
+        <div class="adventure-record-actions"><button class="btn btn-sm" onclick="addCaughtIndividual(${index})">加入队伍</button><button class="btn btn-sm btn-a" onclick="addCaughtIndividual(${index},true)">训练这只</button><button class="btn btn-sm" onclick="editCaughtIndividual(${index})">编辑档案</button></div>
       </div>
       <button class="catch-card-del" onclick="delCatch('${c.id}')">✕</button>
     </div>`;
@@ -2516,7 +2462,10 @@ function renderCatchList(records){
 async function delCatch(id){
   if(!confirm('删除这条录入？'))return;
   const{data:{session}}=await db.auth.getSession();if(!session?.user)return;
-  await db.from('pkm_catch_log').delete().eq('id',id).eq('user_id',session.user.id);
+  const {error}=await db.from('pkm_catch_log').delete().eq('id',id).eq('user_id',session.user.id);
+  if(error){showToast('云端删除失败，档案已保留，可重试');return;}
+  const profiles=individualProfiles(_curSid);
+  if(profiles[id]){delete profiles[id].caughtAt;delete profiles[id].catchPending;setAdventureMeta(_curSid,'individuals',profiles);debounceSyncTrainEVs(_curSid);}
   const localMeta=getCatchLocalMeta(_curSid);
   if(localMeta[id]){
     delete localMeta[id];
@@ -2654,7 +2603,7 @@ function confirmHuntGoalSetup(){
   const iv=document.getElementById('hgs-iv')?.value?.trim()||'—';
   const loc=_huntSelLoc.includes('|')?_huntSelLoc.split('|')[1]:'';
   const list=getSeriesHunts(_immSid);
-  const newT={pkmId:pkm.id,name:pkm.name,img:pkm.img,nature,iv,count:0,done:false,ts:Date.now(),loc};
+  const newT={pkmId:pkm.id,name:pkm.name,img:pkm.img,nature,targetNature:nature,iv,count:0,done:false,ts:Date.now(),loc};
   list.push(newT);_immIdx=list.length-1;
   setSeriesHunts(_immSid,list);renderHuntList(_immSid);
   const locBadge=document.getElementById('imm-loc');if(locBadge&&loc)locBadge.textContent='📍 '+loc;
@@ -2675,7 +2624,7 @@ function huntEncounterFromGrid(idx){
   const list=getSeriesHunts(_immSid);
   const t=list[_immIdx];
   // 无激活目标 → 自由捕捉，不要求先设目标
-  if(!t||t.done){
+  if(!t||t.done||t.cancelled){
     startFreeCapture(pkm);
     return;
   }
@@ -2695,7 +2644,8 @@ function huntEncounterFromGrid(idx){
     _huntActionsLocked=true;
     const card=document.querySelectorAll('.hunt-area-card')[idx];
     if(card){card.classList.add('hunt-area-flash');setTimeout(()=>card.classList.remove('hunt-area-flash'),350);}
-    showHuntNarration('不是目标，逃跑了……');
+    _huntCountUp();
+    showHuntNarration('已记录本次遭遇，未捕获目标');
     setTimeout(()=>{_huntActionsLocked=false;},380);
   }
 }
@@ -2715,14 +2665,7 @@ function _huntCountUp(){
 }
 
 function _checkShiny(){
-  if(Math.random()<1/4096){
-    const sp=document.getElementById('hunt-imm-sprite');
-    if(sp&&!sp.classList.contains('shiny')){
-      sp.classList.add('shiny');
-      showHuntNarration('✨ 等等…… 闪 光 ！！！');
-      setTimeout(()=>sp.classList.remove('shiny'),5000);
-    }
-  }
+  // This is a companion recorder. Shiny status is confirmed by the player.
 }
 
 
@@ -2752,6 +2695,7 @@ function showHuntNaturePick(){
   const list=getSeriesHunts(_immSid);
   const t=list[_immIdx];if(!t)return;
   const pick=document.getElementById('hunt-nature-pick');if(!pick)return;
+  const shiny=document.getElementById('hunt-caught-shiny');if(shiny)shiny.checked=false;
   const targetEl=document.getElementById('hunt-np-target');
   const hasNature=t.nature&&t.nature!=='any'&&t.nature!=='—'&&NATURES.some(n=>n.id===t.nature);
   if(targetEl)targetEl.textContent=t.free?'自由捕捉：记录这次遇到的宝可梦':(hasNature?'目标性格：'+getNatureZh(t.nature):'无特定性格目标');
@@ -2769,6 +2713,8 @@ function showHuntNaturePick(){
 }
 
 function cancelHuntNaturePick(){
+  const list=getSeriesHunts(_immSid),current=list[_immIdx];
+  if(current?.free&&!current.done){current.cancelled=true;setSeriesHunts(_immSid,list);_immIdx=-1;renderHuntList(_immSid);}
   document.getElementById('hunt-nature-pick').style.display='none';
   const actions=document.getElementById('hunt-battle-actions');
   if(actions)actions.style.display=_huntLocPkm.length?'none':'flex';
@@ -2782,10 +2728,13 @@ function huntSelectNature(natId){
   document.getElementById('hunt-nature-pick').style.display='none';
   if(!hasNature||natId===t.nature){
     // 性格匹配（或无目标性格）→ 捕捉成功
+    t.targetNature=t.targetNature||t.nature;
+    t.nature=natId;
+    t.shiny=!!document.getElementById('hunt-caught-shiny')?.checked;
+    setSeriesHunts(_immSid,list,{sync:false});
     confirmImmCatch();
   } else {
     // 性格不对 → 继续捕捉
-    _huntCountUp();
     const actions=document.getElementById('hunt-battle-actions');
     if(actions)actions.style.display=_huntLocPkm.length?'none':'flex';
     _huntActionsLocked=false;
@@ -2818,11 +2767,17 @@ function spawnFlash(){
   setTimeout(()=>el.remove(),200);
 }
 
-function confirmImmCatch(){
+async function confirmImmCatch(){
   const list=getSeriesHunts(_immSid);
-  const t=list[_immIdx];if(!t)return;
+  const t=list[_immIdx];if(!t||t.done)return;
+  const sid=_immSid;
+  t.loc=getHuntLocLabel();
+  t.individualId=t.individualId||newAdventureId();
+  t.count=Math.max(1,t.count||0);
   t.done=true;
-  setSeriesHunts(_immSid,list);
+  const profile=saveIndividualProfile(sid,{individualId:t.individualId,pkmId:t.pkmId,name:t.name,img:t.img,
+    nature:t.nature,shiny:!!t.shiny,location:t.loc,nick:'',note:'',caughtAt:new Date().toISOString(),catchPending:true});
+  setSeriesHunts(sid,list);
 
   // 显示成功动画层
   const suc=document.getElementById('hunt-imm-success');
@@ -2831,13 +2786,17 @@ function confirmImmCatch(){
   spawnCaptureBeam();
   setTimeout(()=>{spawnSparks();suc.style.display='flex';},400);
 
-  // 3秒后关闭（光束0.4s + 成功动画2.6s）
+  // Return to the same recorder and expose the new individual; keep the location.
   setTimeout(()=>{
-    closeImmHunt();
-    renderHuntList(_immSid);
+    suc.style.display='none';
+    _huntActionsLocked=false;
+    renderHuntList(sid);
     renderActiveCatches();
+    toggleImmPanel('catches');
     showToast('恭喜捕捉到 '+t.name+'！共遭遇 '+t.count+' 次');
-  },3000);
+  },1000);
+  await syncIndividualCatch(sid,profile);
+  await loadCatchList(sid);
 }
 
 function spawnSparks(){
@@ -2887,15 +2846,16 @@ let _trainLocPkm=[];
 
 function initTrainTab(sid){
   _trainSid=sid;
+  renderAdventureTrainControls();
   // 显示队伍
   let party=getSeriesParty(sid);
-  const slots=document.getElementById('train-pkm-slots');if(!slots)return;
+  const slots=document.getElementById('train-pkm-slots');
   const filledParty=party.filter(p=>p);
-  if(!filledParty.length){
+  if(slots&&!filledParty.length){
     slots.innerHTML='<div style="font-size:.78rem;color:var(--t3);padding:8px 0;font-family:\'DM Mono\',monospace">请先在「队伍」Tab 添加宝可梦</div>';
   } else {
-    slots.innerHTML=filledParty.map((p,i)=>`
-      <div class="train-pkm-slot${_trainPkmData?.id===p.pkmId?' selected':''}" onclick="selectTrainPkm(${i})">
+    if(slots)slots.innerHTML=filledParty.map((p,i)=>`
+      <div class="train-pkm-slot${_trainPkmData?.individualId===p.individualId?' selected':''}" onclick="selectTrainPkm(${i})">
         <img src="${p.img||''}" alt="" onerror="this.style.display='none'">
         <div class="train-pkm-slot-name">${esc(p.name)}</div>
         ${p.nick?`<div class="train-pkm-slot-nick">「${esc(p.nick)}」</div>`:''}
@@ -2956,7 +2916,7 @@ function renderTrainEVs(){
 function resetTrainEVs(){
   if(!_trainPkmData)return;
   _trainEVs={hp:0,attack:0,defense:0,'special-attack':0,'special-defense':0,speed:0};
-  setTrainEVs(_trainSid,_trainPkmData.id,_trainEVs,{sync:'debounce'});
+  setTrainEVs(_trainSid,_trainPkmData.individualId,_trainEVs,{sync:'debounce'});
   renderTrainEVs();showToast('EV 已重置');
 }
 
@@ -2964,6 +2924,7 @@ function getBoostMultiplier(){
   const v=document.getElementById('train-boost-sel')?.value||'1';
   if(v==='2b'||v==='2p')return 2;
   if(v==='4')return 4;
+  if(v==='2')return 2;
   return 1;
 }
 
@@ -2982,7 +2943,7 @@ function beatPokemon(idx){
     if(actualGain>0){_trainEVs[stat]=(_trainEVs[stat]||0)+actualGain;added=true;}
   }
   if(!added){showToast('EV 容量已满');return;}
-  setTrainEVs(_trainSid,_trainPkmData.id,_trainEVs,{sync:'debounce'});
+  setTrainEVs(_trainSid,_trainPkmData.individualId,_trainEVs,{sync:'debounce'});
   renderTrainEVs();
   // 动画反馈
   const card=document.getElementById('train-card-'+idx);
@@ -2995,13 +2956,13 @@ function beatPokemon(idx){
 }
 
 function selectTrainLocFromMap(loc,encounterKey){
-  _trainSelEncounterKey=encounterKey||'';
   selectTrainLoc(loc);
+  _trainSelEncounterKey=encounterKey||'';
 }
 function selectTrainLoc(loc){
   const sid=_trainSid;
   _trainSelEncounterKey='';
-  _trainSelLoc=sid+'|'+loc;
+  _trainSelLoc=frlgDistributionKey(sid,loc);
   document.querySelectorAll('#train-loc-chips .hunt-loc-chip').forEach(c=>c.classList.toggle('on',c.dataset.loc===loc));
   const distSec=document.getElementById('train-dist-section');
   const distTitle=document.getElementById('train-dist-title');
@@ -3027,27 +2988,15 @@ async function loadTrainDistribution(){
   // FRLG：直接用本地 PokeAPI 静态数据
   if(sid==='firered-leafgreen'&&typeof FRLG_ENCOUNTERS!=='undefined'){
     const entry=(_trainSelEncounterKey&&FRLG_ENCOUNTERS[_trainSelEncounterKey])||Object.values(FRLG_ENCOUNTERS).find(e=>e.zh===loc);
-    if(entry&&entry.encounters?.length){
-      if(grid)grid.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:8px 0;font-family:\'DM Mono\',monospace">加载精灵数据…</div>';
-      const items=[];
-      for(const enc of [...entry.encounters].sort((a,b)=>b.rate-a.rate).slice(0,16)){
-        try{
-          const p=await fetchPkm(enc.slug);
-          const id=p.id;
-          const cnName=PKM_CN_TABLE[id]||p.name;
-          const img=p.sprites?.front_default||'';
-          const evYields={};for(const st of(p.stats||[])){if(st.effort>0)evYields[st.stat.name]=st.effort;}
-          if(!Object.keys(evYields).length)evYields['hp']=1;
-          items.push({id,name:cnName,img,evYields,chance:enc.rate,rate:enc.rate>=30?'高':enc.rate>=10?'中':'低',official:true,versions:enc.versions,methods:enc.methods});
-        }catch(e){}
-      }
-      if(items.length){
-        _trainDistCache[cacheKey]=items;
-        renderTrainDist(items,true,'PokeAPI');
-        if(btn)btn.style.display='none';
-        return;
-      }
-    }
+    try{
+      const key=_trainSelEncounterKey||Object.keys(FRLG_ENCOUNTERS).find(k=>FRLG_ENCOUNTERS[k]===entry);
+      const items=await loadAdventureFRLGDistribution(key,loc);
+      if(_trainSelLoc!==cacheKey)return;
+      _trainDistCache[cacheKey]=items;renderTrainDist(items,true,'PokeAPI 本地资料');
+      const status=document.getElementById('adventure-location-status');if(status)status.textContent=items.length?`${loc} · ${items.length} 种可记录遭遇`:'当前版本及方式没有遭遇数据，请更换条件';
+    }catch(error){showToast('地点资料加载失败，请重新选择地点重试');}
+    if(btn){btn.disabled=false;btn.textContent='重新加载';}
+    return;
   }
   if(grid)grid.innerHTML='<div style="font-size:.75rem;color:var(--t3);padding:8px 0;font-family:\'DM Mono\',monospace">正在从 52poke 读取「'+loc+'」精灵分布…</div>';
   // 优先 52poke
@@ -3063,7 +3012,7 @@ async function loadTrainDistribution(){
   const s=PKM_SERIES.find(x=>x.id===sid);
   const prompt=`宝可梦游戏「${s?.name||sid}」中「${loc}」可以遇到的精灵，请列出10只，每行一只，只写精灵中文名，不要编号不要其他内容。`;
   try{
-    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:120,temperature:0.5}})});
+    const res=await fetch(GEMINI_PROXY,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:120,temperature:0.5}})});
     const data=await res.json();
     const txt=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'';
     const names=txt.split('\n').map(l=>l.trim().replace(/^[\d\.\-、]+/,'')).filter(Boolean).slice(0,12);
@@ -3163,6 +3112,7 @@ function _trainImmRenderSession(){
   if(count)count.textContent=String(_trainImmSession?.beats||0);
   const active=_trainImmIsActive();
   const pending=_trainImmSession?.status==='pending';
+  ['adventure-frlg-version','adventure-frlg-method','train-individual-select'].forEach(id=>{const control=document.getElementById(id);if(control)control.disabled=active||pending;});
   if(state){
     state.textContent=active?'训练记录中':pending?'等待保存':'自由游玩中';
     state.classList.toggle('active',active);
@@ -3175,21 +3125,22 @@ function _trainImmRenderSession(){
     const hasPartner=typeof partnerData!=='undefined'&&!!partnerData;
     partner.textContent=active
       ? (hasPartner?'伙伴待同步：保存后结算经验':'未选择伙伴：保存后仅记录 EV')
-      : '训练未开始：点击宝可梦不会写入 EV';
+    : '确认保存后才会写入 EV';
   }
 }
 function _trainImmResetSummary(){
   const box=document.getElementById('train-imm-summary');
   if(box){box.style.display='none';box.innerHTML='';}
 }
-function _trainImmRecordBeat(pkm,gains){
+function _trainImmRecordBeat(pkm,gains,beats=1){
   _trainImmEnsureSession();
-  _trainImmSession.beats+=1;
-  _trainImmSession.counts[pkm.name]=(_trainImmSession.counts[pkm.name]||0)+1;
+  _trainImmSession.beats+=beats;
+  _trainImmSession.counts[pkm.name]=(_trainImmSession.counts[pkm.name]||0)+beats;
   for(const [stat,val] of Object.entries(gains||{})){
     _trainImmSession.evGains[stat]=(_trainImmSession.evGains[stat]||0)+val;
   }
-  _trainImmSession.history.push({name:pkm.name,gains:{...(gains||{})}});
+  _trainImmSession.history.push({name:pkm.name,beats,gains:{...(gains||{})}});
+  persistAdventureDraft();
   _trainImmRenderSession();
 }
 function _trainImmBuildSummary(){
@@ -3197,14 +3148,14 @@ function _trainImmBuildSummary(){
   const elapsedSec=_trainImmElapsedSec();
   const top=_trainImmTopCounts(5);
   const evText=_trainImmEvGainText();
-  const loc=_trainSelLoc?.includes('|')?_trainSelLoc.split('|')[1]:'训练点';
+  const loc=_trainImmSession.location||(_trainSelLoc?.includes('|')?_trainSelLoc.split('|')[1]:'训练点');
   const target=_trainPkmData?(_trainPkmData.name+(_trainPkmData.nick?`「${_trainPkmData.nick}」`:'')):'训练对象';
   return {elapsedSec,beats:_trainImmSession.beats,counts:{..._trainImmSession.counts},evGains:{..._trainImmSession.evGains},top,evText,loc,target};
 }
 function _trainImmShowSummary(summary,partnerMsg){
   const box=document.getElementById('train-imm-summary');if(!box||!summary)return;
   const topText=summary.top.length?summary.top.join('、'):'还没有击败记录';
-  box.innerHTML=`<div class="tim-summary-title">TRAINING REPORT</div>
+  box.innerHTML=`<div class="tim-summary-title">本次训练记录</div>
     <div class="tim-summary-main">${esc(summary.target)} 在 ${esc(summary.loc)} 训练了 ${esc(_trainImmFmtTime(summary.elapsedSec))}，击败 ${summary.beats} 只宝可梦。</div>
     <div class="tim-summary-sub">打过：${esc(topText)}</div>
     <div class="tim-summary-sub">EV 收获：${esc(summary.evText||'暂无')}</div>
@@ -3219,7 +3170,9 @@ function startTrainImmSession(){
   if(!_trainPkmData){showToast('请先选择训练对象');toggleImmPanel('party');return;}
   if(!_trainLocPkm.length){showToast('请先选择或获取训练地点');return;}
   _trainImmResetSummary();
-  _trainImmSession={startedAt:Date.now(),status:'active',..._trainEmptyStats()};
+  if(_trainImmHasPending()){showToast('请先保存或丢弃上一次训练');return;}
+  _trainImmSession={id:newAdventureId(),individualId:_trainPkmData.individualId,location:_trainSelLoc.split('|')[1],startedAt:Date.now(),status:'active',..._trainEmptyStats()};
+  persistAdventureDraft();
   _trainImmStartTimer();
   _trainImmRenderSession();
   renderTrainImmEVs();
@@ -3227,35 +3180,46 @@ function startTrainImmSession(){
 }
 function finishTrainImmSession(){
   const summary=_trainImmBuildSummary();
-  if(!summary||summary.beats<=0){showToast('还没有训练记录');return;}
+  if(!summary||summary.beats<=0){discardTrainImmSession();return;}
   _trainImmSession.endedAt=Date.now();
   _trainImmStopTimer();
   _trainImmSession.status='pending';
+  persistAdventureDraft();
   _trainImmRenderSession();
   renderTrainImmEVs();
   _trainImmShowSummary(summary,'确认后才会写入 EV 和伙伴经验');
 }
-function saveTrainImmSession(){
+async function saveTrainImmSession(){
   const summary=_trainImmBuildSummary();
   if(!summary||summary.beats<=0){discardTrainImmSession();return;}
+  const session=_trainImmSession;
+  const sessions=adventureMeta(_trainSid,'sessions');
+  if(sessions[session.id]){_trainImmSession=null;persistAdventureDraft();return;}
+  _trainImmStopTimer();
   Object.entries(summary.evGains||{}).forEach(([stat,val])=>{
     _trainEVs[stat]=(_trainEVs[stat]||0)+(val||0);
   });
-  if(_trainSid&&_trainPkmData?.id)setTrainEVs(_trainSid,_trainPkmData.id,_trainEVs,{sync:'debounce'});
+  sessions[session.id]={...summary,individualId:session.individualId,savedAt:new Date().toISOString()};
+  setAdventureMeta(_trainSid,'sessions',sessions);
+  if(_trainSid&&_trainPkmData?.individualId)setTrainEVs(_trainSid,_trainPkmData.individualId,_trainEVs,{sync:false});
   let partnerMsg='';
   if(window.partnerTrackTrainingSession){
     partnerMsg=window.partnerTrackTrainingSession(summary)||'伙伴已记录本次训练';
   }
   _trainImmSession=null;
+  persistAdventureDraft();
   _trainImmShowSummary(summary,partnerMsg);
   _trainImmRenderSession();
   renderTrainImmEVs();
   renderTrainEVs();
-  showToast('本次训练已保存');
+  renderAdventureTrainPlan();renderTrainImmGrid();renderAdventureTrainingHistory();
+  const result=await syncSeriesField(_trainSid,'training_evs',collectSeriesTrainingEVs(_trainSid));
+  showToast(result?.synced?'本次训练已保存并同步到云端':'本次训练已保存在此设备，请查看同步状态');
 }
 function discardTrainImmSession(){
   _trainImmStopTimer();
   _trainImmSession=null;
+  persistAdventureDraft();
   _trainImmResetSummary();
   _trainImmRenderSession();
   renderTrainImmEVs();
@@ -3264,9 +3228,9 @@ function discardTrainImmSession(){
 function undoTrainImmBeat(){
   if(!_trainImmIsActive()||!_trainImmSession?.history?.length){showToast('没有可撤销的记录');return;}
   const last=_trainImmSession.history.pop();
-  _trainImmSession.beats=Math.max(0,(_trainImmSession.beats||0)-1);
+  _trainImmSession.beats=Math.max(0,(_trainImmSession.beats||0)-(last.beats||1));
   if(last?.name&&_trainImmSession.counts[last.name]){
-    _trainImmSession.counts[last.name]-=1;
+    _trainImmSession.counts[last.name]-=last.beats||1;
     if(_trainImmSession.counts[last.name]<=0)delete _trainImmSession.counts[last.name];
   }
   Object.entries(last?.gains||{}).forEach(([stat,val])=>{
@@ -3274,20 +3238,22 @@ function undoTrainImmBeat(){
   });
   _trainImmRenderSession();
   renderTrainImmEVs();
+  renderTrainImmGrid();persistAdventureDraft();
   showToast(`已撤销 ${last?.name||'上一只'}`);
 }
 function _trainImmFinalizeOnClose(){
   const summary=_trainImmBuildSummary();
   if(!summary||summary.beats<=0){_trainImmStopTimer();_trainImmSession=null;return;}
-  const save=confirm('本次训练还没有保存。要写入 EV 和伙伴经验吗？\n\n确定：保存\n取消：丢弃');
-  if(save)saveTrainImmSession();
-  else discardTrainImmSession();
+  _trainImmSession.status='pending';_trainImmSession.endedAt=Date.now();
+  persistAdventureDraft();_trainImmStopTimer();_trainImmSession=null;
+  showToast('未结算的训练已保留为本机草稿，下次进入训练可继续确认');
 }
 
 
 
 function renderTrainImmGrid(){
   const grid=document.getElementById('train-imm-dist-grid');if(!grid)return;
+  if(!_trainLocPkm.length){grid.innerHTML='<p class="adventure-empty">先选择地点，再记录你在游戏中实际击败的宝可梦。</p>';return;}
   grid.innerHTML=_trainLocPkm.map((it,i)=>{
     const evColors=Object.entries(it.evYields||{}).filter(([,v])=>v>0).map(([k,v])=>{
       const s=EV_STATS.find(x=>x.key===k);
@@ -3301,6 +3267,8 @@ function renderTrainImmGrid(){
       <div class="tim-pkm-name">${esc(it.name)}</div>
       <div class="tim-ev-dots">${evColors}</div>
       <div class="tim-ev-label">${evLabel}</div>
+      <div class="adventure-training-hint">${esc(adventureTrainingHint(it))}</div>
+      ${renderFRLGDistMeta(it)}
     </div>`;
   }).join('');
 }
@@ -3308,13 +3276,14 @@ function renderTrainImmGrid(){
 function renderTrainImmEVs(){
   const bars=document.getElementById('train-imm-ev-bars');if(!bars)return;
   const displayEVs=_trainImmProjectedEVs();
+  const goals=adventureMeta(_trainSid,'goals')[_trainPkmData?.individualId]||{};
   const totalUsed=Object.values(displayEVs).reduce((a,b)=>a+b,0);
   bars.innerHTML=EV_STATS.map(s=>{
     const v=displayEVs[s.key]||0;const pending=(_trainImmSession?.evGains?.[s.key]||0)>0;const pct=Math.min(100,v/EV_MAX_STAT*100);
     return`<div class="tim-ev-row">
       <div class="tim-ev-lbl" style="color:${s.color}">${s.zh}</div>
       <div class="tim-ev-bar-wrap"><div class="tim-ev-bar-fill" style="width:${pct}%;background:${s.color}"></div></div>
-      <div class="tim-ev-val" style="color:${pending?'var(--acc)':v>=EV_MAX_STAT?s.color:'rgba(255,255,255,.6)'}">${v}</div>
+      <div class="tim-ev-val" style="color:${pending?'var(--acc)':v>=EV_MAX_STAT?s.color:'rgba(255,255,255,.6)'}">${v}${goals[s.key]?` / ${goals[s.key]} <span class="adventure-remaining">还差 ${Math.max(0,goals[s.key]-v)}</span>`:''}</div>
     </div>`;
   }).join('');
   const tot=document.getElementById('train-imm-ev-total');
@@ -3325,6 +3294,7 @@ function trainImmBeat(idx){
   const pkm=_trainLocPkm[idx];if(!pkm||!_trainPkmData)return;
   if(!_trainImmIsActive()){showToast('先点击「开始训练」，本次才会记录 EV');return;}
   const mult=getBoostMultiplier();
+  const beats=Math.max(1,Math.min(999,Math.floor(Number(document.getElementById('train-batch-count')?.value)||1)));
   const displayEVs=_trainImmProjectedEVs();
   const totalBefore=Object.values(displayEVs).reduce((a,b)=>a+b,0);
   if(totalBefore>=EV_MAX_TOTAL){showToast('EV 已满 510！');return;}
@@ -3333,7 +3303,7 @@ function trainImmBeat(idx){
   const tempEVs={...displayEVs};
   for(const [stat,ev] of Object.entries(pkm.evYields)){
     if(!ev)continue;
-    const gain=ev*mult;
+    const gain=ev*mult*beats;
     const curTotal=Object.values(tempEVs).reduce((a,b)=>a+b,0);
     const actualGain=Math.min(gain,EV_MAX_TOTAL-curTotal,EV_MAX_STAT-(tempEVs[stat]||0));
     if(actualGain>0){
@@ -3350,10 +3320,10 @@ function trainImmBeat(idx){
   const card=document.getElementById('tim-card-'+idx);
   if(card){card.classList.add('tim-beat-flash');setTimeout(()=>card.classList.remove('tim-beat-flash'),350);}
   // EV获得提示
-  const evText=Object.entries(pkm.evYields).filter(([,v])=>v>0).map(([k,v])=>{const s=EV_STATS.find(x=>x.key===k);return`${s?.zh||k}+${v*mult}`;}).join(' ');
-  _trainImmRecordBeat(pkm,actualGains);
-  renderTrainImmEVs();
-  showToast(pkm.name+'  '+evText);
+  const evText=Object.entries(actualGains).map(([k,v])=>{const s=EV_STATS.find(x=>x.key===k);return`${s?.zh||k}+${v}`;}).join(' ');
+  _trainImmRecordBeat(pkm,actualGains,beats);
+  renderTrainImmEVs();renderTrainImmGrid();
+  showToast(`${pkm.name} ×${beats} · ${evText}`);
 }
 
 
@@ -3407,7 +3377,7 @@ async function getTrainRec(){
 
 注意：EV总和不超过510，单项不超过252，数据请基于官方资料。纯文字不用Markdown。`;
   try{
-    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:500,temperature:0.6}})});
+    const res=await fetch(GEMINI_PROXY,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:500,temperature:0.6}})});
     const data=await res.json();
     const reply=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'（AI暂时无法响应）';
     typewriter(box,reply,28);
@@ -3478,7 +3448,7 @@ async function genAdventureLog(){
 - 在快记内容基础上添加沉浸式细节和情绪，结尾带一点期待或感慨
 纯文字，不用Markdown，不用标题。`;
   try{
-    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:400,temperature:0.9}})});
+    const res=await fetch(GEMINI_PROXY,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:400,temperature:0.9}})});
     if(!res.ok)throw new Error('HTTP '+res.status);
     const data=await res.json();const reply=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'（AI暂时无法响应）';
     typewriter(box,reply);
@@ -3499,7 +3469,7 @@ async function speakPartyMember(sid,idx){
   const prompt=`你是宝可梦「${p.name}」${p.nick?'（训练师叫它「'+p.nick+'」）':''}，等级${p.lv||'?'}，正在跟随训练师冒险于「${s?.name||'宝可梦世界'}」。
 用第一人称说一句20-35字的话，体现这只宝可梦的性格和对训练师的感情。语气要有灵性，像真实的宝可梦在说话，自然不做作。纯文字。`;
   try{
-    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:80,temperature:1.2}})});
+    const res=await fetch(GEMINI_PROXY,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:80,temperature:1.2}})});
     if(!res.ok)throw new Error('HTTP '+res.status);
     const data=await res.json();const reply=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'……';
     resultEl.innerHTML=`<span style="font-size:.68rem;color:var(--acc);font-family:'DM Mono',monospace">${esc(p.name)}${p.nick?'「'+esc(p.nick)+'」':''}</span><br><span>${esc(reply)}</span>`;
@@ -3549,7 +3519,7 @@ ${ace?'训练师的王牌是'+ace+'。':''}${hours?'已经历了'+hours+'小时�
 请用第一人称写一段60-80字的战前动员：结合「${s?.name||''}」这部作品的剧情氛围，描写训练师此刻的心情、眼前的场景、以及即将出击的决心。
 文字要有沉浸感，像游戏内心独白，纯文字不用Markdown。`;
   try{
-    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:200,temperature:0.9}})});
+    const res=await fetch(GEMINI_PROXY,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:200,temperature:0.9}})});
     if(!res.ok)throw new Error('HTTP '+res.status);
     const data=await res.json();const reply=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'（AI离线）';
     panel.innerHTML=`<div class="gym-brief-hdr">⚔️ BATTLE READY · ${esc(cpName)}</div><div id="gym-brief-text"></div>`;
@@ -3568,12 +3538,12 @@ function updateImmTrainPlaceholder(){
 }
 
 function selectTrainPkmFromImm(idx){
-  if(_trainImmHasPending()){showToast('请先保存或丢弃当前训练草稿');return;}
+  if(_trainImmSession){showToast('请先保存或丢弃当前训练草稿');renderAdventureTrainControls();return;}
   const sid=_curSid;
   let party=getSeriesParty(sid);
   const p=party[idx];if(!p)return;
-  _trainPkmData={name:p.name,id:p.pkmId,img:p.img,nick:p.nick,lv:p.lv,partyIdx:idx};
-  _trainEVs=getTrainEVs(sid,p.pkmId);
+  _trainPkmData={name:p.name,id:p.pkmId,individualId:p.individualId,img:p.img,nick:p.nick,lv:p.lv,partyIdx:idx};
+  _trainEVs=getTrainEVs(sid,p.individualId);
   _trainSid=sid;
   toggleImmPanel('__none__');
   updateImmTrainPlaceholder();
@@ -3583,6 +3553,7 @@ function selectTrainPkmFromImm(idx){
   const _tName=document.getElementById('train-imm-name');
   if(_tName)_tName.textContent=p.name+(p.nick?`「${p.nick}」`:'');
   renderTrainImmEVs();
+  renderAdventureTrainControls();renderAdventureTrainPlan();
   if(_trainLocPkm.length)renderTrainImmGrid();
 }
 
@@ -3618,9 +3589,11 @@ function setImmMode(mode){
   }
   updateImmTrainPlaceholder();
   if(_immMode==='train'){
-    _trainImmResetSummary();
+    if(!_trainImmSession)_trainImmResetSummary();
     _trainImmRenderSession();
-    if(!_trainPkmData)toggleImmPanel('party');
+    renderAdventureTrainControls();renderAdventureTrainPlan();
+    if(!_trainImmSession)restoreAdventureDraft(_trainSid);
+    else if(_trainImmSession.status==='pending')_trainImmShowSummary(_trainImmBuildSummary(),'确认后写入 EV 和伙伴经验');
   }
 }
 
@@ -3692,6 +3665,7 @@ function _immNormalizePartyPkm(p){
   if(!p)return null;
   return {
     id:p.pkmId||p.id||null,
+    individualId:p.individualId,
     name:p.name||'',
     img:p.img||'',
     nick:p.nick||'',
@@ -3763,13 +3737,13 @@ async function saveCatch(){
 }
 
 function selectTrainPkm(slotIdx){
-  if(_trainImmHasPending()){showToast('请先保存或丢弃当前训练草稿');return;}
+  if(_trainImmSession){showToast('请先保存或丢弃当前训练草稿');return;}
   const sid=_trainSid;
   let party=getSeriesParty(sid);
   const filledParty=party.map((p,idx)=>p?{..._immNormalizePartyPkm(p),partyIdx:idx}:null).filter(Boolean);
   const p=filledParty[slotIdx];if(!p||!p.id)return;
-  _trainPkmData={name:p.name,id:p.id,img:p.img,nick:p.nick,lv:p.lv,partyIdx:p.partyIdx};
-  _trainEVs=getTrainEVs(sid,p.id);
+  _trainPkmData={name:p.name,id:p.id,individualId:p.individualId,img:p.img,nick:p.nick,lv:p.lv,partyIdx:p.partyIdx};
+  _trainEVs=getTrainEVs(sid,p.individualId);
   document.querySelectorAll('.train-pkm-slot').forEach((el,i)=>el.classList.toggle('selected',i===slotIdx));
   const evPanel=document.getElementById('train-ev-panel');if(evPanel)evPanel.style.display='block';
   const aiSec=document.getElementById('train-ai-result');if(aiSec)aiSec.style.display='none';
@@ -3834,7 +3808,9 @@ async function openImm(mode,...args){
       }catch(e){}
     }
   }else{
-    const tSid=_trainSid||_curSid;
+    const tSid=_curSid;
+    _trainSid=tSid;
+    _immSid=tSid;
     const art=document.getElementById('train-imm-sprite');
     if(art){art.style.visibility='hidden';art.removeAttribute('src');art.classList.remove('train-imm-beat');void art.offsetWidth;}
     if(loc)loc.textContent='📍 '+(_trainSelLoc.includes('|')?_trainSelLoc.split('|')[1]:'训练点');
@@ -3875,10 +3851,10 @@ async function openImm(mode,...args){
   if(fabs)fabs.style.display='flex';
   ov.style.display='flex';
   ov.classList.add('on');
+  renderAdventureSync();renderAdventureTrainControls();
   document.body.style.overflow='hidden';
   stopHuntParticles();
   stopTrainImmParticles();
-  if(mode==='hunt')startHuntParticles(); else startTrainImmParticles();
 }
 
 function closeImm(){
@@ -3901,10 +3877,12 @@ function closeImm(){
 }
 
 function openImmMapPicker(){
+  if(_trainImmSession){showToast('先保存或丢弃本次训练，再切换地点');return;}
   const full=document.getElementById('imm-map-full');if(!full)return;
   const fabs=document.getElementById('imm-fabs');
   if(fabs)fabs.style.display='none';
   full.style.display='flex';
+  renderFRLGLocationDirectory();
   if(!_immMapInited){
     _immMapInited=true;
     if(typeof frlgInitView==='function')frlgInitView('kanto');
@@ -4005,6 +3983,7 @@ function replacePartyMember(sid,idx,pkm){
   let party=getSeriesParty(sid);
   const prev=party[idx]||{};
   party[idx]={
+    individualId:newAdventureId(),
     pkmId:pkm.id,
     name:pkm.name,
     img:pkm.img,
@@ -4026,7 +4005,8 @@ function renderPartySlots(sid){
       const editing=isPartySlotEditing(sid,i);
       const nickVal=(p.nick||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
       const lvVal=String(p.lv||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
-      return`<div class="party-slot filled${editing?' party-slot-editing':''}" onclick="togglePartyEdit('${sid}',${i})">
+      const action=_immMode==='train'?`selectTrainPkmFromImm(${i})`:`togglePartyEdit('${sid}',${i})`;
+      return`<div class="party-slot filled${editing?' party-slot-editing':''}" onclick="${action}">
         <button class="party-slot-del" onclick="removeFromParty('${sid}',${i});event.stopPropagation()">✕</button>
         <img src="${p.img||''}" alt="" onerror="this.style.display='none'">
         <div class="party-slot-name">${esc(p.name)}</div>
@@ -4041,7 +4021,7 @@ function renderPartySlots(sid){
             </div>`
           :`${p.nick?`<div class="party-slot-nick">${esc(p.nick)}</div>`:''}
              <div class="party-slot-lv">${p.lv?'Lv.'+p.lv:''}</div>
-             <button class="party-speak-btn" onclick="speakPartyMember('${sid}',${i});event.stopPropagation()">💬 说话</button>`
+             <button class="party-speak-btn" onclick="togglePartyEdit('${sid}',${i});event.stopPropagation()">编辑</button><button class="party-speak-btn" onclick="selectTrainPkmFromImm(${i});setImmMode('train');event.stopPropagation()">训练</button>`
         }
       </div>`;
     }
@@ -4086,7 +4066,7 @@ function renderImmPartyScene(sid){
   stage.innerHTML=party.map((p,i)=>{
     const pos=IMM_PARTY_POS[i]||{x:50,y:60};
     if(!p)return`<div class="imm-party-empty-slot" onclick="document.getElementById('imm-party-search-inp')?.focus()" style="left:${pos.x}%;top:${pos.y}%">+</div>`;
-    const selected=_trainPkmData&&Number(_trainPkmData.id)===Number(p.pkmId)&&(_trainPkmData.nick||'')===(p.nick||'');
+    const selected=_trainPkmData?.individualId===p.individualId;
     const act=_immMode==='train'?`selectTrainPkmFromImm(${i})`:`togglePartyEdit('${sid}',${i})`;
     return`<div class="imm-party-mon${selected?' selected':''}" onclick="${act}" style="left:${pos.x}%;top:${pos.y}%;animation-delay:${i*.22}s">
       <div class="imm-party-sprite-wrap"><img src="${p.img||''}" alt="${esc(p.name)}" onerror="this.style.opacity='.35'"></div>

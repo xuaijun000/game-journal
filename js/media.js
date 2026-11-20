@@ -110,9 +110,8 @@ function openMediaRankDetail(type,idx){
 async function addMediaFromRank(type,item,bid){
   const btn=document.getElementById(bid);if(!btn)return;btn.textContent='添加中…';btn.disabled=true;
   const newItem={title:item.title,cover:item.cover,episode_total:item.total||0,episode_current:0,status:type==='anime'?'planned':'planned',rating:0,review:'',genres:item.genres||[]};
-  const{data:{session}}=await db.auth.getSession();
-  if(session?.user){const{data}=await db.from(type+'_list').insert({...newItem,user_id:session.user.id}).select().single();if(data)mediaData[type].unshift(data);}
-  else{mediaData[type].unshift({_id:Date.now().toString(36),created_at:new Date().toISOString(),...newItem});localStorage.setItem(type+'_list',JSON.stringify(mediaData[type]));}
+  try{mediaData[type].unshift(await createOwnedRecord(type+'_list',newItem,type+'_list'));}
+  catch(error){notifyError('收录失败',error);btn.textContent='重试收录';btn.disabled=false;return;}
   btn.textContent='✓ 已收录';btn.classList.add('added');btn.disabled=false;renderMedia(type);
 }
 function renderMedia(type){
@@ -130,7 +129,7 @@ function renderMedia(type){
     const pct=m.episode_total?Math.min(100,((m.episode_current||0)/m.episode_total)*100):0;
     const stCls=`ms-${m.status}`;
     const stText={watching:'观看中',reading:'阅读中',completed:type==='anime'?'已看完':'已读完',planned:type==='anime'?'想看':'想读',paused:'暂停',dropped:'放弃'}[m.status];
-    return`<div class="mc" data-status="${m.status||''}" onclick="openMediaEdit('${type}','${m.id||m._id}')">
+    return`<div class="media-card" data-status="${esc(m.status||'')}" onclick="openMediaEdit('${type}','${m.id||m._id}')">
       ${m.cover
         ?`<div class="mc-cover-wrap"><div class="mc-cover-bg" style="background-image:url('${esc(m.cover)}')"></div><img class="mc-cover" src="${esc(m.cover)}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'"></div>`
         :`<div class="mc-cover-ph">${type==='anime'?'🎬':'📖'}</div>`}
@@ -200,14 +199,14 @@ function fillMedia(item){
 }
 async function saveMedia(){
   const title=document.getElementById('media-modal-title').textContent;
-  if(title==='添加动漫'||title==='添加漫画'){alert('请先搜索并选择作品');return;}
+  if(title==='添加动漫'||title==='添加漫画'){showToast('请先搜索并选择作品','warn');return;}
   const coverUrl=document.getElementById('media-modal-cover').dataset.url||document.getElementById('media-modal-cover').src;
   const genres=[...document.querySelectorAll('#media-genre-chips .genre-chip')].map(c=>c.textContent);
   const p={title,cover:coverUrl&&coverUrl!==window.location.href?coverUrl:'',status:document.getElementById('media-status').value,episode_current:parseInt(document.getElementById('media-current').value)||0,episode_total:parseInt(document.getElementById('media-total').value)||null,rating:mediaStar,review:document.getElementById('media-review').value.trim(),genres};
   const{data:{session}}=await db.auth.getSession();const user=session?.user;const type=currentMediaType;
   if(user){
-    if(editMediaId){const{error}=await db.from(type+'_list').update(p).eq('id',editMediaId).eq('user_id',user.id);if(!error){const i=mediaData[type].findIndex(x=>x.id==editMediaId);if(i>-1)mediaData[type][i]={...mediaData[type][i],...p};}}
-    else{const{data,error}=await db.from(type+'_list').insert({...p,user_id:user.id}).select().single();if(error){alert('保存失败：'+error.message);return;}if(data)mediaData[type].unshift(data);}
+    if(editMediaId){const{error}=await db.from(type+'_list').update(p).eq('id',editMediaId).eq('user_id',user.id).select('id').single();if(error){notifyError('更新失败',error);return;}const i=mediaData[type].findIndex(x=>x.id==editMediaId);if(i>-1)mediaData[type][i]={...mediaData[type][i],...p};}
+    else{const{data,error}=await db.from(type+'_list').insert({...p,user_id:user.id}).select().single();if(error){notifyError('保存失败',error);return;}if(data)mediaData[type].unshift(data);}
   }else{
     if(editMediaId){const i=mediaData[type].findIndex(x=>x._id==editMediaId);if(i>-1)mediaData[type][i]={...mediaData[type][i],...p};}
     else{mediaData[type].unshift({_id:Date.now().toString(36),created_at:new Date().toISOString(),...p});}
@@ -221,7 +220,8 @@ async function delMedia(){
   const type=currentMediaType;
   const{data:{session}}=await db.auth.getSession();const user=session?.user;
   if(user){
-    await db.from(type+'_list').delete().eq('id',editMediaId).eq('user_id',user.id);
+    const {error}=await db.from(type+'_list').delete().eq('id',editMediaId).eq('user_id',user.id);
+    if(error){notifyError('删除失败',error);return;}
   }
   mediaData[type]=mediaData[type].filter(m=>(m.id||m._id)!=editMediaId);
   if(!user)localStorage.setItem(type+'_list',JSON.stringify(mediaData[type]));
@@ -250,7 +250,7 @@ async function sendMediaAIMsg(){
   msgs.appendChild(td);msgs.scrollTop=msgs.scrollHeight;
   const sys=`你是精通《${mediaCurrentItem.title}》的专属情报员。请用详细丰富的中文回答（400字左右），纯文字不用Markdown。\n${window._mtlProgressContext||''}`;
   try{
-    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:mediaChatHistory,generationConfig:{maxOutputTokens:1200,temperature:1.15}})});
+    const res=await fetch(GEMINI_PROXY,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:mediaChatHistory,generationConfig:{maxOutputTokens:1200,temperature:1.15}})});
     if(!res.ok)throw new Error('HTTP '+res.status);const data=await res.json();const reply=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'（AI 暂时离线）';
     document.getElementById('media-typing')?.remove();
     const div=document.createElement('div');div.className='cmsg ai-msg';div.innerHTML=`<div class="cmsg-av ai-av">AI</div><div class="cmsg-bbl"></div>`;msgs.appendChild(div);

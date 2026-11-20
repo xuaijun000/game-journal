@@ -2,8 +2,15 @@ const SB_URL='https://qbzxfwnosacwbdumkvoz.supabase.co';
 const SB_KEY='sb_publishable_m-FvqswdlPrigzfyxrBjJA_F9wzPNb2';
 const IGDB_PROXY='https://qbzxfwnosacwbdumkvoz.supabase.co/functions/v1/dynamic-worker';
 const STEAM_PROXY='https://qbzxfwnosacwbdumkvoz.supabase.co/functions/v1/steam-proxy';
-const{createClient}=supabase;
-const db=createClient(SB_URL,SB_KEY);
+const GEMINI_PROXY=SB_URL+'/functions/v1/gemini-proxy';
+const DYNAMIC_WORKER=IGDB_PROXY;
+function createOfflineClient(){
+  const unavailable=()=>({data:null,error:{message:'云端组件未就绪，请刷新后重试；本地记录仍可使用'}});
+  const auth={getSession:async()=>({data:{session:null},error:null}),getUser:async()=>({data:{user:null},error:null}),onAuthStateChange:()=>({data:{subscription:{unsubscribe(){}}}})};
+  for(const method of ['signInWithPassword','signUp','signOut','updateUser','resetPasswordForEmail'])auth[method]=async()=>unavailable();
+  return {auth,from(){const chain=new Proxy({},{get(_,key){if(key==='then')return resolve=>resolve(unavailable());return()=>chain;}});return chain;},rpc:async()=>unavailable()};
+}
+const db=window.supabase?.createClient?window.supabase.createClient(SB_URL,SB_KEY):createOfflineClient();
 let games=[],editId=null,star=0,pff='all',charts={},srT=null;
 const STMAP={playing:'游玩中',done:'已通关',wishlist:'想玩',dropped:'放弃'};
 const STCLS={playing:'s-playing',done:'s-done',wishlist:'s-wishlist',dropped:'s-dropped'};

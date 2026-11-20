@@ -1,6 +1,6 @@
 /* === overlay / modal / 娓告垙璇︽儏 / 缂栬緫寮圭獥 / 鎼滅储妗?/ 琛ㄥ崟 / 鍥捐〃 / 璁よ瘉 === */
 @keyframes fu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(6px);z-index:300;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto}
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(6px);z-index:3200;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto;overscroll-behavior:contain}
 @keyframes ovFade{from{opacity:0}to{opacity:1}}
 .ov.on{display:flex;animation:ovFade .25s ease}
 .modal{background:var(--bg2);border:1px solid var(--b2);border-radius:var(--rl);width:100%;max-width:600px;margin:auto;box-shadow:0 24px 60px rgba(0,0,0,.6)}
@@ -119,7 +119,7 @@
 .cc.full{grid-column:1/-1}
 
 /* Auth */
-.auth-c{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh}
+.auth-c{display:flex;align-items:stretch;justify-content:center;gap:18px;min-height:60vh;flex-wrap:wrap}
 .abox{background:var(--bg2);border:1px solid var(--b2);border-radius:var(--rl);padding:2.2rem;width:100%;max-width:340px}
 .abox h2{font-family:'Space Grotesk',sans-serif;font-size:1.2rem;margin-bottom:.4rem}
 .abox p{font-size:.82rem;color:var(--t2);margin-bottom:1.4rem}
@@ -128,6 +128,11 @@
 .atab button.on{background:var(--bg3);border-color:var(--b2);color:var(--t)}
 .amsg{font-size:.8rem;margin-top:8px;min-height:18px}
 .amsg.err{color:var(--danger)}.amsg.ok{color:var(--acc2)}
+.data-vault{display:flex;flex-direction:column;justify-content:center;background:linear-gradient(180deg,rgba(126,205,196,.08),rgba(22,32,34,.96));border-color:rgba(126,205,196,.2)}
+.data-vault-kicker{font-family:'DM Mono',monospace;font-size:.66rem;letter-spacing:.14em;color:var(--acc);margin-bottom:10px}
+.data-vault-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto}
+.data-vault-actions .btn{flex:1;min-width:124px}
+.data-vault-note{margin-top:14px;border-top:1px solid var(--b);padding-top:12px;font-size:.72rem;line-height:1.6;color:var(--t3)}
 
 /* Responsive */
 @media(max-width:920px){

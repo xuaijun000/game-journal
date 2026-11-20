@@ -3,11 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PIXELFISH</title>
+  <meta name="app-build" content="2026-11-20-adventure-v1">
+  <title>PIXELFISH · 宝可梦训练师工具站</title>
+  <meta name="description" content="查宝可梦图鉴、构筑队伍、使用对战工具，记录你的冒险旅程。PIXELFISH 为训练师提供中文资料与个人云端记录。">
+  <meta property="og:title" content="PIXELFISH · 宝可梦训练师工具站">
+  <meta property="og:description" content="查图鉴、配队伍、做对战分析，记录你的冒险。">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="css/logo_final.png">
   <link rel="icon" href="css/favicon.png" type="image/png">
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@400;600&family=DM+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script defer src="js/vendor/supabase.js"></script>
   <!-- CSS Modules -->
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/cards.css">
@@ -22,18 +26,16 @@
   <link rel="stylesheet" href="css/community.css">
   <link rel="stylesheet" href="css/frlg-map.css">
   <link rel="stylesheet" href="css/partner.css">
-  <script src="js/data/battle_registry.js"></script>
-  <script src="js/data/pkm_champions_data.js"></script>
-  <script src="js/data/moves_champions_data.js"></script>
-  <script src="js/data/items_champions_data.js"></script>
-  <script src="js/data/pkm_champions_builds.js"></script>
-  <script src="js/data/frlg_encounters.js"></script>
+  <link rel="stylesheet" href="css/launch.css">
+  <link rel="stylesheet" href="css/adventure.css">
+  <script defer src="js/data/battle_registry.js"></script>
+  <script defer src="js/data/frlg_encounters.js"></script>
   <!-- 可选：运行 scripts/browser-scrape-teams.js 后放入此目录 -->
   <script>/* pkm_champions_teams.js 可选 — 运行 scripts/browser-scrape-teams.js 后放入 js/data/ */</script>
 </head>
 <body>
 <!-- 入场屏 -->
-<div id="pf-entry">
+<div id="pf-entry" hidden aria-hidden="true">
   <div class="pfe-deco pfe-deco-tl"></div>
   <div class="pfe-deco pfe-deco-br"></div>
   <div class="pfe-grid"></div>
@@ -57,23 +59,23 @@
 <header>
   <div class="logo"><img src="css/logo_final.png" alt="PIXELFISH"></div>
   <nav>
-    <button class="on" onclick="go('list',this)">游戏库</button>
-    <button onclick="go('disc',this)">发现</button>
-    <button onclick="go('stats',this)">统计</button>
-    <span class="nav-sep"></span>
-    <button onclick="go('pkm',this)">宝可梦</button>
-    <button onclick="go('partner',this)">伙伴</button>
-    <button onclick="go('anime',this)">动漫</button>
-    <button onclick="go('manga',this)">漫画</button>
-    <button onclick="go('battle',this)">对战</button>
+    <button class="on" data-route="pkm" onclick="go('pkm',this)">图鉴</button>
+    <button data-route="teams" onclick="go('teams',this)">队伍</button>
+    <button data-route="battle" onclick="go('battle',this)">对战</button>
+    <button data-route="adventure" onclick="go('adventure',this)">冒险</button>
+    <select class="nav-more" aria-label="更多工具" onchange="if(this.value)go(this.value,null);this.value=''">
+      <option value="">更多</option><option value="community">社区</option><option value="partner">伙伴</option>
+      <option value="list">游戏库</option><option value="disc">游戏发现</option><option value="stats">个人统计</option>
+      <option value="anime">动漫</option><option value="manga">漫画</option><option value="auth">账号与备份</option>
+    </select>
   </nav>
   <div class="hdr-r">
-    <div class="av" id="av">?</div>
+    <button class="av" id="av" onclick="go('auth',null)" aria-label="账号中心">?</button>
     <button class="hbtn" id="abtn" onclick="go('auth',null)">登录</button>
   </div>
 </header>
 <main>
-  <div class="pg on game-library" id="pg-list">
+  <div class="pg game-library" id="pg-list">
     <section class="library-hero" id="library-hero"></section>
     <section class="library-command">
       <div class="library-search">
@@ -284,6 +286,9 @@
         <div class="field"><label>密码</label><input type="password" id="ap" placeholder="至少 6 位" autocomplete="current-password"></div>
         <button class="btn btn-a" style="width:100%" id="asub" onclick="doAuth()">登录</button>
         <div class="amsg" id="amsg"></div>
+        <button class="btn" onclick="requestPasswordReset()">忘记密码</button>
+        <button class="btn" id="account-signout" hidden onclick="signOutAccount()">退出登录</button>
+        <p>图鉴与本地工具可直接使用；登录后个人记录同步到账号。</p>
       </div>
       <div class="abox data-vault">
         <div class="data-vault-kicker">DATA VAULT</div>
@@ -294,11 +299,12 @@
           <button class="btn" onclick="openDataImport()">导入 JSON</button>
           <input type="file" id="data-import-file" accept="application/json" hidden onchange="importAllData(this)">
         </div>
-        <div class="data-vault-note">截图文件会保留公开 URL；原始图片请继续放在 Supabase Storage。</div>
+        <div class="data-vault-note">备份包含记录与图片链接，不包含图片原文件。截图链接公开，知道链接的人都能查看。<a href="privacy.html">了解数据与隐私</a></div>
       </div>
     </div>
   </div>
-  <div class="pg" id="pg-pkm">
+  <div class="pg on" id="pg-pkm">
+    <section class="trainer-welcome"><p>PIXELFISH · 训练师工具站</p><h1>查图鉴、配队伍、做对战分析</h1><p>搜索名称或编号开始。对战配置以工具中所选规则为准。</p><a href="pokemon-trainer-terminal/">打开离线工作台</a></section>
     <div class="tab-banner"><img src="css/宝可梦 Tab Banner.jpg" alt="" loading="lazy" decoding="async"></div>
     <div id="pkm-active-catches" style="display:none" class="pkm-active-catches-box">
       <div class="pkm-active-catches-hdr">
@@ -350,6 +356,9 @@
           </div>
           <div class="pkm-gen-grid" id="pkm-gen-grid"><div class="pkm-empty">加载中…</div></div>
         </div>
+        </div></div></div>
+  <div class="pg" id="pg-adventure">
+        <section class="trainer-welcome"><h1>我的冒险</h1><p>按游戏版本整理通关进度、地图和捕捉记录。</p></section>
         <div class="pkm-series-box">
           <div style="font-size:.72rem;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px">🎮 系列追踪</div>
           <div class="pkm-series-grid" id="pkm-series-grid"></div>
@@ -358,8 +367,6 @@
           <div class="pkm-log-hdr"><span>📋 游戏日志</span><span id="pkm-log-count" style="color:var(--t3)"></span></div>
           <div id="pkm-log-list" class="pkm-log-list"><div class="pkm-empty">还没有日志</div></div>
         </div>
-      </div>
-    </div>
   </div>
   <div class="pg" id="pg-partner">
     <div class="tab-banner"><img src="css/伙伴 Tab Banner.jpg" alt="" loading="lazy" decoding="async" onerror="this.style.display='none'"></div>
@@ -375,7 +382,7 @@
         <button class="partner-lb-dim-btn active" data-dim="level" onclick="loadPartnerLeaderboard('level')">等级榜</button>
         <button class="partner-lb-dim-btn" data-dim="streak" onclick="loadPartnerLeaderboard('streak')">连签榜</button>
         <button class="partner-lb-dim-btn" data-dim="bond" onclick="loadPartnerLeaderboard('bond')">羁绊榜</button>
-        <button class="partner-lb-dim-btn" data-dim="active" onclick="loadPartnerLeaderboard('active')">本周活跃</button>
+        <button class="partner-lb-dim-btn" data-dim="active" onclick="loadPartnerLeaderboard('active')">互动总榜</button>
       </div>
       <table class="partner-lb-table">
         <tbody id="partner-lb-rows"><tr><td colspan="5" class="partner-lb-loading">切换到排行榜加载…</td></tr></tbody>
@@ -610,6 +617,7 @@
 
 </main>
   <footer class="site-footer">
+    <p><a href="privacy.html">数据与隐私说明</a> · <a href="#auth">账号与备份</a></p>
     <p>© 2024-2026 PIXELFISH 版权所有，未经授权禁止转载</p>
   </footer>
 <!-- 游戏详情弹窗 -->
@@ -761,6 +769,8 @@
         <button class="pkm-btn" id="pkm-detail-wanted" onclick="togglePkmStatusModal('wanted')">★ 想要</button>
         <button class="pkm-btn pkm-detail-sprite-action" id="pkm-detail-sprite-action" onclick="togglePkmDetailSprite(event)">动态图</button>
       </div>
+      <button class="btn btn-a" id="pkm-detail-add-team" disabled>加入队伍</button>
+      <button class="btn" id="pkm-detail-copy-link" disabled>复制图鉴链接</button>
       <button class="pkm-btn-ai" style="margin-top:8px" onclick="openPkmChatFromModal()">⬡ 和 AI 聊聊它</button>
     </div>
     <div class="mfoot"><button class="btn" onclick="closeOv('ov-pkm')">关闭</button></div>
@@ -860,6 +870,13 @@
       💪 训练
     </button>
   </div>
+  <div class="adventure-statusbar"><span id="adventure-sync-status" role="status" aria-live="polite">记录保存在此设备</span><button id="adventure-sync-retry" class="btn btn-sm" onclick="retryAdventureSync()" hidden>重试同步</button><button class="btn btn-sm" onclick="toggleImmPanel('catches')">捕获档案</button><button class="btn btn-sm" onclick="toggleImmPanel('party')">管理队伍</button><button class="btn btn-sm" onclick="toggleImmPanel('progress')">冒险进度</button></div>
+  <div class="adventure-location-toolbar" id="adventure-location-toolbar">
+    <button class="btn btn-a" onclick="openImmMapPicker()">选择地点</button>
+    <label>版本<select id="adventure-frlg-version" onchange="refreshAdventureLocation()"><option value="firered">火红</option><option value="leafgreen">叶绿</option></select></label>
+    <label>遭遇方式<select id="adventure-frlg-method" onchange="refreshAdventureLocation()"><option value="walk">草丛 / 洞穴</option><option value="surf">冲浪</option><option value="old-rod">旧钓竿</option><option value="good-rod">好钓竿</option><option value="super-rod">厉害钓竿</option><option value="rock-smash">碎岩</option><option value="all">全部方式</option></select></label>
+    <span id="adventure-location-status" role="status">选择你在游戏中所在的地点</span>
+  </div>
   <div id="imm-panel-hunt" style="flex:1;overflow-y:auto;position:relative;z-index:2;padding-right:68px;padding-bottom:80px">
     <div class="imm-loc-section">
       <div class="imm-loc-row">
@@ -892,6 +909,7 @@
       <div class="hunt-np-title">捕捉到了！选择性格</div>
       <div class="hunt-np-target" id="hunt-np-target"></div>
       <div class="hunt-np-grid" id="hunt-np-grid"></div>
+      <label class="adventure-shiny"><input type="checkbox" id="hunt-caught-shiny">我在游戏中确认这只是闪光宝可梦</label>
       <button class="hunt-np-cancel" onclick="cancelHuntNaturePick()">✕ 没捕到，继续</button>
     </div>
     <div class="hunt-imm-success" id="hunt-imm-success" style="display:none">
@@ -908,6 +926,9 @@
     </div>
   </div>
   <div id="imm-panel-train" style="flex:1;overflow-y:auto;display:none;position:relative;z-index:2;padding-right:68px;padding-bottom:80px">
+    <div class="adventure-training-toolbar"><label>训练对象<select id="train-individual-select" onchange="if(this.value!=='')selectTrainPkmFromImm(Number(this.value))"></select></label><label>每次记录数量<input id="train-batch-count" type="number" min="1" max="999" step="1" value="1"></label><label>实际 EV 倍率<select id="train-boost-sel" onchange="renderTrainImmGrid()"><option value="1">1 倍</option><option value="2">2 倍</option><option value="4">4 倍</option></select></label></div>
+    <p class="adventure-help">按你在游戏中实际击败的数量记录。倍率请按实际效果选择；额外固定 EV 请用数值修正补记。</p>
+    <details id="train-plan-editor" class="training-plan-editor" ontoggle="if(this.open)renderAdventureTrainPlan()"><summary>设置训练目标 / 修正已有 EV</summary><p>每项 0–252，总和不超过 510。只修改当前选中的这只宝可梦。</p><div id="train-plan-fields"></div><button class="btn btn-a" onclick="applyAdventureTrainPlan()">保存数值与目标</button></details>
     <div class="imm-loc-section">
       <div class="imm-loc-row">
         <input id="train-custom-loc" class="series-inp" style="flex:1;font-size:.76rem" placeholder="输入地点名称（如：茂岩山…）" onkeydown="if(event.key==='Enter')loadCustomLocDist('train')">
@@ -941,6 +962,7 @@
       <button class="tim-session-end" id="train-imm-end-btn" onclick="finishTrainImmSession()" style="display:none">结束并预览</button>
     </div>
     <div class="tim-summary" id="train-imm-summary" style="display:none"></div>
+    <details class="training-plan-editor"><summary>这只宝可梦的训练历史</summary><div id="adventure-training-history"></div></details>
     <div class="tim-grid-section">
       <div class="tim-section-lbl">击败以下精灵 获取 EV → 点击它</div>
       <div class="tim-dist-grid" id="train-imm-dist-grid"></div>
@@ -948,7 +970,7 @@
   </div>
   <div id="imm-sub-catches" style="display:none;max-height:55vh;overflow-y:auto;background:var(--bg2);border-top:1px solid var(--b);padding:12px 14px;position:relative;z-index:3">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-      <span style="font-size:.78rem;color:var(--t2);font-family:'DM Mono',monospace">📋 图鉴录入</span>
+      <span style="font-size:.88rem;color:var(--t2);font-family:'DM Mono',monospace">捕获档案 · 每只独立保存</span>
       <button class="btn btn-sm" onclick="toggleImmPanel('catches')">✕</button>
     </div>
     <div style="position:relative;margin-bottom:8px">
@@ -970,6 +992,7 @@
         <textarea id="catch-note" class="series-inp catch-note-inp" placeholder="可选，记录这只宝可梦的来历、球种、个体印象或当时发生的事…"></textarea>
       </div>
       <div id="catch-nature-hint" class="nature-hint"></div>
+      <details class="training-plan-editor"><summary>等级、特性、球种与招式（可选）</summary><div class="adventure-catch-details"><label>等级<input id="catch-lv" type="number" min="1" max="100" step="1" placeholder="1–100"></label><label>特性<input id="catch-ability" class="series-inp" placeholder="实际拥有的特性"></label><label>球种<input id="catch-ball" class="series-inp" placeholder="例如：精灵球"></label><label>招式<input id="catch-moves" class="series-inp" placeholder="最多四个，用顿号分隔"></label></div></details>
       <div id="catch-basestats" class="catch-stats-block"></div>
       <div id="catch-ev-yields" class="catch-ev-yields"></div>
       <div style="display:flex;gap:6px;margin-bottom:8px">
@@ -983,7 +1006,7 @@
   <!-- 小地图 widget（仅 FRLG 系列显示） -->
   <div id="imm-minimap" onclick="openImmMapPicker()" style="display:none;position:absolute;top:10px;right:10px;z-index:10;cursor:pointer;border-radius:10px;overflow:hidden;box-shadow:0 4px 18px rgba(0,0,0,.6);border:1.5px solid rgba(255,255,255,.15);width:156px;background:#0a1a0a;flex-direction:column">
     <div style="position:relative;line-height:0">
-      <img src="css/firered-and-leafgreen-versions-map/火红叶绿全局地图.png" style="width:156px;display:block;opacity:.85">
+      <img data-src="css/firered-and-leafgreen-versions-map/火红叶绿全局地图.png" alt="关都地图" style="width:156px;display:block;opacity:.85" loading="lazy">
       <div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 55%,rgba(0,0,0,.75) 100%)"></div>
     </div>
     <div style="padding:5px 7px 6px;background:rgba(10,20,10,.92)">
@@ -998,7 +1021,9 @@
       <span style="font-size:.82rem;color:var(--t1);font-family:'DM Mono',monospace">📍 选择地点</span>
       <button class="btn btn-sm" onclick="closeImmMapFull()">✕ 取消</button>
     </div>
-    <div style="flex:1;overflow:auto;position:relative">
+    <div class="adventure-map-layout">
+      <aside class="adventure-map-directory"><label for="frlg-location-search">查找地点</label><input id="frlg-location-search" class="series-inp" placeholder="名称或道路编号" oninput="renderFRLGLocationDirectory(this.value)"><div id="frlg-location-list"></div></aside>
+      <div class="adventure-map-scroll">
       <div class="frlg-map-root">
         <div class="frlg-map-breadcrumb" id="frlg-breadcrumb"></div>
         <div class="frlg-map-viewer" id="frlg-map-viewer">
@@ -1012,6 +1037,7 @@
           <div class="frlg-enc-methods" id="frlg-enc-methods"></div>
           <div class="frlg-enc-grid" id="frlg-enc-grid"></div>
         </div>
+      </div>
       </div>
     </div>
   </div>
@@ -1034,7 +1060,7 @@
     </div>
   </div>
   <div id="imm-fabs" style="position:absolute;right:14px;bottom:20px;z-index:20;display:flex;flex-direction:column;align-items:center;gap:10px">
-    <button id="imm-fab-catches" onclick="toggleImmPanel('catches')" style="width:48px;height:48px;border-radius:50%;border:none;cursor:pointer;background:none;padding:0;box-shadow:0 2px 10px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center" title="图鉴录入"><img src="css/悬浮球.png" style="width:48px;height:48px;border-radius:50%;display:block"></button>
+    <button id="imm-fab-catches" onclick="toggleImmPanel('catches')" style="width:48px;height:48px;border-radius:50%;border:none;cursor:pointer;background:none;padding:0;box-shadow:0 2px 10px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center" title="图鉴录入"><img src="css/assets/pokeball.svg" alt="" style="width:48px;height:48px;border-radius:50%;display:block"></button>
     <button id="imm-fab-explore" onclick="toggleImmPanel('explore')" style="width:48px;height:48px;border-radius:50%;border:none;cursor:pointer;background:var(--bg3);color:var(--t1);font-size:1.3rem;box-shadow:0 2px 10px rgba(0,0,0,.4);border:1.5px solid var(--b);display:flex;align-items:center;justify-content:center" title="探索">🔍</button>
     <button id="imm-fab-progress" onclick="toggleImmPanel('progress')" style="width:48px;height:48px;border-radius:50%;border:none;cursor:pointer;background:var(--bg3);color:var(--t1);font-size:1.3rem;box-shadow:0 2px 10px rgba(0,0,0,.4);border:1.5px solid var(--b);display:flex;align-items:center;justify-content:center" title="进度打卡">📋</button>
   </div>
@@ -1233,23 +1259,24 @@
 </div>
 
 <!-- JS Modules (按依赖顺序加载) -->
-<script src="js/config.js"></script>
-<script src="js/utils.js"></script>
-<script src="js/data-tools.js"></script>
-<script src="js/auth.js"></script>
-<script src="js/games.js"></script>
-<script src="js/charts.js"></script>
-<script src="js/detail.js"></script>
-<script src="js/discover.js"></script>
-<script src="js/data/frlg_story.js"></script>
-<script src="js/data/pkm_story.js"></script>
-<script src="js/timeline.js"></script>
-<script src="js/pokemon.js"></script>
-<script src="js/frlg-map.js"></script>
-<script src="js/media.js"></script>
-<script src="js/moments.js"></script>
-<script src="js/play.js"></script>
-<script src="js/battle.js"></script>
+<script defer src="js/config.js"></script>
+<script defer src="js/utils.js"></script>
+<script defer src="js/data-tools.js"></script>
+<script defer src="js/auth.js"></script>
+<script defer src="js/games.js"></script>
+<script defer src="js/charts.js"></script>
+<script defer src="js/detail.js"></script>
+<script defer src="js/discover.js"></script>
+<script defer src="js/data/frlg_story.js"></script>
+<script defer src="js/data/pkm_story.js"></script>
+<script defer src="js/timeline.js"></script>
+<script defer src="js/pokemon.js"></script>
+<script defer src="js/adventure.js"></script>
+<script defer src="js/frlg-map.js"></script>
+<script defer src="js/media.js"></script>
+<script defer src="js/moments.js"></script>
+<script defer src="js/play.js"></script>
+<script defer src="js/battle.js"></script>
 <!-- ── 个人资料弹窗 ── -->
 <div class="ov" id="ov-profile" onclick="if(event.target===this)closeProfileModal()">
   <div class="modal" style="max-width:420px">
@@ -1307,9 +1334,9 @@
   </div>
 </div>
 
-<script src="js/partner.js"></script>
-<script src="js/community.js"></script>
-<script>init();</script>
+<script defer src="js/partner.js"></script>
+<script defer src="js/community.js"></script>
+<script defer src="js/bootstrap.js"></script>
 <script>
 (function(){
   function pfEnter(){

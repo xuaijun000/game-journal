@@ -1,5 +1,5 @@
 -- Saved filter/view presets for the game library.
--- Run this in Supabase SQL Editor.
+-- If you are setting up a fresh project, run scripts/supabase-schema.sql instead.
 
 create table if not exists public.game_library_views (
   id uuid primary key default gen_random_uuid(),

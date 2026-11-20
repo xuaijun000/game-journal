@@ -151,9 +151,8 @@ async function addFromDisc(g,bid){
   const btn=document.getElementById(bid);if(!btn||btn.classList.contains('added'))return;
   btn.textContent='添加中…';btn.disabled=true;
   const ng={name:g.name,platforms:[],genres:g.genres||[],styles:[],developer:g.developer||'',year:g.year||null,status:'wishlist',hours:0,completion:'',rating:0,review:'',cover:g.cover||''};
-  const{data:{session}}=await db.auth.getSession();const user=session?.user;
-  if(user){const{data,error}=await db.from('games').insert({...ng,user_id:user.id}).select().single();if(!error&&data)games.unshift(data);}
-  else{games.unshift({_id:Date.now().toString(36)+Math.random().toString(36).slice(2),created_at:new Date().toISOString(),...ng});localStorage.setItem('gj',JSON.stringify(games));}
+  try{games.unshift(await createOwnedRecord('games',ng,'gj'));}
+  catch(error){notifyError('收录失败',error);btn.textContent='重试收录';btn.disabled=false;return;}
   btn.textContent='✓ 已收录';btn.classList.add('added');btn.disabled=false;
 }
 
@@ -180,7 +179,7 @@ async function translateDiscDesc(g){
   try{
     let prompt='将以下游戏描述翻译为简体中文，保持原有游戏氛围与语气，直接输出译文：\n\n'+(g.summary||'');
     if(g.storyline)prompt+='\n\n====\n\n'+g.storyline;
-    const res=await fetch(`${SB_URL}/functions/v1/gemini-proxy`,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:800,temperature:0.2}})});
+    const res=await fetch(GEMINI_PROXY,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:800,temperature:0.2}})});
     if(!res.ok)throw new Error(`HTTP ${res.status}`);
     const data=await res.json();
     const translated=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'';
@@ -231,9 +230,8 @@ async function discAddGame(){
   const g=discCurrentGame;if(!g)return;
   const btn=document.getElementById('disc-add-btn');btn.textContent='添加中…';btn.disabled=true;
   const ng={name:g.name,platforms:[],genres:g.genres||[],styles:[],developer:g.developer||'',year:g.year||null,status:'wishlist',hours:0,completion:'',rating:0,review:'',cover:g.cover||''};
-  const{data:{session}}=await db.auth.getSession();const user=session?.user;
-  if(user){const{data,error}=await db.from('games').insert({...ng,user_id:user.id}).select().single();if(!error&&data)games.unshift(data);}
-  else{games.unshift({_id:Date.now().toString(36)+Math.random().toString(36).slice(2),created_at:new Date().toISOString(),...ng});localStorage.setItem('gj',JSON.stringify(games));}
+  try{games.unshift(await createOwnedRecord('games',ng,'gj'));}
+  catch(error){notifyError('收录失败',error);btn.textContent='重试收录';btn.disabled=false;return;}
   btn.textContent='✓ 已收录';btn.classList.add('added');
 }
 function toggleDiscChat(){
@@ -285,7 +283,7 @@ async function sendDiscAIMsg(){
 ${reinject?`【提醒】保持《${g.name}》的世界观气质说话。`:''}
 回答要求：中文，400字左右，纯文字不用Markdown符号。`;
   try{
-    const res=await fetch(`${SB_URL}/functions/v1/gemini-proxy`,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`},body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:discChatHistory,generationConfig:{maxOutputTokens:1000,temperature:1.1}})});
+    const res=await fetch(GEMINI_PROXY,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`},body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:discChatHistory,generationConfig:{maxOutputTokens:1000,temperature:1.1}})});
     if(!res.ok){const err=await res.json().catch(()=>({}));throw new Error(err?.error?.message||`HTTP ${res.status}`);}
     const data=await res.json();
     const reply=data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'（AI 暂时离线）';

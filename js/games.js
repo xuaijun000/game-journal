@@ -295,6 +295,8 @@ function render(){
   const gg=document.getElementById('gg');
   setLibraryViewMode(libraryViewMode);
   const hasFilter=q||fs||pff!=='all'||fGenre!=='all'||fRating>0||fCompletion;
+  document.getElementById('library-hero').hidden=Boolean(hasFilter);
+  document.getElementById('library-shelves').hidden=Boolean(hasFilter);
   const count=document.getElementById('library-count');
   if(count)count.textContent=`${list.length} 款${hasFilter?' · 已筛选':''}`;
   if(!list.length){gg.innerHTML=`<div class="empty"><img src="css/可达鸭空状态.png" class="empty-psyduck" alt=""><div>${hasFilter?'没有符合条件的游戏':'还没有记录，点击「添加游戏」开始吧！'}</div></div>`;return;}
@@ -372,7 +374,7 @@ async function saveGame(){
   const p={name,platforms:pls,genres:gns,styles:sts,developer:document.getElementById('fdev').value.trim(),year:parseInt(document.getElementById('fyr').value)||null,status:document.getElementById('fst2').value,hours:parseInt(document.getElementById('fhr').value)||0,completion:document.getElementById('fcp').value,rating:star,review:document.getElementById('frev').value.trim(),cover:document.getElementById('fcv').value.trim()};
   const{data:{session}}=await db.auth.getSession();const user=session?.user;
   if(user){
-    if(editId){const{error}=await db.from('games').update(p).eq('id',editId).eq('user_id',user.id);if(error){notifyError('更新失败',error);return;}const i=games.findIndex(g=>g.id==editId);if(i>-1)games[i]={...games[i],...p};}
+    if(editId){const{error}=await db.from('games').update(p).eq('id',editId).eq('user_id',user.id).select('id').single();if(error){notifyError('更新失败',error);return;}const i=games.findIndex(g=>g.id==editId);if(i>-1)games[i]={...games[i],...p};}
     else{const{data,error}=await db.from('games').insert({...p,user_id:user.id}).select().single();if(error){notifyError('添加失败',error);return;}if(data)games.unshift(data);}
   }else{
     if(editId){const i=games.findIndex(g=>g._id==editId);if(i>-1)games[i]={...games[i],...p};}
@@ -386,29 +388,50 @@ async function saveGame(){
 async function delGame(){
   if(!editId||!confirm('确认删除这款游戏？'))return;
   const{data:{session}}=await db.auth.getSession();const user=session?.user;
-  if(user)await db.from('games').delete().eq('id',editId).eq('user_id',user.id);
+  if(user){const {error}=await db.from('games').delete().eq('id',editId).eq('user_id',user.id);if(error){notifyError('删除失败',error);return;}}
   games=games.filter(g=>(g.id||g._id)!=editId);
   if(!user)localStorage.setItem('gj',JSON.stringify(games));
   document.querySelectorAll('.ov').forEach(o=>o.classList.remove('on'));render();refreshStatsIfVisible();
 }
-function go(pg,btn){
+const routeLabels={pkm:'图鉴',teams:'队伍',battle:'对战',adventure:'冒险',community:'社区',list:'游戏库',disc:'发现',stats:'统计',partner:'伙伴',anime:'动漫',manga:'漫画',auth:'账号与备份'};
+let routeGeneration=0;
+async function go(route,btn,fromHistory=false){
+  if(!Object.hasOwn(routeLabels,route))route='pkm';
+  const generation=++routeGeneration;
+  const pg=['teams','community'].includes(route)?'battle':route;
+  if(!fromHistory&&location.hash!==`#${route}`)history.pushState(null,'',`#${route}`);
+  document.title=`${routeLabels[route]} · PIXELFISH`;
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('nav button').forEach(b=>b.classList.remove('on'));
   document.getElementById('pg-'+pg).classList.add('on');
-  if(btn)btn.classList.add('on');
-  if(pg==='stats')drawCharts();
+  (btn||document.querySelector(`[data-route="${route}"]`))?.classList.add('on');
+  if(!fromHistory)window.scrollTo({top:0,behavior:'instant'});
+  if(pg==='stats')await drawCharts();
   if(pg==='disc'&&document.getElementById('rank-list').children.length<=1)loadDisc();
-  if(pg==='pkm'){
-    if(!window._pkmInited){window._pkmInited=true;initPkm();}
-    else{loadTodayPkm(true);} // 每次切回来都换一只
+  if(pg==='pkm'||pg==='adventure'){
+    if(!window._pkmInited){window._pkmInited=true;initPkm().catch(e=>notifyError('图鉴加载失败',e));}
   }
   if(pg==='anime'&&!window._animeInited){window._animeInited=true;initMediaList('anime');}
   if(pg==='manga'&&!window._mangaInited){window._mangaInited=true;initMediaList('manga');}
-  if(pg==='battle'&&!window._battleInited){window._battleInited=true;initBattle();}
+  if(pg==='battle'){
+    try{await ensureBattleAssets();}catch(error){notifyError('对战资料加载失败，可刷新后重试',error);return;}
+    if(generation!==routeGeneration)return;
+    if(!window._battleInited){window._battleInited=true;await initBattle();}
+    if(route==='teams'){enterBattleFormat('pkmc','singles');switchBattleTab('team',document.querySelector('#battle-pkmc .btab'));}
+    if(route==='community')openChampionsCommunity();
+  }
   if(pg==='partner'&&!window._partnerInited){window._partnerInited=true;initPartner();}
   if(window.updatePartnerFloat)window.updatePartnerFloat(pg);
   if(window.updateHeaderChromeState)window.updateHeaderChromeState();
 }
+function restoreRoute(){
+  const [route,id]=location.hash.slice(1).split('/');
+  go(Object.hasOwn(routeLabels,route)?route:'pkm',null,true).then(()=>{
+    if(route==='pkm'&&/^\d+$/.test(id||''))openPkmDetail(Number(id));
+  }).catch(e=>notifyError('页面加载失败',e));
+}
+window.addEventListener('popstate',restoreRoute);
+window.addEventListener('hashchange',restoreRoute);
 function openSteamModal(){
   const saved=localStorage.getItem('steamId');
   const inp=document.getElementById('steam-modal-inp');
@@ -432,10 +455,10 @@ async function syncSteam(){
     let added=0,updated=0;
     for(const g of sg){
       const ex=games.find(x=>x.name.toLowerCase().trim()===g.name.toLowerCase().trim());
-      if(ex){if(g.hours>(ex.hours||0)){const nd={hours:g.hours};if(user)await db.from('games').update(nd).eq('id',ex.id).eq('user_id',user.id);const i=games.findIndex(x=>(x.id||x._id)===(ex.id||ex._id));if(i>-1)games[i]={...games[i],...nd};updated++;}}
+      if(ex){if(g.hours>(ex.hours||0)){const nd={hours:g.hours};if(user){const {error}=await db.from('games').update(nd).eq('id',ex.id).eq('user_id',user.id);if(error)throw error;}const i=games.findIndex(x=>(x.id||x._id)===(ex.id||ex._id));if(i>-1)games[i]={...games[i],...nd};if(!user)localStorage.setItem('gj',JSON.stringify(games));updated++;}}
       else if(g.hours>0){
         const ng={name:g.name,platforms:['steam'],genres:[],styles:[],developer:'',year:null,status:g.hours>=10?'playing':'wishlist',hours:g.hours,completion:'',rating:0,review:'',cover:g.cover};
-        if(user){const{data,error}=await db.from('games').insert({...ng,user_id:user.id}).select().single();if(!error&&data)games.unshift(data);}
+        if(user){const{data,error}=await db.from('games').insert({...ng,user_id:user.id}).select().single();if(error)throw error;if(!data)throw new Error('服务器未确认写入');games.unshift(data);}
         else{games.unshift({_id:Date.now().toString(36)+Math.random().toString(36).slice(2),created_at:new Date().toISOString(),...ng});localStorage.setItem('gj',JSON.stringify(games));}
         added++;
       }

@@ -1,6 +1,6 @@
 /* ===== 时间轴模块 ===== */
 async function callTimelineAI(systemPrompt,userMsg){
-  const res=await fetch(`${SB_URL}/functions/v1/gemini-proxy`,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`},body:JSON.stringify({system_instruction:{parts:[{text:systemPrompt}]},contents:[{role:'user',parts:[{text:userMsg}]}],generationConfig:{maxOutputTokens:8000,temperature:0.7}})});
+  const res=await fetch(GEMINI_PROXY,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`},body:JSON.stringify({system_instruction:{parts:[{text:systemPrompt}]},contents:[{role:'user',parts:[{text:userMsg}]}],generationConfig:{maxOutputTokens:8000,temperature:0.7}})});
   const data=await res.json();
   return data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim()||'';
 }
@@ -397,16 +397,16 @@ async function renderMediaTimeline(containerId,mediaItem,mediaType,userId){
 }
 
 async function gtlUploadImage(containerId,chapterIdx,type,mediaId,userId){
-  if(!userId){alert('请先登录');return;}
+  if(!userId){showToast('请先登录','warn');return;}
   const input=document.createElement('input');input.type='file';input.accept='image/*';
   input.onchange=async()=>{
     const file=input.files?.[0];if(!file)return;
     const ext=file.name.split('.').pop();
     const path=`${userId}/${type}-${mediaId}-ch${chapterIdx}-${Date.now()}.${ext}`;
     const{data,error}=await db.storage.from('game-screenshots').upload(path,file,{upsert:true});
-    if(error){alert('上传失败：'+error.message);return;}
+    if(error){notifyError('上传失败',error);return;}
     const{data:{publicUrl}}=db.storage.from('game-screenshots').getPublicUrl(path);
-    alert('上传成功！URL：'+publicUrl);
+    showToast('上传成功','ok');
   };
   input.click();
 }

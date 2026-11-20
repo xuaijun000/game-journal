@@ -13,47 +13,64 @@ const KANTO_REGIONS = [
 ];
 
 const KANTO_HOTSPOTS = [
-  // ── 左侧纵列 ──
-  { label:'23号道路', x:5,  y:8,  key:'route-23' },
-  { label:'常盘森林', x:14, y:17, key:'viridian-forest' },
-  { label:'2号道路',  x:14, y:21, key:'route-2' },
-  { label:'22号道路', x:8,  y:28, key:'route-22' },
-  { label:'1号道路',  x:18, y:53, key:'route-1' },
-  { label:'胜利道路', x:16, y:72, key:'victory-road-kanto' },
-  { label:'21号道路', x:9,  y:83, key:'route-21' },
-  // ── 上方横列 ──
-  { label:'16号道路', x:35, y:16, key:'route-16' },
-  { label:'24号道路', x:47, y:20, key:'route-24' },
-  { label:'25号道路', x:55, y:16, key:'route-25' },
-  { label:'7号道路',  x:58, y:17, key:'route-7' },
-  { label:'8号道路',  x:86, y:17, key:'route-8' },
-  // ── 中左区 ──
-  { label:'3号道路',  x:26, y:34, key:'route-3' },
-  { label:'月亮山',   x:22, y:39, key:'mt-moon' },
-  { label:'4号道路',  x:32, y:29, key:'route-4' },
-  { label:'17号道路', x:32, y:46, key:'route-17' },
-  { label:'18号道路', x:33, y:82, key:'route-18' },
-  // ── 中区 ──
-  { label:'无名小径', x:44, y:30, key:'cerulean-cave' },
-  { label:'5号道路',  x:50, y:35, key:'route-5' },
-  { label:'6号道路',  x:62, y:33, key:'route-6' },
-  { label:'狩猎地带', x:49, y:70, key:'kanto-safari-zone' },
-  { label:'水流岛',   x:35, y:90, key:'seafoam-islands' },
-  { label:'宝可梦洋馆', x:48, y:93, key:'kanto-pokemon-mansion' },
-  { label:'19号道路', x:46, y:90, key:'route-19' },
-  { label:'20号道路', x:36, y:90, key:'route-20' },
-  // ── 右侧区 ──
-  { label:'岩石隧道', x:89, y:4,  key:'rock-tunnel' },
-  { label:'宝可梦之塔', x:93, y:13, key:'pokemon-tower' },
-  { label:'12号道路', x:93, y:28, key:'route-12' },
-  { label:'9号道路',  x:75, y:28, key:'route-9' },
-  { label:'发电站',   x:87, y:28, key:'power-plant' },
-  { label:'11号道路', x:81, y:37, key:'route-11' },
-  { label:'10号道路', x:85, y:40, key:'route-10' },
-  { label:'13号道路', x:73, y:64, key:'route-13' },
-  { label:'14号道路', x:70, y:76, key:'route-14' },
-  { label:'15号道路', x:58, y:77, key:'route-15' },
+  {label:'1号道路',x:20,y:59,key:'kanto-route-1'},
+  {label:'常青森林',x:19,y:37,key:'viridian-forest'},
+  {label:'2号道路',x:20,y:40,key:'kanto-route-2'},
+  {label:'3号道路',x:31,y:21,key:'kanto-route-3'},
+  {label:'月见山',x:42,y:13,key:'mt-moon'},
+  {label:'4号道路',x:52,y:16,key:'kanto-route-4'},
+  {label:'5号道路',x:69,y:24,key:'kanto-route-5'},
+  {label:'6号道路',x:68,y:46,key:'kanto-route-6'},
+  {label:'7号道路',x:59,y:36,key:'kanto-route-7'},
+  {label:'8号道路',x:83,y:36,key:'kanto-route-8'},
+  {label:'9号道路',x:82,y:17,key:'kanto-route-9'},
+  {label:'10号道路',x:95,y:21,key:'kanto-route-10'},
+  {label:'11号道路',x:82,y:55,key:'kanto-route-11'},
+  {label:'12号道路',x:95,y:50,key:'kanto-route-12'},
+  {label:'13号道路',x:82,y:68,key:'kanto-route-13'},
+  {label:'14号道路',x:75,y:74,key:'kanto-route-14'},
+  {label:'15号道路',x:65,y:77,key:'kanto-route-15'},
+  {label:'16号道路',x:38,y:36,key:'kanto-route-16'},
+  {label:'17号道路',x:36,y:55,key:'kanto-route-17'},
+  {label:'18号道路',x:38,y:77,key:'kanto-route-18'},
+  {label:'19号水路',x:50,y:88,key:'kanto-sea-route-19'},
+  {label:'20号水路',x:44,y:96,key:'kanto-sea-route-20'},
+  {label:'21号水路',x:19,y:80,key:'kanto-sea-route-21'},
+  {label:'22号道路',x:8,y:50,key:'kanto-route-22'},
+  {label:'23号道路',x:5,y:30,key:'kanto-route-23'},
+  {label:'24号道路',x:68,y:8,key:'kanto-route-24'},
+  {label:'25号道路',x:73,y:3,key:'kanto-route-25'},
+  {label:'冠军之路',x:6,y:18,key:'kanto-victory-road-2'},
+  {label:'华蓝洞窟',x:62,y:11,key:'cerulean-cave'},
+  {label:'无人发电厂',x:92,y:25,key:'kanto-power-plant'},
+  {label:'岩石隧道',x:94,y:29,key:'rock-tunnel'},
+  {label:'宝可梦塔',x:95,y:34,key:'pokemon-tower'},
+  {label:'狩猎地带',x:51,y:70,key:'kanto-safari-zone'},
+  {label:'双子岛',x:37,y:94,key:'seafoam-islands'},
+  {label:'宝可梦屋',x:12,y:93,key:'pokemon-mansion'},
 ];
+
+const FRLG_LOCATION_NAMES={
+  'pallet-town':'真新镇','viridian-city':'常青市','cerulean-city':'华蓝市','vermilion-city':'枯叶市','celadon-city':'玉虹市','fuchsia-city':'浅红市','cinnabar-island':'红莲岛','digletts-cave':'地鼠洞窟',
+  'viridian-forest':'常青森林','mt-moon':'月见山','seafoam-islands':'双子岛','cerulean-cave':'华蓝洞窟','pokemon-mansion':'宝可梦屋','kanto-victory-road-2':'冠军之路','kanto-power-plant':'无人发电厂',
+  'ss-anne':'圣安奴号','monean-chamber':'阿斯卡纳石室','liptoo-chamber':'利普图石室','weepth-chamber':'维普斯石室','dilford-chamber':'迪尔福德石室','scufib-chamber':'斯科菲布石室','rixy-chamber':'利克西石室','viapos-chamber':'维亚波斯石室',
+  'lost-cave':'失落洞窟','treasure-beach':'宝藏海滩','three-isle-port':'第三岛港口','resort-gorgeous':'高端度假区','five-isle-meadow':'第五岛空地','outcast-island':'外岛','green-path':'绿之通道','water-path':'水之通道','canyon-entrance':'峡谷入口','kanto-altering-cave':'变化洞窟'
+};
+function frlgLocationName(key,entry){return FRLG_LOCATION_NAMES[key]||entry?.zh||key;}
+function renderFRLGLocationDirectory(query){
+  const list=document.getElementById('frlg-location-list');if(!list)return;
+  const input=document.getElementById('frlg-location-search');
+  const search=(query??input?.value??'').trim().toLowerCase();
+  list.replaceChildren();
+  const entries=Object.entries(window.FRLG_ENCOUNTERS||{}).sort(([a],[b])=>a.localeCompare(b,'zh-CN',{numeric:true}));
+  for(const [key,entry] of entries){
+    const label=frlgLocationName(key,entry);
+    if(search&&!`${label} ${entry.zh} ${key}`.toLowerCase().includes(search))continue;
+    const button=document.createElement('button');button.type='button';button.textContent=label;
+    button.addEventListener('click',()=>frlgShowEncounters(key,label));list.appendChild(button);
+  }
+  if(!list.childElementCount)list.textContent='没有匹配地点，试试道路编号。';
+}
 
 const SEVII_HOTSPOTS = [
   { label:'第一岛', x:30, y:25, action:'island-1', key:null },
@@ -220,6 +237,7 @@ function frlgInitView(view) {
   if (frlgView === 'kanto') {
     frlgRenderRegions(viewer, KANTO_REGIONS);
     frlgRenderPolyOverlay(viewer);
+    if(!frlgPolyGetRegions().length)frlgRenderHotspots(viewer,KANTO_HOTSPOTS);
   } else if (frlgView.startsWith('custom:') || frlgView.startsWith('island-')) {
     frlgRenderHotspots(viewer, hotspots);
     frlgRenderPolyOverlay(viewer);
@@ -231,7 +249,9 @@ function frlgInitView(view) {
 
 function frlgRenderHotspots(viewer, hotspots) {
   hotspots.forEach(hotspot => {
-    const el = document.createElement('div');
+    const el = document.createElement('button');
+    el.type='button';
+    el.setAttribute('aria-label',hotspot.label);
     const override = _frlgCalibOverrides[hotspot.label];
     const x = override?.x ?? hotspot.x;
     const y = override?.y ?? hotspot.y;

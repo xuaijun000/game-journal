@@ -892,7 +892,7 @@ async function autoPartnerGreet(){
   const name=partnerData.nickname||partnerData.pkm_name;
   const prompt=`用${name}的口吻，根据当前状态（饱食度${partnerData.hunger}，心情${partnerData.mood}，精力${partnerData.energy}），说一句打招呼的话。20字以内，亲切自然，不加任何前缀。`;
   try{
-    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:80,temperature:1.1}})});
+    const res=await fetch(GEMINI_PROXY,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({system_instruction:{parts:[{text:sys}]},contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:80,temperature:1.1}})});
     const j=await res.json();
     const reply=j?.candidates?.[0]?.content?.parts?.[0]?.text||'';
     if(reply){addPartnerBubble(reply.trim(),'ai');partnerChatHistory=[{role:'model',parts:[{text:reply}]}];}
@@ -911,7 +911,7 @@ async function sendPartnerChatMsg(){
   snd.disabled=true;partnerChatLoading=true;
   const thinking=addPartnerBubble('…','ai','partner-chat-thinking');
   try{
-    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({system_instruction:{parts:[{text:pBuildSysPrompt()}]},contents:partnerChatHistory,generationConfig:{maxOutputTokens:300,temperature:1.0}})});
+    const res=await fetch(GEMINI_PROXY,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({system_instruction:{parts:[{text:pBuildSysPrompt()}]},contents:partnerChatHistory,generationConfig:{maxOutputTokens:300,temperature:1.0}})});
     const j=await res.json();
     const reply=j?.candidates?.[0]?.content?.parts?.[0]?.text||'…（对方好像走神了）';
     thinking?.remove();
@@ -934,7 +934,7 @@ async function generatePartnerDiary(){
   const prompt=`以宝可梦伙伴${name}的视角，生成今天的日记，约60字。数据：互动${di.total||0}次，心情${partnerData.mood}/100，亲密度${partnerData.bond}/100，查看图鉴${di.pokedex_view?'是':'否'}，写游戏日志${di.game_log?'是':'否'}。中文，温暖自然，不加标题。`;
   const thinking=addPartnerBubble('正在生成今日日记…','ai','partner-chat-thinking');
   try{
-    const res=await fetch(SB_URL+'/functions/v1/gemini-proxy',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:200,temperature:0.9}})});
+    const res=await fetch(GEMINI_PROXY,{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt}]}],generationConfig:{maxOutputTokens:200,temperature:0.9}})});
     const j=await res.json();
     const reply=j?.candidates?.[0]?.content?.parts?.[0]?.text||'';
     thinking?.remove();
@@ -1331,16 +1331,12 @@ async function loadPartnerLeaderboard(dim){
   const tbody=document.getElementById('partner-lb-rows');
   if(!tbody)return;
   tbody.innerHTML='<tr><td colspan="5" class="partner-lb-loading">加载中…</td></tr>';
-  let q=db.from('pkm_partner').select('pkm_id,pkm_name,nickname,exp,streak_days,bond,interaction_counts').eq('is_public',true).limit(20);
-  if(dim==='streak')q=q.order('streak_days',{ascending:false});
-  else if(dim==='bond')q=q.order('bond',{ascending:false});
-  else q=q.order('exp',{ascending:false});
-  const{data,error}=await q;
+  const{data,error}=await db.rpc('get_partner_leaderboard',{p_dimension:_partnerLbDim});
   if(error||!data){tbody.innerHTML=`<tr><td colspan="5" class="partner-lb-loading">${error?'加载失败':'暂无数据'}</td></tr>`;return;}
-  const sorted=dim==='active'?[...data].sort((a,b)=>((b.interaction_counts?.total||0)-(a.interaction_counts?.total||0))):data;
+  const sorted=data;
   tbody.innerHTML=sorted.map((p,i)=>{
     const lv=pLevelFromExp(p.exp||0);
-    const ic=p.interaction_counts||{};
+    const ic={total:p.interaction_total||0};
     const title=_getPartnerTitle(p,lv,ic);
     const name=pEsc(p.nickname||p.pkm_name);
     const metric=dim==='level'?`Lv.${lv}`:dim==='streak'?`${p.streak_days||0}天`:dim==='bond'?`${p.bond||0}/100`:`${ic.total||0}次`;

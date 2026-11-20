@@ -1,0 +1,34 @@
+[hidden]{display:none!important}
+:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
+button,input,select,textarea{font-size:max(.8rem,12px)}
+button:disabled{cursor:not-allowed;opacity:.6}
+.nav-more{background:var(--bg2);color:var(--t);border:1px solid var(--b2);border-radius:999px;padding:6px 10px;min-height:36px}
+.trainer-welcome{padding:18px 0 24px;max-width:760px}
+.trainer-welcome h1{font-size:clamp(1.45rem,3vw,2rem);line-height:1.4;margin:5px 0 10px}
+.trainer-welcome p{color:var(--t2);font-size:.9rem}
+.trainer-welcome a,.site-footer a{color:var(--acc);font-size:.82rem}
+#pg-pkm > .tab-banner{display:none}
+#pg-pkm .pkm-layout{grid-template-columns:minmax(0,1fr) 300px}
+#pg-pkm .pkm-right{grid-column:1;grid-row:1}
+#pg-pkm .pkm-today{grid-column:2;grid-row:1}
+.pkm-mini{border:1px solid var(--b2);background:var(--bg2);color:var(--t);padding:8px;cursor:pointer;border-radius:8px;min-width:0}
+.pkm-search-inp{min-height:44px;font-size:1rem}
+.pkm-gen-grid{max-height:min(65vh,680px)}
+.bpkm-inp-label,.bpkm-stat-lbl,.btc-pkm-name,.bslot-btn-name,.sl,.filter-row-label{font-size:.75rem}
+.battle-slot-tabs{position:sticky;top:0;z-index:5}
+.site-footer{padding-bottom:80px}
+body:has(.ov.on) .moment-fab,body:has(.ov.on) .pflt{visibility:hidden}
+@media(max-width:768px){
+  #pg-pkm .pkm-layout{display:flex;flex-direction:column}
+  #pg-pkm .pkm-right{width:100%;order:0}
+  #pg-pkm .pkm-today{width:100%;order:1}
+  nav{justify-content:space-between}
+  nav button{min-height:40px;padding:7px 10px}
+  .media-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .media-tb>*{min-width:0;flex:1 1 42%}
+  .media-tb input{flex-basis:100%}
+  .moment-panel{right:12px;width:min(320px,calc(100vw - 24px))}
+  .pflt{max-width:calc(100vw - 100px);bottom:calc(18px + env(safe-area-inset-bottom))}
+  .moment-fab{right:12px;bottom:calc(18px + env(safe-area-inset-bottom))}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}#pkm-canvas{display:none}}

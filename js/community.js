@@ -114,7 +114,7 @@ function commEsc(s) {
 }
 
 function commGetTeams() {
-  const cloud = Array.isArray(window.battleTeams) ? window.battleTeams : [];
+  const cloud = Array.isArray(battleTeams) ? battleTeams : [];
   let local = [];
   try { local = JSON.parse(localStorage.getItem('battle_teams') || '[]'); } catch(e) {}
   const map = new Map();
@@ -302,6 +302,11 @@ async function loadLikedSet() {
     if (!session?.user) return;
     const { data } = await db.from('team_likes').select('team_id').eq('user_id', session.user.id);
     (data || []).forEach(r => commLikedSet.add(r.team_id));
+    for(const [table,kind,key] of [['catch_likes','catch','catch_id'],['series_likes','series','series_id']]){
+      const {data:rows,error}=await db.from(table).select(key).eq('user_id',session.user.id);
+      if(error)throw error;
+      (rows||[]).forEach(row=>commLikedSet.add(`${kind}:${row[key]}`));
+    }
   } catch(e) {}
 }
 
@@ -389,6 +394,7 @@ function renderCommFeed(items, append) {
     else if (item._type === 'catch') card.innerHTML = renderCatchCard(item);
     else if (item._type === 'series') card.innerHTML = renderSeriesCard(item);
     el.appendChild(card);
+    card.querySelector('[data-community-comments]')?.addEventListener('click',()=>openTeamComments(item.id,item.team_name||'队伍'));
   });
 }
 
@@ -426,7 +432,7 @@ function renderTeamCard(t) {
       <button class="cc-btn cc-like${liked ? ' liked' : ''}" onclick="likeTeam('${t.id}',this)">
         ${liked ? '♥' : '♡'}&nbsp;<span class="cc-like-count">${t.likes_count || 0}</span>
       </button>
-      <button class="cc-btn" onclick="openTeamComments('${t.id}','${esc(t.team_name||'队伍')}')">💬&nbsp;评论</button>
+      <button class="cc-btn" data-community-comments="${esc(t.id)}">💬&nbsp;评论</button>
       <button class="cc-btn cc-import" onclick="importTeamFromCommunity('${t.id}')">↓&nbsp;借用</button>
     </div>`;
 }
@@ -445,13 +451,13 @@ function renderCatchCard(c) {
       ${imgHtml}
       <div class="cc-catch-info">
         <div class="cc-name cc-catch-name">${esc(c.pkm_name)} ${nickStr}</div>
-        ${natZh ? `<div class="cc-catch-meta">${natZh}</div>` : ''}
+        ${natZh ? `<div class="cc-catch-meta">${esc(natZh)}</div>` : ''}
         ${locStr ? `<div class="cc-catch-meta">${locStr}</div>` : ''}
       </div>
     </div>
     <div class="cc-actions">
-      <button class="cc-btn cc-like" onclick="likeCatchOrSeries('pkm_catch_log','${c.id}',this)">
-        ♡&nbsp;<span class="cc-like-count">${c.likes_count || 0}</span>
+      <button class="cc-btn cc-like${commLikedSet.has('catch:'+c.id)?' liked':''}" data-liked="${commLikedSet.has('catch:'+c.id)}" onclick="likeCatchOrSeries('pkm_catch_log','${c.id}',this)">
+        ${commLikedSet.has('catch:'+c.id)?'♥':'♡'}&nbsp;<span class="cc-like-count">${c.likes_count || 0}</span>
       </button>
     </div>`;
 }
@@ -471,7 +477,7 @@ function renderSeriesCard(s) {
     ${_cardHead(s, '通关', 'cc-badge-series')}
     <div class="cc-series-head">
       <span class="cc-name">${esc(s.series_name || s.series_id || '未知系列')}</span>
-      <span class="cc-series-status ${statusCls[s.status] || ''}">${status}</span>
+      <span class="cc-series-status ${Object.hasOwn(statusCls,s.status)?statusCls[s.status]:''}">${esc(status)}</span>
     </div>
     <div class="cc-series-stats">
       ${s.play_hours ? `<span class="cc-series-stat">⏱ ${s.play_hours}h</span>` : ''}
@@ -479,8 +485,8 @@ function renderSeriesCard(s) {
     </div>
     ${partySprites}
     <div class="cc-actions">
-      <button class="cc-btn cc-like" onclick="likeCatchOrSeries('pkm_series_log','${s.id}',this)">
-        ♡&nbsp;<span class="cc-like-count">${s.likes_count || 0}</span>
+      <button class="cc-btn cc-like${commLikedSet.has('series:'+s.id)?' liked':''}" data-liked="${commLikedSet.has('series:'+s.id)}" onclick="likeCatchOrSeries('pkm_series_log','${s.id}',this)">
+        ${commLikedSet.has('series:'+s.id)?'♥':'♡'}&nbsp;<span class="cc-like-count">${s.likes_count || 0}</span>
       </button>
     </div>`;
 }
@@ -497,33 +503,32 @@ function formatTimeAgo(dateStr) {
 
 /* ──────── 点赞 — 阵容 ──────── */
 async function likeTeam(teamId, btn) {
-  const { data: { session } } = await db.auth.getSession();
-  if (!session?.user) { showToast('请先登录后点赞', 'warn'); return; }
-  const liked = commLikedSet.has(teamId);
-  const countEl = btn?.querySelector('.cc-like-count');
-  const current = parseInt(countEl?.textContent || '0');
-  const next = liked ? Math.max(0, current - 1) : current + 1;
-  if (liked) {
-    commLikedSet.delete(teamId);
-    if (btn) { btn.classList.remove('liked'); btn.innerHTML = `♡&nbsp;<span class="cc-like-count">${next}</span>`; }
-    await db.from('team_likes').delete().eq('user_id', session.user.id).eq('team_id', teamId);
-  } else {
-    commLikedSet.add(teamId);
-    if (btn) { btn.classList.add('liked'); btn.innerHTML = `♥&nbsp;<span class="cc-like-count">${next}</span>`; }
-    await db.from('team_likes').insert({ user_id: session.user.id, team_id: teamId });
-  }
-  await db.from('battle_teams').update({ likes_count: next }).eq('id', teamId);
+  await setCommunityLike('team',teamId,!commLikedSet.has(teamId),btn);
+}
+
+async function setCommunityLike(kind,id,liked,btn){
+  if(btn?.disabled)return;
+  const {data:{session}}=await db.auth.getSession();
+  if(!session?.user){showToast('请先登录后点赞','warn');return;}
+  if(btn)btn.disabled=true;
+  try{
+    const {data,error}=await db.rpc('set_community_like',{p_kind:kind,p_id:id,p_liked:liked});
+    if(error)throw error;
+    const count=Number(data);
+    if(!Number.isFinite(count))throw new Error('点赞结果无效，请重试');
+    const key=kind==='team'?id:`${kind}:${id}`;
+    if(liked)commLikedSet.add(key);else commLikedSet.delete(key);
+    const item=commFeed.find(row=>row.id===id);
+    if(item)item.likes_count=count;
+    if(btn){btn.classList.toggle('liked',liked);btn.dataset.liked=String(liked);btn.innerHTML=`${liked?'♥':'♡'}&nbsp;<span class="cc-like-count">${count}</span>`;}
+  }catch(error){notifyError('点赞未保存',error);}
+  finally{if(btn)btn.disabled=false;}
 }
 
 /* ──────── 点赞 — 捕捉 / 通关 ──────── */
 async function likeCatchOrSeries(table, id, btn) {
-  const { data: { session } } = await db.auth.getSession();
-  if (!session?.user) { showToast('请先登录后点赞', 'warn'); return; }
-  const countEl = btn?.querySelector('.cc-like-count');
-  const current = parseInt(countEl?.textContent || '0');
-  const next = current + 1;
-  if (btn) { btn.classList.add('liked'); btn.innerHTML = `♥&nbsp;<span class="cc-like-count">${next}</span>`; btn.disabled = true; }
-  await db.from(table).update({ likes_count: next }).eq('id', id);
+  const kind=table==='pkm_catch_log'?'catch':table==='pkm_series_log'?'series':null;
+  if(kind)await setCommunityLike(kind,id,btn?.dataset.liked!=='true',btn);
 }
 
 /* ──────── 评论 ──────── */
@@ -600,7 +605,7 @@ async function importTeamFromCommunity(teamId) {
     user_id: session.user.id
   }).select().single();
   if (error) { showToast('借用失败：' + error.message, 'danger'); return; }
-  if (window.battleTeams) battleTeams.unshift(data);
+  battleTeams.unshift(data);
   if (window.renderTeamList) renderTeamList();
   if (window.renderDTeamList) renderDTeamList();
   showToast('阵容已添加到我的队伍 ✓', 'ok');
@@ -611,7 +616,7 @@ async function importTeamFromCommunity(teamId) {
 /* ──────── 分享阵容 ──────── */
 async function toggleShareTeam(teamId, format) {
   if (!await _requireProfile()) return;
-  const team = (window.battleTeams || []).find(t => t.id === teamId);
+  const team = battleTeams.find(t => t.id === teamId);
   if (!team || team.id.startsWith('local_')) {
     showToast('请先保存队伍到云端再分享', 'warn'); return;
   }
@@ -633,7 +638,8 @@ async function toggleShareTeam(teamId, format) {
 /* ──────── 分享捕捉记录 ──────── */
 async function toggleShareCatch(catchId, currentPublic) {
   if (!await _requireProfile()) return;
-  const newPublic = !currentPublic;
+  const shareBtn=document.querySelector(`.catch-share-btn[data-id="${catchId}"]`);
+  const newPublic = !(shareBtn?shareBtn.dataset.public==='1':currentPublic);
   const { error } = await db.from('pkm_catch_log').update({
     is_public: newPublic,
     author_username: communityProfile.username,
@@ -663,7 +669,7 @@ async function toggleShareSeries() {
   const currentPublic = shareBtn?.dataset.public === '1';
   const newPublic = !currentPublic;
 
-  const s = window.PKM_SERIES?.find(x => x.id === sid);
+  const s = PKM_SERIES.find(x => x.id === sid);
   const { error } = await db.from('pkm_series_log').update({
     is_public: newPublic,
     author_username: communityProfile.username,

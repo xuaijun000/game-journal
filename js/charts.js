@@ -1,5 +1,6 @@
-function drawCharts(){
+async function drawCharts(){
   renderStatsDashboard();
+  if(!window.Chart){try{await loadSiteScript('js/vendor/chart.umd.js');}catch(error){showToast('图表暂不可用，统计摘要仍可查看','warn');return;}}
   const stC={playing:0,done:0,wishlist:0,dropped:0},gnC={},pfC={},rtC=[0,0,0,0,0],styC={};
   games.forEach(g=>{
     if(stC[g.status]!==undefined)stC[g.status]++;

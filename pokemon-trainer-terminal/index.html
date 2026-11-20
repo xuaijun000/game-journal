@@ -3,14 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Pokemon Trainer Terminal</title>
+  <title>PIXELFISH · 宝可梦离线工作台</title>
+  <meta name="description" content="宝可梦离线工作台：中文图鉴、六人队伍、招式道具速查与冒险记录。个人数据保存在当前浏览器，可导出备份。">
+  <link rel="icon" href="../css/favicon.png">
   <link rel="stylesheet" href="css/app.css">
-  <script src="data/battle_registry.js"></script>
-  <script src="data/pkm_champions_data.js"></script>
-  <script src="data/moves_champions_data.js"></script>
-  <script src="data/items_champions_data.js"></script>
-  <script src="data/frlg_story.js"></script>
-  <script src="data/frlg_encounters.js"></script>
+  <script defer src="data/battle_registry.js"></script>
+  <script defer src="data/pkm_champions_data.js"></script>
+  <script defer src="data/moves_champions_data.js"></script>
+  <script defer src="data/items_champions_data.js"></script>
+  <script defer src="data/frlg_story.js"></script>
+  <script defer src="data/frlg_encounters.js"></script>
 </head>
 <body>
   <div class="shell">
@@ -43,12 +45,12 @@
     <main class="workspace">
       <header class="topbar">
         <div>
-          <p class="eyebrow">PIXELFISH migration prototype</p>
+          <p class="eyebrow">PIXELFISH · 离线工作台 · <a href="../index.html#pkm">返回主站</a></p>
           <h1 id="view-title">训练师图鉴</h1>
         </div>
         <label class="global-search">
           <span>搜索</span>
-          <input id="global-search" type="search" placeholder="宝可梦、地点、招式、道具">
+          <input id="global-search" type="search" placeholder="搜索宝可梦名称或全国编号">
         </label>
       </header>
 
@@ -58,10 +60,12 @@
           <div class="hero-copy">
             <p class="eyebrow">Pokedex</p>
             <h2 id="dex-title">图鉴数据库</h2>
-            <p>用本地中文图鉴和 Champions 数据做第一版检索，后续可以接回原站的完整详情页。</p>
+            <p>检索中文图鉴、查看形态与对战资料。配置以所选规则为准。</p>
           </div>
         </div>
 
+        <p class="local-data-note">队伍、战绩和进度保存在当前浏览器，不会自动同步。<button type="button" id="terminal-export">导出本地备份</button> · <a href="../index.html#auth">主站账号与备份</a></p>
+        <p id="dex-load-status" role="status" hidden>完整图鉴暂不可用，当前仅展示对战资料。<button type="button" id="dex-retry">重新加载</button></p>
         <div class="content-grid dex-grid-layout">
           <section class="panel">
             <div class="panel-head">
@@ -74,10 +78,13 @@
                 <option value="1">第一世代</option>
                 <option value="2">第二世代</option>
                 <option value="3">第三世代</option>
+                <option value="4">第四世代</option><option value="5">第五世代</option><option value="6">第六世代</option>
+                <option value="7">第七世代</option><option value="8">第八世代</option><option value="9">第九世代</option>
                 <option value="champions">Champions 可用</option>
               </select>
             </div>
             <div class="dex-list" id="dex-list"></div>
+            <p class="list-pagination"><span id="dex-result-count" aria-live="polite"></span> <button type="button" class="text-btn" id="dex-load-more">加载更多</button></p>
           </section>
 
           <section class="panel detail-panel" id="dex-detail">
@@ -91,29 +98,33 @@
 
       <section class="view" id="view-games" aria-labelledby="games-title">
         <div class="hero hero-games">
-          <img src="assets/游戏库 Tab Banner.jpg" alt="">
+          <img data-src="assets/游戏库 Tab Banner.jpg" alt="" loading="lazy">
           <div class="hero-copy">
             <p class="eyebrow">Adventure</p>
             <h2 id="games-title">游戏记录中心</h2>
-            <p>第一版先以火红 / 叶绿为主，保留路线、地图、遭遇和通关清单的接口。</p>
+            <p>查看火红 / 叶绿地图、查询野生遭遇，记录通关进度。</p>
           </div>
         </div>
+
+        <div id="game-ver-bar" class="game-ver-bar"></div>
 
         <div class="content-grid games-grid-layout">
           <section class="panel map-panel">
             <div class="panel-head">
               <div>
-                <p class="eyebrow">FireRed / LeafGreen</p>
+                <p class="eyebrow" id="map-ver-label">FireRed / LeafGreen</p>
                 <h3>地区地图</h3>
               </div>
               <button class="text-btn" type="button" id="reset-story">重置进度</button>
             </div>
-            <div class="map-frame">
-              <img src="assets/map/火红叶绿全局地图.png" alt="火红叶绿全局地图">
-            </div>
-            <div class="map-strip">
-              <img src="assets/map/七岛缩略图.png" alt="七岛缩略图">
-              <span>七岛区域已作为独立资源移植，可继续接原站热点层。</span>
+            <div id="map-frame-wrap">
+              <div class="map-frame">
+                <img id="map-img" data-src="assets/map/火红叶绿全局地图.png" alt="火红叶绿全局地图" loading="lazy">
+              </div>
+              <div class="map-strip" id="map-strip">
+                <img data-src="assets/map/七岛缩略图.png" alt="七岛缩略图" loading="lazy">
+                <span>七岛区域地图。完整地点工具可从主站冒险入口使用。</span>
+              </div>
             </div>
           </section>
 
@@ -143,11 +154,11 @@
 
       <section class="view" id="view-battle" aria-labelledby="battle-title">
         <div class="hero hero-battle">
-          <img src="assets/宝可梦对战 Tab Banner.jpg" alt="">
+          <img data-src="assets/宝可梦对战 Tab Banner.jpg" alt="" loading="lazy">
           <div class="hero-copy">
             <p class="eyebrow">Battle</p>
             <h2 id="battle-title">对战工作台</h2>
-            <p>队伍构筑、招式检索、道具检索和战绩记录先独立成站，后续再接 Supabase 社区。</p>
+            <p>构筑六人队伍，查询招式和道具，整理战绩。此页记录保存在当前浏览器。</p>
           </div>
         </div>
 
@@ -196,6 +207,7 @@
               <span>备注</span>
               <input id="battle-note" type="text" maxlength="80" placeholder="例如：双打，雨天队练习">
             </label>
+            <button type="button" class="text-btn" id="record-submit">保存这场战绩</button>
             <div class="record-list" id="record-list"></div>
           </section>
 
@@ -208,13 +220,41 @@
             </div>
             <div class="item-list" id="item-list"></div>
           </section>
+
+          <section class="panel lookup-panel" id="lookup-panel" aria-label="对战速查">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Battle Lookup</p>
+                <h3>对战速查</h3>
+              </div>
+              <select id="lookup-format" class="lookup-format-select">
+                <option value="champions">Pokemon Champions</option>
+                <option value="vgc2025" disabled>VGC 2025（即将支持）</option>
+                <option value="ou" disabled>Showdown OU（即将支持）</option>
+              </select>
+            </div>
+            <div class="lookup-body">
+              <div class="lookup-search-col">
+                <label class="mini-search lookup-search-wrap">
+                  <span>搜索</span>
+                  <input id="lookup-search" type="search" placeholder="宝可梦名称或编号">
+                </label>
+                <div class="lookup-picks" id="lookup-picks">
+                  <div class="lookup-hint"><span>输入名称或编号开始查询</span></div>
+                </div>
+              </div>
+              <div class="lookup-result" id="lookup-result">
+                <div class="empty-state"><strong>选择一只宝可梦</strong><span>搜索并点击查看对战数据。</span></div>
+              </div>
+            </div>
+          </section>
         </div>
       </section>
     </main>
   </div>
 
   <button class="partner-orb" id="partner-orb" type="button" aria-label="打开伙伴浮窗">
-    <img src="assets/悬浮球.png" alt="">
+    <img src="../css/assets/pokeball.svg" alt="">
     <span id="partner-orb-name">伙伴</span>
   </button>
 
@@ -227,7 +267,7 @@
       <button class="icon-btn" id="partner-close" type="button" aria-label="关闭">×</button>
     </div>
     <div class="partner-stage">
-      <img id="partner-bg" src="assets/partner-roster-bg.png" alt="">
+      <img id="partner-bg" data-src="assets/partner-roster-bg.png" alt="" loading="lazy">
       <img id="partner-sprite" alt="">
     </div>
     <div class="partner-tabs">
@@ -240,6 +280,6 @@
     <div class="partner-body" id="partner-body"></div>
   </aside>
 
-  <script src="js/app.js"></script>
+  <script defer src="js/app.js"></script>
 </body>
 </html>
