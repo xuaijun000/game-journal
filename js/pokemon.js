@@ -3539,7 +3539,7 @@ function updateImmTrainPlaceholder(){
   const hero=document.querySelector('#imm-panel-train .tim-hero');
   const show=!_trainPkmData;
   if(placeholder)placeholder.style.display=show?'block':'none';
-  if(hero)hero.style.display=show?'none':'flex';
+  if(hero)hero.style.display=show?'none':'grid';
 }
 
 function selectTrainPkmFromImm(idx){
