@@ -312,3 +312,23 @@ async function refreshAdventureLocation(){
   if(train){selectTrainLocFromMap(loc,key);await loadTrainDistribution();}
   else{selectHuntLocFromMap(loc,key);await loadHuntDistribution();renderHuntAreaGrid(null);}
 }
+async function syncAdventureModeLocation(){
+  const train=_immMode==='train';
+  let selected=train?_trainSelLoc:_huntSelLoc;
+  let key=train?_trainSelEncounterKey:_huntSelEncounterKey;
+  const other=train?_huntSelLoc:_trainSelLoc;
+  if(!selected&&other&&!_trainImmSession){
+    const loc=other.split('|')[1];
+    key=train?_huntSelEncounterKey:_trainSelEncounterKey;
+    if(train)selectTrainLocFromMap(loc,key);else selectHuntLocFromMap(loc,key);
+    selected=train?_trainSelLoc:_huntSelLoc;
+  }
+  const loc=selected?.split('|')[1]||'';
+  const badge=document.getElementById('imm-loc');if(badge)badge.textContent='📍 '+(loc||'请选择地点');
+  updateImmMinimap(loc);
+  const status=document.getElementById('adventure-location-status');
+  if(status)status.textContent=loc?`${loc} · 正在加载遭遇资料`:'选择你在游戏中所在的地点';
+  if(!selected)return;
+  if(_trainImmSession){if(status)status.textContent=loc+' · 本次训练地点';return;}
+  await refreshAdventureLocation();
+}

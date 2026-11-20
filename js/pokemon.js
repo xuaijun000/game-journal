@@ -2768,6 +2768,7 @@ function spawnFlash(){
 }
 
 async function confirmImmCatch(){
+  const actor=typeof authUserId==='undefined'?null:authUserId;
   const list=getSeriesHunts(_immSid);
   const t=list[_immIdx];if(!t||t.done)return;
   const sid=_immSid;
@@ -2795,7 +2796,11 @@ async function confirmImmCatch(){
     toggleImmPanel('catches');
     showToast('恭喜捕捉到 '+t.name+'！共遭遇 '+t.count+' 次');
   },1000);
-  await syncIndividualCatch(sid,profile);
+  const species=await fetchPkm(t.pkmId).catch(()=>null);
+  if((typeof authUserId==='undefined'?null:authUserId)!==actor)return;
+  const currentProfile=individualProfiles(sid)[t.individualId]||profile;
+  if(species?.stats){currentProfile.baseStats=species.stats;currentProfile.evYields=species.stats.filter(s=>s.effort>0);saveIndividualProfile(sid,currentProfile);}
+  await syncIndividualCatch(sid,currentProfile);
   await loadCatchList(sid);
 }
 
@@ -3588,6 +3593,7 @@ function setImmMode(mode){
     trainBtn.style.border=_immMode==='train'?'none':'1px solid var(--b)';
   }
   updateImmTrainPlaceholder();
+  syncAdventureModeLocation();
   if(_immMode==='train'){
     if(!_trainImmSession)_trainImmResetSummary();
     _trainImmRenderSession();

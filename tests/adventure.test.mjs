@@ -79,6 +79,20 @@ test('批量训练按上限实际计入，撤销整批，保存重试不会重�
   assert.equal(c.lsGet('pkm_train_draft_firered-leafgreen'),null);
 });
 
+test('从捕获切到训练继承地点并加载实际遭遇，切回时显示各自地点',async()=>{
+  const {context:c,get,run}=await fixture();
+  run(`_huntSelLoc=frlgDistributionKey(_immSid,'1号道路');_huntSelEncounterKey='kanto-route-1';_trainSelLoc='';_immMode='train';`);
+  await c.syncAdventureModeLocation();
+  assert.equal(run('_trainSelEncounterKey'),'kanto-route-1');
+  assert.equal(run('_trainLocPkm.length'),2);
+  assert.match(get('imm-loc').textContent,/1号道路/);
+  assert.match(get('adventure-location-status').textContent,/2 种/);
+  run(`_immMode='hunt';_huntSelLoc='';_huntSelEncounterKey='';`);
+  await c.syncAdventureModeLocation();
+  assert.equal(run('_huntSelEncounterKey'),'kanto-route-1');
+  assert.equal(run('_huntLocPkm.length'),2);
+});
+
 test('训练草稿刷新后恢复且绑定个体，确认前不改正式EV',async()=>{
   const f=await fixture();const c=f.context;
   c.setSeriesParty('firered-leafgreen',[{individualId:'draft-individual',pkmId:4,name:'小火龙'}],{sync:false});
