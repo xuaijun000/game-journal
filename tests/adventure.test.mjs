@@ -21,6 +21,7 @@ async function fixture(){
   vm.runInContext(await source('js/adventure.js'),context);
   vm.runInContext(await source('js/data/frlg_encounters.js'),context);
   context.FRLG_ENCOUNTERS=context.window.FRLG_ENCOUNTERS;
+  context.originalHuntGrid=context.renderHuntAreaGrid;
   vm.runInContext(`renderHuntList=()=>{};renderHuntAreaGrid=()=>{};renderActiveCatches=async()=>{};renderPartySlots=()=>{};renderImmParty=()=>{};renderTrainEVs=()=>{};spawnCaptureBeam=()=>{};showHuntNarration=()=>{};loadCatchList=async()=>{};_curSid='firered-leafgreen';_immSid=_curSid;_trainSid=_curSid;`,context);
   return {context,get,run:code=>vm.runInContext(code,context)};
 }
@@ -103,6 +104,16 @@ test('训练草稿刷新后恢复且绑定个体，确认前不改正式EV',asyn
   assert.equal(f.run('_trainImmSession.status'),'pending');assert.equal(f.run('_trainImmProjectedEVs().speed'),1);
   assert.equal(c.getTrainEVs('firered-leafgreen','draft-individual').speed,0);
   c.discardTrainImmSession();assert.equal(c.lsGet('pkm_train_draft_firered-leafgreen'),null);
+});
+
+test('直接从训练进入捕获时初始化空状态，隐藏破图并关闭无目标战斗按钮',async()=>{
+  const {context:c,get,run}=await fixture();
+  run(`renderHuntAreaGrid=originalHuntGrid;_immMode='train';_immIdx=-1;_huntLocPkm=[];`);
+  c.setImmMode('hunt');
+  assert.match(get('hunt-imm-target').textContent,/自由捕捉/);
+  assert.equal(get('hunt-imm-sprite').style.visibility,'hidden');
+  assert.equal(get('hunt-imm-num').textContent,'0');
+  assert.equal(get('hunt-battle-actions').style.display,'none');
 });
 
 test('云端写入失败保留待同步快照，重试成功才清除，不假报成功',async()=>{

@@ -2529,7 +2529,7 @@ function setHuntHeroForCapture(pkm,label,count){
   if(nameEl)nameEl.textContent=pkm?.name||'';
   if(targetEl)targetEl.textContent=label||'自由捕捉';
   if(numEl)numEl.textContent=String(count||0);
-  if(spriteEl)spriteEl.src=pkm?.img||'';
+  if(spriteEl){spriteEl.style.visibility=pkm?.img?'visible':'hidden';if(pkm?.img)spriteEl.src=pkm.img;else spriteEl.removeAttribute('src');}
   if(successEl)successEl.src=pkm?.img||'';
 }
 function startFreeCapture(pkm){
@@ -3593,7 +3593,12 @@ function setImmMode(mode){
     trainBtn.style.border=_immMode==='train'?'none':'1px solid var(--b)';
   }
   updateImmTrainPlaceholder();
-  syncAdventureModeLocation();
+  if(_immMode==='hunt'){
+    const target=getSeriesHunts(_immSid)[_immIdx];
+    if(target&&!target.done&&!target.cancelled)setHuntHeroForCapture(target,getNatureZh(target.nature)+'性格 目标',target.count);
+    else setHuntHeroForCapture(null,'自由捕捉：选择地点后点击遇到的宝可梦',0);
+    renderHuntList(_immSid);renderHuntAreaGrid(target);
+  }
   if(_immMode==='train'){
     if(!_trainImmSession)_trainImmResetSummary();
     _trainImmRenderSession();
@@ -3601,6 +3606,7 @@ function setImmMode(mode){
     if(!_trainImmSession)restoreAdventureDraft(_trainSid);
     else if(_trainImmSession.status==='pending')_trainImmShowSummary(_trainImmBuildSummary(),'确认后写入 EV 和伙伴经验');
   }
+  syncAdventureModeLocation();
 }
 
 function enterImmersiveFromSeries(mode){
@@ -3923,6 +3929,7 @@ function closeImmMapFull(){
 function updateImmMinimap(loc){
   const lbl=document.getElementById('imm-minimap-loc');
   if(lbl)lbl.textContent=loc||'点击地图选择';
+  const badge=document.getElementById('imm-loc');if(badge)badge.textContent='📍 '+(loc||'请选择地点');
 }
 
 async function openImmHunt(sid,idx){

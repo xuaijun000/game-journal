@@ -323,12 +323,12 @@ async function syncAdventureModeLocation(){
     if(train)selectTrainLocFromMap(loc,key);else selectHuntLocFromMap(loc,key);
     selected=train?_trainSelLoc:_huntSelLoc;
   }
-  const loc=selected?.split('|')[1]||'';
+  const loc=selected?.split('|')[1]||(train?_trainImmSession?.location:'')||'';
   const badge=document.getElementById('imm-loc');if(badge)badge.textContent='📍 '+(loc||'请选择地点');
   updateImmMinimap(loc);
   const status=document.getElementById('adventure-location-status');
   if(status)status.textContent=loc?`${loc} · 正在加载遭遇资料`:'选择你在游戏中所在的地点';
-  if(!selected)return;
   if(_trainImmSession){if(status)status.textContent=loc+' · 本次训练地点';return;}
+  if(!selected)return;
   await refreshAdventureLocation();
 }
